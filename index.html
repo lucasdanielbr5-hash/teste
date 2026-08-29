@@ -297,6 +297,9 @@ button{cursor:pointer}
     <button data-page="financeiro">
       <i data-lucide="wallet-cards"></i><span class="nav-label">Financeiro</span>
     </button>
+    <button data-page="recibos">
+      <i data-lucide="file-text"></i><span class="nav-label">Recibos</span>
+    </button>
     <button data-page="perfil">
       <i data-lucide="user-round"></i><span class="nav-label">Meu Perfil</span>
     </button>
@@ -327,6 +330,7 @@ button{cursor:pointer}
 <section id="page-alunos" class="view"></section>
 <section id="page-agenda" class="view"></section>
 <section id="page-financeiro" class="view"></section>
+<section id="page-recibos" class="view"></section>
 <section id="page-perfil" class="view"></section>
 <section id="page-prontuario" class="view"></section>
 
@@ -642,7 +646,7 @@ async function getUserId() {
 }
 
 // ============================================================
-// FUNÇÕES SUPABASE - LOAD
+// FUNÇÕES SUPABASE - LOAD (COM FILTRO POR user_id)
 // ============================================================
 
 async function loadDataFromSupabase() {
@@ -653,6 +657,7 @@ async function loadDataFromSupabase() {
             return null;
         }
 
+        // Buscar professor do usuário atual
         const { data: professorData, error: profError } = await supabaseClient
             .from('professores')
             .select('*')
@@ -660,6 +665,7 @@ async function loadDataFromSupabase() {
             .maybeSingle();
         if (profError && profError.code !== 'PGRST116') throw profError;
 
+        // Buscar alunos do usuário atual
         const { data: alunosData, error: alunosError } = await supabaseClient
             .from('alunos')
             .select('*')
@@ -667,42 +673,49 @@ async function loadDataFromSupabase() {
             .order('nome');
         if (alunosError) throw alunosError;
 
+        // Buscar evoluções do usuário atual
         const { data: evolucoesData, error: evoError } = await supabaseClient
             .from('evolucoes')
             .select('*')
             .eq('user_id', userId);
         if (evoError && evoError.code !== '42703' && evoError.code !== 'PGRST116') throw evoError;
 
+        // Buscar consultas do usuário atual
         const { data: consultasData, error: consError } = await supabaseClient
             .from('consultas')
             .select('*')
             .eq('user_id', userId);
         if (consError && consError.code !== '42703' && consError.code !== 'PGRST116') throw consError;
 
+        // Buscar avaliações do usuário atual
         const { data: avaliacoesData, error: avError } = await supabaseClient
             .from('avaliacoes')
             .select('*')
             .eq('user_id', userId);
         if (avError && avError.code !== '42703' && avError.code !== 'PGRST116') throw avError;
 
+        // Buscar resultados do usuário atual
         const { data: resultadosData, error: resError } = await supabaseClient
             .from('resultados_avaliacoes')
             .select('*')
             .eq('user_id', userId);
         if (resError && resError.code !== '42703' && resError.code !== 'PGRST116') throw resError;
 
+        // Buscar escola do usuário atual
         const { data: escolaData, error: escError } = await supabaseClient
             .from('escola')
             .select('*')
             .eq('user_id', userId);
         if (escError && escError.code !== '42703' && escError.code !== 'PGRST116') throw escError;
 
+        // Buscar registros escola do usuário atual
         const { data: registrosEscolaData, error: regError } = await supabaseClient
             .from('registros_escola')
             .select('*')
             .eq('user_id', userId);
         if (regError && regError.code !== '42703' && regError.code !== 'PGRST116') throw regError;
 
+        // Buscar agenda do usuário atual
         const { data: agendaData, error: agendaError } = await supabaseClient
             .from('agenda')
             .select('*')
@@ -710,18 +723,21 @@ async function loadDataFromSupabase() {
             .order('data');
         if (agendaError) throw agendaError;
 
+        // Buscar transações do usuário atual
         const { data: transacoesData, error: transError } = await supabaseClient
             .from('transacoes')
             .select('*')
             .eq('user_id', userId);
         if (transError) throw transError;
 
+        // Buscar alertas do usuário atual
         const { data: alertasData, error: alertError } = await supabaseClient
             .from('alertas_clinicos')
             .select('*')
             .eq('user_id', userId);
         if (alertError) throw alertError;
 
+        // Buscar observações do professor
         const { data: obsProfData, error: obsError } = await supabaseClient
             .from('observacoes_professor')
             .select('*')
@@ -729,6 +745,7 @@ async function loadDataFromSupabase() {
             .order('data', { ascending: false });
         if (obsError && obsError.code !== '42703' && obsError.code !== 'PGRST116') throw obsError;
 
+        // Buscar evoluções do professor
         const { data: evoProfData, error: evoProfError } = await supabaseClient
             .from('evolucoes_professor')
             .select('*')
@@ -781,7 +798,7 @@ async function loadDataFromSupabase() {
 }
 
 // ============================================================
-// FUNÇÕES SUPABASE - SAVE
+// FUNÇÕES SUPABASE - SAVE (COM user_id)
 // ============================================================
 
 async function saveAluno(aluno) {
@@ -1221,6 +1238,7 @@ function navigate(page) {
         alunos: ["users", "Alunos"],
         agenda: ["calendar-days", "Agenda"],
         financeiro: ["wallet-cards", "Financeiro"],
+        recibos: ["file-text", "Recibos e Declarações"],
         perfil: ["user-round", "Meu Perfil"]
     };
 
@@ -1237,6 +1255,7 @@ function renderPage() {
     if (currentPage === "alunos") renderAlunos();
     if (currentPage === "agenda") renderAgenda();
     if (currentPage === "financeiro") renderFinanceiro();
+    if (currentPage === "recibos") renderRecibos();
     if (currentPage === "perfil") renderPerfil();
 }
 
@@ -1299,84 +1318,7 @@ async function logout() {
 }
 
 // ============================================================
-// INICIALIZAÇÃO
-// ============================================================
-
-async function init() {
-    lucide.createIcons();
-
-    const isLoggedIn = await checkSession();
-
-    if (isLoggedIn) {
-        const loadedData = await loadData();
-        if (loadedData) {
-            data = loadedData;
-            data.session = true;
-        }
-        
-        document.getElementById("loginScreen").style.display = "none";
-        document.getElementById("app").style.display = "flex";
-        updateUser();
-        navigate("dashboard");
-        notify("Bem-vindo de volta!");
-    } else {
-        document.getElementById("loginScreen").style.display = "grid";
-        document.getElementById("app").style.display = "none";
-    }
-}
-
-// ============================================================
-// EVENT LISTENERS
-// ============================================================
-
-document.querySelectorAll(".nav button[data-page]").forEach(btn => {
-    btn.addEventListener("click", () => navigate(btn.dataset.page));
-});
-
-document.getElementById("loginBtn").addEventListener("click", login);
-document.getElementById("loginPass").addEventListener("keydown", e => {
-    if (e.key === "Enter") login();
-});
-document.getElementById("logoutBtn").addEventListener("click", logout);
-
-// ============================================================
-// EXPOR FUNÇÕES
-// ============================================================
-
-window.navigate = navigate;
-window.openStudent = openStudent;
-window.toggleStudentForm = toggleStudentForm;
-window.saveStudent = saveStudent;
-window.filterStudents = filterStudents;
-window.renderStudentProfile = renderStudentProfile;
-window.saveStudentEdit = saveStudentEdit;
-window.toggleAgendaForm = toggleAgendaForm;
-window.saveAppointment = saveAppointment;
-window.cancelAppointment = cancelAppointment;
-window.togglePresence = togglePresence;
-window.togglePayment = togglePayment;
-window.calendarPrev = calendarPrev;
-window.calendarNext = calendarNext;
-window.calendarToday = calendarToday;
-window.setCalendarMode = setCalendarMode;
-window.quickSchedule = quickSchedule;
-window.selectMonthDay = selectMonthDay;
-window.openConsultation = openConsultation;
-window.newConsultationForm = newConsultationForm;
-window.saveConsultation = saveConsultation;
-window.setStudentSectionPage = setStudentSectionPage;
-window.setFinancePage = setFinancePage;
-window.changeFinanceMonth = changeFinanceMonth;
-window.saveProfile = saveProfile;
-window.generateStudentPDF = generateStudentPDF;
-window.generateFinancePDF = generateFinancePDF;
-window.resolveClinicalAlert = resolveClinicalAlert;
-window.saveObservacao = saveObservacao;
-window.saveEvolucaoPessoal = saveEvolucaoPessoal;
-window.deletarRegistroPessoal = deletarRegistroPessoal;
-
-// ============================================================
-// FUNÇÕES DE RENDERIZAÇÃO (DASHBOARD, ALUNOS, AGENDA, FINANCEIRO, PERFIL)
+// DASHBOARD
 // ============================================================
 
 function renderDashboard() {
@@ -2193,7 +2135,7 @@ function renderFinanceiro() {
     document.getElementById("page-financeiro").innerHTML = `
         <div class="section-head">
             <div><div class="section-title">Financeiro</div><div class="section-sub">Consulte qualquer mês, de janeiro a dezembro, e mantenha cada período separado.</div></div>
-            <div style="display:flex;gap:7px;flex-wrap:wrap"><button class="btn btn-blue btn-sm" onclick="generateFinancePDF()"><i data-lucide="file-down"></i>PDF do período</button><button class="btn btn-soft btn-sm" onclick="navigate('agenda')">Ver agenda</button></div>
+            <div style="display:flex;gap:7px;flex-wrap:wrap"><button class="btn btn-blue btn-sm" onclick="generateFinancePDF()"><i data-lucide="file-down"></i>PDF do período</button><button class="btn btn-soft btn-sm" onclick="navigate('recibos')">Recibos</button></div>
         </div>
 
         <div class="card" style="margin-bottom:16px">
@@ -2248,6 +2190,264 @@ function changeFinanceMonth(delta) {
     financeMonth = d.getMonth(); 
     financePage = 1; 
     renderFinanceiro(); 
+}
+
+// ============================================================
+// RECIBOS E DECLARAÇÕES
+// ============================================================
+
+function renderRecibos() {
+    document.getElementById("page-recibos").innerHTML = `
+        <div class="section-head">
+            <div>
+                <div class="section-title">Recibos e Declarações</div>
+                <div class="section-sub">Emita recibos de pagamento e declarações de acompanhamento.</div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom:16px">
+            <div class="section-title">Emitir Recibo de Pagamento</div>
+            <div class="section-sub" style="margin-bottom:15px">Selecione o aluno e o período para gerar o recibo.</div>
+            
+            <div class="form-grid">
+                <div class="field">
+                    <label class="label">Aluno</label>
+                    <select id="reciboAluno" class="select">
+                        ${(data.alunos || []).filter(a => a.ativo !== false).map(a => 
+                            `<option value="${a.id}">${esc(a.nome)}</option>`
+                        ).join("")}
+                    </select>
+                </div>
+                <div class="field">
+                    <label class="label">Mês</label>
+                    <select id="reciboMes" class="select">
+                        ${['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'].map((m, i) => 
+                            `<option value="${i+1}" ${i === new Date().getMonth() ? 'selected' : ''}>${m}</option>`
+                        ).join("")}
+                    </select>
+                </div>
+                <div class="field">
+                    <label class="label">Ano</label>
+                    <select id="reciboAno" class="select">
+                        ${[new Date().getFullYear() - 1, new Date().getFullYear(), new Date().getFullYear() + 1].map(a => 
+                            `<option value="${a}" ${a === new Date().getFullYear() ? 'selected' : ''}>${a}</option>`
+                        ).join("")}
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button class="btn btn-primary" onclick="gerarRecibo()">
+                    <i data-lucide="file-down"></i> Gerar Recibo PDF
+                </button>
+                <button class="btn btn-blue" onclick="gerarDeclaracao()">
+                    <i data-lucide="file-text"></i> Gerar Declaração PDF
+                </button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="section-title">Últimos Recibos Gerados</div>
+            <div class="section-sub">Histórico de recibos emitidos.</div>
+            <div id="historicoRecibos" style="margin-top:15px">
+                ${(data.transacoes || []).slice(0, 20).map(t => {
+                    const s = getStudent(t.alunoId);
+                    return `<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line)">
+                        <div><strong>${esc(s?.nome || 'Aluno removido')}</strong> - ${esc(t.descricao)}</div>
+                        <div>${fmtDate(t.data)} - <strong>${money(t.valor)}</strong></div>
+                    </div>`;
+                }).join("") || `<div class="empty">Nenhum recibo emitido ainda.</div>`}
+            </div>
+        </div>
+    `;
+    lucide.createIcons();
+}
+
+// ============================================================
+// FUNÇÕES DE RECIBOS E DECLARAÇÕES
+// ============================================================
+
+function gerarRecibo() {
+    const alunoId = document.getElementById('reciboAluno').value;
+    const mes = parseInt(document.getElementById('reciboMes').value);
+    const ano = parseInt(document.getElementById('reciboAno').value);
+    
+    const aluno = getStudent(alunoId);
+    if (!aluno) { notify("Aluno não encontrado."); return; }
+    
+    // Buscar transações do aluno no mês/ano
+    const transacoes = (data.transacoes || []).filter(t => {
+        const d = parseDate(t.data);
+        return t.alunoId === alunoId && d.getMonth() + 1 === mes && d.getFullYear() === ano;
+    });
+    
+    if (!transacoes.length) {
+        notify("Nenhum pagamento encontrado para este período.");
+        return;
+    }
+    
+    const total = transacoes.reduce((s, t) => s + Number(t.valor), 0);
+    const mesNome = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'][mes - 1];
+    
+    const doc = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4' });
+    const pageW = doc.internal.pageSize.getWidth();
+    let y = 25;
+    
+    // Cabeçalho
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(20);
+    doc.text('RECIBO DE PAGAMENTO', pageW / 2, y, { align: 'center' });
+    y += 12;
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+    doc.text(`Nº: ${String(Date.now()).slice(-6)}`, 20, y);
+    doc.text(`Data: ${fmtDate(today())}`, pageW - 50, y);
+    y += 10;
+    
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14);
+    doc.text('INSTITUIÇÃO ASAS', 20, y);
+    y += 8;
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+    doc.text(`Recebi(emos) de ${esc(aluno.responsavel || 'Responsável')}`, 20, y);
+    y += 7;
+    doc.text(`a importância de ${money(total)} (${numeroPorExtenso(total)})`, 20, y);
+    y += 7;
+    doc.text(`referente a ${transacoes.length} sessão(ões) de acompanhamento do(a) aluno(a) ${esc(aluno.nome)}`, 20, y);
+    y += 7;
+    doc.text(`no período de ${mesNome}/${ano}.`, 20, y);
+    y += 15;
+    
+    // Assinatura
+    doc.text('________________________________________', 40, y);
+    y += 5;
+    doc.text(esc(data.professor?.nome || 'Professor'), 40, y);
+    y += 5;
+    doc.text('Profissional Responsável', 40, y);
+    y += 15;
+    
+    // Rodapé
+    doc.setFontSize(8);
+    doc.text('Este recibo serve como comprovante de pagamento para fins educacionais e fiscais.', 20, y);
+    
+    doc.save(`recibo-${aluno.nome}-${mesNome}-${ano}.pdf`);
+    notify("Recibo gerado com sucesso!");
+}
+
+function gerarDeclaracao() {
+    const alunoId = document.getElementById('reciboAluno').value;
+    const mes = parseInt(document.getElementById('reciboMes').value);
+    const ano = parseInt(document.getElementById('reciboAno').value);
+    
+    const aluno = getStudent(alunoId);
+    if (!aluno) { notify("Aluno não encontrado."); return; }
+    
+    const mesNome = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'][mes - 1];
+    
+    const doc = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4' });
+    const pageW = doc.internal.pageSize.getWidth();
+    let y = 30;
+    
+    // Cabeçalho
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(22);
+    doc.text('DECLARAÇÃO DE ACOMPANHAMENTO', pageW / 2, y, { align: 'center' });
+    y += 15;
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+    doc.text(`Declaro para os devidos fins que o(a) aluno(a) ${esc(aluno.nome)}`, 20, y);
+    y += 8;
+    doc.text(`realizou acompanhamento psicopedagógico no período de ${mesNome}/${ano}.`, 20, y);
+    y += 10;
+    
+    doc.setFont('helvetica', 'bold');
+    doc.text('Informações do Aluno:', 20, y);
+    y += 7;
+    
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Nome: ${esc(aluno.nome)}`, 25, y);
+    y += 6;
+    doc.text(`Idade: ${aluno.idade || 'Não informada'} anos`, 25, y);
+    y += 6;
+    doc.text(`Série/Ano: ${esc(aluno.serie || 'Não informado')}`, 25, y);
+    y += 6;
+    doc.text(`Responsável: ${esc(aluno.responsavel || 'Não informado')}`, 25, y);
+    y += 10;
+    
+    doc.setFont('helvetica', 'bold');
+    doc.text('Informações do Profissional:', 20, y);
+    y += 7;
+    
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Nome: ${esc(data.professor?.nome || 'Professor')}`, 25, y);
+    y += 6;
+    doc.text(`Especialidade: ${esc(data.professor?.especialidade || 'Psicopedagogia')}`, 25, y);
+    y += 15;
+    
+    doc.text('________________________________________', 40, y);
+    y += 5;
+    doc.text(esc(data.professor?.nome || 'Professor'), 40, y);
+    y += 5;
+    doc.text('Profissional Responsável', 40, y);
+    y += 15;
+    
+    doc.setFontSize(8);
+    doc.text(`Documento emitido em ${fmtDate(today())} - ASAS Gestão Psicopedagógica`, 20, y);
+    
+    doc.save(`declaracao-${aluno.nome}-${mesNome}-${ano}.pdf`);
+    notify("Declaração gerada com sucesso!");
+}
+
+function numeroPorExtenso(valor) {
+    const unidades = ['zero', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove'];
+    const especiais = ['dez', 'onze', 'doze', 'treze', 'quatorze', 'quinze', 'dezesseis', 'dezessete', 'dezoito', 'dezenove'];
+    const dezenas = ['', '', 'vinte', 'trinta', 'quarenta', 'cinquenta', 'sessenta', 'setenta', 'oitenta', 'noventa'];
+    const centenas = ['', 'cento', 'duzentos', 'trezentos', 'quatrocentos', 'quinhentos', 'seiscentos', 'setecentos', 'oitocentos', 'novecentos'];
+    
+    const inteiro = Math.floor(valor);
+    const centavos = Math.round((valor - inteiro) * 100);
+    
+    if (inteiro === 0) return 'zero reais';
+    
+    let texto = '';
+    const milhares = Math.floor(inteiro / 1000);
+    const resto = inteiro % 1000;
+    
+    if (milhares > 0) {
+        texto += `${numeroPorExtensoSimples(milhares)} mil`;
+        if (resto > 0) texto += ' e ';
+    }
+    
+    texto += numeroPorExtensoSimples(resto);
+    texto += inteiro === 1 ? ' real' : ' reais';
+    
+    if (centavos > 0) {
+        texto += ` e ${centavos} centavo${centavos > 1 ? 's' : ''}`;
+    }
+    
+    return texto.charAt(0).toUpperCase() + texto.slice(1);
+}
+
+function numeroPorExtensoSimples(n) {
+    if (n === 0) return '';
+    if (n < 10) return ['', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove'][n];
+    if (n < 20) return ['dez', 'onze', 'doze', 'treze', 'quatorze', 'quinze', 'dezesseis', 'dezessete', 'dezoito', 'dezenove'][n - 10];
+    if (n < 100) {
+        const d = Math.floor(n / 10);
+        const u = n % 10;
+        return dezenas[d] + (u > 0 ? ` e ${numeroPorExtensoSimples(u)}` : '');
+    }
+    if (n < 1000) {
+        const c = Math.floor(n / 100);
+        const r = n % 100;
+        if (n === 100) return 'cem';
+        return centenas[c] + (r > 0 ? ` e ${numeroPorExtensoSimples(r)}` : '');
+    }
+    return '';
 }
 
 // ============================================================
@@ -2436,7 +2636,7 @@ function resolveClinicalAlert(id) {
 }
 
 // ============================================================
-// PDF
+// PDF (Relatórios)
 // ============================================================
 
 function pdfSafe(v) { return String(v ?? "").replace(/[\r\n]+/g, " ").trim(); }
@@ -2625,6 +2825,85 @@ function generateFinancePDF() {
     doc.save(`relatorio-financeiro-${year}-${String(m + 1).padStart(2, "0")}.pdf`);
     notify("Relatório financeiro do mês salvo em PDF.");
 }
+
+// ============================================================
+// INICIALIZAÇÃO
+// ============================================================
+
+async function init() {
+    lucide.createIcons();
+
+    const isLoggedIn = await checkSession();
+
+    if (isLoggedIn) {
+        const loadedData = await loadData();
+        if (loadedData) {
+            data = loadedData;
+            data.session = true;
+        }
+        
+        document.getElementById("loginScreen").style.display = "none";
+        document.getElementById("app").style.display = "flex";
+        updateUser();
+        navigate("dashboard");
+        notify("Bem-vindo de volta!");
+    } else {
+        document.getElementById("loginScreen").style.display = "grid";
+        document.getElementById("app").style.display = "none";
+    }
+}
+
+// ============================================================
+// EVENT LISTENERS
+// ============================================================
+
+document.querySelectorAll(".nav button[data-page]").forEach(btn => {
+    btn.addEventListener("click", () => navigate(btn.dataset.page));
+});
+
+document.getElementById("loginBtn").addEventListener("click", login);
+document.getElementById("loginPass").addEventListener("keydown", e => {
+    if (e.key === "Enter") login();
+});
+document.getElementById("logoutBtn").addEventListener("click", logout);
+
+// ============================================================
+// EXPOR FUNÇÕES
+// ============================================================
+
+window.navigate = navigate;
+window.openStudent = openStudent;
+window.toggleStudentForm = toggleStudentForm;
+window.saveStudent = saveStudent;
+window.filterStudents = filterStudents;
+window.renderStudentProfile = renderStudentProfile;
+window.saveStudentEdit = saveStudentEdit;
+window.toggleAgendaForm = toggleAgendaForm;
+window.saveAppointment = saveAppointment;
+window.cancelAppointment = cancelAppointment;
+window.togglePresence = togglePresence;
+window.togglePayment = togglePayment;
+window.calendarPrev = calendarPrev;
+window.calendarNext = calendarNext;
+window.calendarToday = calendarToday;
+window.setCalendarMode = setCalendarMode;
+window.quickSchedule = quickSchedule;
+window.selectMonthDay = selectMonthDay;
+window.openConsultation = openConsultation;
+window.newConsultationForm = newConsultationForm;
+window.saveConsultation = saveConsultation;
+window.setStudentSectionPage = setStudentSectionPage;
+window.setFinancePage = setFinancePage;
+window.changeFinanceMonth = changeFinanceMonth;
+window.saveProfile = saveProfile;
+window.generateStudentPDF = generateStudentPDF;
+window.generateFinancePDF = generateFinancePDF;
+window.resolveClinicalAlert = resolveClinicalAlert;
+window.saveObservacao = saveObservacao;
+window.saveEvolucaoPessoal = saveEvolucaoPessoal;
+window.deletarRegistroPessoal = deletarRegistroPessoal;
+window.gerarRecibo = gerarRecibo;
+window.gerarDeclaracao = gerarDeclaracao;
 
 // ============================================================
 // INICIAR
