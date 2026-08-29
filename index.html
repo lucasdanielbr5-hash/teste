@@ -14,7 +14,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
-/* ===== TODO O CSS AQUI (mesmo do código anterior) ===== */
 *{box-sizing:border-box}
 html,body{margin:0;width:100%;height:100%;font-family:Inter,sans-serif;background:#f7f9f8;color:#263238}
 body{overflow:hidden}
@@ -375,11 +374,23 @@ const HOURS = [];
 for (let h = 8; h <= 18; h++) HOURS.push(String(h).padStart(2, "0") + ":00");
 
 // ============================================================
-// FUNÇÕES AUXILIARES
+// FUNÇÕES AUXILIARES - CORRIGIDAS
 // ============================================================
 
 function uid() {
-    return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    // UUID v4 válido para o Supabase
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0;
+        var v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
+function ensureValidUUID(id) {
+    if (!id) return uid();
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (uuidRegex.test(id)) return id;
+    return uid();
 }
 
 function esc(v) {
@@ -769,16 +780,18 @@ async function loadDataFromSupabase() {
 }
 
 // ============================================================
-// FUNÇÕES SUPABASE - SAVE
+// FUNÇÕES SUPABASE - SAVE (TODAS CORRIGIDAS COM UUID)
 // ============================================================
 
 async function saveAluno(aluno) {
     try {
         const userId = await getUserId();
+        const id = ensureValidUUID(aluno.id);
+        
         const { data, error } = await supabaseClient
             .from('alunos')
             .upsert({
-                id: aluno.id,
+                id: id,
                 user_id: userId,
                 nome: aluno.nome,
                 idade: aluno.idade || 0,
@@ -805,10 +818,12 @@ async function saveAluno(aluno) {
 async function saveEvolucao(evolucao) {
     try {
         const userId = await getUserId();
+        const id = ensureValidUUID(evolucao.id);
+        
         const { data, error } = await supabaseClient
             .from('evolucoes')
             .upsert({
-                id: evolucao.id,
+                id: id,
                 user_id: userId,
                 aluno_id: evolucao.aluno_id,
                 titulo: evolucao.titulo || 'Evolução',
@@ -828,10 +843,12 @@ async function saveEvolucao(evolucao) {
 async function saveConsulta(consulta) {
     try {
         const userId = await getUserId();
+        const id = ensureValidUUID(consulta.id);
+        
         const { data, error } = await supabaseClient
             .from('consultas')
             .upsert({
-                id: consulta.id,
+                id: id,
                 user_id: userId,
                 aluno_id: consulta.aluno_id,
                 data: consulta.data || today(),
@@ -854,10 +871,12 @@ async function saveConsulta(consulta) {
 async function saveAvaliacao(avaliacao) {
     try {
         const userId = await getUserId();
+        const id = ensureValidUUID(avaliacao.id);
+        
         const { data, error } = await supabaseClient
             .from('avaliacoes')
             .upsert({
-                id: avaliacao.id,
+                id: id,
                 user_id: userId,
                 aluno_id: avaliacao.aluno_id,
                 data: avaliacao.data || today(),
@@ -879,10 +898,12 @@ async function saveAvaliacao(avaliacao) {
 async function saveResultadoAvaliacao(resultado) {
     try {
         const userId = await getUserId();
+        const id = ensureValidUUID(resultado.id);
+        
         const { data, error } = await supabaseClient
             .from('resultados_avaliacoes')
             .upsert({
-                id: resultado.id,
+                id: id,
                 user_id: userId,
                 avaliacao_id: resultado.avaliacao_id,
                 data: resultado.data || today(),
@@ -902,10 +923,12 @@ async function saveResultadoAvaliacao(resultado) {
 async function saveEscola(escola) {
     try {
         const userId = await getUserId();
+        const id = ensureValidUUID(escola.id);
+        
         const { data, error } = await supabaseClient
             .from('escola')
             .upsert({
-                id: escola.id,
+                id: id,
                 user_id: userId,
                 aluno_id: escola.aluno_id,
                 nome: escola.nome || '',
@@ -925,10 +948,12 @@ async function saveEscola(escola) {
 async function saveRegistroEscola(registro) {
     try {
         const userId = await getUserId();
+        const id = ensureValidUUID(registro.id);
+        
         const { data, error } = await supabaseClient
             .from('registros_escola')
             .upsert({
-                id: registro.id,
+                id: id,
                 user_id: userId,
                 escola_id: registro.escola_id,
                 data: registro.data || today(),
@@ -950,10 +975,12 @@ async function saveRegistroEscola(registro) {
 async function saveAgendaItem(item) {
     try {
         const userId = await getUserId();
+        const id = ensureValidUUID(item.id);
+        
         const { data, error } = await supabaseClient
             .from('agenda')
             .upsert({
-                id: item.id,
+                id: id,
                 user_id: userId,
                 aluno_id: item.aluno_id,
                 data: item.data,
@@ -977,10 +1004,12 @@ async function saveAgendaItem(item) {
 async function saveTransacao(transacao) {
     try {
         const userId = await getUserId();
+        const id = ensureValidUUID(transacao.id);
+        
         const { data, error } = await supabaseClient
             .from('transacoes')
             .upsert({
-                id: transacao.id,
+                id: id,
                 user_id: userId,
                 agenda_id: transacao.agenda_id || null,
                 aluno_id: transacao.aluno_id,
@@ -1001,10 +1030,12 @@ async function saveTransacao(transacao) {
 async function saveAlertaClinico(alerta) {
     try {
         const userId = await getUserId();
+        const id = ensureValidUUID(alerta.id);
+        
         const { data, error } = await supabaseClient
             .from('alertas_clinicos')
             .upsert({
-                id: alerta.id,
+                id: id,
                 user_id: userId,
                 student_id: alerta.student_id,
                 evolution_id: alerta.evolution_id || null,
@@ -1028,10 +1059,12 @@ async function saveAlertaClinico(alerta) {
 async function saveObservacaoProfessor(obs) {
     try {
         const userId = await getUserId();
+        const id = ensureValidUUID(obs.id);
+        
         const { data, error } = await supabaseClient
             .from('observacoes_professor')
             .upsert({
-                id: obs.id,
+                id: id,
                 user_id: userId,
                 titulo: obs.titulo || 'Observação',
                 texto: obs.texto,
@@ -1050,10 +1083,12 @@ async function saveObservacaoProfessor(obs) {
 async function saveEvolucaoProfessor(evo) {
     try {
         const userId = await getUserId();
+        const id = ensureValidUUID(evo.id);
+        
         const { data, error } = await supabaseClient
             .from('evolucoes_professor')
             .upsert({
-                id: evo.id,
+                id: id,
                 user_id: userId,
                 titulo: evo.titulo || 'Evolução pessoal',
                 texto: evo.texto,
@@ -1072,10 +1107,12 @@ async function saveEvolucaoProfessor(evo) {
 async function saveProfessor(professor) {
     try {
         const userId = await getUserId();
+        const id = ensureValidUUID(professor.id || userId);
+        
         const { data, error } = await supabaseClient
             .from('professores')
             .upsert({
-                id: professor.id || userId,
+                id: id,
                 user_id: userId,
                 nome: professor.nome,
                 especialidade: professor.especialidade || '',
@@ -1163,7 +1200,61 @@ async function saveData() {
 }
 
 // ============================================================
-// FUNÇÕES DE RENDERIZAÇÃO - DASHBOARD
+// NAVEGAÇÃO
+// ============================================================
+
+function navigate(page) {
+    currentPage = page;
+    currentStudent = null;
+
+    document.querySelectorAll(".view").forEach(x => x.classList.remove("active"));
+    const target = document.getElementById("page-" + page);
+    if (target) target.classList.add("active");
+
+    document.querySelectorAll(".nav button").forEach(x => {
+        x.classList.toggle("active", x.dataset.page === page);
+    });
+
+    const info = {
+        dashboard: ["layout-dashboard", "Dashboard"],
+        alunos: ["users", "Alunos"],
+        agenda: ["calendar-days", "Agenda"],
+        financeiro: ["wallet-cards", "Financeiro"],
+        perfil: ["user-round", "Meu Perfil"]
+    };
+
+    if (info[page]) {
+        document.getElementById("pageTitle").innerHTML = `<i data-lucide="${info[page][0]}"></i>${info[page][1]}`;
+    }
+
+    renderPage();
+    lucide.createIcons();
+}
+
+function renderPage() {
+    if (currentPage === "dashboard") renderDashboard();
+    if (currentPage === "alunos") renderAlunos();
+    if (currentPage === "agenda") renderAgenda();
+    if (currentPage === "financeiro") renderFinanceiro();
+    if (currentPage === "perfil") renderPerfil();
+}
+
+function updateUser() {
+    const p = data.professor;
+    if (!p) return;
+    document.getElementById("topUserName").textContent = p.nome;
+    const a = document.getElementById("topAvatar");
+    if (p.foto) {
+        a.style.backgroundImage = `url('${p.foto}')`;
+        a.textContent = "";
+    } else {
+        a.style.backgroundImage = "";
+        a.textContent = initials(p.nome);
+    }
+}
+
+// ============================================================
+// DASHBOARD
 // ============================================================
 
 function renderDashboard() {
@@ -1254,7 +1345,7 @@ function renderDashboard() {
 }
 
 // ============================================================
-// FUNÇÕES DE RENDERIZAÇÃO - ALUNOS
+// ALUNOS
 // ============================================================
 
 function renderAlunos() {
@@ -1359,7 +1450,7 @@ async function saveStudent() {
 }
 
 // ============================================================
-// FUNÇÕES DE RENDERIZAÇÃO - PRONTUÁRIO
+// PRONTUÁRIO
 // ============================================================
 
 function openStudent(id) {
@@ -1521,7 +1612,7 @@ async function saveStudentEdit() {
 }
 
 // ============================================================
-// FUNÇÕES DE CONSULTA
+// CONSULTAS
 // ============================================================
 
 function newConsultationForm() {
@@ -1578,7 +1669,7 @@ function openConsultation(id) {
 }
 
 // ============================================================
-// FUNÇÕES DE AVALIAÇÃO
+// AVALIAÇÕES
 // ============================================================
 
 async function createAssessment() {
@@ -1631,7 +1722,7 @@ async function saveAssessmentApplication() {
 }
 
 // ============================================================
-// FUNÇÕES DE ESCOLA
+// ESCOLA
 // ============================================================
 
 async function saveSchoolInfo() {
@@ -1681,7 +1772,7 @@ async function deleteSchoolRecord(id) {
 }
 
 // ============================================================
-// FUNÇÕES DE AGENDA
+// AGENDA (COMPLETA)
 // ============================================================
 
 function renderAgenda() {
@@ -1952,7 +2043,7 @@ function setCalendarMode(mode) {
 }
 
 // ============================================================
-// FUNÇÕES DE FINANCEIRO
+// FINANCEIRO
 // ============================================================
 
 function renderFinanceiro() {
@@ -2028,7 +2119,7 @@ function setFinancePage(page) { window.financePage = page; renderFinanceiro(); }
 function changeFinanceMonth(delta) { const d = new Date(financeYear, financeMonth + delta, 1); financeYear = d.getFullYear(); financeMonth = d.getMonth(); window.financePage = 1; renderFinanceiro(); }
 
 // ============================================================
-// FUNÇÕES DE PERFIL
+// PERFIL
 // ============================================================
 
 function renderPerfil() {
@@ -2136,7 +2227,7 @@ function renderPerfil() {
 }
 
 // ============================================================
-// FUNÇÕES PERFIL - CRUD
+// PERFIL - CRUD
 // ============================================================
 
 async function saveObservacao() {
@@ -2213,7 +2304,7 @@ function resolveClinicalAlert(id) {
 }
 
 // ============================================================
-// FUNÇÕES DE PDF
+// PDF
 // ============================================================
 
 function pdfSafe(v) { return String(v ?? "").replace(/[\r\n]+/g, " ").trim(); }
@@ -2401,60 +2492,6 @@ function generateFinancePDF() {
 
     doc.save(`relatorio-financeiro-${year}-${String(m + 1).padStart(2, "0")}.pdf`);
     notify("Relatório financeiro do mês salvo em PDF.");
-}
-
-// ============================================================
-// NAVEGAÇÃO
-// ============================================================
-
-function navigate(page) {
-    currentPage = page;
-    currentStudent = null;
-
-    document.querySelectorAll(".view").forEach(x => x.classList.remove("active"));
-    const target = document.getElementById("page-" + page);
-    if (target) target.classList.add("active");
-
-    document.querySelectorAll(".nav button").forEach(x => {
-        x.classList.toggle("active", x.dataset.page === page);
-    });
-
-    const info = {
-        dashboard: ["layout-dashboard", "Dashboard"],
-        alunos: ["users", "Alunos"],
-        agenda: ["calendar-days", "Agenda"],
-        financeiro: ["wallet-cards", "Financeiro"],
-        perfil: ["user-round", "Meu Perfil"]
-    };
-
-    if (info[page]) {
-        document.getElementById("pageTitle").innerHTML = `<i data-lucide="${info[page][0]}"></i>${info[page][1]}`;
-    }
-
-    renderPage();
-    lucide.createIcons();
-}
-
-function renderPage() {
-    if (currentPage === "dashboard") renderDashboard();
-    if (currentPage === "alunos") renderAlunos();
-    if (currentPage === "agenda") renderAgenda();
-    if (currentPage === "financeiro") renderFinanceiro();
-    if (currentPage === "perfil") renderPerfil();
-}
-
-function updateUser() {
-    const p = data.professor;
-    if (!p) return;
-    document.getElementById("topUserName").textContent = p.nome;
-    const a = document.getElementById("topAvatar");
-    if (p.foto) {
-        a.style.backgroundImage = `url('${p.foto}')`;
-        a.textContent = "";
-    } else {
-        a.style.backgroundImage = "";
-        a.textContent = initials(p.nome);
-    }
 }
 
 // ============================================================
