@@ -362,7 +362,7 @@ let currentConsultation = null;
 let financeYear = new Date().getFullYear();
 let financeMonth = new Date().getMonth();
 let currentUserId = null;
-let window = {};
+let financePage = 1;
 
 const TYPES = {
     psicologia: { label: "Psicologia", cls: "psico" },
@@ -1201,7 +1201,7 @@ async function saveData() {
 }
 
 // ============================================================
-// FUNÇÕES DE NAVEGAÇÃO
+// NAVEGAÇÃO
 // ============================================================
 
 function navigate(page) {
@@ -1255,7 +1255,128 @@ function updateUser() {
 }
 
 // ============================================================
-// DASHBOARD
+// LOGIN/LOGOUT
+// ============================================================
+
+async function login() {
+    const user = document.getElementById("loginUser").value.trim();
+    const pass = document.getElementById("loginPass").value;
+
+    if (!user || !pass) {
+        notify("Preencha usuário e senha.");
+        return;
+    }
+
+    const result = await loginSupabase(user, pass);
+
+    if (result) {
+        data.session = true;
+        
+        const loadedData = await loadData();
+        if (loadedData) {
+            data = loadedData;
+        }
+        
+        await saveData();
+
+        document.getElementById("loginScreen").style.display = "none";
+        document.getElementById("app").style.display = "flex";
+
+        updateUser();
+        navigate("dashboard");
+        notify(`Bem-vindo, ${data.professor?.nome || "Professor"}!`);
+    }
+}
+
+async function logout() {
+    await logoutSupabase();
+    data.session = false;
+    await saveData();
+
+    document.getElementById("app").style.display = "none";
+    document.getElementById("loginScreen").style.display = "grid";
+    notify("Até logo!");
+}
+
+// ============================================================
+// INICIALIZAÇÃO
+// ============================================================
+
+async function init() {
+    lucide.createIcons();
+
+    const isLoggedIn = await checkSession();
+
+    if (isLoggedIn) {
+        const loadedData = await loadData();
+        if (loadedData) {
+            data = loadedData;
+            data.session = true;
+        }
+        
+        document.getElementById("loginScreen").style.display = "none";
+        document.getElementById("app").style.display = "flex";
+        updateUser();
+        navigate("dashboard");
+        notify("Bem-vindo de volta!");
+    } else {
+        document.getElementById("loginScreen").style.display = "grid";
+        document.getElementById("app").style.display = "none";
+    }
+}
+
+// ============================================================
+// EVENT LISTENERS
+// ============================================================
+
+document.querySelectorAll(".nav button[data-page]").forEach(btn => {
+    btn.addEventListener("click", () => navigate(btn.dataset.page));
+});
+
+document.getElementById("loginBtn").addEventListener("click", login);
+document.getElementById("loginPass").addEventListener("keydown", e => {
+    if (e.key === "Enter") login();
+});
+document.getElementById("logoutBtn").addEventListener("click", logout);
+
+// ============================================================
+// EXPOR FUNÇÕES
+// ============================================================
+
+window.navigate = navigate;
+window.openStudent = openStudent;
+window.toggleStudentForm = toggleStudentForm;
+window.saveStudent = saveStudent;
+window.filterStudents = filterStudents;
+window.renderStudentProfile = renderStudentProfile;
+window.saveStudentEdit = saveStudentEdit;
+window.toggleAgendaForm = toggleAgendaForm;
+window.saveAppointment = saveAppointment;
+window.cancelAppointment = cancelAppointment;
+window.togglePresence = togglePresence;
+window.togglePayment = togglePayment;
+window.calendarPrev = calendarPrev;
+window.calendarNext = calendarNext;
+window.calendarToday = calendarToday;
+window.setCalendarMode = setCalendarMode;
+window.quickSchedule = quickSchedule;
+window.selectMonthDay = selectMonthDay;
+window.openConsultation = openConsultation;
+window.newConsultationForm = newConsultationForm;
+window.saveConsultation = saveConsultation;
+window.setStudentSectionPage = setStudentSectionPage;
+window.setFinancePage = setFinancePage;
+window.changeFinanceMonth = changeFinanceMonth;
+window.saveProfile = saveProfile;
+window.generateStudentPDF = generateStudentPDF;
+window.generateFinancePDF = generateFinancePDF;
+window.resolveClinicalAlert = resolveClinicalAlert;
+window.saveObservacao = saveObservacao;
+window.saveEvolucaoPessoal = saveEvolucaoPessoal;
+window.deletarRegistroPessoal = deletarRegistroPessoal;
+
+// ============================================================
+// FUNÇÕES DE RENDERIZAÇÃO (DASHBOARD, ALUNOS, AGENDA, FINANCEIRO, PERFIL)
 // ============================================================
 
 function renderDashboard() {
@@ -2066,7 +2187,7 @@ function renderFinanceiro() {
     const expected = monthAppts.reduce((s, a) => s + Number(getStudent(a.alunoId)?.valor || 0), 0);
     const pending = monthAppts.filter(a => !a.pago).reduce((s, a) => s + Number(getStudent(a.alunoId)?.valor || 0), 0);
 
-    const rows = studentPager(transactions, window.financePage || 1, 10, "setFinancePage");
+    const rows = studentPager(transactions, financePage || 1, 10, "setFinancePage");
     const monthLabel = new Date(financeYear, financeMonth, 1).toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
 
     document.getElementById("page-financeiro").innerHTML = `
@@ -2116,8 +2237,18 @@ function renderFinanceiro() {
     lucide.createIcons();
 }
 
-function setFinancePage(page) { window.financePage = page; renderFinanceiro(); }
-function changeFinanceMonth(delta) { const d = new Date(financeYear, financeMonth + delta, 1); financeYear = d.getFullYear(); financeMonth = d.getMonth(); window.financePage = 1; renderFinanceiro(); }
+function setFinancePage(page) { 
+    financePage = page; 
+    renderFinanceiro(); 
+}
+
+function changeFinanceMonth(delta) { 
+    const d = new Date(financeYear, financeMonth + delta, 1); 
+    financeYear = d.getFullYear(); 
+    financeMonth = d.getMonth(); 
+    financePage = 1; 
+    renderFinanceiro(); 
+}
 
 // ============================================================
 // PERFIL
@@ -2494,127 +2625,6 @@ function generateFinancePDF() {
     doc.save(`relatorio-financeiro-${year}-${String(m + 1).padStart(2, "0")}.pdf`);
     notify("Relatório financeiro do mês salvo em PDF.");
 }
-
-// ============================================================
-// LOGIN/LOGOUT
-// ============================================================
-
-async function login() {
-    const user = document.getElementById("loginUser").value.trim();
-    const pass = document.getElementById("loginPass").value;
-
-    if (!user || !pass) {
-        notify("Preencha usuário e senha.");
-        return;
-    }
-
-    const result = await loginSupabase(user, pass);
-
-    if (result) {
-        data.session = true;
-        
-        const loadedData = await loadData();
-        if (loadedData) {
-            data = loadedData;
-        }
-        
-        await saveData();
-
-        document.getElementById("loginScreen").style.display = "none";
-        document.getElementById("app").style.display = "flex";
-
-        updateUser();
-        navigate("dashboard");
-        notify(`Bem-vindo, ${data.professor?.nome || "Professor"}!`);
-    }
-}
-
-async function logout() {
-    await logoutSupabase();
-    data.session = false;
-    await saveData();
-
-    document.getElementById("app").style.display = "none";
-    document.getElementById("loginScreen").style.display = "grid";
-    notify("Até logo!");
-}
-
-// ============================================================
-// INICIALIZAÇÃO
-// ============================================================
-
-async function init() {
-    lucide.createIcons();
-
-    const isLoggedIn = await checkSession();
-
-    if (isLoggedIn) {
-        const loadedData = await loadData();
-        if (loadedData) {
-            data = loadedData;
-            data.session = true;
-        }
-        
-        document.getElementById("loginScreen").style.display = "none";
-        document.getElementById("app").style.display = "flex";
-        updateUser();
-        navigate("dashboard");
-        notify("Bem-vindo de volta!");
-    } else {
-        document.getElementById("loginScreen").style.display = "grid";
-        document.getElementById("app").style.display = "none";
-    }
-}
-
-// ============================================================
-// EVENT LISTENERS
-// ============================================================
-
-document.querySelectorAll(".nav button[data-page]").forEach(btn => {
-    btn.addEventListener("click", () => navigate(btn.dataset.page));
-});
-
-document.getElementById("loginBtn").addEventListener("click", login);
-document.getElementById("loginPass").addEventListener("keydown", e => {
-    if (e.key === "Enter") login();
-});
-document.getElementById("logoutBtn").addEventListener("click", logout);
-
-// ============================================================
-// EXPOR FUNÇÕES
-// ============================================================
-
-window.navigate = navigate;
-window.openStudent = openStudent;
-window.toggleStudentForm = toggleStudentForm;
-window.saveStudent = saveStudent;
-window.filterStudents = filterStudents;
-window.renderStudentProfile = renderStudentProfile;
-window.saveStudentEdit = saveStudentEdit;
-window.toggleAgendaForm = toggleAgendaForm;
-window.saveAppointment = saveAppointment;
-window.cancelAppointment = cancelAppointment;
-window.togglePresence = togglePresence;
-window.togglePayment = togglePayment;
-window.calendarPrev = calendarPrev;
-window.calendarNext = calendarNext;
-window.calendarToday = calendarToday;
-window.setCalendarMode = setCalendarMode;
-window.quickSchedule = quickSchedule;
-window.selectMonthDay = selectMonthDay;
-window.openConsultation = openConsultation;
-window.newConsultationForm = newConsultationForm;
-window.saveConsultation = saveConsultation;
-window.setStudentSectionPage = setStudentSectionPage;
-window.setFinancePage = setFinancePage;
-window.changeFinanceMonth = changeFinanceMonth;
-window.saveProfile = saveProfile;
-window.generateStudentPDF = generateStudentPDF;
-window.generateFinancePDF = generateFinancePDF;
-window.resolveClinicalAlert = resolveClinicalAlert;
-window.saveObservacao = saveObservacao;
-window.saveEvolucaoPessoal = saveEvolucaoPessoal;
-window.deletarRegistroPessoal = deletarRegistroPessoal;
 
 // ============================================================
 // INICIAR
