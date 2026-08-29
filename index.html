@@ -361,6 +361,7 @@ let studentSectionPage = { overview: 1, avaliacoes: 1, escola: 1 };
 let currentConsultation = null;
 let financeYear = new Date().getFullYear();
 let financeMonth = new Date().getMonth();
+let currentUserId = null;
 
 const TYPES = {
     psicologia: { label: "Psicologia", cls: "psico" },
@@ -559,61 +560,123 @@ function clinicalAlertReason(a) {
 }
 
 // ============================================================
-// FUNÇÕES SUPABASE - LOAD
+// FUNÇÕES SUPABASE - LOAD COM user_id
 // ============================================================
+
+async function getCurrentUserId() {
+    try {
+        const { data, error } = await supabaseClient.auth.getUser();
+        if (error) throw error;
+        return data?.user?.id || null;
+    } catch (error) {
+        console.error('Erro ao buscar usuário:', error);
+        return null;
+    }
+}
 
 async function loadDataFromSupabase() {
     try {
+        const userId = await getCurrentUserId();
+        if (!userId) {
+            notify('Usuário não autenticado.');
+            return null;
+        }
+        currentUserId = userId;
+
+        // Buscar professor do usuário atual
         const { data: professorData, error: profError } = await supabaseClient
-            .from('professores').select('*').limit(1).maybeSingle();
+            .from('professores')
+            .select('*')
+            .eq('user_id', userId)
+            .maybeSingle();
         if (profError) throw profError;
 
+        // Buscar alunos do usuário atual
         const { data: alunosData, error: alunosError } = await supabaseClient
-            .from('alunos').select('*').order('nome');
+            .from('alunos')
+            .select('*')
+            .eq('user_id', userId)
+            .order('nome');
         if (alunosError) throw alunosError;
 
+        // Buscar evoluções do usuário atual
         const { data: evolucoesData, error: evoError } = await supabaseClient
-            .from('evolucoes').select('*');
+            .from('evolucoes')
+            .select('*')
+            .eq('user_id', userId);
         if (evoError) throw evoError;
 
+        // Buscar consultas do usuário atual
         const { data: consultasData, error: consError } = await supabaseClient
-            .from('consultas').select('*');
+            .from('consultas')
+            .select('*')
+            .eq('user_id', userId);
         if (consError) throw consError;
 
+        // Buscar avaliações do usuário atual
         const { data: avaliacoesData, error: avError } = await supabaseClient
-            .from('avaliacoes').select('*');
+            .from('avaliacoes')
+            .select('*')
+            .eq('user_id', userId);
         if (avError) throw avError;
 
+        // Buscar resultados do usuário atual
         const { data: resultadosData, error: resError } = await supabaseClient
-            .from('resultados_avaliacoes').select('*');
+            .from('resultados_avaliacoes')
+            .select('*')
+            .eq('user_id', userId);
         if (resError) throw resError;
 
+        // Buscar escola do usuário atual
         const { data: escolaData, error: escError } = await supabaseClient
-            .from('escola').select('*');
+            .from('escola')
+            .select('*')
+            .eq('user_id', userId);
         if (escError) throw escError;
 
+        // Buscar registros escola do usuário atual
         const { data: registrosEscolaData, error: regError } = await supabaseClient
-            .from('registros_escola').select('*');
+            .from('registros_escola')
+            .select('*')
+            .eq('user_id', userId);
         if (regError) throw regError;
 
+        // Buscar agenda do usuário atual
         const { data: agendaData, error: agendaError } = await supabaseClient
-            .from('agenda').select('*').order('data');
+            .from('agenda')
+            .select('*')
+            .eq('user_id', userId)
+            .order('data');
         if (agendaError) throw agendaError;
 
+        // Buscar transações do usuário atual
         const { data: transacoesData, error: transError } = await supabaseClient
-            .from('transacoes').select('*');
+            .from('transacoes')
+            .select('*')
+            .eq('user_id', userId);
         if (transError) throw transError;
 
+        // Buscar alertas do usuário atual
         const { data: alertasData, error: alertError } = await supabaseClient
-            .from('alertas_clinicos').select('*');
+            .from('alertas_clinicos')
+            .select('*')
+            .eq('user_id', userId);
         if (alertError) throw alertError;
 
+        // Buscar observações do professor
         const { data: obsProfData, error: obsError } = await supabaseClient
-            .from('observacoes_professor').select('*').order('data', { ascending: false });
+            .from('observacoes_professor')
+            .select('*')
+            .eq('user_id', userId)
+            .order('data', { ascending: false });
         if (obsError) throw obsError;
 
+        // Buscar evoluções do professor
         const { data: evoProfData, error: evoProfError } = await supabaseClient
-            .from('evolucoes_professor').select('*').order('data', { ascending: false });
+            .from('evolucoes_professor')
+            .select('*')
+            .eq('user_id', userId)
+            .order('data', { ascending: false });
         if (evoProfError) throw evoProfError;
 
         const result = {
@@ -661,15 +724,19 @@ async function loadDataFromSupabase() {
 }
 
 // ============================================================
-// FUNÇÕES SUPABASE - SAVE
+// FUNÇÕES SUPABASE - SAVE COM user_id
 // ============================================================
 
 async function saveAluno(aluno) {
     try {
+        const userId = await getCurrentUserId();
+        if (!userId) throw new Error('Usuário não autenticado');
+
         const { data, error } = await supabaseClient
             .from('alunos')
             .upsert({
                 id: aluno.id,
+                user_id: userId,
                 nome: aluno.nome,
                 idade: aluno.idade || 0,
                 serie: aluno.serie || '',
@@ -694,10 +761,14 @@ async function saveAluno(aluno) {
 
 async function saveEvolucao(evolucao) {
     try {
+        const userId = await getCurrentUserId();
+        if (!userId) throw new Error('Usuário não autenticado');
+
         const { data, error } = await supabaseClient
             .from('evolucoes')
             .upsert({
                 id: evolucao.id,
+                user_id: userId,
                 aluno_id: evolucao.aluno_id,
                 titulo: evolucao.titulo || 'Evolução',
                 texto: evolucao.texto,
@@ -715,10 +786,14 @@ async function saveEvolucao(evolucao) {
 
 async function saveConsulta(consulta) {
     try {
+        const userId = await getCurrentUserId();
+        if (!userId) throw new Error('Usuário não autenticado');
+
         const { data, error } = await supabaseClient
             .from('consultas')
             .upsert({
                 id: consulta.id,
+                user_id: userId,
                 aluno_id: consulta.aluno_id,
                 data: consulta.data || today(),
                 observacoes: consulta.observacoes || '',
@@ -739,10 +814,14 @@ async function saveConsulta(consulta) {
 
 async function saveAvaliacao(avaliacao) {
     try {
+        const userId = await getCurrentUserId();
+        if (!userId) throw new Error('Usuário não autenticado');
+
         const { data, error } = await supabaseClient
             .from('avaliacoes')
             .upsert({
                 id: avaliacao.id,
+                user_id: userId,
                 aluno_id: avaliacao.aluno_id,
                 data: avaliacao.data || today(),
                 titulo: avaliacao.titulo,
@@ -762,10 +841,14 @@ async function saveAvaliacao(avaliacao) {
 
 async function saveResultadoAvaliacao(resultado) {
     try {
+        const userId = await getCurrentUserId();
+        if (!userId) throw new Error('Usuário não autenticado');
+
         const { data, error } = await supabaseClient
             .from('resultados_avaliacoes')
             .upsert({
                 id: resultado.id,
+                user_id: userId,
                 avaliacao_id: resultado.avaliacao_id,
                 data: resultado.data || today(),
                 respostas: resultado.respostas || [],
@@ -783,10 +866,14 @@ async function saveResultadoAvaliacao(resultado) {
 
 async function saveEscola(escola) {
     try {
+        const userId = await getCurrentUserId();
+        if (!userId) throw new Error('Usuário não autenticado');
+
         const { data, error } = await supabaseClient
             .from('escola')
             .upsert({
                 id: escola.id,
+                user_id: userId,
                 aluno_id: escola.aluno_id,
                 nome: escola.nome || '',
                 professores: escola.professores || '',
@@ -804,10 +891,14 @@ async function saveEscola(escola) {
 
 async function saveRegistroEscola(registro) {
     try {
+        const userId = await getCurrentUserId();
+        if (!userId) throw new Error('Usuário não autenticado');
+
         const { data, error } = await supabaseClient
             .from('registros_escola')
             .upsert({
                 id: registro.id,
+                user_id: userId,
                 escola_id: registro.escola_id,
                 data: registro.data || today(),
                 contato: registro.contato || '',
@@ -827,10 +918,14 @@ async function saveRegistroEscola(registro) {
 
 async function saveAgendaItem(item) {
     try {
+        const userId = await getCurrentUserId();
+        if (!userId) throw new Error('Usuário não autenticado');
+
         const { data, error } = await supabaseClient
             .from('agenda')
             .upsert({
                 id: item.id,
+                user_id: userId,
                 aluno_id: item.aluno_id,
                 data: item.data,
                 hora: item.hora,
@@ -852,10 +947,14 @@ async function saveAgendaItem(item) {
 
 async function saveTransacao(transacao) {
     try {
+        const userId = await getCurrentUserId();
+        if (!userId) throw new Error('Usuário não autenticado');
+
         const { data, error } = await supabaseClient
             .from('transacoes')
             .upsert({
                 id: transacao.id,
+                user_id: userId,
                 agenda_id: transacao.agenda_id || null,
                 aluno_id: transacao.aluno_id,
                 data: transacao.data || today(),
@@ -874,10 +973,14 @@ async function saveTransacao(transacao) {
 
 async function saveAlertaClinico(alerta) {
     try {
+        const userId = await getCurrentUserId();
+        if (!userId) throw new Error('Usuário não autenticado');
+
         const { data, error } = await supabaseClient
             .from('alertas_clinicos')
             .upsert({
                 id: alerta.id,
+                user_id: userId,
                 student_id: alerta.student_id,
                 evolution_id: alerta.evolution_id || null,
                 title: alerta.title || 'Alerta clínico',
@@ -899,10 +1002,14 @@ async function saveAlertaClinico(alerta) {
 
 async function saveObservacaoProfessor(obs) {
     try {
+        const userId = await getCurrentUserId();
+        if (!userId) throw new Error('Usuário não autenticado');
+
         const { data, error } = await supabaseClient
             .from('observacoes_professor')
             .upsert({
                 id: obs.id,
+                user_id: userId,
                 titulo: obs.titulo || 'Observação',
                 texto: obs.texto,
                 data: obs.data || today()
@@ -919,10 +1026,14 @@ async function saveObservacaoProfessor(obs) {
 
 async function saveEvolucaoProfessor(evo) {
     try {
+        const userId = await getCurrentUserId();
+        if (!userId) throw new Error('Usuário não autenticado');
+
         const { data, error } = await supabaseClient
             .from('evolucoes_professor')
             .upsert({
                 id: evo.id,
+                user_id: userId,
                 titulo: evo.titulo || 'Evolução pessoal',
                 texto: evo.texto,
                 data: evo.data || today()
@@ -939,10 +1050,14 @@ async function saveEvolucaoProfessor(evo) {
 
 async function saveProfessor(professor) {
     try {
+        const userId = await getCurrentUserId();
+        if (!userId) throw new Error('Usuário não autenticado');
+
         const { data, error } = await supabaseClient
             .from('professores')
             .upsert({
-                id: professor.id || '00000000-0000-0000-0000-000000000000',
+                id: professor.id || userId,
+                user_id: userId,
                 nome: professor.nome,
                 especialidade: professor.especialidade || '',
                 bio: professor.bio || '',
@@ -967,7 +1082,14 @@ async function saveProfessor(professor) {
 
 async function deleteAluno(id) {
     try {
-        const { error } = await supabaseClient.from('alunos').delete().eq('id', id);
+        const userId = await getCurrentUserId();
+        if (!userId) throw new Error('Usuário não autenticado');
+
+        const { error } = await supabaseClient
+            .from('alunos')
+            .delete()
+            .eq('id', id)
+            .eq('user_id', userId);
         if (error) throw error;
         return true;
     } catch (error) {
@@ -978,44 +1100,18 @@ async function deleteAluno(id) {
 
 async function deleteAgendaItem(id) {
     try {
-        const { error } = await supabaseClient.from('agenda').delete().eq('id', id);
+        const userId = await getCurrentUserId();
+        if (!userId) throw new Error('Usuário não autenticado');
+
+        const { error } = await supabaseClient
+            .from('agenda')
+            .delete()
+            .eq('id', id)
+            .eq('user_id', userId);
         if (error) throw error;
         return true;
     } catch (error) {
         console.error('Erro ao deletar agenda:', error);
-        return false;
-    }
-}
-
-async function deleteEvolucao(id) {
-    try {
-        const { error } = await supabaseClient.from('evolucoes').delete().eq('id', id);
-        if (error) throw error;
-        return true;
-    } catch (error) {
-        console.error('Erro ao deletar evolução:', error);
-        return false;
-    }
-}
-
-async function deleteConsulta(id) {
-    try {
-        const { error } = await supabaseClient.from('consultas').delete().eq('id', id);
-        if (error) throw error;
-        return true;
-    } catch (error) {
-        console.error('Erro ao deletar consulta:', error);
-        return false;
-    }
-}
-
-async function deleteRegistroEscola(id) {
-    try {
-        const { error } = await supabaseClient.from('registros_escola').delete().eq('id', id);
-        if (error) throw error;
-        return true;
-    } catch (error) {
-        console.error('Erro ao deletar registro escolar:', error);
         return false;
     }
 }
@@ -2137,8 +2233,7 @@ function generateStudentPDF(id) {
         heading(`${a.titulo} · ${fmtDate(a.data)}`, 10);
         if (a.objetivo) para(`Objetivo: ${a.objetivo}`);
         (a.resultados || []).forEach(r => {
-            if (y > 260) { doc.addPage();
-                y = 18; }
+            if (y > 260) { doc.addPage(); y = 18; }
             doc.setFont("helvetica", "bold");
             doc.setFontSize(9);
             doc.text(`Aplicação — ${fmtDate(r.data)}`, 15, y);
@@ -2167,8 +2262,7 @@ function generateStudentPDF(id) {
 function generateFinancePDF() {
     const doc = pdfInstance();
     if (!doc) return;
-    const year = financeYear,
-        m = financeMonth;
+    const year = financeYear, m = financeMonth;
 
     const monthTx = (data.transacoes || []).filter(t => {
         const d = parseDate(t.data);
@@ -2213,8 +2307,7 @@ function generateFinancePDF() {
         const st = getStudent(t.alunoId);
         cursor = pdfText(doc, `${fmtDate(t.data)} · ${st?.nome || "Aluno removido"} · ${t.descricao || "Recebimento"} · ${money(t.valor)} · Recebido`, 15, cursor, pageW - 30);
     });
-    if (cursor > 260) { doc.addPage();
-        cursor = 18; }
+    if (cursor > 260) { doc.addPage(); cursor = 18; }
     cursor += 5;
     doc.setFont("helvetica", "bold");
     doc.text("Pendências do mês", 15, cursor);
@@ -2226,8 +2319,7 @@ function generateFinancePDF() {
         const st = getStudent(a.alunoId);
         cursor = pdfText(doc, `${fmtDate(a.data)} ${a.hora} · ${st?.nome || "Aluno removido"} · ${money(st?.valor || 0)} · Pendente`, 15, cursor, pageW - 30);
     });
-    if (cursor > 260) { doc.addPage();
-        cursor = 18; }
+    if (cursor > 260) { doc.addPage(); cursor = 18; }
     cursor += 5;
     doc.setFont("helvetica", "bold");
     doc.text("Histórico financeiro do mês", 15, cursor);
@@ -2446,6 +2538,7 @@ async function login() {
 
         updateUser();
         navigate("dashboard");
+        notify(`Bem-vindo, ${data.professor?.nome || "Professor"}!`);
     }
 }
 
@@ -2456,6 +2549,7 @@ async function logout() {
 
     document.getElementById("app").style.display = "none";
     document.getElementById("loginScreen").style.display = "grid";
+    notify("Até logo!");
 }
 
 // ============================================================
@@ -2465,29 +2559,28 @@ async function logout() {
 async function init() {
     lucide.createIcons();
 
-    const loadedData = await loadData();
-    if (loadedData) {
-        data = loadedData;
-    }
-
     const isLoggedIn = await checkSession();
 
     if (isLoggedIn) {
-        data.session = true;
+        const loadedData = await loadData();
+        if (loadedData) {
+            data = loadedData;
+            data.session = true;
+        }
+        
         document.getElementById("loginScreen").style.display = "none";
         document.getElementById("app").style.display = "flex";
         updateUser();
         navigate("dashboard");
+        notify("Bem-vindo de volta!");
     } else {
-        if (data.session) {
-            document.getElementById("loginScreen").style.display = "none";
-            document.getElementById("app").style.display = "flex";
-            updateUser();
-            navigate("dashboard");
-        } else {
-            document.getElementById("loginScreen").style.display = "grid";
-            document.getElementById("app").style.display = "none";
+        // Tentar carregar dados mesmo sem sessão (para demonstração)
+        const loadedData = await loadData();
+        if (loadedData) {
+            data = loadedData;
         }
+        document.getElementById("loginScreen").style.display = "grid";
+        document.getElementById("app").style.display = "none";
     }
 }
 
