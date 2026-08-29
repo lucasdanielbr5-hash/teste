@@ -401,6 +401,7 @@ function defaultData(){
 let data=load();
 let currentPage="dashboard";
 let currentStudent=null;
+let currentAssessment=null;
 let calendarDate=new Date();
 let calendarMode="week";
 let selectedDay=null;
@@ -418,6 +419,8 @@ function load(){
    if(!d.alunos)d.alunos=[];
    if(!d.agenda)d.agenda=[];
    if(!d.transacoes)d.transacoes=[];
+   if(!d.clinicalAlerts)d.clinicalAlerts=[];
+   d.alunos.forEach(s=>ensureStudentModules(s));
    return d;
  }catch{
    return defaultData();
@@ -910,200 +913,228 @@ function openStudent(id){
  lucide.createIcons();
 }
 
-function renderStudentProfile(edit=false){
+function renderStudentProfile(mode="overview"){
+
+ if(mode===true)mode="edit";
+ if(mode===false)mode="overview";
 
  const s=getStudent(currentStudent);
  if(!s)return;
 
+ s.evolucoes=s.evolucoes||[];
+ s.behaviorRecords=s.behaviorRecords||[];
+ s.avaliacoes=s.avaliacoes||[];
+ s.escola=s.escola||{nome:"",professores:"",registros:[]};
+ s.escola.registros=s.escola.registros||[];
+
  const appointments=activeAppointments().filter(a=>a.alunoId===s.id).sort((a,b)=>
    (a.data+a.hora).localeCompare(b.data+b.hora)
  );
-
  const upcoming=appointments.filter(a=>a.data>=today()).slice(0,6);
 
+ const tabs=[
+  ["overview","notebook-tabs","Prontuário"],
+  ["avaliacoes","clipboard-check","Avaliações"],
+  ["escola","school","Escola"]
+ ];
+
+ let content="";
+
+ if(mode==="edit"){
+  content=`
+   <div class="card" style="background:#fbfcfc;margin-bottom:18px">
+    <div class="section-title">Editar dados do aluno</div>
+    <div class="form-grid" style="margin-top:14px">
+     <div class="field"><label class="label">Nome</label><input id="eNome2" class="input" value="${esc(s.nome)}"></div>
+     <div class="field"><label class="label">Idade</label><input id="eIdade" class="input" type="number" value="${s.idade||""}"></div>
+     <div class="field"><label class="label">Série / Ano</label><input id="eSerie" class="input" value="${esc(s.serie||"")}"></div>
+     <div class="field"><label class="label">Responsável</label><input id="eResponsavel" class="input" value="${esc(s.responsavel||"")}"></div>
+     <div class="field"><label class="label">Telefone</label><input id="eTelefone" class="input" value="${esc(s.telefone||"")}"></div>
+     <div class="field"><label class="label">Valor por sessão</label><input id="eValor" class="input" type="number" step="0.01" value="${s.valor||0}"></div>
+     <div class="field"><label class="label">Foto URL</label><input id="eFoto" class="input" value="${esc(s.foto||"")}"></div>
+     <div class="field" style="grid-column:1/-1"><label class="label">Tags clínicas — separadas por vírgula</label><input id="eTags" class="input" value="${esc((s.tags||[]).join(", "))}"></div>
+     <div class="field" style="grid-column:1/-1"><label class="label">Observações gerais</label><textarea id="eObs" class="textarea">${esc(s.observacoes||"")}</textarea></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+     <button class="btn btn-primary" onclick="saveStudentEdit()"><i data-lucide="save"></i>Salvar informações</button>
+     <button class="btn btn-outline" onclick="renderStudentProfile('overview')">Cancelar</button>
+    </div>
+   </div>`;
+ }else if(mode==="aplicar"){
+  const a=s.avaliacoes.find(x=>x.id===currentAssessment);
+  if(!a){renderStudentProfile("avaliacoes");return;}
+  content=`
+   <div class="card">
+    <div class="section-head">
+     <div><div class="section-title">${esc(a.titulo)}</div><div class="section-sub">${esc(a.objetivo||"Aplicação de avaliação")} · ${a.questoes.length} questão(ões)</div></div>
+     <button class="btn btn-outline btn-sm" onclick="renderStudentProfile('avaliacoes')">Voltar</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;margin-top:15px">
+     ${a.questoes.map((q,i)=>`
+      <div class="card" style="background:#fbfcfc">
+       <div style="font-size:12px;font-weight:700;margin-bottom:8px">${q.numero}. ${esc(q.texto)}</div>
+       <textarea id="resp_${i}" class="textarea" placeholder="Digite a resposta, desempenho ou observação..."></textarea>
+      </div>`).join("")}
+    </div>
+    <div class="field" style="margin-top:14px"><label class="label">Resumo da aplicação</label><textarea id="avResumo" class="textarea" placeholder="Resultado geral, pontos de atenção, desempenho observado..."></textarea></div>
+    <button class="btn btn-primary" onclick="saveAssessmentApplication()"><i data-lucide="save"></i>Salvar aplicação no prontuário</button>
+   </div>`;
+ }else if(mode==="avaliacoes"){
+  const avaliacoes=s.avaliacoes.slice().reverse();
+  content=`
+   <div class="card">
+    <div class="section-head">
+     <div><div class="section-title">Avaliações e atividades</div><div class="section-sub">Aplique atividades online, sem imagens, e mantenha cada resposta registrada no prontuário.</div></div>
+    </div>
+
+    <div class="card" style="background:#fbfcfc;margin-bottom:16px">
+     <div class="section-title">Nova avaliação</div>
+     <div class="form-grid" style="margin-top:13px">
+      <div class="field"><label class="label">Título</label><input id="avTitulo" class="input" placeholder="Ex.: Consciência fonológica"></div>
+      <div class="field"><label class="label">Objetivo</label><input id="avObjetivo" class="input" placeholder="O que deseja observar?"></div>
+     </div>
+     <div class="field" style="margin-top:10px"><label class="label">Perguntas / atividades</label><textarea id="avQuestoes" class="textarea" placeholder="Uma questão por linha. Ex.:&#10;1. Separe a palavra CASA em sílabas.&#10;2. Leia a frase e explique o que entendeu."></textarea></div>
+     <button class="btn btn-primary" onclick="createAssessment()"><i data-lucide="plus"></i>Criar avaliação</button>
+    </div>
+
+    ${avaliacoes.map(a=>`
+     <div class="card" style="margin-bottom:12px;border:1px solid var(--line)">
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start">
+       <div><div class="section-title">${esc(a.titulo)}</div><div class="section-sub">${fmtDate(a.data)} · ${esc(a.objetivo||"Atividade pedagógica")}</div></div>
+       <button class="btn btn-primary btn-sm" onclick="applyAssessment('${a.id}')"><i data-lucide="play"></i>${a.finalizada?"Aplicar novamente":"Aplicar avaliação"}</button>
+      </div>
+      <div style="margin-top:10px;font-size:12px;color:#596761">${(a.questoes||[]).length} questão(ões) · ${a.resultados?.length||0} aplicação(ões) registrada(s)</div>
+      ${a.resultados?.length?`<div style="margin-top:10px">${a.resultados.slice().reverse().map(r=>`<div style="padding:9px 0;border-top:1px solid #f0f3f2;font-size:11px"><strong>${fmtDate(r.data)}</strong> · ${esc(r.resumo||"Aplicação registrada")}</div>`).join("")}</div>`:""}
+     </div>
+    `).join("")||`<div class="empty">Nenhuma avaliação criada. Você pode montar uma atividade textual e aplicá-la diretamente nesta tela.</div>`}
+   </div>`;
+ }else if(mode==="escola"){
+  const reg=s.escola.registros.slice().reverse();
+  content=`
+   <div class="card">
+    <div class="section-head">
+     <div><div class="section-title">Escola</div><div class="section-sub">Registre reuniões, conversas e informações recebidas de professores, coordenação e direção.</div></div>
+    </div>
+    <div class="form-grid">
+     <div class="field"><label class="label">Escola</label><input id="escNome" class="input" value="${esc(s.escola.nome||"")}" placeholder="Nome da escola"></div>
+     <div class="field"><label class="label">Professora / equipe de referência</label><input id="escProf" class="input" value="${esc(s.escola.professores||"")}" placeholder="Nome e função"></div>
+    </div>
+    <button class="btn btn-soft" style="margin-top:10px" onclick="saveSchoolInfo()"><i data-lucide="save"></i>Salvar dados da escola</button>
+   </div>
+
+   <div class="card" style="margin-top:16px">
+    <div class="section-title">Novo registro escolar</div>
+    <div class="form-grid" style="margin-top:13px">
+     <div class="field"><label class="label">Data</label><input id="escData" class="input" type="date" value="${today()}"></div>
+     <div class="field"><label class="label">Quem falou</label><input id="escContato" class="input" placeholder="Professora, diretora, coordenadora..."></div>
+     <div class="field"><label class="label">Tipo de contato</label>
+      <select id="escTipo" class="select"><option>Conversa</option><option>Reunião</option><option>Ligação</option><option>Mensagem</option><option>Relatório da escola</option></select>
+     </div>
+     <div class="field"><label class="label">Assunto</label><input id="escAssunto" class="input" placeholder="Ex.: desempenho em sala"></div>
+    </div>
+    <div class="field" style="margin-top:10px"><label class="label">Relato da escola</label><textarea id="escRelato" class="textarea" placeholder="Registre o que foi informado pela escola, sem alterar o conteúdo relatado."></textarea></div>
+    <button class="btn btn-primary" onclick="addSchoolRecord()"><i data-lucide="plus"></i>Registrar contato</button>
+   </div>
+
+   <div class="card" style="margin-top:16px">
+    <div class="section-title">Histórico com a escola</div>
+    <div class="timeline" style="margin-top:13px">
+     ${reg.map(r=>`
+      <div class="evolution">
+       <div style="display:flex;justify-content:space-between;gap:10px">
+        <span class="evolution-date">${fmtDate(r.data)} · ${esc(r.tipo||"Contato")}</span>
+        <button style="border:0;background:none;color:#a3aea9" onclick="deleteSchoolRecord('${r.id}')"><i data-lucide="trash-2" style="width:14px"></i></button>
+       </div>
+       <div class="evolution-title">${esc(r.assunto||"Registro escolar")}</div>
+       <div style="font-size:10px;color:#8a9892;margin-bottom:4px">${esc(r.contato||"Contato não informado")}</div>
+       <div class="evolution-text">${esc(r.relato)}</div>
+      </div>
+     `).join("")||`<div class="empty">Nenhum contato com a escola registrado.</div>`}
+    </div>
+   </div>`;
+ }else{
+  const behaviors=s.behaviorRecords.slice().reverse();
+  content=`
+   <div class="card">
+    <div class="section-head">
+     <div><div class="section-title">Registro do atendimento</div><div class="section-sub">Preencha o comportamento observado na consulta e mantenha um registro por data.</div></div>
+     <input id="behData" class="input" type="date" value="${today()}" style="max-width:160px">
+    </div>
+    <div class="form-grid">
+     ${[
+      ["participacao","Participação","Participou das propostas?"],
+      ["atencao","Atenção","Conseguiu manter atenção?"],
+      ["comunicacao","Comunicação","Comunicou-se de forma funcional?"],
+      ["autonomia","Autonomia","Realizou tarefas com autonomia?"],
+      ["comportamento","Comportamento","Como se comportou durante a consulta?"],
+      ["emocional","Aspecto emocional","Como estava emocionalmente?"]
+     ].map(([id,l,p])=>`
+       <div class="field"><label class="label">${l}</label>
+        <select id="beh_${id}" class="select"><option value="">Não informado</option><option>Bom</option><option>Adequado</option><option>Oscilante</option><option>Necessitou mediação</option><option>Apresentou dificuldade</option></select>
+        <div style="font-size:9px;color:#9aa59f;margin-top:3px">${p}</div>
+       </div>`).join("")}
+    </div>
+    <div class="field" style="margin-top:10px"><label class="label">Observações da consulta</label><textarea id="behObs" class="textarea" placeholder="Descreva o comportamento, respostas, dificuldades, estratégias e acontecimentos relevantes."></textarea></div>
+    <button class="btn btn-primary" onclick="saveBehaviorRecord()"><i data-lucide="save"></i>Salvar registro do atendimento</button>
+   </div>
+
+   <div class="card" style="margin-top:16px">
+    <div class="section-head"><div><div class="section-title">Evolução clínica e pedagógica</div><div class="section-sub">Registros cronológicos do acompanhamento.</div></div></div>
+    <div class="field"><label class="label">Título</label><input id="evTitle" class="input" placeholder="Título do registro"></div>
+    <div class="field"><textarea id="evText" class="textarea" placeholder="Descreva observações, desempenho, estratégias utilizadas e evolução..."></textarea></div>
+    <button class="btn btn-primary" onclick="addEvolution()"><i data-lucide="plus"></i>Registrar evolução</button>
+    <div class="timeline" style="margin-top:17px">
+     ${s.evolucoes.slice().reverse().map(e=>`
+      <div class="evolution">
+       <div style="display:flex;justify-content:space-between;gap:10px">
+        <span class="evolution-date">${fmtDate(e.data)}</span>
+        <button style="border:0;background:none;color:#a3aea9" onclick="deleteEvolution('${e.id}')"><i data-lucide="trash-2" style="width:14px"></i></button>
+       </div>
+       <div class="evolution-title">${esc(e.titulo||"Registro")}</div>
+       <div class="evolution-text">${esc(e.texto)}</div>
+      </div>`).join("")||`<div class="empty">Nenhuma evolução registrada ainda.</div>`}
+    </div>
+   </div>
+
+   <div class="card" style="margin-top:16px">
+    <div class="section-title">Observações gerais</div>
+    <div style="font-size:13px;color:#596761;line-height:1.7;margin-top:13px;white-space:pre-wrap">${esc(s.observacoes||"Nenhuma observação registrada.")}</div>
+   </div>
+
+   <div class="card" style="margin-top:16px">
+    <div class="section-title">Histórico de comportamento observado</div>
+    <div class="timeline" style="margin-top:13px">
+     ${behaviors.map(r=>`
+      <div class="evolution">
+       <div style="display:flex;justify-content:space-between;gap:10px"><span class="evolution-date">${fmtDate(r.data)}</span><button style="border:0;background:none;color:#a3aea9" onclick="deleteBehaviorRecord('${r.id}')"><i data-lucide="trash-2" style="width:14px"></i></button></div>
+       <div class="evolution-text">${esc(r.observacoes||"Sem observações adicionais.")}</div>
+       <div style="font-size:10px;color:#596761;margin-top:7px">${Object.entries(r.comportamentos||{}).filter(x=>x[1]).map(x=>`<strong>${esc(x[0])}:</strong> ${esc(x[1])}`).join(" · ")}</div>
+      </div>`).join("")||`<div class="empty">Nenhum registro de comportamento ainda.</div>`}
+    </div>
+   </div>`;
+ }
+
  document.getElementById("page-prontuario").innerHTML=`
-
- <button class="btn btn-outline btn-sm" onclick="navigate('alunos')" style="margin-bottom:14px">
-   <i data-lucide="arrow-left"></i>Voltar para alunos
- </button>
-
+ <button class="btn btn-outline btn-sm" onclick="navigate('alunos')" style="margin-bottom:14px"><i data-lucide="arrow-left"></i>Voltar para alunos</button>
  <div class="card" style="padding:0;overflow:hidden">
-   <div class="profile-cover"></div>
-
-   <div class="profile-head">
-     ${avatarHTML(s,"profile-avatar")}
-
-     <div style="padding-bottom:9px;min-width:200px">
-       ${edit?`
-         <input id="eNome" class="input" value="${esc(s.nome)}" style="font-size:18px;font-weight:700">
-       `:`
-         <div class="profile-name">${esc(s.nome)}</div>
-       `}
-       <div class="profile-meta">
-         ${s.idade?s.idade+" anos · ":""}${esc(s.serie||"")} ${s.responsavel?"· Responsável: "+esc(s.responsavel):""}
-       </div>
-     </div>
-
-     <div class="profile-actions">
-       ${s.telefone?`
-       <a class="btn btn-soft btn-sm" target="_blank" href="${whatsappLink(s)}">
-         <i data-lucide="message-circle"></i>WhatsApp
-       </a>`:""}
-
-       ${edit?`
-         <button class="btn btn-primary btn-sm" onclick="saveStudentEdit()">
-           <i data-lucide="save"></i>Salvar
-         </button>
-         <button class="btn btn-outline btn-sm" onclick="renderStudentProfile(false)">Cancelar</button>
-       `:`
-         <button class="btn btn-outline btn-sm" onclick="renderStudentProfile(true)">
-           <i data-lucide="pencil"></i>Editar informações
-         </button>
-       `}
-       <button class="btn btn-blue btn-sm" onclick="generateStudentPDF('${s.id}')"><i data-lucide="file-down"></i>Salvar relatório PDF</button>
-     </div>
+  <div class="profile-cover"></div>
+  <div class="profile-head">
+   ${avatarHTML(s,"profile-avatar")}
+   <div style="padding-bottom:9px;min-width:200px">
+    ${mode==="edit"?`<input id="eNome" class="input" value="${esc(s.nome)}" style="font-size:18px;font-weight:700">`:`<div class="profile-name">${esc(s.nome)}</div>`}
+    <div class="profile-meta">${s.idade?s.idade+" anos · ":""}${esc(s.serie||"")} ${s.responsavel?"· Responsável: "+esc(s.responsavel):""}</div>
    </div>
-
-   <div class="profile-body">
-
-   ${edit?`
-     <div class="card" style="background:#fbfcfc;margin-bottom:18px">
-       <div class="form-grid">
-         <div class="field"><label class="label">Nome</label><input id="eNome2" class="input" value="${esc(s.nome)}"></div>
-         <div class="field"><label class="label">Idade</label><input id="eIdade" class="input" type="number" value="${s.idade||""}"></div>
-         <div class="field"><label class="label">Série / Ano</label><input id="eSerie" class="input" value="${esc(s.serie||"")}"></div>
-         <div class="field"><label class="label">Responsável</label><input id="eResponsavel" class="input" value="${esc(s.responsavel||"")}"></div>
-         <div class="field"><label class="label">Telefone</label><input id="eTelefone" class="input" value="${esc(s.telefone||"")}"></div>
-         <div class="field"><label class="label">Valor por sessão</label><input id="eValor" class="input" type="number" step="0.01" value="${s.valor||0}"></div>
-         <div class="field"><label class="label">Foto URL</label><input id="eFoto" class="input" value="${esc(s.foto||"")}"></div>
-       </div>
-     </div>
-   `:""}
-
-   <div class="tags" style="margin-top:0;margin-bottom:4px">
-     ${(s.tags||[]).map(t=>`<span class="tag">${esc(t)}</span>`).join("")||`<span style="font-size:11px;color:#9aa59f">Sem tags clínicas.</span>`}
+   <div class="profile-actions">
+    ${s.telefone?`<a class="btn btn-soft btn-sm" target="_blank" href="${whatsappLink(s)}"><i data-lucide="message-circle"></i>WhatsApp</a>`:""}
+    ${mode==="edit"?`<button class="btn btn-primary btn-sm" onclick="saveStudentEdit()"><i data-lucide="save"></i>Salvar</button>`:`<button class="btn btn-outline btn-sm" onclick="renderStudentProfile('edit')"><i data-lucide="pencil"></i>Editar informações</button>`}
+    <button class="btn btn-blue btn-sm" onclick="generateStudentPDF('${s.id}')"><i data-lucide="file-down"></i>Salvar relatório PDF</button>
    </div>
-
-   ${edit?`
-     <div class="field" style="margin-top:10px">
-       <label class="label">Tags clínicas — separadas por vírgula</label>
-       <input id="eTags" class="input" value="${esc((s.tags||[]).join(", "))}">
-     </div>
-   `:""}
-
-   <div class="profile-layout">
-
-     <div>
-
-       <div class="card">
-         <div class="section-head">
-           <div>
-             <div class="section-title">Evolução clínica e pedagógica</div>
-             <div class="section-sub">Registre cada atendimento de forma cronológica.</div>
-           </div>
-         </div>
-
-         <div class="field">
-           <label class="label">Nova evolução</label>
-           <input id="evTitle" class="input" placeholder="Título do registro">
-         </div>
-
-         <div class="field">
-           <textarea id="evText" class="textarea" placeholder="Descreva observações, desempenho, estratégias utilizadas e evolução..."></textarea>
-         </div>
-
-         <button class="btn btn-primary" onclick="addEvolution()">
-           <i data-lucide="plus"></i>Registrar evolução
-         </button>
-
-         <div class="timeline" style="margin-top:17px">
-           ${(s.evolucoes||[]).slice().reverse().map(e=>`
-             <div class="evolution">
-               <div style="display:flex;justify-content:space-between;gap:10px">
-                 <span class="evolution-date">${fmtDate(e.data)}</span>
-                 <button style="border:0;background:none;color:#a3aea9" onclick="deleteEvolution('${e.id}')">
-                   <i data-lucide="trash-2" style="width:14px"></i>
-                 </button>
-               </div>
-               <div class="evolution-title">${esc(e.titulo||"Registro")}</div>
-               <div class="evolution-text">${esc(e.texto)}</div>
-             </div>
-           `).join("")||`<div class="empty">Nenhuma evolução registrada ainda.</div>`}
-         </div>
-       </div>
-
-       <div class="card" style="margin-top:16px">
-         <div class="section-title">Observações gerais</div>
-         <div class="section-sub">Informações permanentes do acompanhamento.</div>
-
-         ${edit?`
-           <textarea id="eObs" class="textarea" style="margin-top:12px">${esc(s.observacoes||"")}</textarea>
-         `:`
-           <div style="font-size:13px;color:#596761;line-height:1.7;margin-top:13px;white-space:pre-wrap">${esc(s.observacoes||"Nenhuma observação registrada.")}</div>
-         `}
-       </div>
-
-     </div>
-
-     <div>
-
-       <div class="card">
-         <div class="section-title">Dados do aluno</div>
-         <div style="margin-top:14px;display:flex;flex-direction:column;gap:12px">
-           <div>
-             <div class="stat-label">Responsável</div>
-             <div style="font-size:12px;margin-top:4px">${esc(s.responsavel||"Não informado")}</div>
-           </div>
-           <div>
-             <div class="stat-label">Telefone</div>
-             <div style="font-size:12px;margin-top:4px">${esc(s.telefone||"Não informado")}</div>
-           </div>
-           <div>
-             <div class="stat-label">Valor por sessão</div>
-             <div style="font-size:15px;font-weight:700;margin-top:4px">${money(s.valor)}</div>
-           </div>
-         </div>
-       </div>
-
-       <div class="card" style="margin-top:16px">
-         <div class="section-title">Próximas sessões</div>
-         <div style="margin-top:12px">
-         ${upcoming.length?upcoming.map(a=>{
-           const typ=TYPES[a.tipo];
-           return `
-           <div style="padding:9px 0;border-bottom:1px solid #f0f3f2">
-             <div style="display:flex;justify-content:space-between">
-               <strong style="font-size:11px">${fmtDate(a.data)}</strong>
-               <span style="font-size:10px;color:#8a9892">${a.hora}</span>
-             </div>
-             <div style="font-size:10px;color:#89968f;margin-top:3px">${typ.label}</div>
-           </div>`;
-         }).join(""):`<div class="empty">Nenhuma sessão futura.</div>`}
-         </div>
-       </div>
-
-       <div class="card" style="margin-top:16px">
-         <div class="section-title">Ações</div>
-         <div style="display:flex;flex-direction:column;gap:7px;margin-top:13px">
-           <button class="btn btn-soft" onclick="scheduleForStudent('${s.id}')">
-             <i data-lucide="calendar-plus"></i>Agendar sessão
-           </button>
-           ${s.telefone?`
-           <a class="btn btn-outline" target="_blank" href="${whatsappLink(s)}">
-             <i data-lucide="message-circle"></i>Enviar WhatsApp
-           </a>`:""}
-           <button class="btn btn-danger" onclick="deleteStudent('${s.id}')">
-             <i data-lucide="trash-2"></i>Excluir aluno
-           </button>
-         </div>
-       </div>
-
-     </div>
-   </div>
-   </div>
- </div>
- `;
-
+  </div>
+  <div class="profile-body">
+   ${mode!=="edit"?`<div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px">${tabs.map(t=>`<button class="btn ${mode===t[0]?"btn-primary":"btn-outline"} btn-sm" onclick="renderStudentProfile('${t[0]}')"><i data-lucide="${t[1]}"></i>${t[2]}</button>`).join("")}</div>`:""}
+   ${content}
+  </div>
+ </div>`;
  lucide.createIcons();
 }
 
@@ -1166,6 +1197,101 @@ function deleteEvolution(id){
  save();
  renderStudentProfile(false);
  notify("Registro removido.");
+}
+
+
+function ensureStudentModules(s){
+ s.behaviorRecords=s.behaviorRecords||[];
+ s.avaliacoes=s.avaliacoes||[];
+ s.escola=s.escola||{nome:"",professores:"",registros:[]};
+ s.escola.registros=s.escola.registros||[];
+}
+
+function saveBehaviorRecord(){
+ const s=getStudent(currentStudent); if(!s)return;
+ ensureStudentModules(s);
+ const date=document.getElementById("behData")?.value||today();
+ const comportamentos={};
+ ["participacao","atencao","comunicacao","autonomia","comportamento","emocional"].forEach(k=>{
+  const el=document.getElementById("beh_"+k); if(el&&el.value)comportamentos[k]=el.value;
+ });
+ const relatedAppointment=activeAppointments().find(a=>a.alunoId===s.id&&a.data===date);
+ s.behaviorRecords.push({
+  id:uid(),data:date,appointmentId:relatedAppointment?.id||null,comportamentos,
+  observacoes:document.getElementById("behObs")?.value.trim()||""
+ });
+ save(); syncClinicalAlerts(); notify("Comportamento da consulta registrado."); renderStudentProfile("overview");
+}
+
+function deleteBehaviorRecord(id){
+ const s=getStudent(currentStudent); if(!s)return;
+ ensureStudentModules(s);
+ s.behaviorRecords=s.behaviorRecords.filter(x=>x.id!==id);
+ save(); renderStudentProfile("overview"); notify("Registro de comportamento removido.");
+}
+
+function createAssessment(){
+ const s=getStudent(currentStudent); if(!s)return;
+ ensureStudentModules(s);
+ const titulo=document.getElementById("avTitulo")?.value.trim();
+ const objetivo=document.getElementById("avObjetivo")?.value.trim();
+ const raw=document.getElementById("avQuestoes")?.value||"";
+ const questoes=raw.split(/\n+/).map(x=>x.trim()).filter(Boolean).map((texto,i)=>({id:uid(),numero:i+1,texto}));
+ if(!titulo||!questoes.length){notify("Informe o título e pelo menos uma questão.");return;}
+ s.avaliacoes.push({id:uid(),data:today(),titulo,objetivo,questoes,resultados:[]});
+ save(); notify("Avaliação criada."); renderStudentProfile("avaliacoes");
+}
+
+function applyAssessment(id){
+ const s=getStudent(currentStudent); if(!s)return;
+ ensureStudentModules(s);
+ if(!s.avaliacoes.find(x=>x.id===id))return;
+ currentAssessment=id;
+ renderStudentProfile("aplicar");
+}
+
+function saveAssessmentApplication(){
+ const s=getStudent(currentStudent); if(!s)return;
+ ensureStudentModules(s);
+ const a=s.avaliacoes.find(x=>x.id===currentAssessment); if(!a)return;
+ const respostas=a.questoes.map((q,i)=>document.getElementById("resp_"+i)?.value.trim()||"");
+ a.resultados=a.resultados||[];
+ a.resultados.push({
+  id:uid(),data:today(),respostas,
+  resumo:document.getElementById("avResumo")?.value.trim()||"Aplicação concluída."
+ });
+ a.finalizada=true;
+ save(); notify("Aplicação registrada no histórico do aluno."); currentAssessment=null; renderStudentProfile("avaliacoes");
+}
+
+function saveSchoolInfo(){
+ const s=getStudent(currentStudent); if(!s)return;
+ ensureStudentModules(s);
+ s.escola.nome=document.getElementById("escNome")?.value.trim()||"";
+ s.escola.professores=document.getElementById("escProf")?.value.trim()||"";
+ save(); notify("Dados da escola salvos."); renderStudentProfile("escola");
+}
+
+function addSchoolRecord(){
+ const s=getStudent(currentStudent); if(!s)return;
+ ensureStudentModules(s);
+ const relato=document.getElementById("escRelato")?.value.trim();
+ if(!relato){notify("Registre o relato recebido da escola.");return;}
+ s.escola.registros.push({
+  id:uid(),data:document.getElementById("escData")?.value||today(),
+  contato:document.getElementById("escContato")?.value.trim()||"",
+  tipo:document.getElementById("escTipo")?.value||"Conversa",
+  assunto:document.getElementById("escAssunto")?.value.trim()||"Registro escolar",
+  relato
+ });
+ save(); notify("Registro da escola salvo."); renderStudentProfile("escola");
+}
+
+function deleteSchoolRecord(id){
+ const s=getStudent(currentStudent); if(!s)return;
+ ensureStudentModules(s);
+ s.escola.registros=s.escola.registros.filter(x=>x.id!==id);
+ save(); renderStudentProfile("escola"); notify("Registro escolar removido.");
 }
 
 function whatsappLink(s){
@@ -1706,34 +1832,77 @@ function pdfText(doc,text,x,y,maxWidth,lineHeight=5){
 }
 
 function generateStudentPDF(id){
-  const s=getStudent(id); if(!s)return;
-  const doc=pdfInstance(); if(!doc)return;
-  const pageW=doc.internal.pageSize.getWidth();
-  let y=18;
-  doc.setFont("helvetica","bold");doc.setFontSize(18);doc.text("ASAS",15,y);y+=8;
-  doc.setFontSize(14);doc.text("Relatório do aluno",15,y);y+=8;
-  doc.setFont("helvetica","normal");doc.setFontSize(9);doc.text(`Gerado em ${fmtDate(today())}`,15,y);y+=9;
-  doc.setFont("helvetica","bold");doc.setFontSize(12);doc.text(pdfSafe(s.nome),15,y);y+=6;
+ const s=getStudent(id); if(!s)return;
+ ensureStudentModules(s);
+ const doc=pdfInstance(); if(!doc)return;
+ const pageW=doc.internal.pageSize.getWidth();
+ let y=18;
+
+ const heading=(title,size=12)=>{
+  if(y>270){doc.addPage();y=18;}
+  doc.setFont("helvetica","bold");doc.setFontSize(size);doc.text(pdfSafe(title),15,y);y+=6;
   doc.setFont("helvetica","normal");doc.setFontSize(10);
-  y=pdfText(doc,`Idade: ${s.idade||"Não informada"} · Série/Ano: ${s.serie||"Não informado"}`,15,y,pageW-30);
-  y=pdfText(doc,`Responsável: ${s.responsavel||"Não informado"} · Telefone: ${s.telefone||"Não informado"}`,15,y,pageW-30);y+=4;
-  doc.setFont("helvetica","bold");doc.text("Observações gerais",15,y);y+=6;doc.setFont("helvetica","normal");
-  y=pdfText(doc,s.observacoes||"Nenhuma observação registrada.",15,y,pageW-30);y+=6;
-  doc.setFont("helvetica","bold");doc.text("Histórico de evolução",15,y);y+=6;doc.setFont("helvetica","normal");
-  const evs=(s.evolucoes||[]).slice().sort((a,b)=>a.data.localeCompare(b.data));
-  if(!evs.length)y=pdfText(doc,"Nenhuma evolução registrada.",15,y,pageW-30);
-  evs.forEach(e=>{
-    if(y>270){doc.addPage();y=18;}
-    doc.setFont("helvetica","bold");doc.text(`${fmtDate(e.data)} · ${pdfSafe(e.titulo||"Registro")}`,15,y);y+=5;doc.setFont("helvetica","normal");
-    y=pdfText(doc,e.texto,15,y,pageW-30);y+=4;
+ };
+ const para=(value)=>{
+  y=pdfText(doc,String(value||"Não informado"),15,y,pageW-30); y+=4;
+ };
+
+ doc.setFont("helvetica","bold");doc.setFontSize(18);doc.text("ASAS",15,y);y+=8;
+ doc.setFontSize(14);doc.text("Relatório clínico e pedagógico",15,y);y+=8;
+ doc.setFont("helvetica","normal");doc.setFontSize(9);doc.text(`Gerado em ${fmtDate(today())}`,15,y);y+=9;
+ doc.setFont("helvetica","bold");doc.setFontSize(13);doc.text(pdfSafe(s.nome),15,y);y+=7;
+ doc.setFont("helvetica","normal");doc.setFontSize(10);
+ para(`Idade: ${s.idade||"Não informada"} · Série/Ano: ${s.serie||"Não informado"}`);
+ para(`Responsável: ${s.responsavel||"Não informado"}`);
+ if((s.tags||[]).length)para(`Marcadores: ${s.tags.join(", ")}`);
+
+ heading("Observações gerais"); para(s.observacoes||"Nenhuma observação registrada.");
+
+ heading("Histórico de evolução");
+ const evs=(s.evolucoes||[]).slice().sort((a,b)=>a.data.localeCompare(b.data));
+ if(!evs.length)para("Nenhuma evolução registrada.");
+ evs.forEach(e=>{
+  heading(`${fmtDate(e.data)} · ${e.titulo||"Registro"}`,10); para(e.texto);
+ });
+
+ heading("Comportamento observado nas consultas");
+ const br=s.behaviorRecords.slice().sort((a,b)=>a.data.localeCompare(b.data));
+ if(!br.length)para("Nenhum registro de comportamento.");
+ br.forEach(r=>{
+  heading(`Consulta de ${fmtDate(r.data)}`,10);
+  const labels={participacao:"Participação",atencao:"Atenção",comunicacao:"Comunicação",autonomia:"Autonomia",comportamento:"Comportamento",emocional:"Aspecto emocional"};
+  Object.entries(r.comportamentos||{}).forEach(([k,v])=>para(`${labels[k]||k}: ${v}`));
+  if(r.observacoes)para(r.observacoes);
+ });
+
+ heading("Avaliações e atividades");
+ const avs=s.avaliacoes||[];
+ if(!avs.length)para("Nenhuma avaliação registrada.");
+ avs.forEach(a=>{
+  heading(`${a.titulo} · ${fmtDate(a.data)}`,10);
+  if(a.objetivo)para(`Objetivo: ${a.objetivo}`);
+  (a.resultados||[]).forEach(r=>{
+   if(y>260){doc.addPage();y=18;}
+   doc.setFont("helvetica","bold");doc.setFontSize(9);doc.text(`Aplicação — ${fmtDate(r.data)}`,15,y);y+=5;
+   (a.questoes||[]).forEach((q,i)=>para(`${q.numero}. ${q.texto}\nResposta: ${r.respostas?.[i]||""}`));
+   if(r.resumo)para(`Resumo: ${r.resumo}`);
   });
-  const appointments=activeAppointments().filter(a=>a.alunoId===s.id).sort((a,b)=>(a.data+a.hora).localeCompare(b.data+b.hora));
-  if(y>265){doc.addPage();y=18;}y+=3;doc.setFont("helvetica","bold");doc.text("Histórico de atendimentos",15,y);y+=6;doc.setFont("helvetica","normal");
-  if(!appointments.length)y=pdfText(doc,"Nenhum atendimento registrado.",15,y,pageW-30);
-  appointments.forEach(a=>{y=pdfText(doc,`${fmtDate(a.data)} ${a.hora} · ${TYPES[a.tipo]?.label||a.tipo} · ${a.presente?"Presente":"Não realizado"} · ${a.pago?"Pago":"Pendente"}`,15,y,pageW-30);});
-  const safeName=(s.nome||"aluno").replace(/[^a-z0-9à-ÿ]+/gi,"-").replace(/^-|-$/g,"");
-  doc.save(`relatorio-${safeName||"aluno"}.pdf`);
-  notify("Relatório do aluno salvo em PDF.");
+ });
+
+ heading("Informações recebidas da escola");
+ if(s.escola.nome)para(`Escola: ${s.escola.nome}`);
+ if(s.escola.professores)para(`Equipe/professora: ${s.escola.professores}`);
+ const school=s.escola.registros.slice().sort((a,b)=>a.data.localeCompare(b.data));
+ if(!school.length)para("Nenhum contato com a escola registrado.");
+ school.forEach(r=>{
+  heading(`${fmtDate(r.data)} · ${r.tipo||"Contato"} · ${r.assunto||"Registro escolar"}`,10);
+  para(`Contato: ${r.contato||"Não informado"}`);
+  para(r.relato);
+ });
+
+ const safeName=(s.nome||"aluno").replace(/[^a-z0-9à-ÿ]+/gi,"-").replace(/^-|-$/g,"");
+ doc.save(`relatorio-clinico-${safeName||"aluno"}.pdf`);
+ notify("Relatório clínico e pedagógico salvo em PDF.");
 }
 
 function generateFinancePDF(){
