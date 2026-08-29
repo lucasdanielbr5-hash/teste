@@ -8,6 +8,7 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -195,7 +196,6 @@ button{cursor:pointer}
 }
 .toast.show{opacity:1;transform:none}
 
-/* Profile timeline enhancements */
 .profile-timeline-item{
  padding:14px 0;
  border-bottom:1px solid #f0f3f2;
@@ -258,12 +258,12 @@ button{cursor:pointer}
 
     <div class="field">
       <label class="label">Usuário</label>
-      <input id="loginUser" class="input" value="professor" autocomplete="username">
+      <input id="loginUser" class="input" value="professor@asas.com" autocomplete="username">
     </div>
 
     <div class="field">
       <label class="label">Senha</label>
-      <input id="loginPass" class="input" type="password" value="123" autocomplete="current-password">
+      <input id="loginPass" class="input" type="password" value="123456" autocomplete="current-password">
     </div>
 
     <button id="loginBtn" class="btn btn-primary" style="width:100%;padding:12px">
@@ -271,7 +271,7 @@ button{cursor:pointer}
     </button>
 
     <div style="text-align:center;color:#a0aaa6;font-size:10px;margin-top:14px">
-      Acesso demonstrativo: professor / 123
+      Acesso: professor@asas.com / 123456
     </div>
   </div>
 </div>
@@ -337,7 +337,32 @@ button{cursor:pointer}
 <div id="toast" class="toast"></div>
 
 <script>
+// ============================================================
+// CONFIGURAÇÃO DO SUPABASE
+// ============================================================
+
+const SUPABASE_URL = 'https://teujmiojdyytzpavritf.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRldWptaW9qZHl5dHpwYXZyaXRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc5NTYxMjUsImV4cCI6MjEwMzUzMjEyNX0.rGLzx-B1bdrlcaa9a_gAOHrDv52UGHQfg-dquLJtyIk';
+
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ============================================================
+// VARIÁVEIS GLOBAIS
+// ============================================================
+
 const KEY="asas_saas_v1";
+let data = {};
+let currentPage="dashboard";
+let currentStudent=null;
+let currentAssessment=null;
+let calendarDate=new Date();
+let calendarMode="week";
+let selectedDay=null;
+let studentPage=1;
+let studentSectionPage={overview:1,avaliacoes:1,escola:1};
+let currentConsultation=null;
+let financeYear=new Date().getFullYear();
+let financeMonth=new Date().getMonth();
 
 const TYPES={
  psicologia:{label:"Psicologia",cls:"psico"},
@@ -351,124 +376,12 @@ const HOURS=[];
 
 for(let h=8;h<=18;h++) HOURS.push(String(h).padStart(2,"0")+":00");
 
+// ============================================================
+// FUNÇÕES AUXILIARES
+// ============================================================
+
 function uid(){
  return Date.now().toString(36)+Math.random().toString(36).slice(2,8);
-}
-
-function defaultData(){
- const now=new Date();
- const today=now.toISOString().slice(0,10);
-
- return {
-   session:false,
-   professor:{
-     nome:"Professor ASAS",
-     especialidade:"Psicopedagogia Clínica",
-     bio:"Profissional dedicado ao desenvolvimento acadêmico, emocional e cognitivo.",
-     foto:"",
-     observacoes:[],  // Novo campo para observações pessoais do professor
-     evolucoesPessoais:[], // Novo campo para evolução pessoal/profissional
-     configuracoes:{
-       notificacoes:true,
-       tema:"claro",
-       lembretes:true
-     }
-   },
-   alunos:[
-     {
-       id:"a1",
-       nome:"Ana Clara",
-       idade:10,
-       serie:"5º ano",
-       responsavel:"Maria Clara",
-       telefone:"11999998888",
-       valor:150,
-       foto:"",
-       tags:["TDAH","Dislexia"],
-       observacoes:"Apresenta boa resposta às intervenções estruturadas.",
-       evolucoes:[
-         {id:uid(),data:today,titulo:"Avaliação inicial",texto:"Boa participação. Necessita apoio em leitura e organização."}
-       ],
-       ativo:true
-     },
-     {
-       id:"a2",
-       nome:"Lucas Mendes",
-       idade:12,
-       serie:"7º ano",
-       responsavel:"Roberto Mendes",
-       telefone:"11988887777",
-       valor:180,
-       foto:"",
-       tags:["Ansiedade Escolar"],
-       observacoes:"Demonstra insegurança diante de avaliações.",
-       evolucoes:[],
-       ativo:true
-     },
-     {
-       id:"a3",
-       nome:"Marina Silva",
-       idade:9,
-       serie:"4º ano",
-       responsavel:"Carla Silva",
-       telefone:"11977776666",
-       valor:140,
-       foto:"",
-       tags:["Déficit de Atenção"],
-       observacoes:"Necessita atividades curtas e segmentadas.",
-       evolucoes:[],
-       ativo:true
-     }
-   ],
-   agenda:[
-     {id:uid(),data:today,hora:"09:00",alunoId:"a1",tipo:"psicopedagogia",status:"agendado",presente:false,pago:false},
-     {id:uid(),data:today,hora:"10:00",alunoId:"a2",tipo:"psicologia",status:"agendado",presente:false,pago:false},
-     {id:uid(),data:today,hora:"14:00",alunoId:"a3",tipo:"aula",status:"agendado",presente:false,pago:true}
-   ],
-   transacoes:[],
-   clinicalAlerts:[]
- };
-}
-
-let data=load();
-let currentPage="dashboard";
-let currentStudent=null;
-let currentAssessment=null;
-let calendarDate=new Date();
-let calendarMode="week";
-let selectedDay=null;
-let studentPage=1;
-let studentSectionPage={overview:1,avaliacoes:1,escola:1};
-let currentConsultation=null;
-let financeYear=new Date().getFullYear();
-let financeMonth=new Date().getMonth();
-
-function load(){
- const raw=localStorage.getItem(KEY);
- if(!raw){
-   const d=defaultData();
-   localStorage.setItem(KEY,JSON.stringify(d));
-   return d;
- }
- try{
-   const d=JSON.parse(raw);
-   if(!d.professor)d.professor=defaultData().professor;
-   if(!d.professor.observacoes)d.professor.observacoes=[];
-   if(!d.professor.evolucoesPessoais)d.professor.evolucoesPessoais=[];
-   if(!d.professor.configuracoes)d.professor.configuracoes={notificacoes:true,tema:"claro",lembretes:true};
-   if(!d.alunos)d.alunos=[];
-   if(!d.agenda)d.agenda=[];
-   if(!d.transacoes)d.transacoes=[];
-   if(!d.clinicalAlerts)d.clinicalAlerts=[];
-   d.alunos.forEach(s=>ensureStudentModules(s));
-   return d;
- }catch{
-   return defaultData();
- }
-}
-
-function save(){
- localStorage.setItem(KEY,JSON.stringify(data));
 }
 
 function esc(v){
@@ -526,40 +439,48 @@ function notify(message){
 }
 
 function activeAppointments(){
- return data.agenda.filter(x=>x.status!=="cancelado");
+ return data.agenda ? data.agenda.filter(x=>x.status!=="cancelado") : [];
 }
 
 function getStudent(id){
- return data.alunos.find(a=>a.id===id);
+ return data.alunos ? data.alunos.find(a=>a.id===id) : null;
 }
 
-function syncClinicalAlerts(){
- data.clinicalAlerts=data.clinicalAlerts||[];
- const seen=new Set();
- data.alunos.forEach(s=>{
-  (s.evolucoes||[]).forEach(e=>{
-   const text=`${e.titulo||""} ${e.texto||""}`;
-   if(!/queda|piora|falt|atenção|dificuldade|regress|baixo desempenho/i.test(text))return;
-   const key=`evo:${e.id}`; seen.add(key);
-   let a=data.clinicalAlerts.find(x=>x.key===key);
-   if(!a){
-    const reason=/falt/i.test(text)?"Registro relacionado a falta/assiduidade.":/queda|piora|regress/i.test(text)?"Registro indica possível queda, piora ou regressão.":"Registro indica um ponto que merece acompanhamento.";
-    a={id:uid(),key,studentId:s.id,evolutionId:e.id,title:e.titulo||"Alerta clínico",text:reason+" "+String(e.texto||"").slice(0,180),status:"active",createdAt:e.data};
-    data.clinicalAlerts.push(a);
-   }else if(a.status!=="resolved"){
-    a.studentId=s.id;a.evolutionId=e.id;a.title=e.titulo||"Alerta clínico";
-    a.text=(/falt/i.test(text)?"Registro relacionado a falta/assiduidade.":/queda|piora|regress/i.test(text)?"Registro indica possível queda, piora ou regressão.":"Registro indica um ponto que merece acompanhamento.")+" "+String(e.texto||"").slice(0,180);
-   }
-  });
- });
- data.clinicalAlerts=data.clinicalAlerts.filter(a=>!a.evolutionId||seen.has(a.key)||a.status==="resolved");
- return data.clinicalAlerts;
+function ensureStudentModules(s){
+ if(!s) return;
+ s.behaviorRecords=s.behaviorRecords||[];
+ s.consultas=s.consultas||s.behaviorRecords||[];
+ if(!s.behaviorRecords.length && s.consultas.length) s.behaviorRecords=s.consultas;
+ s.avaliacoes=s.avaliacoes||[];
+ s.escola=s.escola||{nome:"",professores:"",registros:[]};
+ s.escola.registros=s.escola.registros||[];
 }
-function getClinicalAlerts(){ syncClinicalAlerts(); return (data.clinicalAlerts||[]).filter(a=>a.status!=="resolved"); }
-function resolveClinicalAlert(id){const a=(data.clinicalAlerts||[]).find(x=>x.id===id);if(!a)return;a.status="resolved";a.resolvedAt=today();save();notify("Alerta arquivado como resolvido.");renderDashboard();}
-function reopenClinicalAlert(id){const a=(data.clinicalAlerts||[]).find(x=>x.id===id);if(!a)return;a.status="active";delete a.resolvedAt;save();notify("Alerta reaberto.");renderDashboard();}
-function focusAlertEvolution(id){const a=(data.clinicalAlerts||[]).find(x=>x.id===id);if(!a)return;openStudent(a.studentId);setTimeout(()=>{const t=document.getElementById("evTitle"),x=document.getElementById("evText");if(t)t.value="Acompanhamento do alerta";if(x)x.focus();},120);}
-function clinicalAlertReason(a){return a.text||"Registro clínico que merece revisão.";}
+
+function defaultData(){
+ const now=new Date();
+ const todayStr=now.toISOString().slice(0,10);
+
+ return {
+   session:false,
+   professor:{
+     nome:"Professor ASAS",
+     especialidade:"Psicopedagogia Clínica",
+     bio:"Profissional dedicado ao desenvolvimento acadêmico, emocional e cognitivo.",
+     foto:"",
+     observacoes:[],
+     evolucoesPessoais:[],
+     configuracoes:{
+       notificacoes:true,
+       tema:"claro",
+       lembretes:true
+     }
+   },
+   alunos:[],
+   agenda:[],
+   transacoes:[],
+   clinicalAlerts:[]
+ };
+}
 
 function monthAppointments(date){
  const y=date.getFullYear();
@@ -573,7 +494,7 @@ function monthAppointments(date){
 function monthPaid(){
  const y=calendarDate.getFullYear();
  const m=calendarDate.getMonth();
- return data.transacoes.filter(t=>{
+ return (data.transacoes||[]).filter(t=>{
    const d=parseDate(t.data);
    return d.getFullYear()===y&&d.getMonth()===m;
  }).reduce((s,t)=>s+Number(t.valor),0);
@@ -628,6 +549,726 @@ function weekPending(){
  .reduce((sum,a)=>sum+(getStudent(a.alunoId)?.valor||0),0);
 }
 
+function studentPager(items,page,size=5,onclick=""){
+ const total=Math.max(1,Math.ceil(items.length/size));
+ page=Math.min(Math.max(1,page),total);
+ const slice=items.slice((page-1)*size,page*size);
+ return {slice,total,page,controls:total>1?`
+  <div style="display:flex;justify-content:center;align-items:center;gap:8px;margin-top:16px;padding-top:12px;border-top:1px solid var(--line)">
+   <button class="btn btn-outline btn-sm" ${page<=1?"disabled":""} onclick="${onclick}(${page-1})"><i data-lucide="chevron-left"></i>Anterior</button>
+   <span style="font-size:11px;color:#718078">Página ${page} de ${total}</span>
+   <button class="btn btn-outline btn-sm" ${page>=total?"disabled":""} onclick="${onclick}(${page+1})">Próxima<i data-lucide="chevron-right"></i></button>
+  </div>`:""};
+}
+
+function clinicalAlertReason(a){return a.text||"Registro clínico que merece revisão.";}
+
+function syncClinicalAlerts(){
+ // Função mantida para compatibilidade
+ return data.clinicalAlerts || [];
+}
+
+function getClinicalAlerts(){
+ return (data.clinicalAlerts||[]).filter(a=>a.status!=="resolved");
+}
+
+// ============================================================
+// FUNÇÕES DO SUPABASE - LOAD
+// ============================================================
+
+async function loadDataFromSupabase() {
+    try {
+        // Carregar professor
+        const { data: professorData, error: profError } = await supabase
+            .from('professores')
+            .select('*')
+            .limit(1)
+            .maybeSingle();
+            
+        if (profError) throw profError;
+        
+        // Carregar alunos
+        const { data: alunosData, error: alunosError } = await supabase
+            .from('alunos')
+            .select('*')
+            .order('nome');
+        if (alunosError) throw alunosError;
+        
+        // Carregar evoluções
+        const { data: evolucoesData, error: evoError } = await supabase
+            .from('evolucoes')
+            .select('*');
+        if (evoError) throw evoError;
+        
+        // Carregar consultas
+        const { data: consultasData, error: consError } = await supabase
+            .from('consultas')
+            .select('*');
+        if (consError) throw consError;
+        
+        // Carregar avaliações
+        const { data: avaliacoesData, error: avError } = await supabase
+            .from('avaliacoes')
+            .select('*');
+        if (avError) throw avError;
+        
+        // Carregar resultados
+        const { data: resultadosData, error: resError } = await supabase
+            .from('resultados_avaliacoes')
+            .select('*');
+        if (resError) throw resError;
+        
+        // Carregar escola
+        const { data: escolaData, error: escError } = await supabase
+            .from('escola')
+            .select('*');
+        if (escError) throw escError;
+        
+        // Carregar registros escola
+        const { data: registrosEscolaData, error: regError } = await supabase
+            .from('registros_escola')
+            .select('*');
+        if (regError) throw regError;
+        
+        // Carregar agenda
+        const { data: agendaData, error: agendaError } = await supabase
+            .from('agenda')
+            .select('*')
+            .order('data');
+        if (agendaError) throw agendaError;
+        
+        // Carregar transações
+        const { data: transacoesData, error: transError } = await supabase
+            .from('transacoes')
+            .select('*');
+        if (transError) throw transError;
+        
+        // Carregar alertas
+        const { data: alertasData, error: alertError } = await supabase
+            .from('alertas_clinicos')
+            .select('*');
+        if (alertError) throw alertError;
+        
+        // Carregar observações do professor
+        const { data: obsProfData, error: obsError } = await supabase
+            .from('observacoes_professor')
+            .select('*')
+            .order('data', { ascending: false });
+        if (obsError) throw obsError;
+        
+        // Carregar evoluções do professor
+        const { data: evoProfData, error: evoProfError } = await supabase
+            .from('evolucoes_professor')
+            .select('*')
+            .order('data', { ascending: false });
+        if (evoProfError) throw evoProfError;
+        
+        // Montar objeto de dados
+        const result = {
+            session: true,
+            professor: professorData || {
+                nome: "Professor ASAS",
+                especialidade: "Psicopedagogia Clínica",
+                bio: "Profissional dedicado ao desenvolvimento acadêmico, emocional e cognitivo.",
+                foto: "",
+                observacoes: obsProfData || [],
+                evolucoesPessoais: evoProfData || [],
+                configuracoes: {
+                    notificacoes: true,
+                    tema: "claro",
+                    lembretes: true
+                }
+            },
+            alunos: alunosData || [],
+            agenda: agendaData || [],
+            transacoes: transacoesData || [],
+            clinicalAlerts: alertasData || []
+        };
+        
+        // Organizar dados relacionados
+        result.alunos.forEach(aluno => {
+            aluno.evolucoes = evolucoesData?.filter(e => e.aluno_id === aluno.id) || [];
+            aluno.consultas = consultasData?.filter(c => c.aluno_id === aluno.id) || [];
+            aluno.behaviorRecords = aluno.consultas;
+            aluno.avaliacoes = avaliacoesData?.filter(a => a.aluno_id === aluno.id) || [];
+            aluno.avaliacoes.forEach(av => {
+                av.resultados = resultadosData?.filter(r => r.avaliacao_id === av.id) || [];
+            });
+            
+            const escola = escolaData?.find(e => e.aluno_id === aluno.id);
+            if (escola) {
+                aluno.escola = {
+                    ...escola,
+                    registros: registrosEscolaData?.filter(r => r.escola_id === escola.id) || []
+                };
+            } else {
+                aluno.escola = { nome: '', professores: '', registros: [] };
+            }
+            
+            ensureStudentModules(aluno);
+        });
+        
+        return result;
+        
+    } catch (error) {
+        console.error('Erro ao carregar dados:', error);
+        notify('Erro ao carregar dados do servidor.');
+        return null;
+    }
+}
+
+// ============================================================
+// FUNÇÕES DO SUPABASE - SAVE
+// ============================================================
+
+async function saveAluno(aluno) {
+    try {
+        const { data, error } = await supabase
+            .from('alunos')
+            .upsert({
+                id: aluno.id,
+                nome: aluno.nome,
+                idade: aluno.idade || 0,
+                serie: aluno.serie || '',
+                responsavel: aluno.responsavel || '',
+                telefone: aluno.telefone || '',
+                valor: aluno.valor || 0,
+                foto: aluno.foto || '',
+                tags: aluno.tags || [],
+                observacoes: aluno.observacoes || '',
+                ativo: aluno.ativo !== false,
+                updated_at: new Date().toISOString()
+            })
+            .select()
+            .single();
+            
+        if (error) throw error;
+        return data;
+    } catch (error) {
+        console.error('Erro ao salvar aluno:', error);
+        return null;
+    }
+}
+
+async function saveEvolucao(evolucao) {
+    try {
+        const { data, error } = await supabase
+            .from('evolucoes')
+            .upsert({
+                id: evolucao.id,
+                aluno_id: evolucao.aluno_id,
+                titulo: evolucao.titulo || 'Evolução',
+                texto: evolucao.texto,
+                data: evolucao.data || today()
+            })
+            .select()
+            .single();
+            
+        if (error) throw error;
+        return data;
+    } catch (error) {
+        console.error('Erro ao salvar evolução:', error);
+        return null;
+    }
+}
+
+async function saveConsulta(consulta) {
+    try {
+        const { data, error } = await supabase
+            .from('consultas')
+            .upsert({
+                id: consulta.id,
+                aluno_id: consulta.aluno_id,
+                data: consulta.data || today(),
+                observacoes: consulta.observacoes || '',
+                acoes: consulta.acoes || '',
+                pais: consulta.pais || '',
+                solicitacoes: consulta.solicitacoes || '',
+                comportamentos: consulta.comportamentos || {}
+            })
+            .select()
+            .single();
+            
+        if (error) throw error;
+        return data;
+    } catch (error) {
+        console.error('Erro ao salvar consulta:', error);
+        return null;
+    }
+}
+
+async function saveAvaliacao(avaliacao) {
+    try {
+        const { data, error } = await supabase
+            .from('avaliacoes')
+            .upsert({
+                id: avaliacao.id,
+                aluno_id: avaliacao.aluno_id,
+                data: avaliacao.data || today(),
+                titulo: avaliacao.titulo,
+                objetivo: avaliacao.objetivo || '',
+                questoes: avaliacao.questoes || [],
+                finalizada: avaliacao.finalizada || false
+            })
+            .select()
+            .single();
+            
+        if (error) throw error;
+        return data;
+    } catch (error) {
+        console.error('Erro ao salvar avaliação:', error);
+        return null;
+    }
+}
+
+async function saveResultadoAvaliacao(resultado) {
+    try {
+        const { data, error } = await supabase
+            .from('resultados_avaliacoes')
+            .upsert({
+                id: resultado.id,
+                avaliacao_id: resultado.avaliacao_id,
+                data: resultado.data || today(),
+                respostas: resultado.respostas || [],
+                resumo: resultado.resumo || ''
+            })
+            .select()
+            .single();
+            
+        if (error) throw error;
+        return data;
+    } catch (error) {
+        console.error('Erro ao salvar resultado:', error);
+        return null;
+    }
+}
+
+async function saveEscola(escola) {
+    try {
+        const { data, error } = await supabase
+            .from('escola')
+            .upsert({
+                id: escola.id,
+                aluno_id: escola.aluno_id,
+                nome: escola.nome || '',
+                professores: escola.professores || '',
+                updated_at: new Date().toISOString()
+            })
+            .select()
+            .single();
+            
+        if (error) throw error;
+        return data;
+    } catch (error) {
+        console.error('Erro ao salvar escola:', error);
+        return null;
+    }
+}
+
+async function saveRegistroEscola(registro) {
+    try {
+        const { data, error } = await supabase
+            .from('registros_escola')
+            .upsert({
+                id: registro.id,
+                escola_id: registro.escola_id,
+                data: registro.data || today(),
+                contato: registro.contato || '',
+                tipo: registro.tipo || 'Conversa',
+                assunto: registro.assunto || '',
+                relato: registro.relato
+            })
+            .select()
+            .single();
+            
+        if (error) throw error;
+        return data;
+    } catch (error) {
+        console.error('Erro ao salvar registro escolar:', error);
+        return null;
+    }
+}
+
+async function saveAgendaItem(item) {
+    try {
+        const { data, error } = await supabase
+            .from('agenda')
+            .upsert({
+                id: item.id,
+                aluno_id: item.aluno_id,
+                data: item.data,
+                hora: item.hora,
+                tipo: item.tipo,
+                status: item.status || 'agendado',
+                presente: item.presente || false,
+                pago: item.pago || false,
+                updated_at: new Date().toISOString()
+            })
+            .select()
+            .single();
+            
+        if (error) throw error;
+        return data;
+    } catch (error) {
+        console.error('Erro ao salvar agenda:', error);
+        return null;
+    }
+}
+
+async function saveTransacao(transacao) {
+    try {
+        const { data, error } = await supabase
+            .from('transacoes')
+            .upsert({
+                id: transacao.id,
+                agenda_id: transacao.agenda_id || null,
+                aluno_id: transacao.aluno_id,
+                data: transacao.data || today(),
+                descricao: transacao.descricao || '',
+                valor: transacao.valor
+            })
+            .select()
+            .single();
+            
+        if (error) throw error;
+        return data;
+    } catch (error) {
+        console.error('Erro ao salvar transação:', error);
+        return null;
+    }
+}
+
+async function saveAlertaClinico(alerta) {
+    try {
+        const { data, error } = await supabase
+            .from('alertas_clinicos')
+            .upsert({
+                id: alerta.id,
+                student_id: alerta.student_id,
+                evolution_id: alerta.evolution_id || null,
+                title: alerta.title || 'Alerta clínico',
+                text: alerta.text || '',
+                status: alerta.status || 'active',
+                created_at: alerta.created_at || today(),
+                resolved_at: alerta.resolved_at || null,
+                key: alerta.key || alerta.id
+            })
+            .select()
+            .single();
+            
+        if (error) throw error;
+        return data;
+    } catch (error) {
+        console.error('Erro ao salvar alerta:', error);
+        return null;
+    }
+}
+
+async function saveObservacaoProfessor(obs) {
+    try {
+        const { data, error } = await supabase
+            .from('observacoes_professor')
+            .upsert({
+                id: obs.id,
+                titulo: obs.titulo || 'Observação',
+                texto: obs.texto,
+                data: obs.data || today()
+            })
+            .select()
+            .single();
+            
+        if (error) throw error;
+        return data;
+    } catch (error) {
+        console.error('Erro ao salvar observação:', error);
+        return null;
+    }
+}
+
+async function saveEvolucaoProfessor(evo) {
+    try {
+        const { data, error } = await supabase
+            .from('evolucoes_professor')
+            .upsert({
+                id: evo.id,
+                titulo: evo.titulo || 'Evolução pessoal',
+                texto: evo.texto,
+                data: evo.data || today()
+            })
+            .select()
+            .single();
+            
+        if (error) throw error;
+        return data;
+    } catch (error) {
+        console.error('Erro ao salvar evolução:', error);
+        return null;
+    }
+}
+
+async function saveProfessor(professor) {
+    try {
+        const { data, error } = await supabase
+            .from('professores')
+            .upsert({
+                id: professor.id || '00000000-0000-0000-0000-000000000000',
+                nome: professor.nome,
+                especialidade: professor.especialidade || '',
+                bio: professor.bio || '',
+                foto: professor.foto || '',
+                config_notificacoes: professor.configuracoes?.notificacoes !== false,
+                config_lembretes: professor.configuracoes?.lembretes !== false,
+                updated_at: new Date().toISOString()
+            })
+            .select()
+            .single();
+            
+        if (error) throw error;
+        return data;
+    } catch (error) {
+        console.error('Erro ao salvar professor:', error);
+        return null;
+    }
+}
+
+// ============================================================
+// FUNÇÕES DO SUPABASE - DELETE
+// ============================================================
+
+async function deleteAluno(id) {
+    try {
+        const { error } = await supabase
+            .from('alunos')
+            .delete()
+            .eq('id', id);
+        if (error) throw error;
+        return true;
+    } catch (error) {
+        console.error('Erro ao deletar aluno:', error);
+        return false;
+    }
+}
+
+async function deleteAgendaItem(id) {
+    try {
+        const { error } = await supabase
+            .from('agenda')
+            .delete()
+            .eq('id', id);
+        if (error) throw error;
+        return true;
+    } catch (error) {
+        console.error('Erro ao deletar agenda:', error);
+        return false;
+    }
+}
+
+async function deleteEvolucao(id) {
+    try {
+        const { error } = await supabase
+            .from('evolucoes')
+            .delete()
+            .eq('id', id);
+        if (error) throw error;
+        return true;
+    } catch (error) {
+        console.error('Erro ao deletar evolução:', error);
+        return false;
+    }
+}
+
+async function deleteConsulta(id) {
+    try {
+        const { error } = await supabase
+            .from('consultas')
+            .delete()
+            .eq('id', id);
+        if (error) throw error;
+        return true;
+    } catch (error) {
+        console.error('Erro ao deletar consulta:', error);
+        return false;
+    }
+}
+
+async function deleteRegistroEscola(id) {
+    try {
+        const { error } = await supabase
+            .from('registros_escola')
+            .delete()
+            .eq('id', id);
+        if (error) throw error;
+        return true;
+    } catch (error) {
+        console.error('Erro ao deletar registro escolar:', error);
+        return false;
+    }
+}
+
+// ============================================================
+// FUNÇÕES DO SUPABASE - AUTH
+// ============================================================
+
+async function loginSupabase(email, password) {
+    try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email: email,
+            password: password
+        });
+        
+        if (error) throw error;
+        
+        // Registrar sessão
+        try {
+            await supabase
+                .from('sessoes')
+                .insert({
+                    usuario: email,
+                    ativa: true,
+                    ultimo_acesso: new Date().toISOString()
+                });
+        } catch (e) {
+            console.warn('Erro ao registrar sessão:', e);
+        }
+        
+        return data;
+    } catch (error) {
+        console.error('Erro no login:', error);
+        notify('Usuário ou senha inválidos.');
+        return null;
+    }
+}
+
+async function logoutSupabase() {
+    try {
+        const { error } = await supabase.auth.signOut();
+        if (error) throw error;
+        return true;
+    } catch (error) {
+        console.error('Erro no logout:', error);
+        return false;
+    }
+}
+
+async function checkSession() {
+    try {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        return data.session !== null;
+    } catch (error) {
+        console.error('Erro ao verificar sessão:', error);
+        return false;
+    }
+}
+
+// ============================================================
+// FUNÇÕES PRINCIPAIS - LOAD/SAVE
+// ============================================================
+
+async function loadData() {
+    const loaded = await loadDataFromSupabase();
+    if (loaded) {
+        // Garantir campos padrão
+        if (!loaded.professor.observacoes) loaded.professor.observacoes = [];
+        if (!loaded.professor.evolucoesPessoais) loaded.professor.evolucoesPessoais = [];
+        if (!loaded.professor.configuracoes) {
+            loaded.professor.configuracoes = { notificacoes: true, tema: "claro", lembretes: true };
+        }
+        loaded.alunos.forEach(s => ensureStudentModules(s));
+        return loaded;
+    }
+    return defaultData();
+}
+
+async function saveData() {
+    try {
+        // Salvar professor
+        if (data.professor) {
+            await saveProfessor(data.professor);
+        }
+        
+        // Salvar alunos e seus dados relacionados
+        for (const aluno of (data.alunos || [])) {
+            await saveAluno(aluno);
+            
+            // Salvar evoluções
+            for (const evo of (aluno.evolucoes || [])) {
+                await saveEvolucao({ ...evo, aluno_id: aluno.id });
+            }
+            
+            // Salvar consultas
+            for (const consulta of (aluno.consultas || [])) {
+                await saveConsulta({ ...consulta, aluno_id: aluno.id });
+            }
+            
+            // Salvar avaliações e resultados
+            for (const av of (aluno.avaliacoes || [])) {
+                const savedAv = await saveAvaliacao({ ...av, aluno_id: aluno.id });
+                if (savedAv && av.resultados) {
+                    for (const res of av.resultados) {
+                        await saveResultadoAvaliacao({ ...res, avaliacao_id: savedAv.id });
+                    }
+                }
+            }
+            
+            // Salvar escola
+            if (aluno.escola) {
+                const escolaId = aluno.escola.id || '00000000-0000-0000-0000-000000000000';
+                const savedEscola = await saveEscola({
+                    id: escolaId,
+                    aluno_id: aluno.id,
+                    nome: aluno.escola.nome || '',
+                    professores: aluno.escola.professores || ''
+                });
+                
+                if (savedEscola && aluno.escola.registros) {
+                    for (const reg of aluno.escola.registros) {
+                        await saveRegistroEscola({
+                            ...reg,
+                            escola_id: savedEscola.id
+                        });
+                    }
+                }
+            }
+        }
+        
+        // Salvar agenda
+        for (const item of (data.agenda || [])) {
+            await saveAgendaItem(item);
+        }
+        
+        // Salvar transações
+        for (const trans of (data.transacoes || [])) {
+            await saveTransacao(trans);
+        }
+        
+        // Salvar alertas
+        for (const alerta of (data.clinicalAlerts || [])) {
+            await saveAlertaClinico(alerta);
+        }
+        
+        // Salvar observações do professor
+        for (const obs of (data.professor?.observacoes || [])) {
+            await saveObservacaoProfessor(obs);
+        }
+        
+        // Salvar evoluções do professor
+        for (const evo of (data.professor?.evolucoesPessoais || [])) {
+            await saveEvolucaoProfessor(evo);
+        }
+        
+        return true;
+    } catch (error) {
+        console.error('Erro ao salvar dados:', error);
+        notify('Erro ao salvar dados no servidor.');
+        return false;
+    }
+}
+
+// ============================================================
+// FUNÇÕES DE NAVEGAÇÃO E RENDERIZAÇÃO
+// ============================================================
+
 function navigate(page){
  currentPage=page;
  currentStudent=null;
@@ -664,25 +1305,40 @@ function renderPage(){
  if(currentPage==="perfil")renderPerfil();
 }
 
-function renderDashboard(){
+function updateUser(){
+ const p=data.professor;
+ if(!p) return;
+ document.getElementById("topUserName").textContent=p.nome;
+ const a=document.getElementById("topAvatar");
+ if(p.foto){
+   a.style.backgroundImage=`url('${p.foto}')`;
+   a.textContent="";
+ }else{
+   a.style.backgroundImage="";
+   a.textContent=initials(p.nome);
+ }
+}
 
+// ============================================================
+// RENDERIZAÇÃO - DASHBOARD
+// ============================================================
+
+function renderDashboard(){
  const monthRevenue=monthPaid();
  const pending=weekPending();
  const done=monthDone();
  const rate=attendanceRate();
-
  const alerts=getClinicalAlerts();
-
  const todays=activeAppointments().filter(a=>a.data===today()).sort((a,b)=>a.hora.localeCompare(b.hora));
 
  document.getElementById("page-dashboard").innerHTML=`
 
  <div class="section-head">
    <div>
-     <div class="section-title">Bom dia, ${esc(data.professor.nome.split(" ")[0])}</div>
+     <div class="section-title">Bom dia, ${esc(data.professor?.nome?.split(" ")[0] || "Professor")}</div>
      <div class="section-sub">Visão geral do seu trabalho clínico e pedagógico.</div>
    </div>
-   <button class="btn btn-primary" onclick="navigate('alunos');setTimeout(()=>document.getElementById('newStudentForm').scrollIntoView({behavior:'smooth'}),100)">
+   <button class="btn btn-primary" onclick="navigate('alunos');setTimeout(()=>document.getElementById('newStudentForm')?.scrollIntoView({behavior:'smooth'}),100)">
      <i data-lucide="user-plus"></i>Novo aluno
    </button>
  </div>
@@ -732,9 +1388,9 @@ function renderDashboard(){
          return `
          <div style="display:flex;align-items:center;gap:12px;padding:11px;border:1px solid var(--line);border-radius:13px">
            ${avatarHTML(s)}
-           <div style="flex:1;min-width:0;cursor:pointer" onclick="openStudent('${s.id}')">
-             <div style="font-size:13px;font-weight:700">${esc(s.nome)}</div>
-             <div style="font-size:10px;color:#8a9892">${a.hora} · ${typ.label}</div>
+           <div style="flex:1;min-width:0;cursor:pointer" onclick="openStudent('${s?.id}')">
+             <div style="font-size:13px;font-weight:700">${esc(s?.nome || "Aluno removido")}</div>
+             <div style="font-size:10px;color:#8a9892">${a.hora} · ${typ?.label || a.tipo}</div>
            </div>
            <button class="btn ${a.presente?'btn-soft':'btn-outline'} btn-sm" onclick="event.stopPropagation();togglePresence('${a.id}')">
              <i data-lucide="${a.presente?'check-circle':'circle-check'}"></i>${a.presente?'Presente':'Presença'}
@@ -757,7 +1413,7 @@ function renderDashboard(){
        <span style="font-size:11px;color:#9b8365">${alerts.length} ativo(s)</span>
      </div>
 
-     ${alerts.length?alerts.slice(0,5).map(a=>{const st=getStudent(a.studentId);return `<div class="clinical-alert"><div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><div><div class="clinical-alert-title">${esc(st?.nome||"Aluno")}</div><div class="clinical-alert-text"><strong>${esc(a.title||"Alerta clínico")}</strong><br>${esc(clinicalAlertReason(a))}</div></div><span style="font-size:9px;color:#a58d70">${fmtDate(a.createdAt)}</span></div><div class="clinical-alert-actions"><button class="btn btn-soft" onclick="openStudent('${a.studentId}')"><i data-lucide="notebook-tabs"></i>Prontuário</button><button class="btn btn-outline" onclick="focusAlertEvolution('${a.id}')"><i data-lucide="message-square-plus"></i>Registrar evolução</button><button class="btn btn-outline" onclick="resolveClinicalAlert('${a.id}')"><i data-lucide="check"></i>Resolver</button></div></div>`;}).join(""):`<div class="empty">Nenhum alerta clínico ativo.</div>`}
+     ${alerts.length?alerts.slice(0,5).map(a=>{const st=getStudent(a.student_id);return `<div class="clinical-alert"><div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><div><div class="clinical-alert-title">${esc(st?.nome||"Aluno")}</div><div class="clinical-alert-text"><strong>${esc(a.title||"Alerta clínico")}</strong><br>${esc(clinicalAlertReason(a))}</div></div><span style="font-size:9px;color:#a58d70">${fmtDate(a.created_at)}</span></div><div class="clinical-alert-actions"><button class="btn btn-soft" onclick="openStudent('${a.student_id}')"><i data-lucide="notebook-tabs"></i>Prontuário</button><button class="btn btn-outline" onclick="resolveClinicalAlert('${a.id}')"><i data-lucide="check"></i>Resolver</button></div></div>`;}).join(""):`<div class="empty">Nenhum alerta clínico ativo.</div>`}
    </div>
 
  </div>
@@ -782,7 +1438,7 @@ function renderDashboard(){
    <div class="card">
      <div class="section-title">Alunos ativos</div>
      <div class="section-sub">Base atual de acompanhamento</div>
-     <div style="font-size:30px;font-weight:700;margin-top:14px">${data.alunos.filter(a=>a.ativo!==false).length}</div>
+     <div style="font-size:30px;font-weight:700;margin-top:14px">${(data.alunos||[]).filter(a=>a.ativo!==false).length}</div>
      <button class="btn btn-outline btn-sm" onclick="navigate('alunos')" style="margin-top:8px">Ver todos</button>
    </div>
 
@@ -790,8 +1446,11 @@ function renderDashboard(){
  `;
 }
 
-function renderAlunos(){
+// ============================================================
+// RENDERIZAÇÃO - ALUNOS
+// ============================================================
 
+function renderAlunos(){
  document.getElementById("page-alunos").innerHTML=`
 
  <div class="section-head">
@@ -869,11 +1528,12 @@ function renderAlunos(){
 
 function filterStudents(){
  const term=(document.getElementById("studentSearch")?.value||"").toLowerCase();
- const list=data.alunos.filter(a=>
+ const list=(data.alunos||[]).filter(a =>
    `${a.nome} ${a.responsavel} ${(a.tags||[]).join(" ")}`.toLowerCase().includes(term)
  );
 
  const grid=document.getElementById("studentGrid");
+ if(!grid)return;
 
  if(!list.length){
    grid.innerHTML=`<div class="card empty" style="grid-column:1/-1">Nenhum aluno encontrado.</div>`;
@@ -913,35 +1573,37 @@ function toggleStudentForm(){
  if(f.style.display==="block")f.scrollIntoView({behavior:"smooth",block:"start"});
 }
 
-function saveStudent(){
-
+async function saveStudent(){
  const nome=document.getElementById("fNome").value.trim();
-
  if(!nome){
    notify("Informe o nome do aluno.");
    return;
  }
 
  const student={
-   id:uid(),
-   nome,
-   idade:Number(document.getElementById("fIdade").value)||0,
-   serie:document.getElementById("fSerie").value.trim(),
-   responsavel:document.getElementById("fResponsavel").value.trim(),
-   telefone:document.getElementById("fTelefone").value.trim(),
-   valor:Number(document.getElementById("fValor").value)||0,
-   foto:document.getElementById("fFoto").value.trim(),
-   tags:document.getElementById("fTags").value.split(",").map(x=>x.trim()).filter(Boolean),
-   observacoes:document.getElementById("fObs").value.trim(),
-   evolucoes:[],
-   ativo:true
+   id: uid(),
+   nome: nome,
+   idade: Number(document.getElementById("fIdade").value) || 0,
+   serie: document.getElementById("fSerie").value.trim(),
+   responsavel: document.getElementById("fResponsavel").value.trim(),
+   telefone: document.getElementById("fTelefone").value.trim(),
+   valor: Number(document.getElementById("fValor").value) || 0,
+   foto: document.getElementById("fFoto").value.trim(),
+   tags: document.getElementById("fTags").value.split(",").map(x=>x.trim()).filter(Boolean),
+   observacoes: document.getElementById("fObs").value.trim(),
+   evolucoes: [],
+   ativo: true
  };
 
  data.alunos.push(student);
- save();
+ await saveData();
  notify("Aluno cadastrado com sucesso.");
  renderAlunos();
 }
+
+// ============================================================
+// FUNÇÕES DO PRONTUÁRIO
+// ============================================================
 
 function openStudent(id){
  currentStudent=id;
@@ -953,16 +1615,9 @@ function openStudent(id){
  lucide.createIcons();
 }
 
-function studentPager(items,page,size=5,onclick=""){
- const total=Math.max(1,Math.ceil(items.length/size));
- page=Math.min(Math.max(1,page),total);
- const slice=items.slice((page-1)*size,page*size);
- return {slice,total,page,controls:total>1?`
-  <div style="display:flex;justify-content:center;align-items:center;gap:8px;margin-top:16px;padding-top:12px;border-top:1px solid var(--line)">
-   <button class="btn btn-outline btn-sm" ${page<=1?"disabled":""} onclick="${onclick}(${page-1})"><i data-lucide="chevron-left"></i>Anterior</button>
-   <span style="font-size:11px;color:#718078">Página ${page} de ${total}</span>
-   <button class="btn btn-outline btn-sm" ${page>=total?"disabled":""} onclick="${onclick}(${page+1})">Próxima<i data-lucide="chevron-right"></i></button>
-  </div>`:""};
+function setStudentSectionPage(section,page){
+ studentSectionPage[section]=page;
+ renderStudentProfile(section);
 }
 
 function renderStudentProfile(mode="overview"){
@@ -970,7 +1625,7 @@ function renderStudentProfile(mode="overview"){
  if(mode===false)mode="overview";
  const s=getStudent(currentStudent); if(!s)return;
  ensureStudentModules(s);
- const consultations=(s.consultas||s.behaviorRecords||[]).slice().sort((a,b)=>b.data.localeCompare(a.data));
+ const consultations=(s.consultas||[]).slice().sort((a,b)=>b.data.localeCompare(a.data));
  const upcoming=activeAppointments().filter(a=>a.alunoId===s.id&&a.data>=today()).sort((a,b)=>(a.data+a.hora).localeCompare(b.data+b.hora)).slice(0,3);
 
  if(mode==="consulta"){
@@ -1053,10 +1708,38 @@ function renderStudentProfile(mode="overview"){
  lucide.createIcons();
 }
 
-function setStudentSectionPage(section,page){
- studentSectionPage[section]=page;
- renderStudentProfile(section);
+function whatsappLink(s){
+ const phone=(s.telefone||"").replace(/\D/g,"");
+ const message=`Olá, aqui é o ${data.professor?.nome || "Professor"}. Gostaria de falar sobre o atendimento do ${s.nome} marcado para esta semana. Fico à disposição.`;
+ return `https://wa.me/55${phone}?text=${encodeURIComponent(message)}`;
 }
+
+async function saveStudentEdit(){
+ const s=getStudent(currentStudent);
+ if(!s)return;
+
+ const name=document.getElementById("eNome2")?.value.trim()||document.getElementById("eNome")?.value.trim();
+ if(!name){notify("O nome é obrigatório.");return;}
+
+ s.nome=name;
+ s.idade=Number(document.getElementById("eIdade").value)||0;
+ s.serie=document.getElementById("eSerie").value.trim();
+ s.responsavel=document.getElementById("eResponsavel").value.trim();
+ s.telefone=document.getElementById("eTelefone").value.trim();
+ s.valor=Number(document.getElementById("eValor").value)||0;
+ s.foto=document.getElementById("eFoto").value.trim();
+ s.tags=document.getElementById("eTags").value.split(",").map(x=>x.trim()).filter(Boolean);
+ s.observacoes=document.getElementById("eObs").value.trim();
+
+ await saveData();
+ notify("Informações atualizadas.");
+ renderStudentProfile(false);
+}
+
+// ============================================================
+// FUNÇÕES DE CONSULTA
+// ============================================================
+
 function newConsultationForm(){
  const s=getStudent(currentStudent); if(!s)return;
  const existing=(s.consultas||[]).find(c=>c.data===today());
@@ -1076,97 +1759,23 @@ function newConsultationForm(){
   </div>`;
  lucide.createIcons();
 }
-function saveConsultation(){
+
+async function saveConsultation(){
  const s=getStudent(currentStudent); if(!s)return; ensureStudentModules(s);
  const dataVal=document.getElementById("consData").value||today();
  const c={id:uid(),data:dataVal,observacoes:document.getElementById("consObs").value.trim(),acoes:document.getElementById("consAcoes").value.trim(),pais:document.getElementById("consPais").value.trim(),solicitacoes:document.getElementById("consSolic").value.trim(),comportamentos:{}};
  ["participacao","atencao","comunicacao","autonomia","comportamento","emocional"].forEach(k=>{const v=document.getElementById("cons_"+k)?.value;if(v)c.comportamentos[k]=v;});
  s.consultas=s.consultas||[]; s.consultas.push(c); s.behaviorRecords=s.consultas;
- save(); syncClinicalAlerts(); notify("Consulta registrada."); renderStudentProfile("overview");
+ await saveData(); syncClinicalAlerts(); notify("Consulta registrada."); renderStudentProfile("overview");
 }
+
 function openConsultation(id){currentConsultation=id;renderStudentProfile("consulta");}
-function saveStudentEdit(){
 
- const s=getStudent(currentStudent);
- if(!s)return;
+// ============================================================
+// FUNÇÕES DE AVALIAÇÃO
+// ============================================================
 
- const name=document.getElementById("eNome2")?.value.trim()||document.getElementById("eNome")?.value.trim();
-
- if(!name){
-   notify("O nome é obrigatório.");
-   return;
- }
-
- s.nome=name;
- s.idade=Number(document.getElementById("eIdade").value)||0;
- s.serie=document.getElementById("eSerie").value.trim();
- s.responsavel=document.getElementById("eResponsavel").value.trim();
- s.telefone=document.getElementById("eTelefone").value.trim();
- s.valor=Number(document.getElementById("eValor").value)||0;
- s.foto=document.getElementById("eFoto").value.trim();
- s.tags=document.getElementById("eTags").value.split(",").map(x=>x.trim()).filter(Boolean);
- s.observacoes=document.getElementById("eObs").value.trim();
-
- save();
- notify("Informações atualizadas.");
- renderStudentProfile(false);
-}
-
-function addEvolution(){
-
- const s=getStudent(currentStudent);
- const title=document.getElementById("evTitle").value.trim();
- const text=document.getElementById("evText").value.trim();
-
- if(!text){
-   notify("Escreva a evolução antes de salvar.");
-   return;
- }
-
- s.evolucoes=s.evolucoes||[];
- s.evolucoes.push({
-   id:uid(),
-   data:today(),
-   titulo:title||"Evolução do atendimento",
-   texto:text
- });
-
- save();
- syncClinicalAlerts();
- notify("Evolução registrada.");
- renderStudentProfile(false);
-}
-
-function deleteEvolution(id){
- const s=getStudent(currentStudent);
- if(!s)return;
- s.evolucoes=s.evolucoes.filter(x=>x.id!==id);
- save();
- renderStudentProfile(false);
- notify("Registro removido.");
-}
-
-
-function ensureStudentModules(s){
- s.behaviorRecords=s.behaviorRecords||[];
- s.consultas=s.consultas||s.behaviorRecords;
- if(!s.behaviorRecords.length&&s.consultas.length)s.behaviorRecords=s.consultas;
- s.avaliacoes=s.avaliacoes||[];
- s.escola=s.escola||{nome:"",professores:"",registros:[]};
- s.escola.registros=s.escola.registros||[];
-}
-
-function saveBehaviorRecord(){ newConsultationForm(); }
-
-function deleteBehaviorRecord(id){
- const s=getStudent(currentStudent); if(!s)return;
- ensureStudentModules(s);
- s.consultas=s.consultas.filter(x=>x.id!==id);
- s.behaviorRecords=s.consultas;
- save(); renderStudentProfile("overview"); notify("Consulta removida.");
-}
-
-function createAssessment(){
+async function createAssessment(){
  const s=getStudent(currentStudent); if(!s)return;
  ensureStudentModules(s);
  const titulo=document.getElementById("avTitulo")?.value.trim();
@@ -1175,7 +1784,7 @@ function createAssessment(){
  const questoes=raw.split(/\n+/).map(x=>x.trim()).filter(Boolean).map((texto,i)=>({id:uid(),numero:i+1,texto}));
  if(!titulo||!questoes.length){notify("Informe o título e pelo menos uma questão.");return;}
  s.avaliacoes.push({id:uid(),data:today(),titulo,objetivo,questoes,resultados:[]});
- save(); notify("Avaliação criada."); renderStudentProfile("avaliacoes");
+ await saveData(); notify("Avaliação criada."); renderStudentProfile("avaliacoes");
 }
 
 function applyAssessment(id){
@@ -1186,7 +1795,7 @@ function applyAssessment(id){
  renderStudentProfile("aplicar");
 }
 
-function saveAssessmentApplication(){
+async function saveAssessmentApplication(){
  const s=getStudent(currentStudent); if(!s)return;
  ensureStudentModules(s);
  const a=s.avaliacoes.find(x=>x.id===currentAssessment); if(!a)return;
@@ -1197,18 +1806,22 @@ function saveAssessmentApplication(){
   resumo:document.getElementById("avResumo")?.value.trim()||"Aplicação concluída."
  });
  a.finalizada=true;
- save(); notify("Aplicação registrada no histórico do aluno."); currentAssessment=null; renderStudentProfile("avaliacoes");
+ await saveData(); notify("Aplicação registrada no histórico do aluno."); currentAssessment=null; renderStudentProfile("avaliacoes");
 }
 
-function saveSchoolInfo(){
+// ============================================================
+// FUNÇÕES DA ESCOLA
+// ============================================================
+
+async function saveSchoolInfo(){
  const s=getStudent(currentStudent); if(!s)return;
  ensureStudentModules(s);
  s.escola.nome=document.getElementById("escNome")?.value.trim()||"";
  s.escola.professores=document.getElementById("escProf")?.value.trim()||"";
- save(); notify("Dados da escola salvos."); renderStudentProfile("escola");
+ await saveData(); notify("Dados da escola salvos."); renderStudentProfile("escola");
 }
 
-function addSchoolRecord(){
+async function addSchoolRecord(){
  const s=getStudent(currentStudent); if(!s)return;
  ensureStudentModules(s);
  const relato=document.getElementById("escRelato")?.value.trim();
@@ -1220,53 +1833,21 @@ function addSchoolRecord(){
   assunto:document.getElementById("escAssunto")?.value.trim()||"Registro escolar",
   relato
  });
- save(); notify("Registro da escola salvo."); renderStudentProfile("escola");
+ await saveData(); notify("Registro da escola salvo."); renderStudentProfile("escola");
 }
 
-function deleteSchoolRecord(id){
+async function deleteSchoolRecord(id){
  const s=getStudent(currentStudent); if(!s)return;
  ensureStudentModules(s);
  s.escola.registros=s.escola.registros.filter(x=>x.id!==id);
- save(); renderStudentProfile("escola"); notify("Registro escolar removido.");
+ await saveData(); renderStudentProfile("escola"); notify("Registro escolar removido.");
 }
 
-function whatsappLink(s){
-
- const phone=(s.telefone||"").replace(/\D/g,"");
- const message=`Olá, aqui é o ${data.professor.nome}. Gostaria de falar sobre o atendimento do ${s.nome} marcado para esta semana. Fico à disposição.`;
-
- return `https://wa.me/55${phone}?text=${encodeURIComponent(message)}`;
-}
-
-function deleteStudent(id){
-
- const s=getStudent(id);
- if(!s)return;
-
- if(!confirm(`Excluir o aluno ${s.nome}? Esta ação também removerá seus agendamentos.`))return;
-
- data.alunos=data.alunos.filter(x=>x.id!==id);
- data.agenda=data.agenda.filter(x=>x.alunoId!==id);
- save();
-
- notify("Aluno excluído.");
- navigate("alunos");
-}
-
-function scheduleForStudent(id){
- navigate("agenda");
- setTimeout(()=>{
-   const el=document.getElementById("agendaForm");
-   if(el){
-     el.style.display="block";
-     document.getElementById("agAluno").value=id;
-     el.scrollIntoView({behavior:"smooth"});
-   }
- },100);
-}
+// ============================================================
+// FUNÇÕES DA AGENDA
+// ============================================================
 
 function renderAgenda(){
-
  const title=calendarMode==="week"
    ?`${fmtDate(dateISO(weekDates(calendarDate)[0]))} — ${fmtDate(dateISO(weekDates(calendarDate)[4]))}`
    :monthName(calendarDate);
@@ -1308,7 +1889,7 @@ function renderAgenda(){
        <div class="field">
          <label class="label">Aluno</label>
          <select id="agAluno" class="select">
-           ${data.alunos.map(a=>`<option value="${a.id}" ${a.id===currentStudent?"selected":""}>${esc(a.nome)}</option>`).join("")}
+           ${(data.alunos||[]).map(a=>`<option value="${a.id}" ${a.id===currentStudent?"selected":""}>${esc(a.nome)}</option>`).join("")}
          </select>
        </div>
 
@@ -1356,9 +1937,7 @@ function toggleAgendaForm(){
 }
 
 function renderWeek(){
-
  const dates=weekDates(calendarDate);
-
  let html=`<div style="overflow:auto"><div class="week-grid">`;
  html+=`<div class="week-head"></div>`;
 
@@ -1389,9 +1968,9 @@ function renderWeek(){
          const s=getStudent(a.alunoId);
          const t=TYPES[a.tipo];
          html+=`
-         <div class="event ${t.cls}" onclick="openStudent('${s.id}')">
-           <strong>${esc(s.nome)}</strong>
-           ${t.label}
+         <div class="event ${t?.cls || ''}" onclick="openStudent('${s?.id}')">
+           <strong>${esc(s?.nome || "Aluno removido")}</strong>
+           ${t?.label || a.tipo}
            <div class="event-actions">
              <button onclick="event.stopPropagation();togglePresence('${a.id}')">${a.presente?"Presente":"Presença"}</button>
              <button onclick="event.stopPropagation();togglePayment('${a.id}')">${a.pago?"Pago":"Pagar"}</button>
@@ -1418,37 +1997,28 @@ function quickSchedule(date,hour){
 }
 
 function renderMonth(){
-
  const y=calendarDate.getFullYear();
  const m=calendarDate.getMonth();
-
  const first=new Date(y,m,1);
  const last=new Date(y,m+1,0);
-
  let start=first.getDay();
  start=start===0?6:start-1;
-
  const total=Math.ceil((start+last.getDate())/7)*7;
-
  let html=`<div style="overflow:auto"><div class="month-grid">`;
-
  ["Seg","Ter","Qua","Qui","Sex","Sáb","Dom"].forEach(d=>{
    html+=`<div class="week-head">${d}</div>`;
  });
-
  for(let i=0;i<total;i++){
-
    const day=i-start+1;
    let d=new Date(y,m,day);
    const inMonth=d.getMonth()===m;
    const iso=dateISO(d);
    const events=activeAppointments().filter(a=>a.data===iso);
-
    html+=`
    <div class="month-day ${inMonth?"":"other"}" onclick="${inMonth?`selectMonthDay('${iso}')`:""}">
      <div class="day-number">${d.getDate()}</div>
      <div class="dot-row">
-       ${events.slice(0,7).map(a=>`<span class="dot ${TYPES[a.tipo].cls}"></span>`).join("")}
+       ${events.slice(0,7).map(a=>`<span class="dot ${TYPES[a.tipo]?.cls || ''}"></span>`).join("")}
      </div>
      <div class="day-events">
        ${events.slice(0,3).map(a=>{
@@ -1459,7 +2029,6 @@ function renderMonth(){
      </div>
    </div>`;
  }
-
  html+=`</div></div>`;
  return html;
 }
@@ -1470,9 +2039,7 @@ function selectMonthDay(day){
 }
 
 function renderDayPanel(day){
-
  const events=activeAppointments().filter(a=>a.data===day).sort((a,b)=>a.hora.localeCompare(b.hora));
-
  return `
  <div class="card" style="margin-top:16px">
    <div class="section-head">
@@ -1493,8 +2060,8 @@ function renderDayPanel(day){
        <strong style="width:45px;font-size:12px">${a.hora}</strong>
        ${avatarHTML(s,"student-avatar")}
        <div style="flex:1">
-         <div style="font-size:12px;font-weight:700;cursor:pointer" onclick="openStudent('${s.id}')">${esc(s.nome)}</div>
-         <div style="font-size:10px;color:#8a9892">${t.label}</div>
+         <div style="font-size:12px;font-weight:700;cursor:pointer" onclick="openStudent('${s?.id}')">${esc(s?.nome || "Aluno removido")}</div>
+         <div style="font-size:10px;color:#8a9892">${t?.label || a.tipo}</div>
        </div>
        <button class="btn btn-sm ${a.presente?"btn-soft":"btn-outline"}" onclick="togglePresence('${a.id}')">${a.presente?"Presente":"Presença"}</button>
        <button class="btn btn-sm ${a.pago?"btn-soft":"btn-outline"}" onclick="togglePayment('${a.id}')">${a.pago?"Pago":"Pagamento"}</button>
@@ -1504,8 +2071,7 @@ function renderDayPanel(day){
  </div>`;
 }
 
-function saveAppointment(){
-
+async function saveAppointment(){
  const alunoId=document.getElementById("agAluno").value;
  const dataValue=document.getElementById("agData").value;
  const hora=document.getElementById("agHora").value;
@@ -1517,7 +2083,6 @@ function saveAppointment(){
  }
 
  const occupied=activeAppointments().some(a=>a.data===dataValue&&a.hora===hora);
-
  if(occupied){
    notify("Este horário já possui atendimento.");
    return;
@@ -1534,51 +2099,40 @@ function saveAppointment(){
    pago:false
  });
 
- save();
+ await saveData();
  notify("Atendimento agendado.");
  renderAgenda();
 }
 
-function cancelAppointment(id){
-
+async function cancelAppointment(id){
  const a=data.agenda.find(x=>x.id===id);
  if(!a)return;
-
  if(!confirm("Cancelar este atendimento?"))return;
-
  a.status="cancelado";
- save();
+ await saveData();
  notify("Atendimento cancelado.");
  renderPage();
 }
 
-function togglePresence(id){
-
+async function togglePresence(id){
  const a=data.agenda.find(x=>x.id===id);
  if(!a)return;
-
  a.presente=!a.presente;
-
  if(a.presente)a.status="realizado";
  else a.status="agendado";
-
- save();
+ await saveData();
  notify(a.presente?"Presença registrada.":"Presença removida.");
  renderPage();
 }
 
-function togglePayment(id){
-
+async function togglePayment(id){
  const a=data.agenda.find(x=>x.id===id);
  if(!a)return;
-
  const s=getStudent(a.alunoId);
  if(!s)return;
 
  if(!a.pago){
-
    a.pago=true;
-
    data.transacoes.push({
      id:uid(),
      data:a.data,
@@ -1587,17 +2141,13 @@ function togglePayment(id){
      descricao:`Sessão de ${s.nome}`,
      valor:Number(s.valor)||0
    });
-
    notify(`Pagamento de ${money(s.valor)} registrado.`);
  }else{
-
    a.pago=false;
    data.transacoes=data.transacoes.filter(t=>t.agendaId!==a.id);
-
    notify("Pagamento revertido.");
  }
-
- save();
+ await saveData();
  renderPage();
 }
 
@@ -1627,11 +2177,15 @@ function setCalendarMode(mode){
  renderAgenda();
 }
 
+// ============================================================
+// FUNÇÕES DO FINANCEIRO
+// ============================================================
+
 function renderFinanceiro(){
  const now=new Date();
  if(typeof financeYear!=="number")financeYear=now.getFullYear();
  if(typeof financeMonth!=="number")financeMonth=now.getMonth();
- const transactions=data.transacoes.filter(t=>{const d=parseDate(t.data);return d.getFullYear()===financeYear&&d.getMonth()===financeMonth;}).sort((a,b)=>b.data.localeCompare(a.data));
+ const transactions=(data.transacoes||[]).filter(t=>{const d=parseDate(t.data);return d.getFullYear()===financeYear&&d.getMonth()===financeMonth;}).sort((a,b)=>b.data.localeCompare(a.data));
  const monthAppts=activeAppointments().filter(a=>{const d=parseDate(a.data);return d.getFullYear()===financeYear&&d.getMonth()===financeMonth;}).sort((a,b)=>(a.data+a.hora).localeCompare(b.data+b.hora));
  const received=transactions.reduce((s,t)=>s+Number(t.valor||0),0);
  const expected=monthAppts.reduce((s,a)=>s+Number(getStudent(a.alunoId)?.valor||0),0);
@@ -1653,17 +2207,22 @@ function renderFinanceiro(){
   ${rows.slice.length?`<div style="overflow:auto"><table class="finance-table"><thead><tr><th>Data</th><th>Aluno</th><th>Descrição</th><th>Valor</th><th>Status</th></tr></thead><tbody>${rows.slice.map(t=>{const s=getStudent(t.alunoId);return `<tr><td>${fmtDate(t.data)}</td><td><strong>${esc(s?.nome||"Aluno removido")}</strong></td><td>${esc(t.descricao)}</td><td><strong>${money(t.valor)}</strong></td><td class="paid">Recebido</td></tr>`}).join("")}</tbody></table></div>${rows.controls}`:`<div class="empty">Nenhum recebimento registrado em ${monthLabel}.</div>`}
  </div>
  <div class="card" style="margin-top:16px"><div class="section-title">Pendências do período</div><div class="section-sub">Atendimentos deste mês ainda não pagos.</div>
-  ${monthAppts.filter(a=>!a.pago).slice(0,10).map(a=>{const s=getStudent(a.alunoId);return `<div style="display:flex;align-items:center;gap:10px;padding:11px 0;border-top:1px solid var(--line)"><div style="flex:1;cursor:pointer" onclick="openStudent('${s.id}')"><strong>${esc(s?.nome||"Aluno")}</strong><div class="section-sub">${fmtDate(a.data)} · ${a.hora}</div></div><strong>${money(s?.valor||0)}</strong><button class="btn btn-primary btn-sm" onclick="togglePayment('${a.id}')">Registrar</button></div>`}).join("")||`<div class="empty" style="margin-top:12px">Nenhuma pendência neste período.</div>`}
+  ${monthAppts.filter(a=>!a.pago).slice(0,10).map(a=>{const s=getStudent(a.alunoId);return `<div style="display:flex;align-items:center;gap:10px;padding:11px 0;border-top:1px solid var(--line)"><div style="flex:1;cursor:pointer" onclick="openStudent('${s?.id}')"><strong>${esc(s?.nome||"Aluno")}</strong><div class="section-sub">${fmtDate(a.data)} · ${a.hora}</div></div><strong>${money(s?.valor||0)}</strong><button class="btn btn-primary btn-sm" onclick="togglePayment('${a.id}')">Registrar</button></div>`}).join("")||`<div class="empty" style="margin-top:12px">Nenhuma pendência neste período.</div>`}
  </div>`;
  lucide.createIcons();
 }
+
 function setFinancePage(page){window.financePage=page;renderFinanceiro();}
 function changeFinanceMonth(delta){const d=new Date(financeYear,financeMonth+delta,1);financeYear=d.getFullYear();financeMonth=d.getMonth();window.financePage=1;renderFinanceiro();}
+
+// ============================================================
+// FUNÇÕES DE PDF
+// ============================================================
 
 function pdfSafe(v){return String(v??"").replace(/[\r\n]+/g," ").trim();}
 
 function pdfInstance(){
-  if(!window.jspdf||!window.jspdf.jsPDF){notify("A biblioteca de PDF não foi carregada. Verifique sua conexão e tente novamente.");return null;}
+  if(!window.jspdf||!window.jspdf.jsPDF){notify("A biblioteca de PDF não foi carregada.");return null;}
   return new window.jspdf.jsPDF({unit:"mm",format:"a4"});
 }
 
@@ -1708,7 +2267,7 @@ function generateStudentPDF(id){
  });
 
  heading("Comportamento observado nas consultas");
- const br=s.behaviorRecords.slice().sort((a,b)=>a.data.localeCompare(b.data));
+ const br=s.consultas.slice().sort((a,b)=>a.data.localeCompare(b.data));
  if(!br.length)para("Nenhum registro de comportamento.");
  br.forEach(r=>{
   heading(`Consulta de ${fmtDate(r.data)}`,10);
@@ -1750,7 +2309,7 @@ function generateStudentPDF(id){
 function generateFinancePDF(){
   const doc=pdfInstance(); if(!doc)return;
   const now=new Date(),year=financeYear,m=financeMonth;
-  const monthTx=data.transacoes.filter(t=>{const d=parseDate(t.data);return d.getFullYear()===year&&d.getMonth()===m;}).sort((a,b)=>(b.data+a.id).localeCompare(a.data+b.id));
+  const monthTx=(data.transacoes||[]).filter(t=>{const d=parseDate(t.data);return d.getFullYear()===year&&d.getMonth()===m;}).sort((a,b)=>(b.data+a.id).localeCompare(a.data+b.id));
   const monthAppts=activeAppointments().filter(a=>{const d=parseDate(a.data);return d.getFullYear()===year&&d.getMonth()===m;}).sort((a,b)=>(a.data+a.hora).localeCompare(b.data+b.hora));
   const received=monthTx.reduce((sum,t)=>sum+Number(t.valor||0),0);
   const expected=monthAppts.reduce((sum,a)=>sum+Number(getStudent(a.alunoId)?.valor||0),0);
@@ -1774,26 +2333,23 @@ function generateFinancePDF(){
 }
 
 // ============================================================
-// PERFIL COMPLETO - Com histórico de evoluções e observações
+// FUNÇÕES DO PERFIL
 // ============================================================
+
 function renderPerfil(){
-
  const p=data.professor;
+ if(!p) return;
 
- // Ordenar observações e evoluções por data (mais recentes primeiro)
- const obsOrdenadas = (p.observacoes||[]).slice().sort((a,b) => b.data.localeCompare(a.data));
- const evoOrdenadas = (p.evolucoesPessoais||[]).slice().sort((a,b) => b.data.localeCompare(a.data));
+ const obsOrdenadas = (p.observacoes||[]).slice().sort((a,b) => b.data?.localeCompare(a.data) || 0);
+ const evoOrdenadas = (p.evolucoesPessoais||[]).slice().sort((a,b) => b.data?.localeCompare(a.data) || 0);
 
- // Combinar todos os registros em uma timeline
  const timeline = [];
  obsOrdenadas.forEach(o => timeline.push({...o, tipo: 'observacao'}));
  evoOrdenadas.forEach(e => timeline.push({...e, tipo: 'evolucao'}));
- timeline.sort((a,b) => b.data.localeCompare(a.data));
+ timeline.sort((a,b) => b.data?.localeCompare(a.data) || 0);
 
- // Estatísticas do profissional
- const totalAlunos = data.alunos.length;
+ const totalAlunos = (data.alunos||[]).length;
  const totalAtendimentos = activeAppointments().length;
- const totalTransacoes = data.transacoes.length;
  const totalEvolucoes = evoOrdenadas.length;
  const totalObservacoes = obsOrdenadas.length;
 
@@ -1806,7 +2362,6 @@ function renderPerfil(){
    </div>
  </div>
 
- <!-- Cards de estatísticas -->
  <div class="grid stats">
    <div class="card">
      <div class="stat-label">Alunos</div>
@@ -1832,7 +2387,6 @@ function renderPerfil(){
 
  <div class="grid" style="grid-template-columns:1fr 1.6fr;margin-top:18px">
 
-   <!-- Coluna esquerda: Avatar e dados básicos -->
    <div class="card">
      <div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding:15px">
        ${avatarHTML(p,"profile-avatar")}
@@ -1846,31 +2400,24 @@ function renderPerfil(){
      </div>
    </div>
 
-   <!-- Coluna direita: Formulário de edição -->
    <div class="card">
-
      <div class="form-grid two">
-
        <div class="field">
          <label class="label">Nome profissional</label>
          <input id="profNome" class="input" value="${esc(p.nome)}">
        </div>
-
        <div class="field">
          <label class="label">Especialidade</label>
          <input id="profEspecialidade" class="input" value="${esc(p.especialidade)}">
        </div>
-
        <div class="field" style="grid-column:1/-1">
          <label class="label">URL da foto</label>
          <input id="profFoto" class="input" value="${esc(p.foto||"")}" placeholder="https://...">
        </div>
-
        <div class="field" style="grid-column:1/-1">
          <label class="label">Bio profissional</label>
          <textarea id="profBio" class="textarea">${esc(p.bio||"")}</textarea>
        </div>
-
        <div class="field" style="grid-column:1/-1">
          <label class="label">Configurações</label>
          <div style="display:flex;gap:15px;flex-wrap:wrap;padding-top:5px">
@@ -1882,17 +2429,11 @@ function renderPerfil(){
            </label>
          </div>
        </div>
-
      </div>
-
-     <button class="btn btn-primary" onclick="saveProfile()">
-       <i data-lucide="save"></i>Salvar perfil
-     </button>
-
+     <button class="btn btn-primary" onclick="saveProfile()"><i data-lucide="save"></i>Salvar perfil</button>
    </div>
  </div>
 
- <!-- SEÇÃO: NOVA OBSERVAÇÃO -->
  <div class="card" style="margin-top:18px">
    <div class="section-head">
      <div>
@@ -1914,12 +2455,9 @@ function renderPerfil(){
      <label class="label">Observação</label>
      <textarea id="obsTexto" class="textarea" placeholder="Descreva sua observação ou reflexão..."></textarea>
    </div>
-   <button class="btn btn-primary" onclick="saveObservacao()">
-     <i data-lucide="file-text"></i>Salvar observação
-   </button>
+   <button class="btn btn-primary" onclick="saveObservacao()"><i data-lucide="file-text"></i>Salvar observação</button>
  </div>
 
- <!-- SEÇÃO: NOVA EVOLUÇÃO PESSOAL -->
  <div class="card" style="margin-top:16px">
    <div class="section-head">
      <div>
@@ -1941,12 +2479,9 @@ function renderPerfil(){
      <label class="label">Descrição</label>
      <textarea id="evoPessoalTexto" class="textarea" placeholder="Descreva sua evolução, aprendizado ou conquista..."></textarea>
    </div>
-   <button class="btn btn-primary" onclick="saveEvolucaoPessoal()">
-     <i data-lucide="trending-up"></i>Salvar evolução
-   </button>
+   <button class="btn btn-primary" onclick="saveEvolucaoPessoal()"><i data-lucide="trending-up"></i>Salvar evolução</button>
  </div>
 
- <!-- TIMELINE: Histórico completo -->
  <div class="card" style="margin-top:18px">
    <div class="section-head">
      <div>
@@ -1963,7 +2498,6 @@ function renderPerfil(){
      ${timeline.map(item => {
        const isEvolucao = item.tipo === 'evolucao';
        const dotClass = isEvolucao ? 'evolution' : 'observation';
-       const icon = isEvolucao ? 'trending-up' : 'file-text';
        const label = isEvolucao ? 'Evolução' : 'Observação';
        return `
          <div class="profile-timeline-item">
@@ -1983,17 +2517,16 @@ function renderPerfil(){
    `}
  </div>
  `;
-
  lucide.createIcons();
 }
 
 // ============================================================
-// FUNÇÕES PARA O PERFIL
+// FUNÇÕES DO PERFIL - CRUD
 // ============================================================
 
-function saveObservacao(){
+async function saveObservacao(){
  const titulo = document.getElementById("obsTitulo").value.trim() || "Observação";
- const data = document.getElementById("obsData").value || today();
+ const dataVal = document.getElementById("obsData").value || today();
  const texto = document.getElementById("obsTexto").value.trim();
 
  if(!texto){
@@ -2001,22 +2534,22 @@ function saveObservacao(){
    return;
  }
 
- data.professor.observacoes = data.professor.observacoes || [];
+ if(!data.professor.observacoes) data.professor.observacoes = [];
  data.professor.observacoes.push({
    id: uid(),
-   data: data,
+   data: dataVal,
    titulo: titulo,
    texto: texto
  });
 
- save();
+ await saveData();
  notify("Observação salva com sucesso.");
  renderPerfil();
 }
 
-function saveEvolucaoPessoal(){
+async function saveEvolucaoPessoal(){
  const titulo = document.getElementById("evoPessoalTitulo").value.trim() || "Evolução pessoal";
- const data = document.getElementById("evoPessoalData").value || today();
+ const dataVal = document.getElementById("evoPessoalData").value || today();
  const texto = document.getElementById("evoPessoalTexto").value.trim();
 
  if(!texto){
@@ -2024,20 +2557,20 @@ function saveEvolucaoPessoal(){
    return;
  }
 
- data.professor.evolucoesPessoais = data.professor.evolucoesPessoais || [];
+ if(!data.professor.evolucoesPessoais) data.professor.evolucoesPessoais = [];
  data.professor.evolucoesPessoais.push({
    id: uid(),
-   data: data,
+   data: dataVal,
    titulo: titulo,
    texto: texto
  });
 
- save();
+ await saveData();
  notify("Evolução pessoal registrada.");
  renderPerfil();
 }
 
-function deletarRegistroPessoal(id, tipo){
+async function deletarRegistroPessoal(id, tipo){
  if(!confirm("Excluir este registro?")) return;
 
  if(tipo === 'observacao'){
@@ -2046,108 +2579,126 @@ function deletarRegistroPessoal(id, tipo){
    data.professor.evolucoesPessoais = (data.professor.evolucoesPessoais||[]).filter(e => e.id !== id);
  }
 
- save();
+ await saveData();
  notify("Registro removido.");
  renderPerfil();
 }
 
-function saveProfile(){
-
+async function saveProfile(){
  const p = data.professor;
+ if(!p) return;
 
  p.nome = document.getElementById("profNome").value.trim() || "Professor ASAS";
  p.especialidade = document.getElementById("profEspecialidade").value.trim();
  p.foto = document.getElementById("profFoto").value.trim();
  p.bio = document.getElementById("profBio").value.trim();
 
- // Configurações
  p.configuracoes = p.configuracoes || {};
  p.configuracoes.notificacoes = document.getElementById("cfgNotif").checked;
  p.configuracoes.lembretes = document.getElementById("cfgLembretes").checked;
 
- save();
+ await saveData();
  updateUser();
  notify("Perfil salvo com sucesso.");
  renderPerfil();
 }
 
-function updateUser(){
+function resolveClinicalAlert(id){
+ const a=(data.clinicalAlerts||[]).find(x=>x.id===id);
+ if(!a)return;
+ a.status="resolved";
+ a.resolved_at=today();
+ saveData();
+ notify("Alerta arquivado como resolvido.");
+ renderDashboard();
+}
 
- const p=data.professor;
+// ============================================================
+// FUNÇÕES DE LOGIN/LOGOUT
+// ============================================================
 
- document.getElementById("topUserName").textContent=p.nome;
+async function login(){
+ const user = document.getElementById("loginUser").value.trim();
+ const pass = document.getElementById("loginPass").value;
 
- const a=document.getElementById("topAvatar");
+ // Tentar login com Supabase Auth
+ const result = await loginSupabase(user, pass);
 
- if(p.foto){
-   a.style.backgroundImage=`url('${p.foto}')`;
-   a.textContent="";
- }else{
-   a.style.backgroundImage="";
-   a.textContent=initials(p.nome);
+ if (result) {
+   data.session = true;
+   await saveData();
+
+   document.getElementById("loginScreen").style.display = "none";
+   document.getElementById("app").style.display = "flex";
+
+   updateUser();
+   navigate("dashboard");
  }
 }
 
-function login(){
+async function logout(){
+ await logoutSupabase();
+ data.session = false;
+ await saveData();
 
- const user=document.getElementById("loginUser").value.trim();
- const pass=document.getElementById("loginPass").value;
+ document.getElementById("app").style.display = "none";
+ document.getElementById("loginScreen").style.display = "grid";
+}
 
- if(user!=="professor"||pass!=="123"){
-   notify("Usuário ou senha inválidos.");
-   return;
+// ============================================================
+// INICIALIZAÇÃO
+// ============================================================
+
+async function init() {
+ lucide.createIcons();
+ syncClinicalAlerts();
+
+ // Carregar dados do Supabase
+ const loadedData = await loadData();
+ if (loadedData) {
+   data = loadedData;
  }
 
- data.session=true;
- save();
+ // Verificar sessão
+ const isLoggedIn = await checkSession();
 
- document.getElementById("loginScreen").style.display="none";
- document.getElementById("app").style.display="flex";
-
- updateUser();
- navigate("dashboard");
+ if (isLoggedIn) {
+   data.session = true;
+   document.getElementById("loginScreen").style.display = "none";
+   document.getElementById("app").style.display = "flex";
+   updateUser();
+   navigate("dashboard");
+ } else {
+   if (data.session) {
+     document.getElementById("loginScreen").style.display = "none";
+     document.getElementById("app").style.display = "flex";
+     updateUser();
+     navigate("dashboard");
+   } else {
+     document.getElementById("loginScreen").style.display = "grid";
+     document.getElementById("app").style.display = "none";
+   }
+ }
 }
 
-function logout(){
-
- data.session=false;
- save();
-
- document.getElementById("app").style.display="none";
- document.getElementById("loginScreen").style.display="grid";
-}
+// ============================================================
+// EVENT LISTENERS
+// ============================================================
 
 document.querySelectorAll(".nav button[data-page]").forEach(btn=>{
  btn.addEventListener("click",()=>navigate(btn.dataset.page));
 });
 
 document.getElementById("loginBtn").addEventListener("click",login);
-
 document.getElementById("loginPass").addEventListener("keydown",e=>{
  if(e.key==="Enter")login();
 });
-
 document.getElementById("logoutBtn").addEventListener("click",logout);
 
-function init(){
+// ============================================================
+// EXPOR FUNÇÕES PARA USO INLINE
+// ============================================================
 
- lucide.createIcons();
- syncClinicalAlerts();
-
- if(data.session){
-   document.getElementById("loginScreen").style.display="none";
-   document.getElementById("app").style.display="flex";
-   updateUser();
-   navigate("dashboard");
- }else{
-   document.getElementById("loginScreen").style.display="grid";
-   document.getElementById("app").style.display="none";
- }
-}
-
-init();
-
-// Expor funções para uso inline
 window.navigate=navigate;
 window.openStudent=openStudent;
 window.toggleStudentForm=toggleStudentForm;
@@ -2180,14 +2731,12 @@ window.saveProfile=saveProfile;
 window.generateStudentPDF=generateStudentPDF;
 window.generateFinancePDF=generateFinancePDF;
 window.resolveClinicalAlert=resolveClinicalAlert;
-window.reopenClinicalAlert=reopenClinicalAlert;
-window.focusAlertEvolution=focusAlertEvolution;
-
-// Novas funções do perfil
 window.saveObservacao=saveObservacao;
 window.saveEvolucaoPessoal=saveEvolucaoPessoal;
 window.deletarRegistroPessoal=deletarRegistroPessoal;
 
+// Iniciar
+init();
 </script>
 
 </body>
