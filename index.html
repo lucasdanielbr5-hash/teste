@@ -14,6 +14,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
+/* ===== TODO O CSS AQUI (mesmo do código anterior) ===== */
 *{box-sizing:border-box}
 html,body{margin:0;width:100%;height:100%;font-family:Inter,sans-serif;background:#f7f9f8;color:#263238}
 body{overflow:hidden}
@@ -640,7 +641,6 @@ async function loadDataFromSupabase() {
             return null;
         }
 
-        // Buscar professor do usuário atual
         const { data: professorData, error: profError } = await supabaseClient
             .from('professores')
             .select('*')
@@ -648,7 +648,6 @@ async function loadDataFromSupabase() {
             .maybeSingle();
         if (profError && profError.code !== 'PGRST116') throw profError;
 
-        // Buscar alunos do usuário atual
         const { data: alunosData, error: alunosError } = await supabaseClient
             .from('alunos')
             .select('*')
@@ -656,49 +655,42 @@ async function loadDataFromSupabase() {
             .order('nome');
         if (alunosError) throw alunosError;
 
-        // Buscar evoluções do usuário atual
         const { data: evolucoesData, error: evoError } = await supabaseClient
             .from('evolucoes')
             .select('*')
             .eq('user_id', userId);
         if (evoError && evoError.code !== '42703' && evoError.code !== 'PGRST116') throw evoError;
 
-        // Buscar consultas do usuário atual
         const { data: consultasData, error: consError } = await supabaseClient
             .from('consultas')
             .select('*')
             .eq('user_id', userId);
         if (consError && consError.code !== '42703' && consError.code !== 'PGRST116') throw consError;
 
-        // Buscar avaliações do usuário atual
         const { data: avaliacoesData, error: avError } = await supabaseClient
             .from('avaliacoes')
             .select('*')
             .eq('user_id', userId);
         if (avError && avError.code !== '42703' && avError.code !== 'PGRST116') throw avError;
 
-        // Buscar resultados do usuário atual
         const { data: resultadosData, error: resError } = await supabaseClient
             .from('resultados_avaliacoes')
             .select('*')
             .eq('user_id', userId);
         if (resError && resError.code !== '42703' && resError.code !== 'PGRST116') throw resError;
 
-        // Buscar escola do usuário atual
         const { data: escolaData, error: escError } = await supabaseClient
             .from('escola')
             .select('*')
             .eq('user_id', userId);
         if (escError && escError.code !== '42703' && escError.code !== 'PGRST116') throw escError;
 
-        // Buscar registros escola do usuário atual
         const { data: registrosEscolaData, error: regError } = await supabaseClient
             .from('registros_escola')
             .select('*')
             .eq('user_id', userId);
         if (regError && regError.code !== '42703' && regError.code !== 'PGRST116') throw regError;
 
-        // Buscar agenda do usuário atual
         const { data: agendaData, error: agendaError } = await supabaseClient
             .from('agenda')
             .select('*')
@@ -706,21 +698,18 @@ async function loadDataFromSupabase() {
             .order('data');
         if (agendaError) throw agendaError;
 
-        // Buscar transações do usuário atual
         const { data: transacoesData, error: transError } = await supabaseClient
             .from('transacoes')
             .select('*')
             .eq('user_id', userId);
         if (transError) throw transError;
 
-        // Buscar alertas do usuário atual
         const { data: alertasData, error: alertError } = await supabaseClient
             .from('alertas_clinicos')
             .select('*')
             .eq('user_id', userId);
         if (alertError) throw alertError;
 
-        // Buscar observações do professor
         const { data: obsProfData, error: obsError } = await supabaseClient
             .from('observacoes_professor')
             .select('*')
@@ -728,7 +717,6 @@ async function loadDataFromSupabase() {
             .order('data', { ascending: false });
         if (obsError && obsError.code !== '42703' && obsError.code !== 'PGRST116') throw obsError;
 
-        // Buscar evoluções do professor
         const { data: evoProfData, error: evoProfError } = await supabaseClient
             .from('evolucoes_professor')
             .select('*')
@@ -781,7 +769,7 @@ async function loadDataFromSupabase() {
 }
 
 // ============================================================
-// FUNÇÕES SUPABASE - SAVE (TODAS CORRIGIDAS)
+// FUNÇÕES SUPABASE - SAVE
 // ============================================================
 
 async function saveAluno(aluno) {
@@ -1175,61 +1163,7 @@ async function saveData() {
 }
 
 // ============================================================
-// NAVEGAÇÃO
-// ============================================================
-
-function navigate(page) {
-    currentPage = page;
-    currentStudent = null;
-
-    document.querySelectorAll(".view").forEach(x => x.classList.remove("active"));
-    const target = document.getElementById("page-" + page);
-    if (target) target.classList.add("active");
-
-    document.querySelectorAll(".nav button").forEach(x => {
-        x.classList.toggle("active", x.dataset.page === page);
-    });
-
-    const info = {
-        dashboard: ["layout-dashboard", "Dashboard"],
-        alunos: ["users", "Alunos"],
-        agenda: ["calendar-days", "Agenda"],
-        financeiro: ["wallet-cards", "Financeiro"],
-        perfil: ["user-round", "Meu Perfil"]
-    };
-
-    if (info[page]) {
-        document.getElementById("pageTitle").innerHTML = `<i data-lucide="${info[page][0]}"></i>${info[page][1]}`;
-    }
-
-    renderPage();
-    lucide.createIcons();
-}
-
-function renderPage() {
-    if (currentPage === "dashboard") renderDashboard();
-    if (currentPage === "alunos") renderAlunos();
-    if (currentPage === "agenda") renderAgenda();
-    if (currentPage === "financeiro") renderFinanceiro();
-    if (currentPage === "perfil") renderPerfil();
-}
-
-function updateUser() {
-    const p = data.professor;
-    if (!p) return;
-    document.getElementById("topUserName").textContent = p.nome;
-    const a = document.getElementById("topAvatar");
-    if (p.foto) {
-        a.style.backgroundImage = `url('${p.foto}')`;
-        a.textContent = "";
-    } else {
-        a.style.backgroundImage = "";
-        a.textContent = initials(p.nome);
-    }
-}
-
-// ============================================================
-// DASHBOARD
+// FUNÇÕES DE RENDERIZAÇÃO - DASHBOARD
 // ============================================================
 
 function renderDashboard() {
@@ -1320,7 +1254,7 @@ function renderDashboard() {
 }
 
 // ============================================================
-// ALUNOS
+// FUNÇÕES DE RENDERIZAÇÃO - ALUNOS
 // ============================================================
 
 function renderAlunos() {
@@ -1425,7 +1359,7 @@ async function saveStudent() {
 }
 
 // ============================================================
-// PRONTUÁRIO
+// FUNÇÕES DE RENDERIZAÇÃO - PRONTUÁRIO
 // ============================================================
 
 function openStudent(id) {
@@ -1587,7 +1521,7 @@ async function saveStudentEdit() {
 }
 
 // ============================================================
-// CONSULTAS
+// FUNÇÕES DE CONSULTA
 // ============================================================
 
 function newConsultationForm() {
@@ -1644,7 +1578,7 @@ function openConsultation(id) {
 }
 
 // ============================================================
-// AVALIAÇÕES
+// FUNÇÕES DE AVALIAÇÃO
 // ============================================================
 
 async function createAssessment() {
@@ -1697,7 +1631,7 @@ async function saveAssessmentApplication() {
 }
 
 // ============================================================
-// ESCOLA
+// FUNÇÕES DE ESCOLA
 // ============================================================
 
 async function saveSchoolInfo() {
@@ -1747,7 +1681,7 @@ async function deleteSchoolRecord(id) {
 }
 
 // ============================================================
-// AGENDA
+// FUNÇÕES DE AGENDA
 // ============================================================
 
 function renderAgenda() {
@@ -2018,7 +1952,7 @@ function setCalendarMode(mode) {
 }
 
 // ============================================================
-// FINANCEIRO
+// FUNÇÕES DE FINANCEIRO
 // ============================================================
 
 function renderFinanceiro() {
@@ -2094,7 +2028,192 @@ function setFinancePage(page) { window.financePage = page; renderFinanceiro(); }
 function changeFinanceMonth(delta) { const d = new Date(financeYear, financeMonth + delta, 1); financeYear = d.getFullYear(); financeMonth = d.getMonth(); window.financePage = 1; renderFinanceiro(); }
 
 // ============================================================
-// PDF
+// FUNÇÕES DE PERFIL
+// ============================================================
+
+function renderPerfil() {
+    const p = data.professor;
+    if (!p) return;
+
+    const obsOrdenadas = (p.observacoes || []).slice().sort((a, b) => b.data?.localeCompare(a.data) || 0);
+    const evoOrdenadas = (p.evolucoesPessoais || []).slice().sort((a, b) => b.data?.localeCompare(a.data) || 0);
+
+    const timeline = [];
+    obsOrdenadas.forEach(o => timeline.push({ ...o, tipo: 'observacao' }));
+    evoOrdenadas.forEach(e => timeline.push({ ...e, tipo: 'evolucao' }));
+    timeline.sort((a, b) => b.data?.localeCompare(a.data) || 0);
+
+    const totalAlunos = (data.alunos || []).length;
+    const totalAtendimentos = activeAppointments().length;
+    const totalEvolucoes = evoOrdenadas.length;
+    const totalObservacoes = obsOrdenadas.length;
+
+    document.getElementById("page-perfil").innerHTML = `
+        <div class="section-head"><div><div class="section-title">Meu Perfil</div><div class="section-sub">Gerencie suas informações pessoais e acompanhe sua trajetória profissional.</div></div></div>
+
+        <div class="grid stats">
+            <div class="card"><div class="stat-label">Alunos</div><div class="stat-value">${totalAlunos}</div><div class="stat-sub">Ativos na base</div></div>
+            <div class="card"><div class="stat-label">Atendimentos</div><div class="stat-value">${totalAtendimentos}</div><div class="stat-sub">Agendamentos totais</div></div>
+            <div class="card"><div class="stat-label">Evoluções</div><div class="stat-value">${totalEvolucoes}</div><div class="stat-sub">Registros próprios</div></div>
+            <div class="card"><div class="stat-label">Observações</div><div class="stat-value">${totalObservacoes}</div><div class="stat-sub">Anotações pessoais</div></div>
+        </div>
+
+        <div class="grid" style="grid-template-columns:1fr 1.6fr;margin-top:18px">
+            <div class="card">
+                <div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding:15px">
+                    ${avatarHTML(p, "profile-avatar")}
+                    <div style="font-size:18px;font-weight:700;margin-top:12px">${esc(p.nome)}</div>
+                    <div style="font-size:11px;color:#8a9892;margin-top:4px">${esc(p.especialidade)}</div>
+                    <div style="font-size:11px;color:#8a9892;margin-top:4px">${p.bio ? esc(p.bio) : ""}</div>
+                    <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
+                        <span class="tag">${totalAlunos} alunos</span>
+                        <span class="tag">${totalAtendimentos} atendimentos</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="form-grid two">
+                    <div class="field"><label class="label">Nome profissional</label><input id="profNome" class="input" value="${esc(p.nome)}"></div>
+                    <div class="field"><label class="label">Especialidade</label><input id="profEspecialidade" class="input" value="${esc(p.especialidade)}"></div>
+                    <div class="field" style="grid-column:1/-1"><label class="label">URL da foto</label><input id="profFoto" class="input" value="${esc(p.foto || "")}" placeholder="https://..."></div>
+                    <div class="field" style="grid-column:1/-1"><label class="label">Bio profissional</label><textarea id="profBio" class="textarea">${esc(p.bio || "")}</textarea></div>
+                    <div class="field" style="grid-column:1/-1">
+                        <label class="label">Configurações</label>
+                        <div style="display:flex;gap:15px;flex-wrap:wrap;padding-top:5px">
+                            <label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer"><input type="checkbox" id="cfgNotif" ${p.configuracoes?.notificacoes !== false ? "checked" : ""}> Notificações</label>
+                            <label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer"><input type="checkbox" id="cfgLembretes" ${p.configuracoes?.lembretes !== false ? "checked" : ""}> Lembretes</label>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="saveProfile()"><i data-lucide="save"></i>Salvar perfil</button>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top:18px">
+            <div class="section-head"><div><div class="section-title">Nova Observação</div><div class="section-sub">Registre anotações pessoais, reflexões ou lembretes sobre sua prática.</div></div></div>
+            <div class="form-grid two">
+                <div class="field"><label class="label">Título</label><input id="obsTitulo" class="input" placeholder="Ex.: Reflexão sobre atendimento"></div>
+                <div class="field"><label class="label">Data</label><input id="obsData" class="input" type="date" value="${today()}"></div>
+            </div>
+            <div class="field"><label class="label">Observação</label><textarea id="obsTexto" class="textarea" placeholder="Descreva sua observação ou reflexão..."></textarea></div>
+            <button class="btn btn-primary" onclick="saveObservacao()"><i data-lucide="file-text"></i>Salvar observação</button>
+        </div>
+
+        <div class="card" style="margin-top:16px">
+            <div class="section-head"><div><div class="section-title">Nova Evolução Pessoal</div><div class="section-sub">Registre marcos, aprendizados ou mudanças na sua prática profissional.</div></div></div>
+            <div class="form-grid two">
+                <div class="field"><label class="label">Título</label><input id="evoPessoalTitulo" class="input" placeholder="Ex.: Curso de Neuropsicopedagogia"></div>
+                <div class="field"><label class="label">Data</label><input id="evoPessoalData" class="input" type="date" value="${today()}"></div>
+            </div>
+            <div class="field"><label class="label">Descrição</label><textarea id="evoPessoalTexto" class="textarea" placeholder="Descreva sua evolução, aprendizado ou conquista..."></textarea></div>
+            <button class="btn btn-primary" onclick="saveEvolucaoPessoal()"><i data-lucide="trending-up"></i>Salvar evolução</button>
+        </div>
+
+        <div class="card" style="margin-top:18px">
+            <div class="section-head"><div><div class="section-title">Linha do Tempo</div><div class="section-sub">Histórico de observações e evoluções pessoais.</div></div>${timeline.length > 0 ? `<span style="font-size:11px;color:#89968f">${timeline.length} registros</span>` : ''}</div>
+            ${timeline.length === 0 ? `<div class="empty">Nenhuma observação ou evolução registrada ainda.</div>` : `
+                <div style="max-height:400px;overflow-y:auto">
+                ${timeline.map(item => {
+                    const isEvolucao = item.tipo === 'evolucao';
+                    const dotClass = isEvolucao ? 'evolution' : 'observation';
+                    const label = isEvolucao ? 'Evolução' : 'Observação';
+                    return `
+                        <div class="profile-timeline-item">
+                            <div class="profile-timeline-dot ${dotClass}"></div>
+                            <div class="profile-timeline-content">
+                                <div class="title">${esc(item.titulo || label)}</div>
+                                <div class="meta">${fmtDate(item.data)} · ${label}<button style="border:0;background:none;color:#a3aea9;margin-left:10px;font-size:10px;cursor:pointer" onclick="deletarRegistroPessoal('${item.id}','${item.tipo}')">Excluir</button></div>
+                                <div class="text">${esc(item.texto || item.descricao || "")}</div>
+                            </div>
+                        </div>`;
+                }).join("")}
+                </div>
+            `}
+        </div>
+    `;
+    lucide.createIcons();
+}
+
+// ============================================================
+// FUNÇÕES PERFIL - CRUD
+// ============================================================
+
+async function saveObservacao() {
+    const titulo = document.getElementById("obsTitulo").value.trim() || "Observação";
+    const dataVal = document.getElementById("obsData").value || today();
+    const texto = document.getElementById("obsTexto").value.trim();
+
+    if (!texto) { notify("Escreva a observação antes de salvar."); return; }
+
+    if (!data.professor.observacoes) data.professor.observacoes = [];
+    data.professor.observacoes.push({ id: uid(), data: dataVal, titulo, texto });
+
+    await saveData();
+    notify("Observação salva com sucesso.");
+    renderPerfil();
+}
+
+async function saveEvolucaoPessoal() {
+    const titulo = document.getElementById("evoPessoalTitulo").value.trim() || "Evolução pessoal";
+    const dataVal = document.getElementById("evoPessoalData").value || today();
+    const texto = document.getElementById("evoPessoalTexto").value.trim();
+
+    if (!texto) { notify("Descreva sua evolução antes de salvar."); return; }
+
+    if (!data.professor.evolucoesPessoais) data.professor.evolucoesPessoais = [];
+    data.professor.evolucoesPessoais.push({ id: uid(), data: dataVal, titulo, texto });
+
+    await saveData();
+    notify("Evolução pessoal registrada.");
+    renderPerfil();
+}
+
+async function deletarRegistroPessoal(id, tipo) {
+    if (!confirm("Excluir este registro?")) return;
+
+    if (tipo === 'observacao') {
+        data.professor.observacoes = (data.professor.observacoes || []).filter(o => o.id !== id);
+    } else if (tipo === 'evolucao') {
+        data.professor.evolucoesPessoais = (data.professor.evolucoesPessoais || []).filter(e => e.id !== id);
+    }
+
+    await saveData();
+    notify("Registro removido.");
+    renderPerfil();
+}
+
+async function saveProfile() {
+    const p = data.professor;
+    if (!p) return;
+
+    p.nome = document.getElementById("profNome").value.trim() || "Professor ASAS";
+    p.especialidade = document.getElementById("profEspecialidade").value.trim();
+    p.foto = document.getElementById("profFoto").value.trim();
+    p.bio = document.getElementById("profBio").value.trim();
+
+    p.configuracoes = p.configuracoes || {};
+    p.configuracoes.notificacoes = document.getElementById("cfgNotif").checked;
+    p.configuracoes.lembretes = document.getElementById("cfgLembretes").checked;
+
+    await saveData();
+    updateUser();
+    notify("Perfil salvo com sucesso.");
+    renderPerfil();
+}
+
+function resolveClinicalAlert(id) {
+    const a = (data.clinicalAlerts || []).find(x => x.id === id);
+    if (!a) return;
+    a.status = "resolved";
+    a.resolved_at = today();
+    saveData();
+    notify("Alerta arquivado como resolvido.");
+    renderDashboard();
+}
+
+// ============================================================
+// FUNÇÕES DE PDF
 // ============================================================
 
 function pdfSafe(v) { return String(v ?? "").replace(/[\r\n]+/g, " ").trim(); }
@@ -2285,188 +2404,57 @@ function generateFinancePDF() {
 }
 
 // ============================================================
-// PERFIL
+// NAVEGAÇÃO
 // ============================================================
 
-function renderPerfil() {
-    const p = data.professor;
-    if (!p) return;
+function navigate(page) {
+    currentPage = page;
+    currentStudent = null;
 
-    const obsOrdenadas = (p.observacoes || []).slice().sort((a, b) => b.data?.localeCompare(a.data) || 0);
-    const evoOrdenadas = (p.evolucoesPessoais || []).slice().sort((a, b) => b.data?.localeCompare(a.data) || 0);
+    document.querySelectorAll(".view").forEach(x => x.classList.remove("active"));
+    const target = document.getElementById("page-" + page);
+    if (target) target.classList.add("active");
 
-    const timeline = [];
-    obsOrdenadas.forEach(o => timeline.push({ ...o, tipo: 'observacao' }));
-    evoOrdenadas.forEach(e => timeline.push({ ...e, tipo: 'evolucao' }));
-    timeline.sort((a, b) => b.data?.localeCompare(a.data) || 0);
+    document.querySelectorAll(".nav button").forEach(x => {
+        x.classList.toggle("active", x.dataset.page === page);
+    });
 
-    const totalAlunos = (data.alunos || []).length;
-    const totalAtendimentos = activeAppointments().length;
-    const totalEvolucoes = evoOrdenadas.length;
-    const totalObservacoes = obsOrdenadas.length;
+    const info = {
+        dashboard: ["layout-dashboard", "Dashboard"],
+        alunos: ["users", "Alunos"],
+        agenda: ["calendar-days", "Agenda"],
+        financeiro: ["wallet-cards", "Financeiro"],
+        perfil: ["user-round", "Meu Perfil"]
+    };
 
-    document.getElementById("page-perfil").innerHTML = `
-        <div class="section-head"><div><div class="section-title">Meu Perfil</div><div class="section-sub">Gerencie suas informações pessoais e acompanhe sua trajetória profissional.</div></div></div>
+    if (info[page]) {
+        document.getElementById("pageTitle").innerHTML = `<i data-lucide="${info[page][0]}"></i>${info[page][1]}`;
+    }
 
-        <div class="grid stats">
-            <div class="card"><div class="stat-label">Alunos</div><div class="stat-value">${totalAlunos}</div><div class="stat-sub">Ativos na base</div></div>
-            <div class="card"><div class="stat-label">Atendimentos</div><div class="stat-value">${totalAtendimentos}</div><div class="stat-sub">Agendamentos totais</div></div>
-            <div class="card"><div class="stat-label">Evoluções</div><div class="stat-value">${totalEvolucoes}</div><div class="stat-sub">Registros próprios</div></div>
-            <div class="card"><div class="stat-label">Observações</div><div class="stat-value">${totalObservacoes}</div><div class="stat-sub">Anotações pessoais</div></div>
-        </div>
-
-        <div class="grid" style="grid-template-columns:1fr 1.6fr;margin-top:18px">
-            <div class="card">
-                <div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding:15px">
-                    ${avatarHTML(p, "profile-avatar")}
-                    <div style="font-size:18px;font-weight:700;margin-top:12px">${esc(p.nome)}</div>
-                    <div style="font-size:11px;color:#8a9892;margin-top:4px">${esc(p.especialidade)}</div>
-                    <div style="font-size:11px;color:#8a9892;margin-top:4px">${p.bio ? esc(p.bio) : ""}</div>
-                    <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
-                        <span class="tag">${totalAlunos} alunos</span>
-                        <span class="tag">${totalAtendimentos} atendimentos</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="form-grid two">
-                    <div class="field"><label class="label">Nome profissional</label><input id="profNome" class="input" value="${esc(p.nome)}"></div>
-                    <div class="field"><label class="label">Especialidade</label><input id="profEspecialidade" class="input" value="${esc(p.especialidade)}"></div>
-                    <div class="field" style="grid-column:1/-1"><label class="label">URL da foto</label><input id="profFoto" class="input" value="${esc(p.foto || "")}" placeholder="https://..."></div>
-                    <div class="field" style="grid-column:1/-1"><label class="label">Bio profissional</label><textarea id="profBio" class="textarea">${esc(p.bio || "")}</textarea></div>
-                    <div class="field" style="grid-column:1/-1">
-                        <label class="label">Configurações</label>
-                        <div style="display:flex;gap:15px;flex-wrap:wrap;padding-top:5px">
-                            <label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer"><input type="checkbox" id="cfgNotif" ${p.configuracoes?.notificacoes !== false ? "checked" : ""}> Notificações</label>
-                            <label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer"><input type="checkbox" id="cfgLembretes" ${p.configuracoes?.lembretes !== false ? "checked" : ""}> Lembretes</label>
-                        </div>
-                    </div>
-                </div>
-                <button class="btn btn-primary" onclick="saveProfile()"><i data-lucide="save"></i>Salvar perfil</button>
-            </div>
-        </div>
-
-        <div class="card" style="margin-top:18px">
-            <div class="section-head"><div><div class="section-title">Nova Observação</div><div class="section-sub">Registre anotações pessoais, reflexões ou lembretes sobre sua prática.</div></div></div>
-            <div class="form-grid two">
-                <div class="field"><label class="label">Título</label><input id="obsTitulo" class="input" placeholder="Ex.: Reflexão sobre atendimento"></div>
-                <div class="field"><label class="label">Data</label><input id="obsData" class="input" type="date" value="${today()}"></div>
-            </div>
-            <div class="field"><label class="label">Observação</label><textarea id="obsTexto" class="textarea" placeholder="Descreva sua observação ou reflexão..."></textarea></div>
-            <button class="btn btn-primary" onclick="saveObservacao()"><i data-lucide="file-text"></i>Salvar observação</button>
-        </div>
-
-        <div class="card" style="margin-top:16px">
-            <div class="section-head"><div><div class="section-title">Nova Evolução Pessoal</div><div class="section-sub">Registre marcos, aprendizados ou mudanças na sua prática profissional.</div></div></div>
-            <div class="form-grid two">
-                <div class="field"><label class="label">Título</label><input id="evoPessoalTitulo" class="input" placeholder="Ex.: Curso de Neuropsicopedagogia"></div>
-                <div class="field"><label class="label">Data</label><input id="evoPessoalData" class="input" type="date" value="${today()}"></div>
-            </div>
-            <div class="field"><label class="label">Descrição</label><textarea id="evoPessoalTexto" class="textarea" placeholder="Descreva sua evolução, aprendizado ou conquista..."></textarea></div>
-            <button class="btn btn-primary" onclick="saveEvolucaoPessoal()"><i data-lucide="trending-up"></i>Salvar evolução</button>
-        </div>
-
-        <div class="card" style="margin-top:18px">
-            <div class="section-head"><div><div class="section-title">Linha do Tempo</div><div class="section-sub">Histórico de observações e evoluções pessoais.</div></div>${timeline.length > 0 ? `<span style="font-size:11px;color:#89968f">${timeline.length} registros</span>` : ''}</div>
-            ${timeline.length === 0 ? `<div class="empty">Nenhuma observação ou evolução registrada ainda.</div>` : `
-                <div style="max-height:400px;overflow-y:auto">
-                ${timeline.map(item => {
-                    const isEvolucao = item.tipo === 'evolucao';
-                    const dotClass = isEvolucao ? 'evolution' : 'observation';
-                    const label = isEvolucao ? 'Evolução' : 'Observação';
-                    return `
-                        <div class="profile-timeline-item">
-                            <div class="profile-timeline-dot ${dotClass}"></div>
-                            <div class="profile-timeline-content">
-                                <div class="title">${esc(item.titulo || label)}</div>
-                                <div class="meta">${fmtDate(item.data)} · ${label}<button style="border:0;background:none;color:#a3aea9;margin-left:10px;font-size:10px;cursor:pointer" onclick="deletarRegistroPessoal('${item.id}','${item.tipo}')">Excluir</button></div>
-                                <div class="text">${esc(item.texto || item.descricao || "")}</div>
-                            </div>
-                        </div>`;
-                }).join("")}
-                </div>
-            `}
-        </div>
-    `;
+    renderPage();
     lucide.createIcons();
 }
 
-// ============================================================
-// PERFIL - CRUD
-// ============================================================
-
-async function saveObservacao() {
-    const titulo = document.getElementById("obsTitulo").value.trim() || "Observação";
-    const dataVal = document.getElementById("obsData").value || today();
-    const texto = document.getElementById("obsTexto").value.trim();
-
-    if (!texto) { notify("Escreva a observação antes de salvar."); return; }
-
-    if (!data.professor.observacoes) data.professor.observacoes = [];
-    data.professor.observacoes.push({ id: uid(), data: dataVal, titulo, texto });
-
-    await saveData();
-    notify("Observação salva com sucesso.");
-    renderPerfil();
+function renderPage() {
+    if (currentPage === "dashboard") renderDashboard();
+    if (currentPage === "alunos") renderAlunos();
+    if (currentPage === "agenda") renderAgenda();
+    if (currentPage === "financeiro") renderFinanceiro();
+    if (currentPage === "perfil") renderPerfil();
 }
 
-async function saveEvolucaoPessoal() {
-    const titulo = document.getElementById("evoPessoalTitulo").value.trim() || "Evolução pessoal";
-    const dataVal = document.getElementById("evoPessoalData").value || today();
-    const texto = document.getElementById("evoPessoalTexto").value.trim();
-
-    if (!texto) { notify("Descreva sua evolução antes de salvar."); return; }
-
-    if (!data.professor.evolucoesPessoais) data.professor.evolucoesPessoais = [];
-    data.professor.evolucoesPessoais.push({ id: uid(), data: dataVal, titulo, texto });
-
-    await saveData();
-    notify("Evolução pessoal registrada.");
-    renderPerfil();
-}
-
-async function deletarRegistroPessoal(id, tipo) {
-    if (!confirm("Excluir este registro?")) return;
-
-    if (tipo === 'observacao') {
-        data.professor.observacoes = (data.professor.observacoes || []).filter(o => o.id !== id);
-    } else if (tipo === 'evolucao') {
-        data.professor.evolucoesPessoais = (data.professor.evolucoesPessoais || []).filter(e => e.id !== id);
-    }
-
-    await saveData();
-    notify("Registro removido.");
-    renderPerfil();
-}
-
-async function saveProfile() {
+function updateUser() {
     const p = data.professor;
     if (!p) return;
-
-    p.nome = document.getElementById("profNome").value.trim() || "Professor ASAS";
-    p.especialidade = document.getElementById("profEspecialidade").value.trim();
-    p.foto = document.getElementById("profFoto").value.trim();
-    p.bio = document.getElementById("profBio").value.trim();
-
-    p.configuracoes = p.configuracoes || {};
-    p.configuracoes.notificacoes = document.getElementById("cfgNotif").checked;
-    p.configuracoes.lembretes = document.getElementById("cfgLembretes").checked;
-
-    await saveData();
-    updateUser();
-    notify("Perfil salvo com sucesso.");
-    renderPerfil();
-}
-
-function resolveClinicalAlert(id) {
-    const a = (data.clinicalAlerts || []).find(x => x.id === id);
-    if (!a) return;
-    a.status = "resolved";
-    a.resolved_at = today();
-    saveData();
-    notify("Alerta arquivado como resolvido.");
-    renderDashboard();
+    document.getElementById("topUserName").textContent = p.nome;
+    const a = document.getElementById("topAvatar");
+    if (p.foto) {
+        a.style.backgroundImage = `url('${p.foto}')`;
+        a.textContent = "";
+    } else {
+        a.style.backgroundImage = "";
+        a.textContent = initials(p.nome);
+    }
 }
 
 // ============================================================
