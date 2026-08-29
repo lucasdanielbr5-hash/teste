@@ -1,3233 +1,1436 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ASAS • Gestão Psicopedagógica</title>
-
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://unpkg.com/lucide@latest"></script>
-
-<script>
-tailwind.config = {
-    theme: {
-        extend: {
-            colors: {
-                asas: {
-                    50: '#f5f7ff',
-                    100: '#e9edff',
-                    200: '#d8ddff',
-                    300: '#b9c1ff',
-                    400: '#929eff',
-                    500: '#6675f5',
-                    600: '#515fe4',
-                    700: '#434ec4',
-                    800: '#38419d',
-                    900: '#30377d'
-                }
-            },
-            boxShadow: {
-                soft: '0 10px 35px rgba(15, 23, 42, .06)',
-                card: '0 2px 10px rgba(15, 23, 42, .04)'
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PsicoGest · Plataforma Clínica</title>
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <!-- Tailwind via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome (ícones) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <style>
+        * {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        body {
+            background: #f4f6f9;
+            height: 100vh;
+            overflow: hidden;
+        }
+        /* Sidebar fixa */
+        .sidebar {
+            width: 240px;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background: #ffffff;
+            box-shadow: 2px 0 12px rgba(0, 0, 0, 0.04);
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            padding: 24px 16px;
+            transition: transform 0.2s ease;
+        }
+        .sidebar-brand {
+            font-weight: 700;
+            font-size: 20px;
+            color: #1e293b;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 32px;
+        }
+        .sidebar-brand i {
+            color: #4f8b7a;
+            font-size: 26px;
+        }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: 12px;
+            color: #475569;
+            font-weight: 500;
+            font-size: 15px;
+            transition: all 0.15s;
+            cursor: pointer;
+            margin-bottom: 4px;
+        }
+        .nav-item:hover {
+            background: #f1f5f9;
+            color: #0f172a;
+        }
+        .nav-item.active {
+            background: #eaf3ef;
+            color: #1e4d3e;
+            font-weight: 600;
+        }
+        .nav-item i {
+            width: 22px;
+            text-align: center;
+            font-size: 18px;
+        }
+        .sidebar-footer {
+            margin-top: auto;
+            border-top: 1px solid #e9edf2;
+            padding-top: 20px;
+            font-size: 13px;
+            color: #94a3b8;
+        }
+        /* Main content */
+        .main-content {
+            margin-left: 240px;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 28px 32px 32px 32px;
+            background: #f4f6f9;
+        }
+        /* Cards e elementos */
+        .card {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
+            transition: box-shadow 0.2s;
+        }
+        .card:hover {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+        }
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #0f172a;
+            letter-spacing: -0.5px;
+        }
+        .stat-label {
+            font-size: 14px;
+            color: #64748b;
+            font-weight: 500;
+        }
+        .badge-pastel {
+            background: #eaf3ef;
+            color: #1e4d3e;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .btn-primary {
+            background: #4f8b7a;
+            color: white;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 14px;
+            border: none;
+            transition: background 0.15s;
+            cursor: pointer;
+        }
+        .btn-primary:hover {
+            background: #3d7264;
+        }
+        .btn-secondary {
+            background: #e9edf2;
+            color: #1e293b;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 14px;
+            border: none;
+            transition: background 0.15s;
+            cursor: pointer;
+        }
+        .btn-secondary:hover {
+            background: #d1d9e2;
+        }
+        .input-field {
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 10px 14px;
+            font-size: 14px;
+            width: 100%;
+            transition: border 0.2s;
+            background: #fafcff;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #4f8b7a;
+            box-shadow: 0 0 0 3px rgba(79, 139, 122, 0.15);
+        }
+        .tag {
+            background: #eef2f6;
+            color: #1e293b;
+            padding: 4px 14px;
+            border-radius: 40px;
+            font-size: 13px;
+            font-weight: 500;
+            display: inline-block;
+            margin: 4px 6px 4px 0;
+        }
+        .tag-removable {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #eaf3ef;
+            color: #1e4d3e;
+            padding: 4px 12px 4px 16px;
+            border-radius: 40px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .tag-removable i {
+            cursor: pointer;
+            font-size: 12px;
+            opacity: 0.6;
+            transition: opacity 0.15s;
+        }
+        .tag-removable i:hover {
+            opacity: 1;
+        }
+        .agenda-hour {
+            border-bottom: 1px solid #f0f2f5;
+            padding: 6px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #334155;
+            min-height: 44px;
+        }
+        .agenda-hour .hour-label {
+            width: 60px;
+            font-weight: 500;
+            color: #64748b;
+        }
+        .agenda-event {
+            background: #eaf3ef;
+            border-radius: 8px;
+            padding: 4px 14px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #1e4d3e;
+            display: inline-block;
+            margin: 2px 4px 2px 0;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .agenda-event:hover {
+            background: #d4e6df;
+        }
+        .month-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+        }
+        .month-day {
+            background: white;
+            border-radius: 12px;
+            padding: 12px 6px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 500;
+            color: #1e293b;
+            transition: background 0.15s;
+            cursor: pointer;
+            min-height: 72px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+        }
+        .month-day:hover {
+            background: #f1f5f9;
+        }
+        .month-day .day-number {
+            font-weight: 600;
+            font-size: 16px;
+        }
+        .month-day .day-dot {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #4f8b7a;
+            margin: 2px 2px 0 0;
+        }
+        .month-day .day-dot.multiple {
+            background: #a8c4b8;
+        }
+        .month-day.other-month {
+            color: #b0b8c4;
+        }
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid #eef2f6;
+        }
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #e9edf2;
+            border: 3px solid #ffffff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+        }
+        .profile-avatar-sm {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #e9edf2;
+        }
+        .observacao-item {
+            background: #fafcff;
+            border-left: 4px solid #4f8b7a;
+            padding: 14px 18px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+        }
+        .observacao-item .data {
+            font-size: 12px;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+        .hidden-section {
+            display: none;
+        }
+        .transition-fade {
+            animation: fadeIn 0.2s ease;
+        }
+        @keyframes fadeIn {
+            0% { opacity: 0.4; transform: translateY(4px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        /* Scroll custom */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 6px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        /* Ajustes mobile */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+                padding: 16px;
             }
         }
-    }
-}
-</script>
-
-<style>
-* {
-    box-sizing: border-box;
-}
-
-html,
-body {
-    margin: 0;
-    min-height: 100%;
-    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    background: #f7f8fc;
-    color: #172033;
-}
-
-body {
-    overflow-x: hidden;
-}
-
-button,
-input,
-select,
-textarea {
-    font: inherit;
-}
-
-button {
-    cursor: pointer;
-}
-
-::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-}
-
-::-webkit-scrollbar-track {
-    background: #f1f3f8;
-}
-
-::-webkit-scrollbar-thumb {
-    background: #c9ceda;
-    border-radius: 20px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: #aeb5c5;
-}
-
-.sidebar {
-    width: 250px;
-    position: fixed;
-    inset: 0 auto 0 0;
-    z-index: 50;
-    background: #ffffff;
-    border-right: 1px solid #e8ebf2;
-    transition: transform .25s ease;
-}
-
-.main-area {
-    margin-left: 250px;
-    min-height: 100vh;
-}
-
-@media (max-width: 1024px) {
-    .sidebar {
-        transform: translateX(-100%);
-    }
-
-    .sidebar.open {
-        transform: translateX(0);
-    }
-
-    .main-area {
-        margin-left: 0;
-    }
-}
-
-.nav-link {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    width: 100%;
-    padding: 11px 13px;
-    border-radius: 12px;
-    color: #687287;
-    font-size: 14px;
-    font-weight: 600;
-    transition: all .15s ease;
-    border: 1px solid transparent;
-}
-
-.nav-link:hover {
-    background: #f6f7fb;
-    color: #27304a;
-}
-
-.nav-link.active {
-    background: #eef0ff;
-    color: #515fe4;
-    border-color: #e1e5ff;
-}
-
-.nav-link i {
-    width: 19px;
-    height: 19px;
-}
-
-.page {
-    display: none;
-}
-
-.page.active {
-    display: block;
-    animation: pageIn .22s ease;
-}
-
-@keyframes pageIn {
-    from {
-        opacity: 0;
-        transform: translateY(5px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.card {
-    background: #ffffff;
-    border: 1px solid #e9ebf2;
-    border-radius: 18px;
-    box-shadow: 0 2px 10px rgba(15, 23, 42, .025);
-}
-
-.metric-card {
-    position: relative;
-    overflow: hidden;
-}
-
-.metric-card::after {
-    content: "";
-    position: absolute;
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    right: -35px;
-    top: -35px;
-    background: rgba(102, 117, 245, .06);
-}
-
-.form-label {
-    display: block;
-    margin-bottom: 6px;
-    color: #657087;
-    font-size: 12px;
-    font-weight: 700;
-}
-
-.input,
-.select,
-.textarea {
-    width: 100%;
-    border: 1px solid #dfe3ec;
-    background: #fbfcfe;
-    color: #172033;
-    border-radius: 11px;
-    outline: none;
-    padding: 10px 12px;
-    font-size: 14px;
-    transition: border-color .15s, box-shadow .15s, background .15s;
-}
-
-.input:focus,
-.select:focus,
-.textarea:focus {
-    border-color: #6675f5;
-    background: #fff;
-    box-shadow: 0 0 0 3px rgba(102, 117, 245, .11);
-}
-
-.textarea {
-    resize: vertical;
-    min-height: 100px;
-}
-
-.btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    border-radius: 11px;
-    padding: 10px 15px;
-    font-size: 13px;
-    font-weight: 700;
-    border: 1px solid transparent;
-    transition: all .15s ease;
-}
-
-.btn i {
-    width: 16px;
-    height: 16px;
-}
-
-.btn-primary {
-    background: #515fe4;
-    color: white;
-}
-
-.btn-primary:hover {
-    background: #434ec4;
-    transform: translateY(-1px);
-}
-
-.btn-secondary {
-    background: white;
-    color: #4d5870;
-    border-color: #dfe3ec;
-}
-
-.btn-secondary:hover {
-    background: #f7f8fb;
-}
-
-.btn-success {
-    background: #10b981;
-    color: white;
-}
-
-.btn-success:hover {
-    background: #059669;
-}
-
-.btn-danger {
-    background: #ef4444;
-    color: white;
-}
-
-.btn-danger:hover {
-    background: #dc2626;
-}
-
-.btn-warning {
-    background: #f59e0b;
-    color: white;
-}
-
-.badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 4px 9px;
-    border-radius: 999px;
-    font-size: 10px;
-    font-weight: 800;
-}
-
-.badge-purple {
-    background: #eef0ff;
-    color: #515fe4;
-}
-
-.badge-green {
-    background: #dcfce7;
-    color: #15803d;
-}
-
-.badge-red {
-    background: #fee2e2;
-    color: #b91c1c;
-}
-
-.badge-yellow {
-    background: #fef3c7;
-    color: #a16207;
-}
-
-.badge-blue {
-    background: #e0f2fe;
-    color: #0369a1;
-}
-
-.student-card {
-    transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
-}
-
-.student-card:hover {
-    transform: translateY(-2px);
-    border-color: #d6dcff;
-    box-shadow: 0 12px 28px rgba(81, 95, 228, .08);
-}
-
-.avatar {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    border-radius: 50%;
-    background: #eef0ff;
-    color: #515fe4;
-    font-weight: 800;
-}
-
-.progress {
-    width: 100%;
-    height: 8px;
-    border-radius: 20px;
-    background: #edf0f5;
-    overflow: hidden;
-}
-
-.progress > div {
-    height: 100%;
-    border-radius: inherit;
-    transition: width .35s ease;
-}
-
-.agenda-table {
-    display: grid;
-    min-width: 820px;
-    grid-template-columns: 74px repeat(5, minmax(145px, 1fr));
-}
-
-.agenda-header {
-    padding: 12px 8px;
-    text-align: center;
-    color: #687287;
-    font-size: 11px;
-    font-weight: 800;
-    border-bottom: 1px solid #e9ebf2;
-    background: #fbfcff;
-}
-
-.time-cell {
-    min-height: 84px;
-    padding: 10px 8px;
-    border-right: 1px solid #edf0f5;
-    border-bottom: 1px solid #edf0f5;
-    color: #8a93a5;
-    font-size: 11px;
-    font-weight: 700;
-    text-align: center;
-}
-
-.agenda-cell {
-    min-height: 84px;
-    padding: 6px;
-    border-right: 1px solid #edf0f5;
-    border-bottom: 1px solid #edf0f5;
-    background: #fff;
-}
-
-.agenda-empty {
-    width: 100%;
-    height: 100%;
-    min-height: 68px;
-    border: 1px dashed #dfe3eb;
-    border-radius: 10px;
-    color: #a0a8b8;
-    background: #fcfdff;
-    font-size: 11px;
-    font-weight: 700;
-}
-
-.agenda-event {
-    min-height: 68px;
-    padding: 9px;
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-.event-psychology {
-    background: #e0f2fe;
-    color: #075985;
-}
-
-.event-psychopedagogy {
-    background: #f3e8ff;
-    color: #7e22ce;
-}
-
-.event-private {
-    background: #dcfce7;
-    color: #166534;
-}
-
-.event-other {
-    background: #f1f5f9;
-    color: #475569;
-}
-
-.month-grid {
-    display: grid;
-    grid-template-columns: repeat(7, minmax(95px, 1fr));
-    min-width: 700px;
-}
-
-.month-head {
-    padding: 10px;
-    text-align: center;
-    background: #fafbfe;
-    border-bottom: 1px solid #e9ebf2;
-    color: #768096;
-    font-size: 11px;
-    font-weight: 800;
-}
-
-.month-day {
-    min-height: 120px;
-    padding: 8px;
-    border-right: 1px solid #edf0f5;
-    border-bottom: 1px solid #edf0f5;
-    background: white;
-}
-
-.month-day.muted {
-    background: #fafbfc;
-    color: #aab1be;
-}
-
-.month-number {
-    width: 26px;
-    height: 26px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    font-size: 11px;
-    font-weight: 800;
-    margin-bottom: 6px;
-}
-
-.month-number.today {
-    background: #515fe4;
-    color: white;
-}
-
-.month-event {
-    width: 100%;
-    padding: 5px 6px;
-    border-radius: 7px;
-    margin-top: 4px;
-    font-size: 9px;
-    font-weight: 700;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
-.alert-row {
-    border-left: 3px solid #ef4444;
-}
-
-.table-row {
-    border-bottom: 1px solid #edf0f5;
-}
-
-.table-row:last-child {
-    border-bottom: none;
-}
-
-.toast {
-    position: fixed;
-    right: 22px;
-    bottom: 22px;
-    z-index: 100;
-    background: #172033;
-    color: white;
-    padding: 12px 16px;
-    border-radius: 12px;
-    box-shadow: 0 12px 35px rgba(15,23,42,.18);
-    font-size: 13px;
-    font-weight: 700;
-    transform: translateY(30px);
-    opacity: 0;
-    pointer-events: none;
-    transition: all .2s ease;
-}
-
-.toast.show {
-    transform: translateY(0);
-    opacity: 1;
-}
-
-.empty {
-    padding: 35px 20px;
-    text-align: center;
-    color: #98a1b2;
-}
-
-.login-shell {
-    min-height: 100vh;
-    background:
-        radial-gradient(circle at 20% 20%, rgba(102,117,245,.16), transparent 32%),
-        radial-gradient(circle at 80% 80%, rgba(16,185,129,.09), transparent 30%),
-        #f7f8fc;
-}
-
-@media (max-width: 640px) {
-    .mobile-hide {
-        display: none;
-    }
-
-    .month-grid {
-        min-width: 650px;
-    }
-
-    .agenda-table {
-        min-width: 760px;
-    }
-}
-</style>
+        /* Tela de login */
+        .login-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: #f4f6f9;
+        }
+        .login-box {
+            background: white;
+            padding: 48px 40px;
+            border-radius: 32px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.04);
+        }
+        .login-box h1 {
+            font-weight: 700;
+            font-size: 24px;
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+        .login-box p {
+            color: #64748b;
+            margin-bottom: 28px;
+        }
+        .login-box .input-field {
+            margin-bottom: 16px;
+        }
+        .login-box .btn-primary {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+        }
+        .login-error {
+            color: #b91c1c;
+            font-size: 14px;
+            margin-top: 8px;
+            display: none;
+        }
+    </style>
 </head>
-
 <body>
 
-<div id="toast" class="toast"></div>
-
-<div id="loginScreen" class="login-shell flex items-center justify-center p-5">
-    <div class="w-full max-w-md">
-        <div class="text-center mb-7">
-            <div class="mx-auto w-16 h-16 rounded-2xl bg-asas-600 text-white flex items-center justify-center shadow-soft mb-5">
-                <i data-lucide="sparkles" class="w-8 h-8"></i>
-            </div>
-            <h1 class="text-3xl font-extrabold tracking-tight text-slate-900">ASAS</h1>
-            <p class="text-sm text-slate-500 mt-2">Gestão inteligente psicopedagógica</p>
-        </div>
-
-        <div class="card p-7">
-            <div class="mb-6">
-                <h2 class="text-xl font-bold text-slate-900">Acessar sistema</h2>
-                <p class="text-sm text-slate-500 mt-1">Entre com suas credenciais profissionais.</p>
-            </div>
-
-            <div class="space-y-4">
-                <div>
-                    <label class="form-label">Usuário</label>
-                    <input id="loginUser" class="input" value="professor" autocomplete="username">
-                </div>
-
-                <div>
-                    <label class="form-label">Senha</label>
-                    <input id="loginPass" type="password" class="input" value="123" autocomplete="current-password">
-                </div>
-
-                <div id="loginError" class="hidden rounded-xl bg-red-50 border border-red-100 text-red-700 text-xs font-semibold p-3"></div>
-
-                <button id="loginBtn" class="btn btn-primary w-full py-3">
-                    <i data-lucide="log-in"></i>
-                    Entrar
-                </button>
-            </div>
-
-            <div class="mt-5 pt-5 border-t border-slate-100 text-center text-xs text-slate-400">
-                Acesso inicial: professor / 123
-            </div>
-        </div>
+<!-- ========== SIDEBAR ========== -->
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+        <i class="fas fa-brain"></i> PsicoGest
     </div>
-</div>
-
-<div id="app" class="hidden">
-
-    <aside id="sidebar" class="sidebar">
-        <div class="h-full flex flex-col p-5">
-
-            <div class="flex items-center gap-3 px-2 mb-8">
-                <div class="w-10 h-10 rounded-xl bg-asas-600 text-white flex items-center justify-center">
-                    <i data-lucide="sparkles"></i>
-                </div>
-                <div>
-                    <div class="font-extrabold text-lg tracking-tight text-slate-900">ASAS</div>
-                    <div class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Gestão Clínica</div>
-                </div>
-            </div>
-
-            <div class="px-2 mb-3 text-[10px] uppercase tracking-widest font-extrabold text-slate-400">
-                Navegação
-            </div>
-
-            <nav id="nav" class="space-y-1">
-                <button class="nav-link active" data-page="dashboard">
-                    <i data-lucide="layout-dashboard"></i>
-                    Dashboard
-                </button>
-
-                <button class="nav-link" data-page="alunos">
-                    <i data-lucide="users"></i>
-                    Alunos
-                </button>
-
-                <button class="nav-link" data-page="agenda">
-                    <i data-lucide="calendar-days"></i>
-                    Agenda
-                </button>
-
-                <button class="nav-link" data-page="financeiro">
-                    <i data-lucide="wallet"></i>
-                    Financeiro
-                </button>
-
-                <button class="nav-link" data-page="perfil">
-                    <i data-lucide="user-round"></i>
-                    Meu Perfil
-                </button>
-            </nav>
-
-            <div class="mt-auto">
-                <div class="p-3 rounded-2xl bg-slate-50 border border-slate-100 mb-3">
-                    <div class="flex items-center gap-3">
-                        <div id="sidebarAvatar" class="avatar w-10 h-10">P</div>
-                        <div class="min-w-0">
-                            <div id="sidebarName" class="text-xs font-extrabold text-slate-800 truncate">Professor</div>
-                            <div id="sidebarRole" class="text-[10px] text-slate-400 truncate">Psicopedagogia</div>
-                        </div>
-                    </div>
-                </div>
-
-                <button id="logoutBtn" class="nav-link">
-                    <i data-lucide="log-out"></i>
-                    Sair
-                </button>
-            </div>
+    <nav style="flex:1;">
+        <div class="nav-item active" data-section="dashboard"><i class="fas fa-chart-pie"></i> Dashboard</div>
+        <div class="nav-item" data-section="alunos"><i class="fas fa-users"></i> Alunos</div>
+        <div class="nav-item" data-section="agenda"><i class="fas fa-calendar-alt"></i> Agenda</div>
+        <div class="nav-item" data-section="financeiro"><i class="fas fa-coins"></i> Financeiro</div>
+        <div class="nav-item" data-section="perfil"><i class="fas fa-user-circle"></i> Meu Perfil</div>
+    </nav>
+    <div class="sidebar-footer">
+        <div class="flex items-center gap-2 text-sm text-slate-500">
+            <i class="fas fa-sign-out-alt"></i>
+            <span id="logoutBtn" style="cursor:pointer;font-weight:500;">Sair</span>
         </div>
-    </aside>
-
-    <main class="main-area">
-
-        <header class="h-[72px] bg-white border-b border-slate-100 sticky top-0 z-30">
-            <div class="h-full px-5 lg:px-8 flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <button id="mobileMenu" class="lg:hidden btn btn-secondary !p-2">
-                        <i data-lucide="menu"></i>
-                    </button>
-
-                    <div>
-                        <div id="breadcrumb" class="text-[10px] uppercase tracking-widest text-slate-400 font-extrabold">
-                            Visão geral
-                        </div>
-                        <h1 id="pageTitle" class="text-lg font-extrabold text-slate-900">
-                            Dashboard
-                        </h1>
-                    </div>
-                </div>
-
-                <div class="flex items-center gap-3">
-                    <div class="hidden sm:block text-right">
-                        <div id="headerProfessor" class="text-xs font-bold text-slate-700">Professor</div>
-                        <div id="headerDate" class="text-[10px] text-slate-400"></div>
-                    </div>
-
-                    <div id="headerAvatar" class="avatar w-10 h-10 text-sm">P</div>
-                </div>
-            </div>
-        </header>
-
-        <div class="p-5 lg:p-8 max-w-[1600px] mx-auto">
-
-            <!-- DASHBOARD -->
-            <section id="page-dashboard" class="page active">
-
-                <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-5 mb-7">
-                    <div>
-                        <div class="text-xs font-bold text-asas-600 mb-2" id="dashboardGreeting">Bom dia</div>
-                        <h2 class="text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900">
-                            Visão geral do atendimento
-                        </h2>
-                        <p class="text-sm text-slate-500 mt-2">
-                            Acompanhe seus alunos, agenda, presença e resultados financeiros.
-                        </p>
-                    </div>
-
-                    <button class="btn btn-primary" data-go="alunos" data-action="novo-aluno">
-                        <i data-lucide="user-plus"></i>
-                        Novo aluno
-                    </button>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-5">
-
-                    <div class="card metric-card p-5">
-                        <div class="flex items-start justify-between">
-                            <div>
-                                <div class="text-[10px] uppercase tracking-widest font-extrabold text-slate-400">
-                                    Faturado no mês
-                                </div>
-                                <div id="metricMonthRevenue" class="text-2xl font-extrabold text-slate-900 mt-3">
-                                    R$ 0,00
-                                </div>
-                                <div id="metricMonthSessions" class="text-xs text-slate-400 mt-2">
-                                    0 sessões pagas
-                                </div>
-                            </div>
-                            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                                <i data-lucide="trending-up"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="card metric-card p-5">
-                        <div class="flex items-start justify-between">
-                            <div>
-                                <div class="text-[10px] uppercase tracking-widest font-extrabold text-slate-400">
-                                    A receber na semana
-                                </div>
-                                <div id="metricWeekReceivable" class="text-2xl font-extrabold text-slate-900 mt-3">
-                                    R$ 0,00
-                                </div>
-                                <div id="metricWeekPending" class="text-xs text-slate-400 mt-2">
-                                    0 pagamentos pendentes
-                                </div>
-                            </div>
-                            <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
-                                <i data-lucide="clock-3"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="card metric-card p-5">
-                        <div class="flex items-start justify-between">
-                            <div class="w-full">
-                                <div class="text-[10px] uppercase tracking-widest font-extrabold text-slate-400">
-                                    Meta de atendimentos
-                                </div>
-                                <div class="flex items-end gap-2 mt-3">
-                                    <div id="metricGoalValue" class="text-2xl font-extrabold text-slate-900">0%</div>
-                                    <div id="metricGoalText" class="text-xs text-slate-400 mb-1">0 / 40</div>
-                                </div>
-                                <div class="progress mt-3">
-                                    <div id="metricGoalBar" class="bg-asas-600" style="width:0%"></div>
-                                </div>
-                            </div>
-                            <div class="w-10 h-10 ml-3 rounded-xl bg-asas-50 text-asas-600 flex items-center justify-center">
-                                <i data-lucide="target"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="card metric-card p-5">
-                        <div class="flex items-start justify-between">
-                            <div>
-                                <div class="text-[10px] uppercase tracking-widest font-extrabold text-slate-400">
-                                    Taxa de presença
-                                </div>
-                                <div id="metricAttendance" class="text-2xl font-extrabold text-slate-900 mt-3">
-                                    0%
-                                </div>
-                                <div id="metricAttendanceText" class="text-xs text-slate-400 mt-2">
-                                    Sem registros
-                                </div>
-                            </div>
-                            <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                                <i data-lucide="user-check"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 xl:grid-cols-3 gap-5 mb-5">
-
-                    <div class="card xl:col-span-2 p-5">
-                        <div class="flex items-center justify-between mb-5">
-                            <div>
-                                <h3 class="font-extrabold text-slate-900">Desempenho financeiro</h3>
-                                <p class="text-xs text-slate-400 mt-1">Recebimentos dos últimos 6 meses</p>
-                            </div>
-                            <span class="badge badge-green">
-                                <i data-lucide="circle-dollar-sign" class="w-3 h-3"></i>
-                                Recebido
-                            </span>
-                        </div>
-
-                        <div id="revenueChart" class="h-52 flex items-end gap-3 sm:gap-5"></div>
-                    </div>
-
-                    <div class="card p-5">
-                        <div class="mb-5">
-                            <h3 class="font-extrabold text-slate-900">Atendimentos</h3>
-                            <p class="text-xs text-slate-400 mt-1">Distribuição por tipo</p>
-                        </div>
-
-                        <div id="serviceBreakdown" class="space-y-5"></div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 xl:grid-cols-2 gap-5">
-
-                    <div class="card p-5">
-                        <div class="flex items-center justify-between mb-5">
-                            <div>
-                                <h3 class="font-extrabold text-slate-900">Alertas Clínicos Ativos</h3>
-                                <p class="text-xs text-slate-400 mt-1">Alunos que precisam de atenção</p>
-                            </div>
-                            <span id="alertCountBadge" class="badge badge-red">0</span>
-                        </div>
-
-                        <div id="clinicalAlerts"></div>
-                    </div>
-
-                    <div class="card p-5">
-                        <div class="flex items-center justify-between mb-5">
-                            <div>
-                                <h3 class="font-extrabold text-slate-900">Próximos atendimentos</h3>
-                                <p class="text-xs text-slate-400 mt-1">Agenda da semana</p>
-                            </div>
-                            <button class="text-xs font-bold text-asas-600" data-go="agenda">Ver agenda</button>
-                        </div>
-
-                        <div id="upcomingSessions"></div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- ALUNOS -->
-            <section id="page-alunos" class="page">
-
-                <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-5 mb-6">
-                    <div>
-                        <h2 class="text-2xl font-extrabold text-slate-900">Alunos</h2>
-                        <p class="text-sm text-slate-500 mt-1">Cadastro, acompanhamento clínico e contratos individuais.</p>
-                    </div>
-
-                    <button id="newStudentBtn" class="btn btn-primary">
-                        <i data-lucide="plus"></i>
-                        Novo aluno
-                    </button>
-                </div>
-
-                <div id="studentForm" class="card p-5 mb-6 hidden">
-                    <div class="flex items-center justify-between mb-5">
-                        <div>
-                            <h3 id="studentFormTitle" class="font-extrabold text-slate-900">Novo aluno</h3>
-                            <p class="text-xs text-slate-400 mt-1">Preencha os dados principais do atendimento.</p>
-                        </div>
-                        <button id="cancelStudentForm" class="btn btn-secondary">Cancelar</button>
-                    </div>
-
-                    <input type="hidden" id="studentId">
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-                        <div class="xl:col-span-2">
-                            <label class="form-label">Nome completo *</label>
-                            <input id="studentName" class="input" placeholder="Nome do aluno">
-                        </div>
-
-                        <div>
-                            <label class="form-label">Idade</label>
-                            <input id="studentAge" type="number" min="0" class="input" placeholder="Ex.: 12">
-                        </div>
-
-                        <div>
-                            <label class="form-label">Responsável</label>
-                            <input id="studentResponsible" class="input" placeholder="Nome do responsável">
-                        </div>
-
-                        <div>
-                            <label class="form-label">Telefone / WhatsApp</label>
-                            <input id="studentPhone" class="input" placeholder="(43) 99999-9999">
-                        </div>
-
-                        <div>
-                            <label class="form-label">Valor por Sessão/Hora-Aula (R$) *</label>
-                            <input id="studentPrice" type="number" min="0" step="0.01" class="input" placeholder="150,00">
-                        </div>
-
-                        <div>
-                            <label class="form-label">Horário regular</label>
-                            <input id="studentRegularTime" type="time" class="input" value="14:00">
-                        </div>
-
-                        <div>
-                            <label class="form-label">Meta de sessões/mês</label>
-                            <input id="studentGoal" type="number" min="1" class="input" value="4">
-                        </div>
-
-                        <div class="md:col-span-2 xl:col-span-4">
-                            <label class="form-label">Tags clínicas</label>
-                            <input id="studentTags" class="input" placeholder="TDAH, Dislexia, Autismo, Déficit de Atenção">
-                        </div>
-
-                        <div class="md:col-span-2 xl:col-span-4">
-                            <label class="form-label">Observações clínicas</label>
-                            <textarea id="studentNotes" class="textarea" placeholder="Evolução, estratégias, observações e informações relevantes."></textarea>
-                        </div>
-
-                        <div class="md:col-span-2">
-                            <label class="form-label">Indicador de desempenho</label>
-                            <select id="studentPerformance" class="select">
-                                <option value="stable">Estável</option>
-                                <option value="improving">Em evolução</option>
-                                <option value="falling">Queda de desempenho</option>
-                            </select>
-                        </div>
-
-                        <div class="md:col-span-2">
-                            <label class="form-label">Status de presença</label>
-                            <select id="studentAttendanceStatus" class="select">
-                                <option value="normal">Presença normal</option>
-                                <option value="warning">Faltas recentes</option>
-                                <option value="critical">Faltas recorrentes</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="mt-5 flex justify-end gap-3">
-                        <button id="cancelStudentForm2" class="btn btn-secondary">Cancelar</button>
-                        <button id="saveStudentBtn" class="btn btn-primary">
-                            <i data-lucide="save"></i>
-                            Salvar aluno
-                        </button>
-                    </div>
-                </div>
-
-                <div class="card p-4 mb-5">
-                    <div class="flex flex-col md:flex-row gap-3">
-                        <div class="relative flex-1">
-                            <i data-lucide="search" class="absolute left-3 top-3 w-4 h-4 text-slate-400"></i>
-                            <input id="studentSearch" class="input pl-10" placeholder="Buscar por nome, responsável ou tag...">
-                        </div>
-
-                        <select id="studentFilter" class="select md:w-56">
-                            <option value="all">Todos os alunos</option>
-                            <option value="alerts">Com alerta clínico</option>
-                            <option value="falling">Queda de desempenho</option>
-                            <option value="absences">Faltas recentes</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div id="studentsGrid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4"></div>
-
-                <div id="studentProfile" class="hidden mt-6">
-
-                    <div class="flex items-center justify-between gap-3 mb-5">
-                        <button id="backStudents" class="btn btn-secondary">
-                            <i data-lucide="arrow-left"></i>
-                            Voltar para alunos
-                        </button>
-
-                        <div class="flex gap-2">
-                            <button id="deleteStudentBtn" class="btn btn-danger">
-                                <i data-lucide="trash-2"></i>
-                                Excluir
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="card p-6 mb-5">
-                        <div class="flex flex-col md:flex-row md:items-center gap-5">
-                            <div id="profileStudentAvatar" class="avatar w-20 h-20 text-2xl">A</div>
-
-                            <div class="flex-1">
-                                <div class="flex flex-wrap items-center gap-2">
-                                    <h2 id="profileStudentName" class="text-2xl font-extrabold text-slate-900">Aluno</h2>
-                                    <span id="profileStudentPerformance" class="badge badge-green">Estável</span>
-                                </div>
-                                <p id="profileStudentSubtitle" class="text-sm text-slate-500 mt-1"></p>
-                                <div id="profileStudentTags" class="flex flex-wrap gap-1.5 mt-3"></div>
-                            </div>
-
-                            <div class="text-left md:text-right">
-                                <div class="text-[10px] uppercase tracking-widest text-slate-400 font-extrabold">Valor por sessão</div>
-                                <div id="profileStudentPrice" class="text-2xl font-extrabold text-asas-600 mt-1">R$ 0,00</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 xl:grid-cols-3 gap-5">
-
-                        <div class="xl:col-span-2 space-y-5">
-
-                            <div class="card p-5">
-                                <div class="flex items-center justify-between mb-5">
-                                    <div>
-                                        <h3 class="font-extrabold text-slate-900">Dados do aluno</h3>
-                                        <p class="text-xs text-slate-400 mt-1">Todos os dados permanecem editáveis.</p>
-                                    </div>
-                                    <button id="editStudentProfileBtn" class="btn btn-secondary">
-                                        <i data-lucide="pencil"></i>
-                                        Editar dados
-                                    </button>
-                                </div>
-
-                                <div id="studentProfileRead" class="grid grid-cols-1 sm:grid-cols-2 gap-5"></div>
-
-                                <div id="studentProfileEdit" class="hidden">
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
-                                            <label class="form-label">Nome completo *</label>
-                                            <input id="editStudentName" class="input">
-                                        </div>
-
-                                        <div>
-                                            <label class="form-label">Idade</label>
-                                            <input id="editStudentAge" type="number" class="input">
-                                        </div>
-
-                                        <div>
-                                            <label class="form-label">Responsável</label>
-                                            <input id="editStudentResponsible" class="input">
-                                        </div>
-
-                                        <div>
-                                            <label class="form-label">Telefone / WhatsApp</label>
-                                            <input id="editStudentPhone" class="input">
-                                        </div>
-
-                                        <div>
-                                            <label class="form-label">Valor por Sessão/Hora-Aula (R$) *</label>
-                                            <input id="editStudentPrice" type="number" min="0" step="0.01" class="input">
-                                        </div>
-
-                                        <div>
-                                            <label class="form-label">Horário regular</label>
-                                            <input id="editStudentTime" type="time" class="input">
-                                        </div>
-
-                                        <div>
-                                            <label class="form-label">Meta mensal</label>
-                                            <input id="editStudentGoal" type="number" min="1" class="input">
-                                        </div>
-
-                                        <div>
-                                            <label class="form-label">Desempenho</label>
-                                            <select id="editStudentPerformance" class="select">
-                                                <option value="stable">Estável</option>
-                                                <option value="improving">Em evolução</option>
-                                                <option value="falling">Queda de desempenho</option>
-                                            </select>
-                                        </div>
-
-                                        <div>
-                                            <label class="form-label">Presença</label>
-                                            <select id="editStudentAttendanceStatus" class="select">
-                                                <option value="normal">Presença normal</option>
-                                                <option value="warning">Faltas recentes</option>
-                                                <option value="critical">Faltas recorrentes</option>
-                                            </select>
-                                        </div>
-
-                                        <div class="md:col-span-2">
-                                            <label class="form-label">Tags clínicas</label>
-                                            <input id="editStudentTags" class="input">
-                                        </div>
-
-                                        <div class="md:col-span-2">
-                                            <label class="form-label">Observações clínicas</label>
-                                            <textarea id="editStudentNotes" class="textarea"></textarea>
-                                        </div>
-                                    </div>
-
-                                    <div class="mt-5 flex gap-3">
-                                        <button id="saveStudentProfileBtn" class="btn btn-primary">
-                                            <i data-lucide="save"></i>
-                                            Salvar alterações
-                                        </button>
-                                        <button id="cancelStudentProfileBtn" class="btn btn-secondary">Cancelar</button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="card p-5">
-                                <div class="flex items-center justify-between mb-5">
-                                    <div>
-                                        <h3 class="font-extrabold text-slate-900">Observações clínicas</h3>
-                                        <p class="text-xs text-slate-400 mt-1">Registro contínuo do acompanhamento.</p>
-                                    </div>
-                                    <span class="badge badge-purple">Confidencial</span>
-                                </div>
-
-                                <div id="profileNotes" class="rounded-xl bg-slate-50 border border-slate-100 p-4 text-sm text-slate-700 leading-7"></div>
-                            </div>
-
-                        </div>
-
-                        <div class="space-y-5">
-
-                            <div class="card p-5">
-                                <h3 class="font-extrabold text-slate-900 mb-4">Contato</h3>
-
-                                <div class="space-y-3 text-sm">
-                                    <div class="flex justify-between gap-3">
-                                        <span class="text-slate-400">Responsável</span>
-                                        <span id="profileResponsible" class="font-bold text-slate-700 text-right"></span>
-                                    </div>
-
-                                    <div class="flex justify-between gap-3">
-                                        <span class="text-slate-400">Telefone</span>
-                                        <span id="profilePhone" class="font-bold text-slate-700 text-right"></span>
-                                    </div>
-                                </div>
-
-                                <a id="studentWhatsapp" target="_blank" rel="noopener noreferrer" class="btn btn-success w-full mt-5">
-                                    <i data-lucide="message-circle"></i>
-                                    WhatsApp automático
-                                </a>
-
-                                <p class="text-[10px] text-slate-400 mt-3 leading-5">
-                                    A mensagem inclui automaticamente o nome do aluno e o valor individual da sessão.
-                                </p>
-                            </div>
-
-                            <div class="card p-5">
-                                <h3 class="font-extrabold text-slate-900 mb-4">Resumo financeiro</h3>
-
-                                <div class="space-y-4">
-                                    <div>
-                                        <div class="text-[10px] uppercase tracking-widest text-slate-400 font-extrabold">Recebido</div>
-                                        <div id="profilePaid" class="text-xl font-extrabold text-emerald-600 mt-1">R$ 0,00</div>
-                                    </div>
-
-                                    <div>
-                                        <div class="text-[10px] uppercase tracking-widest text-slate-400 font-extrabold">Pendente</div>
-                                        <div id="profilePending" class="text-xl font-extrabold text-amber-600 mt-1">R$ 0,00</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="card p-5">
-                                <h3 class="font-extrabold text-slate-900 mb-4">Próximas sessões</h3>
-                                <div id="profileSessions"></div>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- AGENDA -->
-            <section id="page-agenda" class="page">
-
-                <div class="flex flex-col xl:flex-row xl:items-end justify-between gap-5 mb-6">
-                    <div>
-                        <h2 class="text-2xl font-extrabold text-slate-900">Agenda</h2>
-                        <p class="text-sm text-slate-500 mt-1">Organize seus atendimentos por semana ou mês.</p>
-                    </div>
-
-                    <div class="flex flex-wrap gap-2">
-                        <div class="flex bg-white border border-slate-200 rounded-xl p-1">
-                            <button id="weekViewBtn" class="btn !py-2 !px-3 btn-primary">
-                                <i data-lucide="columns-3"></i>
-                                Visão Semanal
-                            </button>
-                            <button id="monthViewBtn" class="btn !py-2 !px-3 btn-secondary border-0">
-                                <i data-lucide="calendar-days"></i>
-                                Visão Mensal
-                            </button>
-                        </div>
-
-                        <button id="agendaPrev" class="btn btn-secondary">
-                            <i data-lucide="chevron-left"></i>
-                        </button>
-
-                        <button id="agendaToday" class="btn btn-secondary">Hoje</button>
-
-                        <button id="agendaNext" class="btn btn-secondary">
-                            <i data-lucide="chevron-right"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="card p-5 mb-5">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                        <div>
-                            <h3 id="agendaPeriodTitle" class="font-extrabold text-slate-900"></h3>
-                            <p id="agendaPeriodSubtitle" class="text-xs text-slate-400 mt-1"></p>
-                        </div>
-
-                        <button id="newAppointmentBtn" class="btn btn-primary">
-                            <i data-lucide="plus"></i>
-                            Novo atendimento
-                        </button>
-                    </div>
-                </div>
-
-                <div id="appointmentForm" class="card p-5 mb-5 hidden">
-                    <div class="flex items-center justify-between mb-5">
-                        <div>
-                            <h3 class="font-extrabold text-slate-900">Novo atendimento</h3>
-                            <p class="text-xs text-slate-400 mt-1">O agendamento é salvo automaticamente no navegador.</p>
-                        </div>
-                        <button id="cancelAppointment" class="btn btn-secondary">Cancelar</button>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-                        <div>
-                            <label class="form-label">Aluno *</label>
-                            <select id="appointmentStudent" class="select"></select>
-                        </div>
-
-                        <div>
-                            <label class="form-label">Data *</label>
-                            <input id="appointmentDate" type="date" class="input">
-                        </div>
-
-                        <div>
-                            <label class="form-label">Horário *</label>
-                            <input id="appointmentTime" type="time" class="input" value="14:00">
-                        </div>
-
-                        <div>
-                            <label class="form-label">Tipo de atendimento *</label>
-                            <select id="appointmentType" class="select">
-                                <option value="psychology">Psicologia</option>
-                                <option value="psychopedagogy">Psicopedagogia</option>
-                                <option value="private">Aula Particular</option>
-                                <option value="other">Outro</option>
-                            </select>
-                        </div>
-
-                        <div class="md:col-span-2">
-                            <label class="form-label">Observação do atendimento</label>
-                            <input id="appointmentNotes" class="input" placeholder="Ex.: avaliação, reforço, acompanhamento...">
-                        </div>
-
-                        <div class="md:col-span-2 flex items-end">
-                            <label class="flex items-center gap-3 cursor-pointer">
-                                <input id="appointmentAttendance" type="checkbox" class="w-4 h-4 accent-indigo-600">
-                                <span class="text-sm font-semibold text-slate-600">Aluno compareceu ao atendimento</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="mt-5 flex justify-end">
-                        <button id="saveAppointment" class="btn btn-primary">
-                            <i data-lucide="calendar-plus"></i>
-                            Agendar atendimento
-                        </button>
-                    </div>
-                </div>
-
-                <div id="agendaWeekly" class="card overflow-auto"></div>
-                <div id="agendaMonthly" class="card overflow-auto hidden"></div>
-
-                <div class="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    <div class="card p-4">
-                        <div class="text-[10px] uppercase tracking-widest font-extrabold text-slate-400">Psicologia</div>
-                        <div id="legendPsychology" class="text-xl font-extrabold text-slate-800 mt-1">0</div>
-                    </div>
-                    <div class="card p-4">
-                        <div class="text-[10px] uppercase tracking-widest font-extrabold text-slate-400">Psicopedagogia</div>
-                        <div id="legendPsychopedagogy" class="text-xl font-extrabold text-slate-800 mt-1">0</div>
-                    </div>
-                    <div class="card p-4">
-                        <div class="text-[10px] uppercase tracking-widest font-extrabold text-slate-400">Aula Particular</div>
-                        <div id="legendPrivate" class="text-xl font-extrabold text-slate-800 mt-1">0</div>
-                    </div>
-                    <div class="card p-4">
-                        <div class="text-[10px] uppercase tracking-widest font-extrabold text-slate-400">Total</div>
-                        <div id="legendTotal" class="text-xl font-extrabold text-asas-600 mt-1">0</div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- FINANCEIRO -->
-            <section id="page-financeiro" class="page">
-
-                <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-5 mb-6">
-                    <div>
-                        <h2 class="text-2xl font-extrabold text-slate-900">Financeiro</h2>
-                        <p class="text-sm text-slate-500 mt-1">Controle os recebimentos usando o valor individual de cada aluno.</p>
-                    </div>
-
-                    <div class="flex gap-2">
-                        <button id="financePrev" class="btn btn-secondary">
-                            <i data-lucide="chevron-left"></i>
-                        </button>
-                        <button id="financeToday" class="btn btn-secondary">Mês atual</button>
-                        <button id="financeNext" class="btn btn-secondary">
-                            <i data-lucide="chevron-right"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-5">
-                    <div class="card p-5">
-                        <div class="text-[10px] uppercase tracking-widest font-extrabold text-slate-400">Faturado no mês</div>
-                        <div id="financeRevenue" class="text-2xl font-extrabold text-emerald-600 mt-3">R$ 0,00</div>
-                    </div>
-
-                    <div class="card p-5">
-                        <div class="text-[10px] uppercase tracking-widest font-extrabold text-slate-400">A receber</div>
-                        <div id="financeReceivable" class="text-2xl font-extrabold text-amber-600 mt-3">R$ 0,00</div>
-                    </div>
-
-                    <div class="card p-5">
-                        <div class="text-[10px] uppercase tracking-widest font-extrabold text-slate-400">Sessões pagas</div>
-                        <div id="financePaidSessions" class="text-2xl font-extrabold text-slate-900 mt-3">0</div>
-                    </div>
-
-                    <div class="card p-5">
-                        <div class="text-[10px] uppercase tracking-widest font-extrabold text-slate-400">Sessões pendentes</div>
-                        <div id="financePendingSessions" class="text-2xl font-extrabold text-slate-900 mt-3">0</div>
-                    </div>
-                </div>
-
-                <div class="card overflow-hidden">
-                    <div class="p-5 border-b border-slate-100">
-                        <h3 id="financePeriodTitle" class="font-extrabold text-slate-900">Movimentações</h3>
-                    </div>
-
-                    <div class="overflow-x-auto">
-                        <table class="w-full min-w-[850px]">
-                            <thead class="bg-slate-50">
-                                <tr>
-                                    <th class="text-left p-4 text-[10px] uppercase tracking-widest text-slate-400">Data</th>
-                                    <th class="text-left p-4 text-[10px] uppercase tracking-widest text-slate-400">Aluno</th>
-                                    <th class="text-left p-4 text-[10px] uppercase tracking-widest text-slate-400">Atendimento</th>
-                                    <th class="text-right p-4 text-[10px] uppercase tracking-widest text-slate-400">Valor</th>
-                                    <th class="text-center p-4 text-[10px] uppercase tracking-widest text-slate-400">Status</th>
-                                    <th class="text-right p-4 text-[10px] uppercase tracking-widest text-slate-400">Ação</th>
-                                </tr>
-                            </thead>
-                            <tbody id="financeTable"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <!-- PERFIL -->
-            <section id="page-perfil" class="page">
-
-                <div class="mb-6">
-                    <h2 class="text-2xl font-extrabold text-slate-900">Meu Perfil</h2>
-                    <p class="text-sm text-slate-500 mt-1">Configure seus dados profissionais e identidade no sistema.</p>
-                </div>
-
-                <div class="grid grid-cols-1 xl:grid-cols-3 gap-5">
-
-                    <div class="card p-6">
-                        <div class="flex flex-col items-center text-center">
-                            <div id="profileAvatarPreview" class="avatar w-28 h-28 text-4xl mb-4">P</div>
-                            <h3 id="profilePreviewName" class="text-xl font-extrabold text-slate-900">Professor</h3>
-                            <p id="profilePreviewSpecialty" class="text-sm text-slate-500 mt-1">Psicopedagogia</p>
-                        </div>
-                    </div>
-
-                    <div class="card p-6 xl:col-span-2">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-
-                            <div>
-                                <label class="form-label">Nome profissional</label>
-                                <input id="profName" class="input">
-                            </div>
-
-                            <div>
-                                <label class="form-label">Especialidade</label>
-                                <input id="profSpecialty" class="input">
-                            </div>
-
-                            <div>
-                                <label class="form-label">E-mail</label>
-                                <input id="profEmail" type="email" class="input">
-                            </div>
-
-                            <div>
-                                <label class="form-label">Telefone</label>
-                                <input id="profPhone" class="input">
-                            </div>
-
-                            <div>
-                                <label class="form-label">URL da foto</label>
-                                <input id="profPhoto" class="input" placeholder="https://...">
-                            </div>
-
-                            <div>
-                                <label class="form-label">Meta mensal de atendimentos</label>
-                                <input id="profGoal" type="number" min="1" class="input">
-                            </div>
-
-                            <div class="md:col-span-2">
-                                <label class="form-label">Dados profissionais</label>
-                                <textarea id="profBio" class="textarea" placeholder="Formação, registro, experiência e apresentação profissional."></textarea>
-                            </div>
-
-                        </div>
-
-                        <div class="mt-6 flex justify-end">
-                            <button id="saveProfileBtn" class="btn btn-primary">
-                                <i data-lucide="save"></i>
-                                Salvar perfil
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-        </div>
-    </main>
-</div>
-
+        <div class="text-xs text-slate-400 mt-2">v2.0 · Clínica</div>
+    </div>
+</aside>
+
+<!-- ========== MAIN CONTENT ========== -->
+<main class="main-content" id="mainContent">
+    <!-- Aqui será injetado o conteúdo via JS -->
+    <div id="appContainer" class="transition-fade">
+        <!-- Dinâmico -->
+    </div>
+</main>
+
+<!-- ========== JAVASCRIPT ========== -->
 <script>
-"use strict";
+    (function() {
+        "use strict";
 
-const STORAGE_KEY = "asas_gestao_v1";
-const SESSION_KEY = "asas_session_v1";
-
-const TYPE_LABELS = {
-    psychology: "Psicologia",
-    psychopedagogy: "Psicopedagogia",
-    private: "Aula Particular",
-    other: "Outro"
-};
-
-const TYPE_CLASSES = {
-    psychology: "event-psychology",
-    psychopedagogy: "event-psychopedagogy",
-    private: "event-private",
-    other: "event-other"
-};
-
-const MONTHS = [
-    "Janeiro",
-    "Fevereiro",
-    "Março",
-    "Abril",
-    "Maio",
-    "Junho",
-    "Julho",
-    "Agosto",
-    "Setembro",
-    "Outubro",
-    "Novembro",
-    "Dezembro"
-];
-
-const WEEK_DAYS = [
-    "Segunda",
-    "Terça",
-    "Quarta",
-    "Quinta",
-    "Sexta",
-    "Sábado",
-    "Domingo"
-];
-
-const WORK_DAYS = [
-    "Seg",
-    "Ter",
-    "Qua",
-    "Qui",
-    "Sex"
-];
-
-const HOURS = [
-    "08:00",
-    "09:00",
-    "10:00",
-    "11:00",
-    "13:00",
-    "14:00",
-    "15:00",
-    "16:00",
-    "17:00",
-    "18:00"
-];
-
-let state = null;
-let currentPage = "dashboard";
-let currentStudentId = null;
-let agendaView = "week";
-let agendaCursor = new Date();
-let financeCursor = new Date();
-let editingStudentId = null;
-
-function createDefaultState() {
-    const today = new Date();
-
-    const date = (offset) => {
-        const d = new Date(today);
-        d.setDate(d.getDate() + offset);
-        return toDateInput(d);
-    };
-
-    return {
-        auth: {
-            username: "professor",
-            password: "123"
-        },
-
-        professor: {
-            name: "Professor ASAS",
-            specialty: "Psicopedagogia Clínica",
-            email: "",
-            phone: "",
-            photo: "",
-            goal: 40,
-            bio: "Atendimento psicopedagógico e educacional personalizado."
-        },
-
-        students: [
-            {
-                id: 1,
-                name: "Ana Clara",
-                age: 12,
-                responsible: "Maria Clara",
-                phone: "43999998888",
-                price: 180,
-                regularTime: "14:00",
-                goal: 8,
-                tags: ["TDAH", "Dislexia"],
-                notes: "Apresenta boa evolução na leitura. Trabalhar interpretação de textos e organização das tarefas.",
-                performance: "improving",
-                attendanceStatus: "normal",
-                createdAt: date(-30)
-            },
-            {
-                id: 2,
-                name: "Lucas Mendes",
-                age: 14,
-                responsible: "Roberto Mendes",
-                phone: "43988887777",
-                price: 150,
-                regularTime: "10:00",
-                goal: 4,
-                tags: ["Ansiedade Escolar"],
-                notes: "Necessita de estratégias de autorregulação antes das avaliações.",
-                performance: "falling",
-                attendanceStatus: "warning",
-                createdAt: date(-22)
-            },
-            {
-                id: 3,
-                name: "Marina Silva",
-                age: 10,
-                responsible: "Carla Silva",
-                phone: "43977776666",
-                price: 200,
-                regularTime: "16:00",
-                goal: 8,
-                tags: ["Déficit de Atenção"],
-                notes: "Dispersão durante atividades longas. Técnicas de foco apresentam resultados positivos.",
-                performance: "stable",
-                attendanceStatus: "critical",
-                createdAt: date(-18)
-            }
-        ],
-
-        appointments: [
-            {
-                id: 1,
-                studentId: 1,
-                date: date(1),
-                time: "14:00",
-                type: "psychopedagogy",
-                notes: "Leitura e interpretação",
-                attendance: null,
-                paid: false
-            },
-            {
-                id: 2,
-                studentId: 2,
-                date: date(2),
-                time: "10:00",
-                type: "psychology",
-                notes: "Autorregulação",
-                attendance: null,
-                paid: false
-            },
-            {
-                id: 3,
-                studentId: 3,
-                date: date(3),
-                time: "16:00",
-                type: "private",
-                notes: "Reforço escolar",
-                attendance: null,
-                paid: false
-            },
-            {
-                id: 4,
-                studentId: 1,
-                date: date(4),
-                time: "14:00",
-                type: "psychopedagogy",
-                notes: "Acompanhamento",
-                attendance: null,
-                paid: true
-            }
-        ]
-    };
-}
-
-function loadState() {
-    const raw = localStorage.getItem(STORAGE_KEY);
-
-    if (!raw) {
-        state = createDefaultState();
-        saveState();
-        return;
-    }
-
-    try {
-        state = JSON.parse(raw);
-        normalizeState();
-    } catch (error) {
-        state = createDefaultState();
-        saveState();
-    }
-}
-
-function normalizeState() {
-    if (!state.auth) {
-        state.auth = {
-            username: "professor",
-            password: "123"
+        // ============================================================
+        //  ESTADO GLOBAL
+        // ============================================================
+        const STATE = {
+            usuario: null,            // { nome, especialidade, bio, foto }
+            alunos: [],              // { id, nome, idade, serie, responsavel, telefone, valorSessao, tags, observacoes, foto }
+            agenda: [],             // { id, alunoId, tipo, data, hora, status, pago, valor }
+            transacoes: [],         // { id, alunoId, valor, data, descricao }
+            sessaoAtual: 'dashboard',
+            alunoVisualizado: null,  // id do aluno em prontuário
+            agendaView: 'semanal',   // 'semanal' ou 'mensal'
+            agendaOffset: 0,         // semanas/meses offset
+            editandoProntuario: false,
         };
-    }
 
-    if (!state.professor) {
-        state.professor = createDefaultState().professor;
-    }
-
-    if (!Array.isArray(state.students)) {
-        state.students = [];
-    }
-
-    if (!Array.isArray(state.appointments)) {
-        state.appointments = [];
-    }
-
-    state.students.forEach(student => {
-        student.price = Number(student.price) || 0;
-        student.goal = Number(student.goal) || 4;
-        student.age = Number(student.age) || 0;
-        student.tags = Array.isArray(student.tags) ? student.tags : [];
-        student.notes = student.notes || "";
-        student.performance = student.performance || "stable";
-        student.attendanceStatus = student.attendanceStatus || "normal";
-        student.regularTime = student.regularTime || "14:00";
-    });
-
-    state.appointments.forEach(appointment => {
-        appointment.paid = Boolean(appointment.paid);
-        appointment.attendance =
-            appointment.attendance === true
-                ? true
-                : appointment.attendance === false
-                    ? false
-                    : null;
-    });
-
-    saveState();
-}
-
-function saveState() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-}
-
-function isLoggedIn() {
-    return sessionStorage.getItem(SESSION_KEY) === "1";
-}
-
-function setLoggedIn(value) {
-    if (value) {
-        sessionStorage.setItem(SESSION_KEY, "1");
-    } else {
-        sessionStorage.removeItem(SESSION_KEY);
-    }
-}
-
-function uid(prefix = "id") {
-    return prefix + "_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
-}
-
-function escapeHTML(value) {
-    return String(value ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-}
-
-function money(value) {
-    return Number(value || 0).toLocaleString("pt-BR", {
-        style: "currency",
-        currency: "BRL"
-    });
-}
-
-function toDateInput(date) {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, "0");
-    const d = String(date.getDate()).padStart(2, "0");
-    return `${y}-${m}-${d}`;
-}
-
-function parseDate(value) {
-    const [year, month, day] = value.split("-").map(Number);
-    return new Date(year, month - 1, day);
-}
-
-function formatDate(value, options = {}) {
-    if (!value) return "—";
-
-    return parseDate(value).toLocaleDateString(
-        "pt-BR",
-        options
-    );
-}
-
-function monthKey(date) {
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-}
-
-function sameMonth(dateValue, cursor) {
-    const d = parseDate(dateValue);
-    return d.getFullYear() === cursor.getFullYear() &&
-        d.getMonth() === cursor.getMonth();
-}
-
-function startOfWeek(date) {
-    const d = new Date(date);
-    const day = d.getDay();
-    const diff = day === 0 ? -6 : 1 - day;
-    d.setDate(d.getDate() + diff);
-    d.setHours(0, 0, 0, 0);
-    return d;
-}
-
-function endOfWeek(date) {
-    const d = startOfWeek(date);
-    d.setDate(d.getDate() + 6);
-    return d;
-}
-
-function getStudent(id) {
-    return state.students.find(student => String(student.id) === String(id));
-}
-
-function getAppointmentPrice(appointment) {
-    const student = getStudent(appointment.studentId);
-    return student ? Number(student.price || 0) : 0;
-}
-
-function getAppointmentsForMonth(cursor) {
-    return state.appointments.filter(a => sameMonth(a.date, cursor));
-}
-
-function getAppointmentsForWeek(cursor) {
-    const start = startOfWeek(cursor);
-    const end = endOfWeek(cursor);
-
-    return state.appointments.filter(a => {
-        const d = parseDate(a.date);
-        return d >= start && d <= end;
-    });
-}
-
-function formatAppointmentDate(date) {
-    return parseDate(date).toLocaleDateString("pt-BR", {
-        weekday: "short",
-        day: "2-digit",
-        month: "2-digit"
-    });
-}
-
-function getCurrentDayName() {
-    const day = new Date().getDay();
-
-    const map = {
-        0: "Dom",
-        1: "Seg",
-        2: "Ter",
-        3: "Qua",
-        4: "Qui",
-        5: "Sex",
-        6: "Sáb"
-    };
-
-    return map[day];
-}
-
-function showToast(message, type = "normal") {
-    const toast = document.getElementById("toast");
-
-    toast.textContent = message;
-    toast.className = "toast show";
-
-    if (type === "success") {
-        toast.style.background = "#047857";
-    } else if (type === "error") {
-        toast.style.background = "#b91c1c";
-    } else {
-        toast.style.background = "#172033";
-    }
-
-    clearTimeout(showToast.timer);
-
-    showToast.timer = setTimeout(() => {
-        toast.className = "toast";
-    }, 2600);
-}
-
-function setPage(page) {
-    currentPage = page;
-
-    document.querySelectorAll(".page").forEach(element => {
-        element.classList.toggle(
-            "active",
-            element.id === `page-${page}`
-        );
-    });
-
-    document.querySelectorAll(".nav-link[data-page]").forEach(element => {
-        element.classList.toggle(
-            "active",
-            element.dataset.page === page
-        );
-    });
-
-    const labels = {
-        dashboard: ["Visão geral", "Dashboard"],
-        alunos: ["Gestão", "Alunos"],
-        agenda: ["Planejamento", "Agenda"],
-        financeiro: ["Gestão", "Financeiro"],
-        perfil: ["Configurações", "Meu Perfil"]
-    };
-
-    document.getElementById("breadcrumb").textContent = labels[page][0];
-    document.getElementById("pageTitle").textContent = labels[page][1];
-
-    if (page === "dashboard") renderDashboard();
-    if (page === "alunos") renderStudents();
-    if (page === "agenda") renderAgenda();
-    if (page === "financeiro") renderFinance();
-    if (page === "perfil") renderProfile();
-
-    document.getElementById("sidebar").classList.remove("open");
-
-    lucide.createIcons();
-}
-
-function updateGlobalIdentity() {
-    const professor = state.professor;
-    const name = professor.name || "Professor";
-    const specialty = professor.specialty || "Profissional";
-
-    document.getElementById("sidebarName").textContent = name;
-    document.getElementById("sidebarRole").textContent = specialty;
-    document.getElementById("headerProfessor").textContent = name;
-
-    const avatarElements = [
-        document.getElementById("sidebarAvatar"),
-        document.getElementById("headerAvatar"),
-        document.getElementById("profileAvatarPreview")
-    ];
-
-    avatarElements.forEach(element => {
-        if (!element) return;
-
-        if (professor.photo) {
-            element.style.backgroundImage = `url("${professor.photo}")`;
-            element.style.backgroundSize = "cover";
-            element.style.backgroundPosition = "center";
-            element.textContent = "";
-        } else {
-            element.style.backgroundImage = "";
-            element.textContent = name.charAt(0).toUpperCase();
-        }
-    });
-
-    document.getElementById("headerDate").textContent =
-        new Date().toLocaleDateString("pt-BR", {
-            weekday: "long",
-            day: "2-digit",
-            month: "long"
-        });
-}
-
-function login() {
-    const user = document.getElementById("loginUser").value.trim();
-    const pass = document.getElementById("loginPass").value;
-
-    if (
-        user === state.auth.username &&
-        pass === state.auth.password
-    ) {
-        setLoggedIn(true);
-
-        document.getElementById("loginScreen").classList.add("hidden");
-        document.getElementById("app").classList.remove("hidden");
-
-        updateGlobalIdentity();
-        setPage("dashboard");
-
-        showToast("Login realizado com sucesso.", "success");
-    } else {
-        const error = document.getElementById("loginError");
-
-        error.textContent = "Usuário ou senha inválidos.";
-        error.classList.remove("hidden");
-    }
-}
-
-function logout() {
-    setLoggedIn(false);
-
-    document.getElementById("app").classList.add("hidden");
-    document.getElementById("loginScreen").classList.remove("hidden");
-
-    showToast("Sessão encerrada.");
-}
-
-function getMonthRevenue(cursor) {
-    return state.appointments
-        .filter(a => sameMonth(a.date, cursor) && a.paid)
-        .reduce((sum, a) => sum + getAppointmentPrice(a), 0);
-}
-
-function getMonthReceivable(cursor) {
-    return state.appointments
-        .filter(a => sameMonth(a.date, cursor) && !a.paid)
-        .reduce((sum, a) => sum + getAppointmentPrice(a), 0);
-}
-
-function getAttendanceStats() {
-    const completed = state.appointments.filter(
-        a => a.attendance !== null && a.attendance !== undefined
-    );
-
-    if (!completed.length) {
-        return {
-            percentage: 0,
-            present: 0,
-            total: 0
-        };
-    }
-
-    const present = completed.filter(a => a.attendance === true).length;
-
-    return {
-        percentage: Math.round((present / completed.length) * 100),
-        present,
-        total: completed.length
-    };
-}
-
-function getClinicalAlerts() {
-    return state.students.filter(student => {
-        return (
-            student.performance === "falling" ||
-            student.attendanceStatus === "warning" ||
-            student.attendanceStatus === "critical"
-        );
-    });
-}
-
-function getMonthlyAttendanceCount(cursor) {
-    return state.appointments.filter(
-        a => sameMonth(a.date, cursor) && a.attendance === true
-    ).length;
-}
-
-function renderDashboard() {
-    const now = new Date();
-    const hour = now.getHours();
-
-    let greeting = "Bom dia";
-
-    if (hour >= 12 && hour < 18) {
-        greeting = "Boa tarde";
-    }
-
-    if (hour >= 18) {
-        greeting = "Boa noite";
-    }
-
-    document.getElementById("dashboardGreeting").textContent =
-        `${greeting}, ${state.professor.name || "profissional"}`;
-
-    const revenue = getMonthRevenue(now);
-    const weekStart = startOfWeek(now);
-    const weekEnd = endOfWeek(now);
-
-    const pendingWeek = state.appointments.filter(a => {
-        const d = parseDate(a.date);
-
-        return d >= weekStart &&
-            d <= weekEnd &&
-            !a.paid;
-    });
-
-    const receivableWeek = pendingWeek.reduce(
-        (sum, a) => sum + getAppointmentPrice(a),
-        0
-    );
-
-    const attendance = getAttendanceStats();
-    const monthSessions = getAppointmentsForMonth(now).length;
-    const goal = Number(state.professor.goal) || 40;
-    const goalPercentage = Math.min(
-        100,
-        Math.round((monthSessions / goal) * 100)
-    );
-
-    document.getElementById("metricMonthRevenue").textContent = money(revenue);
-    document.getElementById("metricMonthSessions").textContent =
-        `${state.appointments.filter(a => sameMonth(a.date, now) && a.paid).length} sessões pagas`;
-
-    document.getElementById("metricWeekReceivable").textContent =
-        money(receivableWeek);
-
-    document.getElementById("metricWeekPending").textContent =
-        `${pendingWeek.length} pagamento${pendingWeek.length === 1 ? "" : "s"} pendente${pendingWeek.length === 1 ? "" : "s"}`;
-
-    document.getElementById("metricGoalValue").textContent =
-        `${goalPercentage}%`;
-
-    document.getElementById("metricGoalText").textContent =
-        `${monthSessions} / ${goal}`;
-
-    document.getElementById("metricGoalBar").style.width =
-        `${goalPercentage}%`;
-
-    document.getElementById("metricAttendance").textContent =
-        `${attendance.percentage}%`;
-
-    document.getElementById("metricAttendanceText").textContent =
-        attendance.total
-            ? `${attendance.present} de ${attendance.total} atendimentos registrados`
-            : "Sem registros de presença";
-
-    renderRevenueChart();
-    renderServiceBreakdown();
-    renderClinicalAlerts();
-    renderUpcoming();
-}
-
-function renderRevenueChart() {
-    const container = document.getElementById("revenueChart");
-    const current = new Date();
-
-    const months = [];
-
-    for (let i = 5; i >= 0; i--) {
-        const d = new Date(
-            current.getFullYear(),
-            current.getMonth() - i,
-            1
-        );
-
-        months.push({
-            date: d,
-            label: MONTHS[d.getMonth()].slice(0, 3),
-            value: getMonthRevenue(d)
-        });
-    }
-
-    const max = Math.max(...months.map(m => m.value), 1);
-
-    container.innerHTML = months.map(item => {
-        const height = Math.max(
-            item.value > 0 ? 8 : 2,
-            Math.round((item.value / max) * 155)
-        );
-
-        return `
-            <div class="flex-1 h-full flex flex-col justify-end items-center gap-2 min-w-0">
-                <div class="text-[9px] font-bold text-slate-500 whitespace-nowrap">
-                    ${item.value > 0 ? money(item.value).replace(",00", "") : "R$ 0"}
-                </div>
-
-                <div
-                    class="w-full max-w-[54px] rounded-t-lg bg-asas-500 hover:bg-asas-600 transition-all"
-                    style="height:${height}px"
-                    title="${money(item.value)}"
-                ></div>
-
-                <div class="text-[10px] font-extrabold text-slate-400">
-                    ${item.label}
-                </div>
-            </div>
-        `;
-    }).join("");
-}
-
-function renderServiceBreakdown() {
-    const container = document.getElementById("serviceBreakdown");
-    const monthAppointments = getAppointmentsForMonth(new Date());
-
-    const types = [
-        ["psychology", "Psicologia", "#38bdf8"],
-        ["psychopedagogy", "Psicopedagogia", "#a855f7"],
-        ["private", "Aula Particular", "#22c55e"],
-        ["other", "Outro", "#94a3b8"]
-    ];
-
-    const total = monthAppointments.length || 1;
-
-    container.innerHTML = types.map(([key, label, color]) => {
-        const count = monthAppointments.filter(
-            a => a.type === key
-        ).length;
-
-        const percentage = Math.round((count / total) * 100);
-
-        return `
-            <div>
-                <div class="flex items-center justify-between mb-2">
-                    <div class="flex items-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full" style="background:${color}"></span>
-                        <span class="text-xs font-bold text-slate-600">${label}</span>
-                    </div>
-                    <span class="text-xs font-extrabold text-slate-800">${count}</span>
-                </div>
-
-                <div class="progress">
-                    <div style="width:${percentage}%;background:${color}"></div>
-                </div>
-            </div>
-        `;
-    }).join("");
-}
-
-function renderClinicalAlerts() {
-    const container = document.getElementById("clinicalAlerts");
-    const alerts = getClinicalAlerts();
-
-    document.getElementById("alertCountBadge").textContent =
-        alerts.length;
-
-    if (!alerts.length) {
-        container.innerHTML = `
-            <div class="empty">
-                <i data-lucide="shield-check" class="w-8 h-8 mx-auto text-emerald-500 mb-3"></i>
-                <div class="font-bold text-slate-600">Nenhum alerta ativo</div>
-                <div class="text-xs mt-1">Os indicadores clínicos estão estáveis.</div>
-            </div>
-        `;
-
-        lucide.createIcons();
-        return;
-    }
-
-    container.innerHTML = alerts.map(student => {
-        const reasons = [];
-
-        if (student.performance === "falling") {
-            reasons.push("queda de desempenho");
+        // ============================================================
+        //  HELPER: localStorage
+        // ============================================================
+        function salvarEstado() {
+            try {
+                const data = {
+                    usuario: STATE.usuario,
+                    alunos: STATE.alunos,
+                    agenda: STATE.agenda,
+                    transacoes: STATE.transacoes,
+                };
+                localStorage.setItem('psicogest_data', JSON.stringify(data));
+            } catch (e) {}
         }
 
-        if (
-            student.attendanceStatus === "warning" ||
-            student.attendanceStatus === "critical"
-        ) {
-            reasons.push(
-                student.attendanceStatus === "critical"
-                    ? "faltas recorrentes"
-                    : "faltas recentes"
-            );
-        }
-
-        return `
-            <button
-                class="alert-row w-full text-left bg-slate-50 hover:bg-red-50 rounded-xl p-4 mb-3 transition"
-                data-open-student="${student.id}"
-            >
-                <div class="flex items-start justify-between gap-3">
-                    <div>
-                        <div class="font-extrabold text-slate-800">${escapeHTML(student.name)}</div>
-                        <div class="text-xs text-red-600 font-bold mt-1">
-                            ${escapeHTML(reasons.join(" • "))}
-                        </div>
-                    </div>
-
-                    <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
-                </div>
-            </button>
-        `;
-    }).join("");
-
-    lucide.createIcons();
-}
-
-function renderUpcoming() {
-    const container = document.getElementById("upcomingSessions");
-    const today = toDateInput(new Date());
-
-    const upcoming = state.appointments
-        .filter(a => a.date >= today)
-        .sort((a, b) => `${a.date}${a.time}`.localeCompare(`${b.date}${b.time}`))
-        .slice(0, 6);
-
-    if (!upcoming.length) {
-        container.innerHTML = `
-            <div class="empty">
-                Nenhum atendimento futuro agendado.
-            </div>
-        `;
-        return;
-    }
-
-    container.innerHTML = upcoming.map(a => {
-        const student = getStudent(a.studentId);
-
-        if (!student) return "";
-
-        return `
-            <button
-                data-open-student="${student.id}"
-                class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 text-left transition"
-            >
-                <div class="avatar w-10 h-10 text-sm">
-                    ${escapeHTML(student.name.charAt(0).toUpperCase())}
-                </div>
-
-                <div class="flex-1 min-w-0">
-                    <div class="font-bold text-sm text-slate-800 truncate">
-                        ${escapeHTML(student.name)}
-                    </div>
-
-                    <div class="text-[11px] text-slate-400 mt-1">
-                        ${formatAppointmentDate(a.date)} • ${a.time} • ${TYPE_LABELS[a.type]}
-                    </div>
-                </div>
-
-                <span class="badge ${a.paid ? "badge-green" : "badge-yellow"}">
-                    ${a.paid ? "Pago" : money(student.price)}
-                </span>
-            </button>
-        `;
-    }).join("");
-}
-
-function openStudent(id) {
-    const student = getStudent(id);
-
-    if (!student) return;
-
-    currentStudentId = student.id;
-
-    document.getElementById("studentsGrid").classList.add("hidden");
-    document.getElementById("studentForm").classList.add("hidden");
-    document.getElementById("studentProfile").classList.remove("hidden");
-
-    renderStudentProfile();
-
-    window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-    });
-}
-
-function closeStudent() {
-    currentStudentId = null;
-
-    document.getElementById("studentProfile").classList.add("hidden");
-    document.getElementById("studentsGrid").classList.remove("hidden");
-
-    renderStudents();
-}
-
-function renderStudents() {
-    if (currentStudentId !== null) {
-        renderStudentProfile();
-        return;
-    }
-
-    const search = document.getElementById("studentSearch").value
-        .trim()
-        .toLowerCase();
-
-    const filter = document.getElementById("studentFilter").value;
-
-    let students = [...state.students];
-
-    if (search) {
-        students = students.filter(student => {
-            const content = [
-                student.name,
-                student.responsible,
-                ...(student.tags || [])
-            ].join(" ").toLowerCase();
-
-            return content.includes(search);
-        });
-    }
-
-    if (filter === "alerts") {
-        students = students.filter(student =>
-            student.performance === "falling" ||
-            student.attendanceStatus !== "normal"
-        );
-    }
-
-    if (filter === "falling") {
-        students = students.filter(
-            student => student.performance === "falling"
-        );
-    }
-
-    if (filter === "absences") {
-        students = students.filter(
-            student => student.attendanceStatus !== "normal"
-        );
-    }
-
-    const grid = document.getElementById("studentsGrid");
-
-    if (!students.length) {
-        grid.innerHTML = `
-            <div class="card col-span-full empty">
-                <i data-lucide="users-round" class="w-9 h-9 mx-auto mb-3 text-slate-300"></i>
-                <div class="font-bold text-slate-500">Nenhum aluno encontrado.</div>
-                <div class="text-xs mt-1">Cadastre um aluno ou ajuste os filtros.</div>
-            </div>
-        `;
-
-        lucide.createIcons();
-        return;
-    }
-
-    grid.innerHTML = students.map(student => {
-        const alert =
-            student.performance === "falling" ||
-            student.attendanceStatus !== "normal";
-
-        const performanceText = {
-            stable: "Estável",
-            improving: "Em evolução",
-            falling: "Queda de desempenho"
-        }[student.performance];
-
-        return `
-            <button
-                data-open-student="${student.id}"
-                class="student-card card p-5 text-left"
-            >
-                <div class="flex items-start justify-between gap-3">
-                    <div class="avatar w-12 h-12 text-base">
-                        ${escapeHTML(student.name.charAt(0).toUpperCase())}
-                    </div>
-
-                    ${alert
-                        ? `<span class="badge badge-red"><i data-lucide="triangle-alert" class="w-3 h-3"></i> Atenção</span>`
-                        : `<span class="badge badge-green">Ativo</span>`
-                    }
-                </div>
-
-                <div class="mt-4">
-                    <div class="font-extrabold text-slate-900">${escapeHTML(student.name)}</div>
-
-                    <div class="text-xs text-slate-400 mt-1">
-                        ${student.age ? `${student.age} anos` : "Idade não informada"}
-                        ${student.responsible ? ` • ${escapeHTML(student.responsible)}` : ""}
-                    </div>
-                </div>
-
-                <div class="flex flex-wrap gap-1.5 mt-4 min-h-[25px]">
-                    ${(student.tags || []).slice(0, 4).map(tag =>
-                        `<span class="badge badge-purple">${escapeHTML(tag)}</span>`
-                    ).join("")}
-                </div>
-
-                <div class="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between">
-                    <div>
-                        <div class="text-[9px] uppercase tracking-widest font-extrabold text-slate-400">Sessão</div>
-                        <div class="text-sm font-extrabold text-asas-600 mt-1">${money(student.price)}</div>
-                    </div>
-
-                    <div class="text-right">
-                        <div class="text-[9px] uppercase tracking-widest font-extrabold text-slate-400">Status</div>
-                        <div class="text-xs font-bold text-slate-600 mt-1">${performanceText}</div>
-                    </div>
-                </div>
-            </button>
-        `;
-    }).join("");
-
-    lucide.createIcons();
-}
-
-function openStudentForm(student = null) {
-    const form = document.getElementById("studentForm");
-
-    form.classList.remove("hidden");
-
-    document.getElementById("studentFormTitle").textContent =
-        student ? "Editar aluno" : "Novo aluno";
-
-    document.getElementById("studentId").value =
-        student ? student.id : "";
-
-    document.getElementById("studentName").value =
-        student?.name || "";
-
-    document.getElementById("studentAge").value =
-        student?.age || "";
-
-    document.getElementById("studentResponsible").value =
-        student?.responsible || "";
-
-    document.getElementById("studentPhone").value =
-        student?.phone || "";
-
-    document.getElementById("studentPrice").value =
-        student?.price ?? "";
-
-    document.getElementById("studentRegularTime").value =
-        student?.regularTime || "14:00";
-
-    document.getElementById("studentGoal").value =
-        student?.goal || 4;
-
-    document.getElementById("studentTags").value =
-        (student?.tags || []).join(", ");
-
-    document.getElementById("studentNotes").value =
-        student?.notes || "";
-
-    document.getElementById("studentPerformance").value =
-        student?.performance || "stable";
-
-    document.getElementById("studentAttendanceStatus").value =
-        student?.attendanceStatus || "normal";
-
-    form.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-    });
-}
-
-function closeStudentForm() {
-    document.getElementById("studentForm").classList.add("hidden");
-}
-
-function collectStudentForm() {
-    const name = document.getElementById("studentName").value.trim();
-    const priceRaw = document.getElementById("studentPrice").value;
-
-    if (!name) {
-        showToast("Informe o nome do aluno.", "error");
-        return null;
-    }
-
-    if (
-        priceRaw === "" ||
-        Number.isNaN(Number(priceRaw)) ||
-        Number(priceRaw) < 0
-    ) {
-        showToast("Informe um valor válido por sessão.", "error");
-        return null;
-    }
-
-    return {
-        name,
-        age: Number(document.getElementById("studentAge").value) || 0,
-        responsible: document.getElementById("studentResponsible").value.trim(),
-        phone: document.getElementById("studentPhone").value.trim(),
-        price: Number(priceRaw),
-        regularTime: document.getElementById("studentRegularTime").value || "14:00",
-        goal: Number(document.getElementById("studentGoal").value) || 4,
-        tags: document.getElementById("studentTags").value
-            .split(",")
-            .map(value => value.trim())
-            .filter(Boolean),
-        notes: document.getElementById("studentNotes").value.trim(),
-        performance: document.getElementById("studentPerformance").value,
-        attendanceStatus: document.getElementById("studentAttendanceStatus").value
-    };
-}
-
-function saveStudentFromForm() {
-    const data = collectStudentForm();
-
-    if (!data) return;
-
-    const id = document.getElementById("studentId").value;
-
-    if (id) {
-        const student = getStudent(id);
-
-        if (student) {
-            Object.assign(student, data);
-            showToast("Aluno atualizado com sucesso.", "success");
-        }
-    } else {
-        state.students.push({
-            id: uid("student"),
-            ...data,
-            createdAt: toDateInput(new Date())
-        });
-
-        showToast("Aluno cadastrado com sucesso.", "success");
-    }
-
-    saveState();
-    closeStudentForm();
-    renderStudents();
-    renderDashboard();
-}
-
-function renderStudentProfile() {
-    const student = getStudent(currentStudentId);
-
-    if (!student) {
-        closeStudent();
-        return;
-    }
-
-    const paid = state.appointments
-        .filter(a => String(a.studentId) === String(student.id) && a.paid)
-        .reduce((sum, a) => sum + getAppointmentPrice(a), 0);
-
-    const pending = state.appointments
-        .filter(a => String(a.studentId) === String(student.id) && !a.paid)
-        .reduce((sum, a) => sum + getAppointmentPrice(a), 0);
-
-    const performanceMap = {
-        stable: ["Estável", "badge-green"],
-        improving: ["Em evolução", "badge-blue"],
-        falling: ["Queda de desempenho", "badge-red"]
-    };
-
-    const [performanceText, performanceClass] =
-        performanceMap[student.performance] || performanceMap.stable;
-
-    document.getElementById("profileStudentAvatar").textContent =
-        student.name.charAt(0).toUpperCase();
-
-    document.getElementById("profileStudentName").textContent =
-        student.name;
-
-    document.getElementById("profileStudentSubtitle").textContent =
-        `${student.age ? `${student.age} anos` : "Idade não informada"} • ${student.responsible || "Sem responsável"} • ${student.phone || "Sem telefone"}`;
-
-    document.getElementById("profileStudentPrice").textContent =
-        money(student.price);
-
-    const performanceElement =
-        document.getElementById("profileStudentPerformance");
-
-    performanceElement.textContent = performanceText;
-    performanceElement.className = `badge ${performanceClass}`;
-
-    document.getElementById("profileStudentTags").innerHTML =
-        student.tags.length
-            ? student.tags.map(tag =>
-                `<span class="badge badge-purple">${escapeHTML(tag)}</span>`
-            ).join("")
-            : `<span class="text-xs text-slate-400">Sem tags clínicas</span>`;
-
-    document.getElementById("studentProfileRead").innerHTML = `
-        <div>
-            <div class="text-[10px] uppercase tracking-widest font-extrabold text-slate-400">Responsável</div>
-            <div class="text-sm font-bold text-slate-700 mt-1">${escapeHTML(student.responsible || "—")}</div>
-        </div>
-
-        <div>
-            <div class="text-[10px] uppercase tracking-widest font-extrabold text-slate-400">Telefone</div>
-            <div class="text-sm font-bold text-slate-700 mt-1">${escapeHTML(student.phone || "—")}</div>
-        </div>
-
-        <div>
-            <div class="text-[10px] uppercase tracking-widest font-extrabold text-slate-400">Horário regular</div>
-            <div class="text-sm font-bold text-slate-700 mt-1">${escapeHTML(student.regularTime || "—")}</div>
-        </div>
-
-        <div>
-            <div class="text-[10px] uppercase tracking-widest font-extrabold text-slate-400">Meta mensal</div>
-            <div class="text-sm font-bold text-slate-700 mt-1">${student.goal} sessões</div>
-        </div>
-
-        <div>
-            <div class="text-[10px] uppercase tracking-widest font-extrabold text-slate-400">Desempenho</div>
-            <div class="text-sm font-bold text-slate-700 mt-1">${performanceText}</div>
-        </div>
-
-        <div>
-            <div class="text-[10px] uppercase tracking-widest font-extrabold text-slate-400">Presença</div>
-            <div class="text-sm font-bold text-slate-700 mt-1">
-                ${student.attendanceStatus === "normal"
-                    ? "Normal"
-                    : student.attendanceStatus === "warning"
-                        ? "Faltas recentes"
-                        : "Faltas recorrentes"}
-            </div>
-        </div>
-    `;
-
-    document.getElementById("profileNotes").textContent =
-        student.notes || "Nenhuma observação clínica registrada.";
-
-    document.getElementById("profileResponsible").textContent =
-        student.responsible || "—";
-
-    document.getElementById("profilePhone").textContent =
-        student.phone || "—";
-
-    document.getElementById("profilePaid").textContent =
-        money(paid);
-
-    document.getElementById("profilePending").textContent =
-        money(pending);
-
-    const phoneDigits = String(student.phone || "").replace(/\D/g, "");
-
-    const whatsapp = document.getElementById("studentWhatsapp");
-
-    if (phoneDigits.length >= 10) {
-        const message =
-            `Olá, ${student.responsible || "responsável"}! ` +
-            `Aqui é ${state.professor.name || "o profissional"} da ASAS. ` +
-            `Gostaria de falar sobre o acompanhamento de ${student.name}. ` +
-            `O valor da sessão é ${money(student.price)}.`;
-
-        whatsapp.href =
-            `https://wa.me/55${phoneDigits}?text=${encodeURIComponent(message)}`;
-
-        whatsapp.classList.remove("opacity-50", "pointer-events-none");
-    } else {
-        whatsapp.href = "https://whatsapp.com";
-        whatsapp.classList.add("opacity-50", "pointer-events-none");
-    }
-
-    const sessions = state.appointments
-        .filter(a => String(a.studentId) === String(student.id))
-        .sort((a, b) =>
-            `${a.date}${a.time}`.localeCompare(`${b.date}${b.time}`)
-        )
-        .filter(a => a.date >= toDateInput(new Date()))
-        .slice(0, 7);
-
-    const sessionsContainer =
-        document.getElementById("profileSessions");
-
-    if (!sessions.length) {
-        sessionsContainer.innerHTML =
-            `<div class="text-xs text-slate-400">Nenhuma sessão futura.</div>`;
-    } else {
-        sessionsContainer.innerHTML = sessions.map(a => `
-            <div class="py-3 border-b border-slate-100 last:border-0">
-                <div class="flex items-center justify-between gap-2">
-                    <div>
-                        <div class="text-xs font-extrabold text-slate-700">
-                            ${formatDate(a.date)}
-                        </div>
-                        <div class="text-[10px] text-slate-400 mt-1">
-                            ${a.time} • ${TYPE_LABELS[a.type]}
-                        </div>
-                    </div>
-
-                    <span class="badge ${a.paid ? "badge-green" : "badge-yellow"}">
-                        ${a.paid ? "Pago" : money(student.price)}
-                    </span>
-                </div>
-            </div>
-        `).join("");
-    }
-
-    document.getElementById("studentProfileEdit").classList.add("hidden");
-    document.getElementById("studentProfileRead").classList.remove("hidden");
-    document.getElementById("editStudentProfileBtn").classList.remove("hidden");
-
-    lucide.createIcons();
-}
-
-function editCurrentStudent() {
-    const student = getStudent(currentStudentId);
-
-    if (!student) return;
-
-    editingStudentId = student.id;
-
-    document.getElementById("editStudentName").value = student.name;
-    document.getElementById("editStudentAge").value = student.age || "";
-    document.getElementById("editStudentResponsible").value = student.responsible || "";
-    document.getElementById("editStudentPhone").value = student.phone || "";
-    document.getElementById("editStudentPrice").value = student.price;
-    document.getElementById("editStudentTime").value = student.regularTime || "14:00";
-    document.getElementById("editStudentGoal").value = student.goal || 4;
-    document.getElementById("editStudentPerformance").value = student.performance;
-    document.getElementById("editStudentAttendanceStatus").value = student.attendanceStatus;
-    document.getElementById("editStudentTags").value = student.tags.join(", ");
-    document.getElementById("editStudentNotes").value = student.notes || "";
-
-    document.getElementById("studentProfileRead").classList.add("hidden");
-    document.getElementById("editStudentProfileBtn").classList.add("hidden");
-    document.getElementById("studentProfileEdit").classList.remove("hidden");
-
-    document.getElementById("studentProfileEdit").scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-    });
-}
-
-function cancelEditStudent() {
-    editingStudentId = null;
-    renderStudentProfile();
-}
-
-function saveCurrentStudent() {
-    const student = getStudent(editingStudentId);
-
-    if (!student) return;
-
-    const name =
-        document.getElementById("editStudentName").value.trim();
-
-    const priceRaw =
-        document.getElementById("editStudentPrice").value;
-
-    if (!name) {
-        showToast("O nome do aluno é obrigatório.", "error");
-        return;
-    }
-
-    if (
-        priceRaw === "" ||
-        Number(priceRaw) < 0 ||
-        Number.isNaN(Number(priceRaw))
-    ) {
-        showToast("Informe um valor válido por sessão.", "error");
-        return;
-    }
-
-    student.name = name;
-    student.age = Number(document.getElementById("editStudentAge").value) || 0;
-    student.responsible = document.getElementById("editStudentResponsible").value.trim();
-    student.phone = document.getElementById("editStudentPhone").value.trim();
-    student.price = Number(priceRaw);
-    student.regularTime = document.getElementById("editStudentTime").value || "14:00";
-    student.goal = Number(document.getElementById("editStudentGoal").value) || 4;
-    student.performance = document.getElementById("editStudentPerformance").value;
-    student.attendanceStatus = document.getElementById("editStudentAttendanceStatus").value;
-    student.tags = document.getElementById("editStudentTags").value
-        .split(",")
-        .map(value => value.trim())
-        .filter(Boolean);
-    student.notes = document.getElementById("editStudentNotes").value.trim();
-
-    saveState();
-
-    editingStudentId = null;
-
-    renderStudentProfile();
-    renderDashboard();
-
-    showToast("Perfil do aluno atualizado.", "success");
-}
-
-function deleteCurrentStudent() {
-    const student = getStudent(currentStudentId);
-
-    if (!student) return;
-
-    const container = document.getElementById("studentProfile");
-
-    const existing = document.getElementById("deleteStudentConfirm");
-
-    if (existing) {
-        existing.remove();
-        return;
-    }
-
-    const confirmation = document.createElement("div");
-
-    confirmation.id = "deleteStudentConfirm";
-    confirmation.className =
-        "card border-red-200 bg-red-50 p-5 mb-5";
-
-    confirmation.innerHTML = `
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-                <div class="font-extrabold text-red-800">
-                    Excluir ${escapeHTML(student.name)}?
-                </div>
-                <div class="text-xs text-red-600 mt-1">
-                    O aluno e seus agendamentos serão removidos permanentemente deste navegador.
-                </div>
-            </div>
-
-            <div class="flex gap-2">
-                <button id="cancelDeleteStudent" class="btn btn-secondary">
-                    Cancelar
-                </button>
-
-                <button id="confirmDeleteStudent" class="btn btn-danger">
-                    <i data-lucide="trash-2"></i>
-                    Confirmar exclusão
-                </button>
-            </div>
-        </div>
-    `;
-
-    container.prepend(confirmation);
-
-    document.getElementById("cancelDeleteStudent")
-        .addEventListener("click", () => confirmation.remove());
-
-    document.getElementById("confirmDeleteStudent")
-        .addEventListener("click", () => {
-            state.students = state.students.filter(
-                item => String(item.id) !== String(student.id)
-            );
-
-            state.appointments = state.appointments.filter(
-                item => String(item.studentId) !== String(student.id)
-            );
-
-            saveState();
-
-            closeStudent();
-
-            showToast("Aluno excluído.", "success");
-        });
-
-    lucide.createIcons();
-}
-
-function renderAgenda() {
-    renderAppointmentStudents();
-    renderAgendaWeekly();
-    renderAgendaMonthly();
-    renderAgendaLegend();
-}
-
-function renderAppointmentStudents() {
-    const select = document.getElementById("appointmentStudent");
-
-    const current = select.value;
-
-    select.innerHTML = state.students.length
-        ? state.students.map(student =>
-            `<option value="${student.id}">${escapeHTML(student.name)} • ${money(student.price)}</option>`
-        ).join("")
-        : `<option value="">Nenhum aluno cadastrado</option>`;
-
-    if (current) {
-        select.value = current;
-    }
-}
-
-function getWeekDates(cursor) {
-    const start = startOfWeek(cursor);
-
-    return Array.from({ length: 7 }, (_, index) => {
-        const d = new Date(start);
-        d.setDate(start.getDate() + index);
-        return d;
-    });
-}
-
-function renderAgendaWeekly() {
-    const container = document.getElementById("agendaWeekly");
-
-    const dates = getWeekDates(agendaCursor);
-
-    document.getElementById("agendaPeriodTitle").textContent =
-        `${formatDate(toDateInput(dates[0]), { day: "2-digit", month: "long" })} – ${formatDate(toDateInput(dates[6]), { day: "2-digit", month: "long", year: "numeric" })}`;
-
-    document.getElementById("agendaPeriodSubtitle").textContent =
-        "Clique em um horário vazio para abrir o fluxo de agendamento.";
-
-    let html = `<div class="agenda-table">`;
-
-    html += `<div class="agenda-header"></div>`;
-
-    dates.forEach(date => {
-        const dayIndex = date.getDay();
-        const dayName = WEEK_DAYS[dayIndex === 0 ? 6 : dayIndex - 1];
-        const isToday = toDateInput(date) === toDateInput(new Date());
-
-        html += `
-            <div class="agenda-header">
-                <div>${dayName.slice(0, 3)}</div>
-                <div class="${isToday ? "text-asas-600" : "text-slate-700"} mt-1">
-                    ${String(date.getDate()).padStart(2, "0")}
-                </div>
-            </div>
-        `;
-    });
-
-    HOURS.forEach(hour => {
-        html += `
-            <div class="time-cell">
-                ${hour}
-            </div>
-        `;
-
-        dates.forEach(date => {
-            const dateValue = toDateInput(date);
-
-            const appointment = state.appointments.find(
-                a => a.date === dateValue && a.time === hour
-            );
-
-            if (appointment) {
-                const student = getStudent(appointment.studentId);
-
-                if (!student) {
-                    html += `
-                        <div class="agenda-cell">
-                            <div class="agenda-event event-other">
-                                Aluno removido
-                            </div>
-                        </div>
-                    `;
-
-                    return;
+        function carregarEstado() {
+            try {
+                const raw = localStorage.getItem('psicogest_data');
+                if (raw) {
+                    const data = JSON.parse(raw);
+                    STATE.usuario = data.usuario || null;
+                    STATE.alunos = data.alunos || [];
+                    STATE.agenda = data.agenda || [];
+                    STATE.transacoes = data.transacoes || [];
                 }
+            } catch (e) {}
+            // Se não houver usuário, criar um padrão
+            if (!STATE.usuario) {
+                STATE.usuario = {
+                    nome: 'Dra. Ana Paula',
+                    especialidade: 'Psicopedagogia Clínica',
+                    bio: 'Especialista em dificuldades de aprendizagem e autismo.',
+                    foto: 'https://ui-avatars.com/api/?name=Ana+Paula&background=4f8b7a&color=fff&size=128'
+                };
+                salvarEstado();
+            }
+            // Dados de exemplo se não houver alunos
+            if (STATE.alunos.length === 0) {
+                const exemplos = [
+                    { id: 'a1', nome: 'Lucas M.', idade: '9', serie: '4º ano', responsavel: 'Carla M.', telefone: '11999999999', valorSessao: 120, tags: ['TDAH', 'Déficit de Atenção'], observacoes: [{ data: '2026-08-20', texto: 'Ótimo progresso na leitura.' }], foto: 'https://ui-avatars.com/api/?name=Lucas+M&background=a8c4b8&color=fff&size=80' },
+                    { id: 'a2', nome: 'Sofia R.', idade: '12', serie: '7º ano', responsavel: 'Ricardo R.', telefone: '11888888888', valorSessao: 150, tags: ['Dislexia', 'Ansiedade Escolar'], observacoes: [{ data: '2026-08-19', texto: 'Sessão focada em técnicas de memorização.' }], foto: 'https://ui-avatars.com/api/?name=Sofia+R&background=d4c9b8&color=fff&size=80' },
+                ];
+                STATE.alunos = exemplos;
+                // Criar alguns agendamentos
+                const hoje = new Date();
+                const dia = String(hoje.getDate()).padStart(2,'0');
+                const mes = String(hoje.getMonth()+1).padStart(2,'0');
+                const ano = hoje.getFullYear();
+                STATE.agenda = [
+                    { id: 'ag1', alunoId: 'a1', tipo: 'Psicopedagogia', data: `${ano}-${mes}-${dia}`, hora: '09:00', status: 'agendado', pago: false, valor: 120 },
+                    { id: 'ag2', alunoId: 'a2', tipo: 'Aula Particular', data: `${ano}-${mes}-${dia}`, hora: '14:00', status: 'agendado', pago: false, valor: 150 },
+                    { id: 'ag3', alunoId: 'a1', tipo: 'Psicopedagogia', data: `${ano}-${mes}-${String(Number(dia)+2).padStart(2,'0')}`, hora: '10:00', status: 'agendado', pago: false, valor: 120 },
+                ];
+                // Transações
+                STATE.transacoes = [
+                    { id: 't1', alunoId: 'a1', valor: 120, data: `${ano}-${mes}-${dia}`, descricao: 'Sessão Lucas M.' },
+                ];
+                salvarEstado();
+            }
+        }
 
+        // ============================================================
+        //  HELPERS
+        // ============================================================
+        function gerarId() { return '_' + Math.random().toString(36).substr(2, 9); }
+
+        function formatarDataBr(dataStr) {
+            if (!dataStr) return '';
+            const partes = dataStr.split('-');
+            return `${partes[2]}/${partes[1]}/${partes[0]}`;
+        }
+
+        function hojeStr() {
+            const d = new Date();
+            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        }
+
+        function horaAtual() {
+            const d = new Date();
+            return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+        }
+
+        function obterAluno(id) {
+            return STATE.alunos.find(a => a.id === id);
+        }
+
+        function obterAgendamentosDoDia(dataStr) {
+            return STATE.agenda.filter(a => a.data === dataStr);
+        }
+
+        function totalFaturadoMes() {
+            const hoje = new Date();
+            const mes = hoje.getMonth();
+            const ano = hoje.getFullYear();
+            let total = 0;
+            STATE.transacoes.forEach(t => {
+                const d = new Date(t.data);
+                if (d.getMonth() === mes && d.getFullYear() === ano) {
+                    total += t.valor;
+                }
+            });
+            return total;
+        }
+
+        function totalAReceberSemana() {
+            const hoje = new Date();
+            const diaSemana = hoje.getDay(); // 0=domingo
+            const inicio = new Date(hoje);
+            inicio.setDate(hoje.getDate() - diaSemana + 1); // segunda
+            const fim = new Date(inicio);
+            fim.setDate(inicio.getDate() + 6);
+            let total = 0;
+            STATE.agenda.forEach(a => {
+                if (a.status === 'agendado' && !a.pago) {
+                    const d = new Date(a.data);
+                    if (d >= inicio && d <= fim) {
+                        total += a.valor;
+                    }
+                }
+            });
+            return total;
+        }
+
+        function totalAtendimentosMes() {
+            const hoje = new Date();
+            const mes = hoje.getMonth();
+            const ano = hoje.getFullYear();
+            let count = 0;
+            STATE.agenda.forEach(a => {
+                const d = new Date(a.data);
+                if (d.getMonth() === mes && d.getFullYear() === ano && a.status === 'agendado') {
+                    count++;
+                }
+            });
+            return count;
+        }
+
+        function taxaAssiduidade() {
+            // Simples: considera 80% se tiver pelo menos 2 agendamentos
+            const total = STATE.agenda.filter(a => a.status === 'agendado').length;
+            if (total === 0) return '--';
+            const pagos = STATE.transacoes.length;
+            const perc = Math.min(100, Math.round((pagos / Math.max(total, 1)) * 100));
+            return perc + '%';
+        }
+
+        function alertasClinicos() {
+            // Queda de desempenho ou faltas consecutivas: simulação
+            const alertas = [];
+            STATE.alunos.forEach(aluno => {
+                const ags = STATE.agenda.filter(a => a.alunoId === aluno.id);
+                if (ags.length > 2) {
+                    // verifica se tem alguma observação negativa
+                    const obs = aluno.observacoes || [];
+                    const temNegativa = obs.some(o => o.texto.toLowerCase().includes('dificuldade') || o.texto.toLowerCase().includes('atenção'));
+                    if (temNegativa) {
+                        alertas.push({ aluno: aluno.nome, motivo: 'Queda de desempenho cognitivo' });
+                    }
+                }
+            });
+            return alertas;
+        }
+
+        // ============================================================
+        //  RENDERIZAÇÃO (VIEWS)
+        // ============================================================
+        function renderizar() {
+            const container = document.getElementById('appContainer');
+            if (!container) return;
+
+            // Se estiver visualizando um prontuário
+            if (STATE.alunoVisualizado) {
+                container.innerHTML = renderProntuario();
+                return;
+            }
+
+            switch (STATE.sessaoAtual) {
+                case 'dashboard': container.innerHTML = renderDashboard(); break;
+                case 'alunos': container.innerHTML = renderAlunos(); break;
+                case 'agenda': container.innerHTML = renderAgenda(); break;
+                case 'financeiro': container.innerHTML = renderFinanceiro(); break;
+                case 'perfil': container.innerHTML = renderPerfil(); break;
+                default: container.innerHTML = renderDashboard();
+            }
+
+            // Atualizar navegação ativa
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.classList.toggle('active', el.dataset.section === STATE.sessaoAtual);
+            });
+
+            // Re-aplicar eventos
+            aplicarEventos();
+        }
+
+        // ============================================================
+        //  VIEW: DASHBOARD
+        // ============================================================
+        function renderDashboard() {
+            const faturado = totalFaturadoMes();
+            const aReceber = totalAReceberSemana();
+            const atendimentos = totalAtendimentosMes();
+            const assiduidade = taxaAssiduidade();
+            const alertas = alertasClinicos();
+            const hoje = hojeStr();
+            const agendamentosHoje = obterAgendamentosDoDia(hoje);
+
+            let html = `
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold text-slate-800">Dashboard Clínico</h2>
+                    <span class="text-sm text-slate-500">${formatarDataBr(hoje)}</span>
+                </div>
+                <!-- Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+                    <div class="card">
+                        <div class="stat-label">Total Faturado (mês)</div>
+                        <div class="stat-value">R$ ${faturado.toFixed(2)}</div>
+                        <div class="text-sm text-slate-500 mt-1">líquido recebido</div>
+                    </div>
+                    <div class="card">
+                        <div class="stat-label">A Receber (semana)</div>
+                        <div class="stat-value">R$ ${aReceber.toFixed(2)}</div>
+                        <div class="text-sm text-slate-500 mt-1">pendências</div>
+                    </div>
+                    <div class="card">
+                        <div class="stat-label">Atendimentos (mês)</div>
+                        <div class="stat-value">${atendimentos}</div>
+                        <div class="text-sm text-slate-500 mt-1">sessões realizadas</div>
+                    </div>
+                    <div class="card">
+                        <div class="stat-label">Assiduidade</div>
+                        <div class="stat-value">${assiduidade}</div>
+                        <div class="text-sm text-slate-500 mt-1">taxa de presença</div>
+                    </div>
+                </div>
+
+                <!-- Alertas e Atendimentos do dia -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                    <div class="card">
+                        <h3 class="font-semibold text-slate-700 mb-3"><i class="fas fa-exclamation-triangle text-amber-500 mr-2"></i>Alertas Clínicos Ativos</h3>
+                        ${alertas.length === 0 ? '<p class="text-slate-500 text-sm">Nenhum alerta no momento.</p>' : ''}
+                        ${alertas.map(a => `<div class="flex items-center gap-2 text-sm py-1 border-b border-slate-50"><span class="w-2 h-2 rounded-full bg-amber-400"></span> <strong>${a.aluno}</strong> — ${a.motivo}</div>`).join('')}
+                    </div>
+                    <div class="card">
+                        <h3 class="font-semibold text-slate-700 mb-3"><i class="fas fa-clock text-slate-400 mr-2"></i>Atendimentos de Hoje</h3>
+                        ${agendamentosHoje.length === 0 ? '<p class="text-slate-500 text-sm">Nenhum atendimento agendado para hoje.</p>' : ''}
+                        ${agendamentosHoje.map(a => {
+                            const aluno = obterAluno(a.alunoId);
+                            return `
+                                <div class="flex items-center justify-between py-2 border-b border-slate-50">
+                                    <div>
+                                        <span class="font-medium">${aluno ? aluno.nome : 'Aluno'}</span>
+                                        <span class="text-xs text-slate-400 ml-2">${a.hora}</span>
+                                        <span class="badge-pastel ml-2">${a.tipo}</span>
+                                    </div>
+                                    <div>
+                                        ${a.pago ? '<span class="text-xs text-green-600 font-semibold">Pago</span>' : `<button class="btn-primary text-xs py-1 px-3 registrar-pagamento" data-agenda-id="${a.id}">Registrar Pagamento</button>`}
+                                        <button class="btn-secondary text-xs py-1 px-3 ml-1 marcar-presenca" data-agenda-id="${a.id}">Presença</button>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+            return html;
+        }
+
+        // ============================================================
+        //  VIEW: ALUNOS
+        // ============================================================
+        function renderAlunos() {
+            let html = `
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold text-slate-800">Alunos</h2>
+                    <button class="btn-primary" id="novoAlunoBtn"><i class="fas fa-plus mr-2"></i>Novo Aluno</button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            `;
+            STATE.alunos.forEach(aluno => {
                 html += `
-                    <div class="agenda-cell">
-                        <div class="agenda-event ${TYPE_CLASSES[appointment.type] || TYPE_CLASSES.other}">
-                            <div class="flex items-start justify-between gap-1">
-                                <button
-                                    data-open-student="${student.id}"
-                                    class="font-extrabold text-left text-[11px] leading-4 hover:underline"
-                                >
-                                    ${escapeHTML(student.name)}
-                                </button>
-
-                                <button
-                                    data-remove-appointment="${appointment.id}"
-                                    class="opacity-60 hover:opacity-100"
-                                    title="Excluir atendimento"
-                                >
-                                    <i data-lucide="x" class="w-3 h-3"></i>
-                                </button>
+                    <div class="card cursor-pointer hover:shadow-md transition aluno-card" data-aluno-id="${aluno.id}">
+                        <div class="flex items-center gap-4">
+                            <img src="${aluno.foto || 'https://ui-avatars.com/api/?name='+encodeURIComponent(aluno.nome)+'&background=a8c4b8&color=fff&size=80'}" class="profile-avatar-sm" />
+                            <div>
+                                <div class="font-semibold text-slate-800">${aluno.nome}</div>
+                                <div class="text-sm text-slate-500">${aluno.idade} anos · ${aluno.serie}</div>
+                                <div class="text-sm text-slate-500">Responsável: ${aluno.responsavel}</div>
+                                <div class="text-sm font-medium text-slate-700">R$ ${aluno.valorSessao}/sessão</div>
                             </div>
-
-                            <div class="text-[9px] mt-2 opacity-75">
-                                ${TYPE_LABELS[appointment.type]} • ${money(student.price)}
-                            </div>
-
-                            <div class="flex gap-1 mt-2">
-                                <button
-                                    data-toggle-paid="${appointment.id}"
-                                    class="badge ${appointment.paid ? "badge-green" : "badge-yellow"}"
-                                >
-                                    ${appointment.paid ? "Pago" : "Pendente"}
-                                </button>
-
-                                <button
-                                    data-toggle-attendance="${appointment.id}"
-                                    class="badge ${appointment.attendance === true
-                                        ? "badge-green"
-                                        : appointment.attendance === false
-                                            ? "badge-red"
-                                            : "badge-blue"}"
-                                >
-                                    ${appointment.attendance === true
-                                        ? "Presente"
-                                        : appointment.attendance === false
-                                            ? "Falta"
-                                            : "Presença"}
-                                </button>
-                            </div>
+                        </div>
+                        <div class="mt-2 flex flex-wrap">
+                            ${(aluno.tags || []).map(t => `<span class="tag">${t}</span>`).join('')}
                         </div>
                     </div>
                 `;
-
-            } else {
-                html += `
-                    <div class="agenda-cell">
-                        <button
-                            data-new-appointment-date="${dateValue}"
-                            data-new-appointment-time="${hour}"
-                            class="agenda-empty"
-                        >
-                            + Agendar
-                        </button>
-                    </div>
-                `;
-            }
-        });
-    });
-
-    html += `</div>`;
-
-    container.innerHTML = html;
-}
-
-function renderAgendaMonthly() {
-    const container = document.getElementById("agendaMonthly");
-
-    const year = agendaCursor.getFullYear();
-    const month = agendaCursor.getMonth();
-
-    document.getElementById("agendaPeriodTitle").textContent =
-        `${MONTHS[month]} de ${year}`;
-
-    document.getElementById("agendaPeriodSubtitle").textContent =
-        "Clique em um dia para iniciar um novo agendamento.";
-
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-
-    let startOffset = firstDay.getDay();
-
-    if (startOffset === 0) {
-        startOffset = 6;
-    } else {
-        startOffset -= 1;
-    }
-
-    const totalCells = Math.ceil(
-        (startOffset + lastDay.getDate()) / 7
-    ) * 7;
-
-    let html = `<div class="month-grid">`;
-
-    WEEK_DAYS.forEach(day => {
-        html += `
-            <div class="month-head">
-                ${day.slice(0, 3)}
-            </div>
-        `;
-    });
-
-    for (let cell = 0; cell < totalCells; cell++) {
-        const dayNumber = cell - startOffset + 1;
-
-        if (dayNumber < 1 || dayNumber > lastDay.getDate()) {
-            html += `<div class="month-day muted"></div>`;
-            continue;
+            });
+            html += `</div>`;
+            return html;
         }
 
-        const date = new Date(year, month, dayNumber);
-        const dateValue = toDateInput(date);
-        const today = toDateInput(new Date()) === dateValue;
+        // ============================================================
+        //  VIEW: PRONTUÁRIO (tela inteira)
+        // ============================================================
+        function renderProntuario() {
+            const aluno = obterAluno(STATE.alunoVisualizado);
+            if (!aluno) {
+                STATE.alunoVisualizado = null;
+                return renderDashboard();
+            }
+            const editando = STATE.editandoProntuario;
+            const foto = aluno.foto || 'https://ui-avatars.com/api/?name='+encodeURIComponent(aluno.nome)+'&background=a8c4b8&color=fff&size=128';
 
-        const appointments = state.appointments
-            .filter(a => a.date === dateValue)
-            .sort((a, b) => a.time.localeCompare(b.time));
-
-        html += `
-            <div class="month-day">
-                <button
-                    data-new-appointment-date="${dateValue}"
-                    class="month-number ${today ? "today" : "hover:bg-slate-100"}"
-                >
-                    ${dayNumber}
-                </button>
-
-                <div>
-                    ${appointments.map(a => {
-                        const student = getStudent(a.studentId);
-
-                        if (!student) return "";
-
-                        return `
-                            <button
-                                data-open-student="${student.id}"
-                                class="month-event ${TYPE_CLASSES[a.type] || TYPE_CLASSES.other}"
-                                title="${escapeHTML(student.name)}"
-                            >
-                                ${a.time} • ${escapeHTML(student.name)}
-                            </button>
-                        `;
-                    }).join("")}
+            let html = `
+                <div class="mb-4 flex items-center gap-3">
+                    <button class="btn-secondary" id="voltarProntuario"><i class="fas fa-arrow-left mr-2"></i>Voltar</button>
+                    <button class="btn-primary" id="editarProntuarioBtn">${editando ? 'Salvar' : 'Editar Informações'}</button>
+                    ${editando ? `<button class="btn-secondary" id="cancelarEdicaoProntuario">Cancelar</button>` : ''}
                 </div>
-            </div>
-        `;
-    }
+                <div class="card">
+                    <!-- Cabeçalho perfil -->
+                    <div class="profile-header">
+                        <img src="${foto}" class="profile-avatar" />
+                        <div class="flex-1">
+                            ${editando ? `
+                                <input class="input-field mb-1" id="editNome" value="${aluno.nome}" placeholder="Nome" />
+                                <div class="flex gap-2 mt-1 flex-wrap">
+                                    <input class="input-field w-24" id="editIdade" value="${aluno.idade}" placeholder="Idade" />
+                                    <input class="input-field w-32" id="editSerie" value="${aluno.serie}" placeholder="Série" />
+                                </div>
+                                <div class="flex gap-2 mt-1 flex-wrap">
+                                    <input class="input-field w-48" id="editResponsavel" value="${aluno.responsavel}" placeholder="Responsável" />
+                                    <input class="input-field w-40" id="editTelefone" value="${aluno.telefone}" placeholder="Telefone" />
+                                    <input class="input-field w-32" id="editValor" value="${aluno.valorSessao}" placeholder="Valor sessão" />
+                                </div>
+                                <div class="mt-2">
+                                    <input class="input-field" id="editFoto" value="${aluno.foto || ''}" placeholder="URL da foto" />
+                                </div>
+                            ` : `
+                                <div class="text-xl font-bold text-slate-800">${aluno.nome}</div>
+                                <div class="text-sm text-slate-500">${aluno.idade} anos · ${aluno.serie}</div>
+                                <div class="text-sm text-slate-500">Responsável: ${aluno.responsavel} · ${aluno.telefone}</div>
+                                <div class="text-sm font-semibold text-slate-700 mt-1">Valor/sessão: R$ ${aluno.valorSessao}</div>
+                            `}
+                        </div>
+                        <div>
+                            <a href="https://wa.me/55${aluno.telefone}?text=Olá%2C%20aqui%20é%20${encodeURIComponent(STATE.usuario.nome)}.%20Gostaria%20de%20falar%20sobre%20o%20atendimento%20do%20${encodeURIComponent(aluno.nome)}%20marcado%20para%20esta%20semana..." target="_blank" class="btn-primary flex items-center gap-2"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+                        </div>
+                    </div>
 
-    html += `</div>`;
+                    <!-- Tags -->
+                    <div class="mt-4">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="font-medium text-sm text-slate-600">Tags Clínicas:</span>
+                            ${editando ? `
+                                <div class="flex flex-wrap gap-1 items-center">
+                                    ${(aluno.tags || []).map(t => `<span class="tag-removable">${t} <i class="fas fa-times remove-tag" data-tag="${t}"></i></span>`).join('')}
+                                    <input class="input-field w-32 text-sm" id="novaTagInput" placeholder="Nova tag" />
+                                    <button class="btn-secondary text-xs py-1 px-3" id="adicionarTagBtn">+</button>
+                                </div>
+                            ` : `
+                                ${(aluno.tags || []).map(t => `<span class="tag">${t}</span>`).join('')}
+                            `}
+                        </div>
+                    </div>
 
-    container.innerHTML = html;
-}
+                    <!-- Observações -->
+                    <div class="mt-6">
+                        <h4 class="font-semibold text-slate-700 mb-2">Evolução Clínica</h4>
+                        <div class="mb-3">
+                            ${editando ? `
+                                <textarea class="input-field" id="novaObservacao" rows="2" placeholder="Digite uma nova observação..."></textarea>
+                                <button class="btn-primary text-sm py-1 px-4 mt-1" id="adicionarObservacaoBtn">Adicionar</button>
+                            ` : ''}
+                        </div>
+                        <div>
+                            ${(aluno.observacoes || []).slice().reverse().map(obs => `
+                                <div class="observacao-item">
+                                    <div class="data">${formatarDataBr(obs.data)}</div>
+                                    <div class="text-slate-700">${obs.texto}</div>
+                                </div>
+                            `).join('') || '<p class="text-slate-400 text-sm">Nenhuma observação registrada.</p>'}
+                        </div>
+                    </div>
+                </div>
+            `;
+            return html;
+        }
 
-function renderAgendaLegend() {
-    const monthAppointments = getAppointmentsForMonth(agendaCursor);
+        // ============================================================
+        //  VIEW: AGENDA
+        // ============================================================
+        function renderAgenda() {
+            const view = STATE.agendaView;
+            const offset = STATE.agendaOffset;
+            const hoje = new Date();
+            let html = `
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold text-slate-800">Agenda</h2>
+                    <div class="flex items-center gap-3">
+                        <button class="btn-secondary agenda-nav" data-dir="-1"><i class="fas fa-chevron-left"></i></button>
+                        <span class="font-medium text-slate-700" id="agendaPeriodoLabel">${view === 'semanal' ? 'Semana' : 'Mês'}</span>
+                        <button class="btn-secondary agenda-nav" data-dir="1"><i class="fas fa-chevron-right"></i></button>
+                        <button class="btn-secondary agenda-view-toggle" data-view="semanal">Semanal</button>
+                        <button class="btn-secondary agenda-view-toggle" data-view="mensal">Mensal</button>
+                    </div>
+                </div>
+                <div class="card">
+            `;
 
-    document.getElementById("legendPsychology").textContent =
-        monthAppointments.filter(a => a.type === "psychology").length;
+            if (view === 'semanal') {
+                // Calcular semana
+                const inicioSemana = new Date(hoje);
+                inicioSemana.setDate(hoje.getDate() + offset * 7 - hoje.getDay() + 1); // segunda
+                const diasSemana = [];
+                for (let i = 0; i < 7; i++) {
+                    const d = new Date(inicioSemana);
+                    d.setDate(inicioSemana.getDate() + i);
+                    diasSemana.push(d);
+                }
+                const label = `${formatarDataBr(diasSemana[0].toISOString().split('T')[0])} - ${formatarDataBr(diasSemana[6].toISOString().split('T')[0])}`;
+                document.getElementById('agendaPeriodoLabel') && (document.getElementById('agendaPeriodoLabel').innerText = label);
 
-    document.getElementById("legendPsychopedagogy").textContent =
-        monthAppointments.filter(a => a.type === "psychopedagogy").length;
+                html += `<div class="mb-4 text-sm text-slate-500">${label}</div>`;
+                // Grid de horas 08:00 - 18:00
+                for (let h = 8; h <= 18; h++) {
+                    const horaStr = String(h).padStart(2,'0') + ':00';
+                    html += `<div class="agenda-hour"><span class="hour-label">${horaStr}</span>`;
+                    // Buscar eventos nessa hora em cada dia da semana
+                    diasSemana.forEach((dia, idx) => {
+                        const dataStr = dia.toISOString().split('T')[0];
+                        const eventos = STATE.agenda.filter(a => a.data === dataStr && a.hora === horaStr && a.status === 'agendado');
+                        eventos.forEach(ev => {
+                            const aluno = obterAluno(ev.alunoId);
+                            const nome = aluno ? aluno.nome : 'Aluno';
+                            const cor = ev.tipo === 'Psicopedagogia' ? 'bg-sage-100' : ev.tipo === 'Psicologia' ? 'bg-blue-100' : 'bg-amber-100';
+                            html += `<span class="agenda-event" style="background:#eaf3ef;">${nome} (${ev.tipo})</span>`;
+                        });
+                        // Se vazio, botão de agendar
+                        if (eventos.length === 0) {
+                            html += `<button class="agendar-horario text-xs text-slate-400 hover:text-slate-700" data-data="${dataStr}" data-hora="${horaStr}"><i class="fas fa-plus-circle"></i></button>`;
+                        }
+                    });
+                    html += `</div>`;
+                }
+            } else {
+                // Visão Mensal
+                const mesAtual = new Date(hoje.getFullYear(), hoje.getMonth() + offset, 1);
+                const label = `${mesAtual.toLocaleString('pt-BR', { month: 'long', year: 'numeric' })}`;
+                document.getElementById('agendaPeriodoLabel') && (document.getElementById('agendaPeriodoLabel').innerText = label);
+                const primeiroDia = new Date(mesAtual.getFullYear(), mesAtual.getMonth(), 1);
+                const ultimoDia = new Date(mesAtual.getFullYear(), mesAtual.getMonth()+1, 0);
+                const diasNoMes = ultimoDia.getDate();
+                const diaSemanaInicio = primeiroDia.getDay(); // 0=domingo
 
-    document.getElementById("legendPrivate").textContent =
-        monthAppointments.filter(a => a.type === "private").length;
+                html += `<div class="month-grid">`;
+                // Cabeçalho dias da semana
+                ['Dom','Seg','Ter','Qua','Qui','Sex','Sab'].forEach(d => {
+                    html += `<div class="text-xs font-semibold text-slate-400 text-center py-1">${d}</div>`;
+                });
+                // Dias vazios início
+                for (let i = 0; i < diaSemanaInicio; i++) {
+                    html += `<div class="month-day other-month"></div>`;
+                }
+                for (let d = 1; d <= diasNoMes; d++) {
+                    const dataStr = `${mesAtual.getFullYear()}-${String(mesAtual.getMonth()+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                    const eventos = STATE.agenda.filter(a => a.data === dataStr && a.status === 'agendado');
+                    const temEvento = eventos.length > 0;
+                    html += `<div class="month-day" data-data="${dataStr}">
+                        <span class="day-number">${d}</span>
+                        ${temEvento ? `<span class="day-dot ${eventos.length > 1 ? 'multiple' : ''}"></span>` : ''}
+                        ${eventos.length > 1 ? `<span class="text-xs text-slate-400">+${eventos.length-1}</span>` : ''}
+                    </div>`;
+                }
+                html += `</div>`;
+                // Lista de eventos do dia selecionado (por padrão hoje)
+                const hojeStr = new Date().toISOString().split('T')[0];
+                const eventosHoje = STATE.agenda.filter(a => a.data === hojeStr && a.status === 'agendado');
+                html += `<div class="mt-4"><h4 class="font-semibold text-slate-700">Eventos de ${formatarDataBr(hojeStr)}</h4>`;
+                if (eventosHoje.length === 0) html += `<p class="text-slate-400 text-sm">Nenhum evento.</p>`;
+                eventosHoje.forEach(ev => {
+                    const aluno = obterAluno(ev.alunoId);
+                    html += `<div class="flex items-center gap-2 text-sm py-1"><span class="badge-pastel">${ev.hora}</span> ${aluno ? aluno.nome : 'Aluno'} - ${ev.tipo}</div>`;
+                });
+                html += `</div>`;
+            }
 
-    document.getElementById("legendTotal").textContent =
-        monthAppointments.length;
-}
+            html += `</div>`;
+            return html;
+        }
 
-function setAgendaView(view) {
-    agendaView = view;
+        // ============================================================
+        //  VIEW: FINANCEIRO
+        // ============================================================
+        function renderFinanceiro() {
+            const faturado = totalFaturadoMes();
+            const aReceber = totalAReceberSemana();
+            const transacoes = STATE.transacoes.slice().reverse();
+            let html = `
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold text-slate-800">Financeiro</h2>
+                    <div class="flex gap-4">
+                        <div class="card py-2 px-4"><span class="stat-label">Faturado mês</span> <span class="stat-value text-lg">R$ ${faturado.toFixed(2)}</span></div>
+                        <div class="card py-2 px-4"><span class="stat-label">A Receber semana</span> <span class="stat-value text-lg">R$ ${aReceber.toFixed(2)}</span></div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3 class="font-semibold text-slate-700 mb-3">Histórico de Transações</h3>
+                    ${transacoes.length === 0 ? '<p class="text-slate-400 text-sm">Nenhuma transação registrada.</p>' : ''}
+                    ${transacoes.map(t => {
+                        const aluno = obterAluno(t.alunoId);
+                        return `
+                            <div class="flex items-center justify-between py-2 border-b border-slate-50">
+                                <div>
+                                    <span class="font-medium">${aluno ? aluno.nome : 'Aluno'}</span>
+                                    <span class="text-xs text-slate-400 ml-2">${formatarDataBr(t.data)}</span>
+                                </div>
+                                <div>
+                                    <span class="text-sm font-semibold text-green-700">R$ ${t.valor.toFixed(2)}</span>
+                                    <span class="text-xs text-slate-400 ml-2">${t.descricao || ''}</span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+            return html;
+        }
 
-    const weekButton = document.getElementById("weekViewBtn");
-    const monthButton = document.getElementById("monthViewBtn");
+        // ============================================================
+        //  VIEW: PERFIL
+        // ============================================================
+        function renderPerfil() {
+            const user = STATE.usuario;
+            return `
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold text-slate-800">Meu Perfil</h2>
+                </div>
+                <div class="card max-w-2xl">
+                    <div class="flex items-center gap-6 mb-6">
+                        <img src="${user.foto || 'https://ui-avatars.com/api/?name='+encodeURIComponent(user.nome)+'&background=4f8b7a&color=fff&size=128'}" class="profile-avatar" />
+                        <div>
+                            <div class="text-xl font-bold">${user.nome}</div>
+                            <div class="text-slate-500">${user.especialidade}</div>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-sm font-medium text-slate-600">Nome</label>
+                            <input class="input-field" id="perfilNome" value="${user.nome}" />
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium text-slate-600">Especialidade</label>
+                            <input class="input-field" id="perfilEspecialidade" value="${user.especialidade}" />
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium text-slate-600">Bio</label>
+                            <textarea class="input-field" id="perfilBio" rows="3">${user.bio || ''}</textarea>
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium text-slate-600">URL da Foto</label>
+                            <input class="input-field" id="perfilFoto" value="${user.foto || ''}" />
+                        </div>
+                        <button class="btn-primary" id="salvarPerfilBtn">Salvar Perfil</button>
+                    </div>
+                </div>
+            `;
+        }
 
-    if (view === "week") {
-        document.getElementById("agendaWeekly").classList.remove("hidden");
-        document.getElementById("agendaMonthly").classList.add("hidden");
+        // ============================================================
+        //  EVENTOS E INTERAÇÕES
+        // ============================================================
+        function aplicarEventos() {
+            // Navegação sidebar
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.onclick = () => {
+                    const section = el.dataset.section;
+                    if (section === 'dashboard' || section === 'alunos' || section === 'agenda' || section === 'financeiro' || section === 'perfil') {
+                        STATE.sessaoAtual = section;
+                        STATE.alunoVisualizado = null;
+                        STATE.editandoProntuario = false;
+                        renderizar();
+                    }
+                };
+            });
 
-        weekButton.className = "btn !py-2 !px-3 btn-primary";
-        monthButton.className = "btn !py-2 !px-3 btn-secondary border-0";
-    } else {
-        document.getElementById("agendaWeekly").classList.add("hidden");
-        document.getElementById("agendaMonthly").classList.remove("hidden");
+            // Logout
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) logoutBtn.onclick = () => { mostrarLogin(); };
 
-        weekButton.className = "btn !py-2 !px-3 btn-secondary border-0";
-        monthButton.className = "btn !py-2 !px-3 btn-primary";
-    }
+            // Botão Novo Aluno
+            const novoBtn = document.getElementById('novoAlunoBtn');
+            if (novoBtn) novoBtn.onclick = () => { abrirFormNovoAluno(); };
 
-    renderAgenda();
-}
+            // Cards de alunos -> abrir prontuário
+            document.querySelectorAll('.aluno-card').forEach(el => {
+                el.onclick = () => {
+                    const id = el.dataset.alunoId;
+                    if (id) {
+                        STATE.alunoVisualizado = id;
+                        STATE.editandoProntuario = false;
+                        renderizar();
+                    }
+                };
+            });
 
-function shiftAgenda(direction) {
-    if (agendaView === "week") {
-        agendaCursor.setDate(
-            agendaCursor.getDate() + direction * 7
-        );
-    } else {
-        agendaCursor.setMonth(
-            agendaCursor.getMonth() + direction
-        );
-    }
+            // Voltar prontuário
+            const voltar = document.getElementById('voltarProntuario');
+            if (voltar) voltar.onclick = () => {
+                STATE.alunoVisualizado = null;
+                STATE.editandoProntuario = false;
+                renderizar();
+            };
 
-    renderAgenda();
-}
+            // Editar prontuário
+            const editarBtn = document.getElementById('editarProntuarioBtn');
+            if (editarBtn) {
+                editarBtn.onclick = () => {
+                    if (STATE.editandoProntuario) {
+                        // Salvar edições
+                        salvarEdicaoProntuario();
+                        STATE.editandoProntuario = false;
+                        renderizar();
+                    } else {
+                        STATE.editandoProntuario = true;
+                        renderizar();
+                    }
+                };
+            }
 
-function resetAgendaToday() {
-    agendaCursor = new Date();
-    renderAgenda();
-}
+            const cancelarEdicao = document.getElementById('cancelarEdicaoProntuario');
+            if (cancelarEdicao) cancelarEdicao.onclick = () => {
+                STATE.editandoProntuario = false;
+                renderizar();
+            };
 
-function openAppointmentForm(date = null, time = null) {
-    document.getElementById("appointmentForm").classList.remove("hidden");
+            // Adicionar tag
+            const addTagBtn = document.getElementById('adicionarTagBtn');
+            if (addTagBtn) {
+                addTagBtn.onclick = () => {
+                    const input = document.getElementById('novaTagInput');
+                    if (input && input.value.trim()) {
+                        const aluno = obterAluno(STATE.alunoVisualizado);
+                        if (aluno) {
+                            if (!aluno.tags) aluno.tags = [];
+                            aluno.tags.push(input.value.trim());
+                            input.value = '';
+                            salvarEstado();
+                            renderizar();
+                        }
+                    }
+                };
+            }
 
-    renderAppointmentStudents();
+            // Remover tag
+            document.querySelectorAll('.remove-tag').forEach(el => {
+                el.onclick = (e) => {
+                    e.stopPropagation();
+                    const tag = el.dataset.tag;
+                    const aluno = obterAluno(STATE.alunoVisualizado);
+                    if (aluno && aluno.tags) {
+                        aluno.tags = aluno.tags.filter(t => t !== tag);
+                        salvarEstado();
+                        renderizar();
+                    }
+                };
+            });
 
-    document.getElementById("appointmentDate").value =
-        date || toDateInput(agendaCursor);
+            // Adicionar observação
+            const addObsBtn = document.getElementById('adicionarObservacaoBtn');
+            if (addObsBtn) {
+                addObsBtn.onclick = () => {
+                    const textarea = document.getElementById('novaObservacao');
+                    if (textarea && textarea.value.trim()) {
+                        const aluno = obterAluno(STATE.alunoVisualizado);
+                        if (aluno) {
+                            if (!aluno.observacoes) aluno.observacoes = [];
+                            aluno.observacoes.push({ data: hojeStr(), texto: textarea.value.trim() });
+                            textarea.value = '';
+                            salvarEstado();
+                            renderizar();
+                        }
+                    }
+                };
+            }
 
-    document.getElementById("appointmentTime").value =
-        time || "14:00";
+            // Registrar pagamento (dashboard)
+            document.querySelectorAll('.registrar-pagamento').forEach(el => {
+                el.onclick = () => {
+                    const agendaId = el.dataset.agendaId;
+                    const ag = STATE.agenda.find(a => a.id === agendaId);
+                    if (ag && !ag.pago) {
+                        ag.pago = true;
+                        // Adicionar transação
+                        STATE.transacoes.push({
+                            id: gerarId(),
+                            alunoId: ag.alunoId,
+                            valor: ag.valor,
+                            data: hojeStr(),
+                            descricao: `Sessão ${obterAluno(ag.alunoId)?.nome || 'Aluno'}`
+                        });
+                        salvarEstado();
+                        renderizar();
+                    }
+                };
+            });
 
-    document.getElementById("appointmentNotes").value = "";
-    document.getElementById("appointmentAttendance").checked = false;
+            // Marcar presença (dashboard)
+            document.querySelectorAll('.marcar-presenca').forEach(el => {
+                el.onclick = () => {
+                    const agendaId = el.dataset.agendaId;
+                    const ag = STATE.agenda.find(a => a.id === agendaId);
+                    if (ag) {
+                        ag.status = 'agendado'; // apenas confirma
+                        salvarEstado();
+                        renderizar();
+                    }
+                };
+            });
 
-    document.getElementById("appointmentForm").scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-    });
-}
+            // Navegação agenda (semanal/mensal)
+            document.querySelectorAll('.agenda-nav').forEach(el => {
+                el.onclick = () => {
+                    const dir = parseInt(el.dataset.dir);
+                    STATE.agendaOffset += dir;
+                    renderizar();
+                };
+            });
 
-function closeAppointmentForm() {
-    document.getElementById("appointmentForm").classList.add("hidden");
-}
+            document.querySelectorAll('.agenda-view-toggle').forEach(el => {
+                el.onclick = () => {
+                    STATE.agendaView = el.dataset.view;
+                    STATE.agendaOffset = 0;
+                    renderizar();
+                };
+            });
 
-function saveAppointment() {
-    const studentId =
-        document.getElementById("appointmentStudent").value;
+            // Agendar horário (visão semanal)
+            document.querySelectorAll('.agendar-horario').forEach(el => {
+                el.onclick = () => {
+                    const data = el.dataset.data;
+                    const hora = el.dataset.hora;
+                    abrirFormAgendamento(data, hora);
+                };
+            });
 
-    const date =
-        document.getElementById("appointmentDate").value;
+            // Salvar perfil
+            const salvarPerfil = document.getElementById('salvarPerfilBtn');
+            if (salvarPerfil) {
+                salvarPerfil.onclick = () => {
+                    const nome = document.getElementById('perfilNome').value.trim();
+                    const especialidade = document.getElementById('perfilEspecialidade').value.trim();
+                    const bio = document.getElementById('perfilBio').value.trim();
+                    const foto = document.getElementById('perfilFoto').value.trim();
+                    if (nome) {
+                        STATE.usuario.nome = nome;
+                        STATE.usuario.especialidade = especialidade || STATE.usuario.especialidade;
+                        STATE.usuario.bio = bio || STATE.usuario.bio;
+                        STATE.usuario.foto = foto || STATE.usuario.foto;
+                        salvarEstado();
+                        renderizar();
+                    }
+                };
+            }
 
-    const time =
-        document.getElementById("appointmentTime").value;
+            // Clique em dia do mês (mostrar eventos)
+            document.querySelectorAll('.month-day').forEach(el => {
+                el.onclick = () => {
+                    const data = el.dataset.data;
+                    if (data) {
+                        // Atualizar lista de eventos do dia
+                        const eventos = STATE.agenda.filter(a => a.data === data && a.status === 'agendado');
+                        const container = el.closest('.card').querySelector('.mt-4');
+                        if (container) {
+                            let html = `<h4 class="font-semibold text-slate-700">Eventos de ${formatarDataBr(data)}</h4>`;
+                            if (eventos.length === 0) html += `<p class="text-slate-400 text-sm">Nenhum evento.</p>`;
+                            eventos.forEach(ev => {
+                                const aluno = obterAluno(ev.alunoId);
+                                html += `<div class="flex items-center gap-2 text-sm py-1"><span class="badge-pastel">${ev.hora}</span> ${aluno ? aluno.nome : 'Aluno'} - ${ev.tipo}</div>`;
+                            });
+                            container.innerHTML = html;
+                        }
+                    }
+                };
+            });
+        }
 
-    const type =
-        document.getElementById("appointmentType").value;
+        // ============================================================
+        //  FORMULÁRIOS (Novo Aluno, Agendamento)
+        // ============================================================
+        function abrirFormNovoAluno() {
+            // Simples: renderizar um formulário no lugar do conteúdo
+            const container = document.getElementById('appContainer');
+            container.innerHTML = `
+                <div class="card max-w-2xl mx-auto mt-8">
+                    <h3 class="text-xl font-bold text-slate-800 mb-4">Novo Aluno</h3>
+                    <div class="space-y-3">
+                        <input class="input-field" id="novoNome" placeholder="Nome do Aluno" />
+                        <div class="flex gap-3">
+                            <input class="input-field w-24" id="novoIdade" placeholder="Idade" />
+                            <input class="input-field flex-1" id="novoSerie" placeholder="Série" />
+                        </div>
+                        <input class="input-field" id="novoResponsavel" placeholder="Nome do Responsável" />
+                        <input class="input-field" id="novoTelefone" placeholder="Telefone (apenas números)" />
+                        <input class="input-field" id="novoValor" placeholder="Valor por Sessão (R$)" />
+                        <div class="flex gap-3">
+                            <button class="btn-primary" id="salvarNovoAluno">Salvar</button>
+                            <button class="btn-secondary" id="cancelarNovoAluno">Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('salvarNovoAluno').onclick = () => {
+                const nome = document.getElementById('novoNome').value.trim();
+                const idade = document.getElementById('novoIdade').value.trim();
+                const serie = document.getElementById('novoSerie').value.trim();
+                const responsavel = document.getElementById('novoResponsavel').value.trim();
+                const telefone = document.getElementById('novoTelefone').value.trim();
+                const valor = parseFloat(document.getElementById('novoValor').value.trim()) || 0;
+                if (nome && idade && responsavel) {
+                    const aluno = {
+                        id: gerarId(),
+                        nome,
+                        idade,
+                        serie: serie || 'Não informada',
+                        responsavel,
+                        telefone: telefone || '',
+                        valorSessao: valor,
+                        tags: [],
+                        observacoes: [],
+                        foto: 'https://ui-avatars.com/api/?name='+encodeURIComponent(nome)+'&background=a8c4b8&color=fff&size=80'
+                    };
+                    STATE.alunos.push(aluno);
+                    salvarEstado();
+                    STATE.sessaoAtual = 'alunos';
+                    renderizar();
+                }
+            };
+            document.getElementById('cancelarNovoAluno').onclick = () => {
+                STATE.sessaoAtual = 'alunos';
+                renderizar();
+            };
+        }
 
-    if (!studentId || !date || !time) {
-        showToast("Aluno, data e horário são obrigatórios.", "error");
-        return;
-    }
+        function abrirFormAgendamento(data, hora) {
+            const container = document.getElementById('appContainer');
+            const alunosOptions = STATE.alunos.map(a => `<option value="${a.id}">${a.nome}</option>`).join('');
+            container.innerHTML = `
+                <div class="card max-w-md mx-auto mt-8">
+                    <h3 class="text-xl font-bold text-slate-800 mb-4">Novo Agendamento</h3>
+                    <div class="space-y-3">
+                        <div><span class="text-sm font-medium">Data: ${formatarDataBr(data)}</span></div>
+                        <div><span class="text-sm font-medium">Hora: ${hora}</span></div>
+                        <select class="input-field" id="agendamentoAluno">
+                            <option value="">Selecione o aluno</option>
+                            ${alunosOptions}
+                        </select>
+                        <select class="input-field" id="agendamentoTipo">
+                            <option value="Psicopedagogia">Psicopedagogia</option>
+                            <option value="Psicologia">Psicologia</option>
+                            <option value="Aula Particular">Aula Particular</option>
+                        </select>
+                        <div class="flex gap-3">
+                            <button class="btn-primary" id="salvarAgendamento">Agendar</button>
+                            <button class="btn-secondary" id="cancelarAgendamento">Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('salvarAgendamento').onclick = () => {
+                const alunoId = document.getElementById('agendamentoAluno').value;
+                const tipo = document.getElementById('agendamentoTipo').value;
+                if (!alunoId) { alert('Selecione um aluno.'); return; }
+                const aluno = obterAluno(alunoId);
+                const valor = aluno ? aluno.valorSessao : 0;
+                const ag = {
+                    id: gerarId(),
+                    alunoId,
+                    tipo,
+                    data,
+                    hora,
+                    status: 'agendado',
+                    pago: false,
+                    valor
+                };
+                STATE.agenda.push(ag);
+                salvarEstado();
+                STATE.sessaoAtual = 'agenda';
+                renderizar();
+            };
+            document.getElementById('cancelarAgendamento').onclick = () => {
+                STATE.sessaoAtual = 'agenda';
+                renderizar();
+            };
+        }
 
-    const collision = state.appointments.some(a =>
-        a.date === date &&
-        a.time === time
-    );
+        function salvarEdicaoProntuario() {
+            const aluno = obterAluno(STATE.alunoVisualizado);
+            if (!aluno) return;
+            const nome = document.getElementById('editNome');
+            const idade = document.getElementById('editIdade');
+            const serie = document.getElementById('editSerie');
+            const responsavel = document.getElementById('editResponsavel');
+            const telefone = document.getElementById('editTelefone');
+            const valor = document.getElementById('editValor');
+            const foto = document.getElementById('editFoto');
+            if (nome) aluno.nome = nome.value.trim() || aluno.nome;
+            if (idade) aluno.idade = idade.value.trim() || aluno.idade;
+            if (serie) aluno.serie = serie.value.trim() || aluno.serie;
+            if (responsavel) aluno.responsavel = responsavel.value.trim() || aluno.responsavel;
+            if (telefone) aluno.telefone = telefone.value.trim() || aluno.telefone;
+            if (valor) aluno.valorSessao = parseFloat(valor.value.trim()) || aluno.valorSessao;
+            if (foto) aluno.foto = foto.value.trim() || aluno.foto;
+            salvarEstado();
+        }
 
-    if (collision) {
-        showToast("Este horário já está ocupado.", "error");
-        return;
-    }
+        // ============================================================
+        //  LOGIN
+        // ============================================================
+        function mostrarLogin() {
+            const app = document.getElementById('appContainer');
+            app.innerHTML = `
+                <div class="login-container">
+                    <div class="login-box">
+                        <h1><i class="fas fa-brain text-sage-600 mr-2"></i>PsicoGest</h1>
+                        <p>Plataforma clínica integrada</p>
+                        <input class="input-field" id="loginEmail" placeholder="E-mail (ex: professor@clinica.com)" value="professor@clinica.com" />
+                        <input class="input-field" id="loginSenha" type="password" placeholder="Senha (qualquer)" value="123456" />
+                        <div class="login-error" id="loginError">Credenciais inválidas.</div>
+                        <button class="btn-primary" id="loginBtn">Entrar</button>
+                    </div>
+                </div>
+            `;
+            document.getElementById('loginBtn').onclick = () => {
+                const email = document.getElementById('loginEmail').value.trim();
+                const senha = document.getElementById('loginSenha').value.trim();
+                if (email && senha) {
+                    // Simula validação
+                    STATE.usuario = STATE.usuario || { nome: 'Professor', especialidade: 'Psicopedagogia', bio: '', foto: '' };
+                    salvarEstado();
+                    STATE.sessaoAtual = 'dashboard';
+                    STATE.alunoVisualizado = null;
+                    renderizar();
+                } else {
+                    document.getElementById('loginError').style.display = 'block';
+                }
+            };
+            // Enter para login
+            document.getElementById('loginSenha').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') document.getElementById('loginBtn').click();
+            });
+        }
 
-    state.appointments.push({
-        id: uid("appointment"),
-        studentId,
-        date,
-        time,
-        type,
-        notes: document.getElementById("appointmentNotes").value.trim(),
-        attendance:
-            document.getElementById("appointmentAttendance").checked
-                ? true
-                : null,
-        paid: false
-    });
+        // ============================================================
+        //  INICIALIZAÇÃO
+        // ============================================================
+        function init() {
+            carregarEstado();
+            // Se não houver usuário, mostrar login
+            if (!STATE.usuario || !STATE.usuario.nome) {
+                mostrarLogin();
+            } else {
+                STATE.sessaoAtual = 'dashboard';
+                renderizar();
+            }
+        }
 
-    saveState();
-    closeAppointmentForm();
-    renderAgenda();
-    renderDashboard();
-    renderFinance();
+        // Garantir que o label da agenda seja atualizado após render
+        // Monitor via MutationObserver é desnecessário, pois já atualizamos no render.
 
-    showToast("Atendimento agendado.", "success");
-}
+        // Sobrescrever renderizar para atualizar label da agenda
+        const originalRender = renderizar;
+        renderizar = function() {
+            originalRender();
+            // Atualizar label após render se estiver na agenda
+            if (STATE.sessaoAtual === 'agenda') {
+                const label = document.getElementById('agendaPeriodoLabel');
+                if (label) {
+                    // O conteúdo já foi definido no renderAgenda
+                }
+            }
+        };
 
-function removeAppointment(id) {
-    const appointment =
+        // Iniciar
+        init();
+
+        // ============================================================
+        //  POLÍCIA: Navegação por clique no aluno em qualquer lugar
+        // ============================================================
+        // Delegar eventos para cards de alunos (já feito via querySelector)
+        // Reaplicar eventos após renderização com MutationObserver não necessário
+
+        // Expor para debug
+        window.__STATE = STATE;
+        window.renderizar = renderizar;
+
+        // Ajuste de sidebar mobile (caso queira)
+        // Não implementado totalmente, mas a sidebar fica fixa.
+
+    })();
+</script>
+
+</body>
+</html>
