@@ -3,15 +3,12 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>EduCare SaaS · Gestão Psicopedagógica</title>
-    <!-- Tailwind CSS via CDN -->
+    <title>EduCare · Gestão Psicopedagógica</title>
     <script src="https://cdn.tailwindcss.com">
     </script>
-    <!-- Inter Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest">
     </script>
     <style>
@@ -20,7 +17,6 @@
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background: #f8fafc;
@@ -28,8 +24,6 @@
             height: 100vh;
             overflow: hidden;
         }
-
-        /* Sidebar fixa */
         .sidebar {
             width: 72px;
             background: #ffffff;
@@ -46,11 +40,9 @@
             transition: width 0.25s ease;
             overflow: hidden;
         }
-
         .sidebar:hover {
             width: 200px;
         }
-
         .sidebar .logo {
             font-weight: 700;
             font-size: 1.1rem;
@@ -64,7 +56,6 @@
             overflow: hidden;
             width: 100%;
         }
-
         .sidebar .logo span {
             opacity: 0;
             transition: opacity 0.2s;
@@ -72,7 +63,6 @@
         .sidebar:hover .logo span {
             opacity: 1;
         }
-
         .nav-items {
             display: flex;
             flex-direction: column;
@@ -80,7 +70,6 @@
             width: 100%;
             padding: 0 10px;
         }
-
         .nav-items a {
             display: flex;
             align-items: center;
@@ -97,19 +86,16 @@
             cursor: pointer;
             width: 100%;
         }
-
         .nav-items a i {
             width: 24px;
             font-size: 1.1rem;
             flex-shrink: 0;
             color: #94a3b8;
         }
-
         .nav-items a:hover {
             background: #f1f4f9;
             color: #1e293b;
         }
-
         .nav-items a.active {
             background: #eef2ff;
             color: #4f46e5;
@@ -117,7 +103,6 @@
         .nav-items a.active i {
             color: #4f46e5;
         }
-
         .nav-items a span {
             opacity: 0;
             transition: opacity 0.2s;
@@ -125,13 +110,11 @@
         .sidebar:hover .nav-items a span {
             opacity: 1;
         }
-
         .sidebar-footer {
             margin-top: auto;
             padding: 0 10px;
             width: 100%;
         }
-
         .sidebar-footer button {
             display: flex;
             align-items: center;
@@ -149,18 +132,15 @@
             white-space: nowrap;
             overflow: hidden;
         }
-
         .sidebar-footer button i {
             width: 24px;
             font-size: 1rem;
             flex-shrink: 0;
         }
-
         .sidebar-footer button:hover {
             background: #f1f4f9;
             color: #1e293b;
         }
-
         .sidebar-footer button span {
             opacity: 0;
             transition: opacity 0.2s;
@@ -168,8 +148,6 @@
         .sidebar:hover .sidebar-footer button span {
             opacity: 1;
         }
-
-        /* Main Content */
         .main-content {
             margin-left: 72px;
             height: 100vh;
@@ -177,8 +155,6 @@
             padding: 24px 32px 32px;
             background: #f8fafc;
         }
-
-        /* Topbar */
         .topbar {
             display: flex;
             justify-content: space-between;
@@ -187,25 +163,21 @@
             padding-bottom: 14px;
             border-bottom: 1px solid #eef2f6;
         }
-
         .topbar h1 {
             font-size: 1.4rem;
             font-weight: 600;
             color: #0f172a;
             letter-spacing: -0.3px;
         }
-
         .topbar h1 i {
             color: #4f46e5;
             margin-right: 10px;
         }
-
         .topbar-actions {
             display: flex;
             align-items: center;
             gap: 14px;
         }
-
         .topbar-actions .avatar {
             width: 36px;
             height: 36px;
@@ -218,9 +190,11 @@
             color: #4f46e5;
             font-size: 0.85rem;
             cursor: pointer;
+            transition: 0.15s;
+            overflow: hidden;
+            background-size: cover;
+            background-position: center;
         }
-
-        /* Views */
         .view {
             display: none;
             animation: fadeIn 0.25s ease;
@@ -228,7 +202,6 @@
         .view.active {
             display: block;
         }
-
         @keyframes fadeIn {
             0% {
                 opacity: 0.3;
@@ -239,8 +212,6 @@
                 transform: translateY(0);
             }
         }
-
-        /* Cards */
         .card {
             background: #ffffff;
             border-radius: 16px;
@@ -249,12 +220,9 @@
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
             transition: 0.15s;
         }
-
         .card:hover {
             border-color: #e2e8f0;
         }
-
-        /* Student cards */
         .student-card {
             background: #ffffff;
             border-radius: 16px;
@@ -264,13 +232,11 @@
             transition: all 0.2s ease;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
         }
-
         .student-card:hover {
             border-color: #dbeafe;
             box-shadow: 0 8px 24px rgba(79, 70, 229, 0.06);
             transform: translateY(-2px);
         }
-
         .student-card .avatar-md {
             width: 44px;
             height: 44px;
@@ -284,13 +250,11 @@
             color: #4f46e5;
             margin-bottom: 8px;
         }
-
         .student-card .name {
             font-weight: 600;
             font-size: 0.95rem;
             color: #0f172a;
         }
-
         .student-card .bio {
             font-size: 0.75rem;
             color: #64748b;
@@ -299,14 +263,12 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
-
         .student-card .tags {
             display: flex;
             gap: 4px;
             flex-wrap: wrap;
             margin-top: 6px;
         }
-
         .student-card .tags span {
             padding: 1px 8px;
             border-radius: 12px;
@@ -315,15 +277,12 @@
             background: #eef2ff;
             color: #4f46e5;
         }
-
-        /* Agenda Grid */
         .agenda-grid {
             display: grid;
             grid-template-columns: 70px repeat(5, 1fr);
             gap: 4px;
             font-size: 0.75rem;
         }
-
         .agenda-grid .hour-label {
             font-weight: 500;
             color: #94a3b8;
@@ -332,7 +291,6 @@
             text-align: right;
             padding-right: 8px;
         }
-
         .agenda-grid .slot {
             background: #f8fafc;
             border-radius: 8px;
@@ -343,12 +301,10 @@
             cursor: pointer;
             position: relative;
         }
-
         .agenda-grid .slot:hover {
             background: #f1f4f9;
             border-color: #dbeafe;
         }
-
         .agenda-grid .slot .event {
             font-size: 0.6rem;
             font-weight: 500;
@@ -359,7 +315,6 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
-
         .agenda-grid .slot .event-psychology {
             background: #e0f2fe;
             color: #0369a1;
@@ -376,7 +331,6 @@
             background: #f1f4f9;
             color: #64748b;
         }
-
         .agenda-grid .slot .remove-btn {
             position: absolute;
             top: 1px;
@@ -389,13 +343,10 @@
             padding: 0 4px;
             border-radius: 4px;
         }
-
         .agenda-grid .slot .remove-btn:hover {
             background: #fee2e2;
             color: #ef4444;
         }
-
-        /* Formulário inline */
         .form-inline {
             background: #ffffff;
             border-radius: 16px;
@@ -403,14 +354,12 @@
             border: 1px solid #e2e8f0;
             margin-bottom: 16px;
         }
-
         .form-inline .form-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
             gap: 12px;
             align-items: end;
         }
-
         .form-inline label {
             font-size: 0.7rem;
             font-weight: 600;
@@ -420,7 +369,6 @@
             display: block;
             margin-bottom: 2px;
         }
-
         .form-inline input,
         .form-inline select,
         .form-inline textarea {
@@ -435,14 +383,12 @@
             outline: none;
             color: #1e293b;
         }
-
         .form-inline input:focus,
         .form-inline select:focus,
         .form-inline textarea:focus {
             border-color: #4f46e5;
             box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
         }
-
         .form-inline .btn {
             padding: 6px 16px;
             border-radius: 40px;
@@ -452,7 +398,6 @@
             cursor: pointer;
             transition: 0.15s;
         }
-
         .btn-primary {
             background: #4f46e5;
             color: #fff;
@@ -482,8 +427,6 @@
         .btn-outline:hover {
             background: #f1f4f9;
         }
-
-        /* Profile view */
         .profile-header {
             display: flex;
             gap: 24px;
@@ -491,7 +434,6 @@
             flex-wrap: wrap;
             margin-bottom: 24px;
         }
-
         .profile-avatar-xl {
             width: 88px;
             height: 88px;
@@ -507,25 +449,21 @@
             border: 4px solid #fff;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
         }
-
         .profile-info h2 {
             font-size: 1.5rem;
             font-weight: 700;
             color: #0f172a;
         }
-
         .profile-info .subtitle {
             color: #64748b;
             font-size: 0.9rem;
         }
-
         .profile-info .tags {
             display: flex;
             gap: 6px;
             flex-wrap: wrap;
             margin-top: 6px;
         }
-
         .profile-info .tags span {
             padding: 2px 12px;
             border-radius: 20px;
@@ -534,13 +472,11 @@
             background: #eef2ff;
             color: #4f46e5;
         }
-
         .profile-grid {
             display: grid;
             grid-template-columns: 2fr 1fr;
             gap: 20px;
         }
-
         .profile-card {
             background: #ffffff;
             border-radius: 16px;
@@ -548,7 +484,6 @@
             border: 1px solid #f1f4f9;
             margin-bottom: 16px;
         }
-
         .profile-card .card-title {
             font-weight: 600;
             font-size: 0.9rem;
@@ -558,11 +493,9 @@
             align-items: center;
             gap: 8px;
         }
-
         .profile-card .card-title i {
             color: #4f46e5;
         }
-
         .btn-back {
             display: inline-flex;
             align-items: center;
@@ -578,11 +511,9 @@
             transition: 0.15s;
             margin-bottom: 16px;
         }
-
         .btn-back:hover {
             background: #e2e8f0;
         }
-
         .whatsapp-btn {
             display: inline-flex;
             align-items: center;
@@ -598,11 +529,9 @@
             transition: 0.15s;
             text-decoration: none;
         }
-
         .whatsapp-btn:hover {
             background: #1da851;
         }
-
         .payment-toggle {
             display: inline-flex;
             align-items: center;
@@ -616,18 +545,14 @@
             cursor: pointer;
             transition: 0.15s;
         }
-
         .payment-toggle.paid {
             background: #d1fae5;
             border-color: #10b981;
             color: #047857;
         }
-
         .payment-toggle:hover {
             background: #f1f4f9;
         }
-
-        /* Responsivo */
         @media (max-width: 768px) {
             .sidebar {
                 width: 56px;
@@ -689,7 +614,6 @@
                 justify-content: center;
             }
         }
-
         @media (max-width: 480px) {
             .topbar h1 {
                 font-size: 1.1rem;
@@ -707,7 +631,7 @@
 </head>
 <body>
 
-    <!-- ===== SIDEBAR ===== -->
+    <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar">
         <div class="logo">
             <i data-lucide="heart-handshake" style="color:#4f46e5;"></i>
@@ -725,7 +649,7 @@
         </div>
     </aside>
 
-    <!-- ===== MAIN CONTENT ===== -->
+    <!-- MAIN -->
     <main class="main-content" id="mainContent">
 
         <!-- TOPBAR -->
@@ -736,9 +660,7 @@
             </div>
         </header>
 
-        <!-- ============================================================ -->
-        <!-- VIEW: LOGIN (inicial) -->
-        <!-- ============================================================ -->
+        <!-- VIEW: LOGIN -->
         <div class="view active" id="viewLogin">
             <div style="max-width:400px; margin:40px auto;">
                 <div class="card" style="padding:32px 36px;">
@@ -746,11 +668,11 @@
                         <i data-lucide="heart-handshake" style="color:#4f46e5;"></i> EduCare
                     </h2>
                     <p style="text-align:center; color:#64748b; font-size:0.9rem; margin-bottom:24px;">Plataforma de Gestão Psicopedagógica</p>
-                    <div class="form-group" style="margin-bottom:14px;">
+                    <div style="margin-bottom:14px;">
                         <label style="font-size:0.75rem; font-weight:600; color:#64748b; display:block; margin-bottom:4px;">Usuário</label>
                         <input type="text" id="loginUser" value="professor" style="width:100%; padding:10px 14px; border-radius:12px; border:1px solid #e2e8f0; font-size:0.95rem; background:#f8fafc; outline:none;">
                     </div>
-                    <div class="form-group" style="margin-bottom:20px;">
+                    <div style="margin-bottom:20px;">
                         <label style="font-size:0.75rem; font-weight:600; color:#64748b; display:block; margin-bottom:4px;">Senha</label>
                         <input type="password" id="loginPass" value="123" style="width:100%; padding:10px 14px; border-radius:12px; border:1px solid #e2e8f0; font-size:0.95rem; background:#f8fafc; outline:none;">
                     </div>
@@ -760,9 +682,7 @@
             </div>
         </div>
 
-        <!-- ============================================================ -->
         <!-- VIEW: DASHBOARD -->
-        <!-- ============================================================ -->
         <div class="view" id="viewDashboard">
             <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:16px; margin-bottom:24px;">
                 <div class="card">
@@ -782,7 +702,6 @@
                     <div style="font-size:1.8rem; font-weight:700; color:#0f172a;" id="dashPendentes">0</div>
                 </div>
             </div>
-
             <div class="card" style="margin-bottom:20px;">
                 <div style="font-weight:600; font-size:0.95rem; color:#0f172a; margin-bottom:12px;">
                     <i data-lucide="users" style="color:#4f46e5;"></i> Últimos alunos
@@ -791,9 +710,7 @@
             </div>
         </div>
 
-        <!-- ============================================================ -->
         <!-- VIEW: ALUNOS -->
-        <!-- ============================================================ -->
         <div class="view" id="viewAlunos">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
                 <h3 style="font-weight:600; font-size:1rem; color:#0f172a;"><i data-lucide="users" style="color:#4f46e5;"></i> Lista de alunos</h3>
@@ -802,33 +719,14 @@
                 </button>
             </div>
 
-            <!-- Formulário inline para novo aluno -->
             <div id="formAlunoContainer" style="display:none;" class="form-inline">
                 <div class="form-grid">
-                    <div>
-                        <label>Nome</label>
-                        <input type="text" id="fNome" placeholder="Nome completo">
-                    </div>
-                    <div>
-                        <label>Idade</label>
-                        <input type="number" id="fIdade" placeholder="Idade">
-                    </div>
-                    <div>
-                        <label>Responsável</label>
-                        <input type="text" id="fResponsavel" placeholder="Nome do responsável">
-                    </div>
-                    <div>
-                        <label>Telefone</label>
-                        <input type="text" id="fTelefone" placeholder="(00) 00000-0000">
-                    </div>
-                    <div>
-                        <label>Horário Regular</label>
-                        <input type="time" id="fHorario" value="14:00">
-                    </div>
-                    <div>
-                        <label>Tags (separadas por vírgula)</label>
-                        <input type="text" id="fTags" placeholder="Ex: TDAH, Dislexia">
-                    </div>
+                    <div><label>Nome</label><input type="text" id="fNome" placeholder="Nome completo"></div>
+                    <div><label>Idade</label><input type="number" id="fIdade" placeholder="Idade"></div>
+                    <div><label>Responsável</label><input type="text" id="fResponsavel" placeholder="Nome do responsável"></div>
+                    <div><label>Telefone</label><input type="text" id="fTelefone" placeholder="(00) 00000-0000"></div>
+                    <div><label>Horário Regular</label><input type="time" id="fHorario" value="14:00"></div>
+                    <div><label>Tags (separadas por vírgula)</label><input type="text" id="fTags" placeholder="Ex: TDAH, Dislexia"></div>
                 </div>
                 <div style="margin-top:12px;">
                     <label style="font-size:0.7rem; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:0.3px;">Observações Clínicas</label>
@@ -843,51 +741,26 @@
             <div id="studentGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:14px;"></div>
         </div>
 
-        <!-- ============================================================ -->
         <!-- VIEW: AGENDA -->
-        <!-- ============================================================ -->
         <div class="view" id="viewAgenda">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
                 <h3 style="font-weight:600; font-size:1rem; color:#0f172a;"><i data-lucide="calendar" style="color:#4f46e5;"></i> Grade Semanal</h3>
             </div>
 
-            <!-- Formulário de agendamento inline -->
             <div id="formAgendamento" style="display:none;" class="form-inline">
                 <div style="font-weight:600; font-size:0.9rem; margin-bottom:10px;">
                     <i data-lucide="clock" style="color:#4f46e5;"></i> Agendar atendimento
                 </div>
                 <div class="form-grid">
-                    <div>
-                        <label>Aluno</label>
-                        <select id="agAluno"></select>
+                    <div><label>Aluno</label><select id="agAluno"></select></div>
+                    <div><label>Dia</label>
+                        <select id="agDia"><option value="Seg">Segunda</option><option value="Ter">Terça</option><option value="Qua">Quarta</option><option value="Qui">Quinta</option><option value="Sex">Sexta</option></select>
                     </div>
-                    <div>
-                        <label>Dia</label>
-                        <select id="agDia">
-                            <option value="Seg">Segunda</option>
-                            <option value="Ter">Terça</option>
-                            <option value="Qua">Quarta</option>
-                            <option value="Qui">Quinta</option>
-                            <option value="Sex">Sexta</option>
-                        </select>
+                    <div><label>Horário</label>
+                        <select id="agHorario"><option value="09:00">09:00</option><option value="10:30">10:30</option><option value="14:00">14:00</option><option value="16:00">16:00</option></select>
                     </div>
-                    <div>
-                        <label>Horário</label>
-                        <select id="agHorario">
-                            <option value="09:00">09:00</option>
-                            <option value="10:30">10:30</option>
-                            <option value="14:00">14:00</option>
-                            <option value="16:00">16:00</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label>Tipo</label>
-                        <select id="agTipo">
-                            <option value="psychology">Psicologia</option>
-                            <option value="psychopedagogy">Psicopedagogia</option>
-                            <option value="private">Aula Particular</option>
-                            <option value="other">Outro</option>
-                        </select>
+                    <div><label>Tipo</label>
+                        <select id="agTipo"><option value="psychology">Psicologia</option><option value="psychopedagogy">Psicopedagogia</option><option value="private">Aula Particular</option><option value="other">Outro</option></select>
                     </div>
                 </div>
                 <div style="display:flex; gap:10px; margin-top:12px;">
@@ -901,9 +774,7 @@
             </div>
         </div>
 
-        <!-- ============================================================ -->
         <!-- VIEW: FINANCEIRO -->
-        <!-- ============================================================ -->
         <div class="view" id="viewFinanceiro">
             <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(160px,1fr)); gap:16px; margin-bottom:24px;">
                 <div class="card">
@@ -919,7 +790,6 @@
                     <div style="font-size:1.6rem; font-weight:700; color:#0f172a;" id="finTotal">R$ 0</div>
                 </div>
             </div>
-
             <div class="card">
                 <div style="font-weight:600; font-size:0.95rem; color:#0f172a; margin-bottom:12px;">
                     <i data-lucide="list" style="color:#4f46e5;"></i> Atendimentos do dia
@@ -928,9 +798,7 @@
             </div>
         </div>
 
-        <!-- ============================================================ -->
         <!-- VIEW: PERFIL DO PROFESSOR -->
-        <!-- ============================================================ -->
         <div class="view" id="viewPerfil">
             <div class="card" style="max-width:600px;">
                 <h3 style="font-weight:600; font-size:1.1rem; color:#0f172a; margin-bottom:16px;">
@@ -960,9 +828,7 @@
             </div>
         </div>
 
-        <!-- ============================================================ -->
-        <!-- VIEW: PERFIL DO ALUNO (tela exclusiva) -->
-        <!-- ============================================================ -->
+        <!-- VIEW: PERFIL DO ALUNO -->
         <div class="view" id="viewStudentProfile">
             <button class="btn-back" id="backFromProfile"><i data-lucide="arrow-left"></i> Voltar</button>
 
@@ -1045,47 +911,22 @@
 
         function getDefaultData() {
             return {
-                professor: {
-                    nome: 'Professor',
-                    especialidade: 'Psicopedagogia Clínica',
-                    foto: '',
-                    dados: 'Atendimento particular desde 2018.'
-                },
-                alunos: [{
-                    id: 1,
-                    nome: 'Ana Clara',
-                    idade: 17,
-                    responsavel: 'Maria Clara',
-                    telefone: '11999998888',
-                    horario: '14:00',
-                    tags: ['TDAH', 'Dislexia'],
-                    observacoes: 'Ótima evolução na leitura. Trabalhar interpretação de textos.'
-                }, {
-                    id: 2,
-                    nome: 'Lucas Mendes',
-                    idade: 16,
-                    responsavel: 'Roberto Mendes',
-                    telefone: '11988887777',
-                    horario: '10:30',
-                    tags: ['Ansiedade Escolar'],
-                    observacoes: 'Dificuldade em provas. Trabalhar técnicas de respiração.'
-                }, {
-                    id: 3,
-                    nome: 'Marina Silva',
-                    idade: 18,
-                    responsavel: 'Carla Silva',
-                    telefone: '11977776666',
-                    horario: '16:00',
-                    tags: ['Déficit de Atenção'],
-                    observacoes: 'Dispersão em aulas. Técnicas de foco estão ajudando.'
-                }],
+                professor: { nome: 'Professor', especialidade: 'Psicopedagogia Clínica', foto: '', dados: 'Atendimento particular desde 2018.' },
+                alunos: [
+                    { id: 1, nome: 'Ana Clara', idade: 17, responsavel: 'Maria Clara', telefone: '11999998888', horario: '14:00',
+                        tags: ['TDAH', 'Dislexia'], observacoes: 'Ótima evolução na leitura. Trabalhar interpretação de textos.' },
+                    { id: 2, nome: 'Lucas Mendes', idade: 16, responsavel: 'Roberto Mendes', telefone: '11988887777',
+                        horario: '10:30', tags: ['Ansiedade Escolar'], observacoes: 'Dificuldade em provas. Trabalhar técnicas de respiração.' },
+                    { id: 3, nome: 'Marina Silva', idade: 18, responsavel: 'Carla Silva', telefone: '11977776666', horario: '16:00',
+                        tags: ['Déficit de Atenção'], observacoes: 'Dispersão em aulas. Técnicas de foco estão ajudando.' }
+                ],
                 agenda: [
                     { alunoId: 1, dia: 'Seg', horario: '09:00', tipo: 'psychology' },
                     { alunoId: 2, dia: 'Ter', horario: '10:30', tipo: 'psychopedagogy' },
                     { alunoId: 3, dia: 'Qua', horario: '14:00', tipo: 'private' },
-                    { alunoId: 1, dia: 'Qui', horario: '16:00', tipo: 'psychology' },
+                    { alunoId: 1, dia: 'Qui', horario: '16:00', tipo: 'psychology' }
                 ],
-                pagamentos: {} // { "alunoId_data": true/false }
+                pagamentos: {}
             };
         }
 
@@ -1099,14 +940,11 @@
             if (stored) {
                 try {
                     appData = JSON.parse(stored);
-                    // Garantir estrutura
                     if (!appData.professor) appData.professor = getDefaultData().professor;
                     if (!appData.alunos) appData.alunos = getDefaultData().alunos;
                     if (!appData.agenda) appData.agenda = getDefaultData().agenda;
                     if (!appData.pagamentos) appData.pagamentos = {};
-                } catch (e) {
-                    appData = getDefaultData();
-                }
+                } catch (e) { appData = getDefaultData(); }
             } else {
                 appData = getDefaultData();
             }
@@ -1133,8 +971,7 @@
                 document.getElementById('viewLogin').classList.remove('active');
                 document.getElementById('viewDashboard').classList.add('active');
                 document.querySelector('.nav-items a[data-view="dashboard"]').classList.add('active');
-                document.getElementById('pageTitle').innerHTML =
-                    `<i data-lucide="layout-dashboard"></i> Dashboard`;
+                document.getElementById('pageTitle').innerHTML = `<i data-lucide="layout-dashboard"></i> Dashboard`;
                 lucide.createIcons();
                 renderAll();
                 updateSidebarAvatar();
@@ -1162,7 +999,6 @@
                 e.preventDefault();
                 if (!loggedIn) return;
                 const viewName = this.dataset.view;
-                // Se estiver no perfil do aluno, volta primeiro
                 document.getElementById('viewStudentProfile').classList.remove('active');
 
                 document.querySelectorAll('.nav-items a').forEach(l => l.classList.remove('active'));
@@ -1188,9 +1024,7 @@
 
         document.getElementById('logoutBtn').addEventListener('click', logout);
         document.getElementById('loginBtn').addEventListener('click', login);
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !loggedIn) login();
-        });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !loggedIn) login(); });
 
         // ================================================================
         // RENDER: DASHBOARD
@@ -1199,19 +1033,14 @@
             const alunos = appData.alunos;
             document.getElementById('dashAlunos').textContent = alunos.length;
 
-            const hoje = new Date().toLocaleDateString('pt-BR');
             const dias = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab', 'Dom'];
             const diaSemana = dias[new Date().getDay()];
             const hojeAgenda = appData.agenda.filter(a => a.dia === diaSemana);
             document.getElementById('dashHoje').textContent = hojeAgenda.length;
 
-            // Calcular semana
             let semanaTotal = 0;
             let pendentes = 0;
-            const todayStr = new Date().toISOString().slice(0, 10);
             appData.agenda.forEach(ag => {
-                const aluno = appData.alunos.find(a => a.id === ag.alunoId);
-                if (!aluno) return;
                 const key = `${ag.alunoId}_${ag.dia}`;
                 const pago = appData.pagamentos[key] || false;
                 if (pago) semanaTotal += 150;
@@ -1220,7 +1049,6 @@
             document.getElementById('dashSemana').textContent = `R$ ${semanaTotal}`;
             document.getElementById('dashPendentes').textContent = pendentes;
 
-            // Últimos alunos
             const container = document.getElementById('dashUltimosAlunos');
             const ultimos = alunos.slice(-3).reverse();
             container.innerHTML = ultimos.map(a =>
@@ -1241,14 +1069,14 @@
                 '<div style="color:#94a3b8; font-size:0.9rem; text-align:center; padding:20px;">Nenhum aluno cadastrado.</div>';
                 return;
             }
-            grid.innerHTML = appData.alunos.map(a => `
-                    <div class="student-card" onclick="openStudentProfile(${a.id})">
-                        <div class="avatar-md">${a.nome.charAt(0).toUpperCase()}</div>
-                        <div class="name">${a.nome}</div>
-                        <div class="bio">${a.idade} anos · ${a.responsavel || '—'}</div>
-                        <div class="tags">${a.tags.map(t => `<span>${t}</span>`).join('')}</div>
-                    </div>
-                `).join('');
+            grid.innerHTML = appData.alunos.map(a =>
+                `<div class="student-card" onclick="openStudentProfile(${a.id})">
+                    <div class="avatar-md">${a.nome.charAt(0).toUpperCase()}</div>
+                    <div class="name">${a.nome}</div>
+                    <div class="bio">${a.idade} anos · ${a.responsavel || '—'}</div>
+                    <div class="tags">${a.tags.map(t => `<span>${t}</span>`).join('')}</div>
+                </div>`
+            ).join('');
         }
 
         // ================================================================
@@ -1294,16 +1122,7 @@
             const tags = document.getElementById('fTags').value.split(',').map(t => t.trim()).filter(t => t);
             const observacoes = document.getElementById('fObservacoes').value.trim();
 
-            appData.alunos.push({
-                id: getNextId(),
-                nome,
-                idade,
-                responsavel,
-                telefone,
-                horario,
-                tags,
-                observacoes
-            });
+            appData.alunos.push({ id: getNextId(), nome, idade, responsavel, telefone, horario, tags, observacoes });
             saveData();
             renderAll();
             document.getElementById('formAlunoContainer').style.display = 'none';
@@ -1315,7 +1134,7 @@
         });
 
         // ================================================================
-        // PERFIL DO ALUNO (tela exclusiva)
+        // PERFIL DO ALUNO
         // ================================================================
         function openStudentProfile(id) {
             const student = appData.alunos.find(a => a.id === id);
@@ -1323,13 +1142,11 @@
             currentStudentId = id;
             editingStudentId = null;
 
-            // Esconder todas as views e mostrar perfil
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
             document.getElementById('viewStudentProfile').classList.add('active');
             document.getElementById('pageTitle').innerHTML = `<i data-lucide="user"></i> ${student.nome}`;
             lucide.createIcons();
 
-            // Preencher dados
             document.getElementById('spAvatar').textContent = student.nome.charAt(0).toUpperCase();
             document.getElementById('spName').textContent = student.nome;
             document.getElementById('spSubtitle').textContent = `${student.idade} anos · ${student.responsavel || 'Sem responsável'}`;
@@ -1338,16 +1155,14 @@
             document.getElementById('spHorario').textContent = student.horario || '—';
             document.getElementById('spIdade').textContent = student.idade || '—';
 
-            // Tags
             const tagsDisplay = document.getElementById('spTagsDisplay');
-            tagsDisplay.innerHTML = student.tags.map(t => `<span style="padding:2px 12px; border-radius:20px; font-size:0.7rem; font-weight:600; background:#eef2ff; color:#4f46e5;">${t}</span>`)
-                .join('') || '<span style="color:#94a3b8; font-size:0.85rem;">Sem tags</span>';
+            tagsDisplay.innerHTML = student.tags.map(t =>
+                `<span style="padding:2px 12px; border-radius:20px; font-size:0.7rem; font-weight:600; background:#eef2ff; color:#4f46e5;">${t}</span>`
+            ).join('') || '<span style="color:#94a3b8; font-size:0.85rem;">Sem tags</span>';
 
-            // Observações
             document.getElementById('spObservacoesDisplay').textContent = student.observacoes || 'Nenhuma observação registrada.';
             document.getElementById('spObsText').value = student.observacoes || '';
 
-            // WhatsApp
             const telefone = student.telefone || '';
             const msg = encodeURIComponent(
                 `Olá, aqui é o ${appData.professor.nome || 'Professor'}, gostaria de falar sobre o atendimento do ${student.nome}.`
@@ -1360,7 +1175,6 @@
                 link.style.display = 'none';
             }
 
-            // Sessões do aluno
             const sessoes = appData.agenda.filter(a => a.alunoId === id);
             const container = document.getElementById('spSessoes');
             if (sessoes.length === 0) {
@@ -1374,17 +1188,17 @@
                 ).join('');
             }
 
-            // Resetar modo edição
             document.getElementById('spObservacoesEdit').style.display = 'none';
             document.getElementById('spTagsEdit').style.display = 'none';
             document.getElementById('spSalvarEdicao').style.display = 'none';
             document.getElementById('spCancelarEdicao').style.display = 'none';
             document.getElementById('spObservacoesDisplay').style.display = 'block';
             document.getElementById('spTagsDisplay').style.display = 'flex';
+            document.getElementById('btnEditarPerfilAluno').style.display = 'inline-flex';
         }
 
         // ================================================================
-        // EDIÇÃO DO PERFIL DO ALUNO (inline)
+        // EDIÇÃO DO PERFIL DO ALUNO
         // ================================================================
         document.getElementById('btnEditarPerfilAluno').addEventListener('click', function() {
             if (currentStudentId === null) return;
@@ -1392,8 +1206,6 @@
             if (!student) return;
 
             editingStudentId = currentStudentId;
-
-            // Mostrar campos editáveis
             document.getElementById('spObservacoesDisplay').style.display = 'none';
             document.getElementById('spObservacoesEdit').style.display = 'block';
             document.getElementById('spTagsDisplay').style.display = 'none';
@@ -1417,7 +1229,6 @@
             document.getElementById('spCancelarEdicao').style.display = 'none';
             document.getElementById('btnEditarPerfilAluno').style.display = 'inline-flex';
             editingStudentId = null;
-            // Recarregar dados
             if (currentStudentId !== null) openStudentProfile(currentStudentId);
         }
 
@@ -1432,7 +1243,6 @@
 
             student.observacoes = novasObs || 'Nenhuma observação registrada.';
             student.tags = novasTags;
-
             saveData();
             cancelarEdicaoAluno();
             openStudentProfile(editingStudentId);
@@ -1445,18 +1255,10 @@
         // ================================================================
         const weekDays = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex'];
         const hours = ['09:00', '10:30', '14:00', '16:00'];
-        const tipoLabels = {
-            'psychology': 'Psicologia',
-            'psychopedagogy': 'Psicopedagogia',
-            'private': 'Aula Particular',
-            'other': 'Outro'
-        };
-        const tipoClasses = {
-            'psychology': 'event-psychology',
-            'psychopedagogy': 'event-psychopedagogy',
-            'private': 'event-private',
-            'other': 'event-other'
-        };
+        const tipoLabels = { 'psychology': 'Psicologia', 'psychopedagogy': 'Psicopedagogia', 'private': 'Aula Particular',
+            'other': 'Outro' };
+        const tipoClasses = { 'psychology': 'event-psychology', 'psychopedagogy': 'event-psychopedagogy',
+            'private': 'event-private', 'other': 'event-other' };
 
         function renderAgenda() {
             const container = document.getElementById('agendaGrid');
@@ -1489,13 +1291,9 @@
             container.innerHTML = html;
         }
 
-        // ================================================================
-        // AGENDAMENTO (inline)
-        // ================================================================
         let agendamentoSlot = null;
 
         function abrirFormAgendamento(dia, horario) {
-            // Verificar se já existe agendamento
             const exists = appData.agenda.some(a => a.dia === dia && a.horario === horario);
             if (exists) return;
 
@@ -1503,7 +1301,6 @@
             container.style.display = 'block';
             agendamentoSlot = { dia, horario };
 
-            // Popular select de alunos
             const select = document.getElementById('agAluno');
             select.innerHTML = appData.alunos.map(a =>
                 `<option value="${a.id}">${a.nome}</option>`
@@ -1525,7 +1322,6 @@
             const horario = document.getElementById('agHorario').value;
             const tipo = document.getElementById('agTipo').value;
 
-            // Verificar conflito
             const exists = appData.agenda.some(a => a.dia === dia && a.horario === horario);
             if (exists) { alert('Este horário já está ocupado.'); return; }
 
@@ -1550,14 +1346,11 @@
         function renderFinanceiro() {
             let semanaTotal = 0;
             let pendentes = 0;
-            let totalGeral = 0;
 
-            const hoje = new Date().toLocaleDateString('pt-BR');
             const dias = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab', 'Dom'];
             const diaSemana = dias[new Date().getDay()];
             const hojeAgenda = appData.agenda.filter(a => a.dia === diaSemana);
 
-            // Lista de atendimentos do dia
             const listContainer = document.getElementById('financeList');
             if (hojeAgenda.length === 0) {
                 listContainer.innerHTML =
@@ -1570,7 +1363,6 @@
                     const pago = appData.pagamentos[key] || false;
                     if (pago) semanaTotal += 150;
                     else pendentes++;
-                    totalGeral += pago ? 150 : 0;
 
                     return `
                         <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 12px; background:#f8fafc; border-radius:12px; border:1px solid #f1f4f9; flex-wrap:wrap; gap:8px;">
@@ -1588,17 +1380,12 @@
             document.getElementById('finSemana').textContent = `R$ ${semanaTotal}`;
             document.getElementById('finPendentes').textContent = pendentes;
 
-            // Total geral (todos os pagamentos)
             let totalTodos = 0;
             Object.values(appData.pagamentos).forEach(p => { if (p) totalTodos += 150; });
             document.getElementById('finTotal').textContent = `R$ ${totalTodos}`;
-
             lucide.createIcons();
         }
 
-        // ================================================================
-        // PAGAMENTOS
-        // ================================================================
         function togglePagamento(alunoId, dia) {
             const key = `${alunoId}_${dia}`;
             appData.pagamentos[key] = !appData.pagamentos[key];
@@ -1632,7 +1419,6 @@
         function updateSidebarAvatar() {
             const avatar = document.getElementById('professorAvatar');
             const nome = appData.professor.nome || 'Professor';
-            avatar.textContent = nome.charAt(0).toUpperCase();
             const foto = appData.professor.foto;
             if (foto && foto.startsWith('http')) {
                 avatar.style.backgroundImage = `url(${foto})`;
@@ -1650,7 +1436,6 @@
         // ================================================================
         document.getElementById('backFromProfile').addEventListener('click', function() {
             document.getElementById('viewStudentProfile').classList.remove('active');
-            // Reativar a view anterior
             const activeNav = document.querySelector('.nav-items a.active');
             if (activeNav) {
                 const viewName = activeNav.dataset.view;
@@ -1679,7 +1464,6 @@
             renderAgenda();
             renderFinanceiro();
             loadPerfil();
-            // Atualizar selects de alunos na agenda
             const select = document.getElementById('agAluno');
             if (select) {
                 select.innerHTML = appData.alunos.map(a =>
@@ -1705,7 +1489,7 @@
             lucide.createIcons();
         }
 
-        console.log('EduCare SaaS · Sistema carregado com sucesso!');
+        console.log('EduCare SaaS · Sistema completo carregado!');
         console.log(`📚 ${appData.alunos.length} alunos cadastrados`);
         console.log(`📅 ${appData.agenda.length} atendimentos agendados`);
     </script>
