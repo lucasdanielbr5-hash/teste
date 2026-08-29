@@ -10,7 +10,7 @@
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
 *{box-sizing:border-box}
@@ -32,6 +32,9 @@ button{cursor:pointer}
  --muted:#718096;
  --line:#e6ece9;
  --surface:#fff;
+ --gold:#c9a87c;
+ --rose:#d4a0a0;
+ --lavender:#b8a8c9;
 }
 
 .app{height:100vh;display:flex}
@@ -88,6 +91,9 @@ button{cursor:pointer}
 .btn-outline{background:#fff;border:1px solid var(--line);color:#53615c}
 .btn-outline:hover{background:#f7faf8}
 .btn-sm{padding:7px 10px;font-size:12px}
+.btn-gold{background:#f5efe6;color:#a8875c}
+.btn-rose{background:#f5ecec;color:#b58080}
+.btn-lavender{background:#f0ecf5;color:#8a7a9e}
 
 .input,.select,.textarea{
  width:100%;border:1px solid #dfe7e3;background:#fbfcfc;border-radius:10px;
@@ -195,30 +201,71 @@ button{cursor:pointer}
 }
 .toast.show{opacity:1;transform:none}
 
-/* Profile timeline enhancements */
-.profile-timeline-item{
- padding:14px 0;
+/* PERFIL - Estilos exclusivos */
+.profile-stat-card{
+ background:linear-gradient(135deg,#f8faf9,#f1f5f3);
+ border-radius:14px;
+ padding:16px;
+ text-align:center;
+ border:1px solid var(--line);
+ transition:.2s
+}
+.profile-stat-card:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(50,80,60,.06)}
+.profile-stat-card .icon-wrap{
+ width:38px;height:38px;border-radius:12px;
+ display:grid;place-items:center;margin:0 auto 8px;
+ font-size:18px
+}
+.profile-stat-card .icon-wrap.green{background:#eaf3ee;color:#5d806c}
+.profile-stat-card .icon-wrap.blue{background:#edf4f8;color:#557792}
+.profile-stat-card .icon-wrap.gold{background:#f5efe6;color:#a8875c}
+.profile-stat-card .icon-wrap.rose{background:#f5ecec;color:#b58080}
+.profile-stat-card .number{font-size:26px;font-weight:800;color:#263238}
+.profile-stat-card .label{font-size:10px;color:#8a9892;text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+
+.timeline-item{
+ display:flex;gap:14px;padding:14px 0;
  border-bottom:1px solid #f0f3f2;
- display:flex;
- gap:14px;
- align-items:flex-start;
+ transition:.15s
 }
-.profile-timeline-item:last-child{border-bottom:0}
-.profile-timeline-dot{
- width:10px;
- height:10px;
- border-radius:50%;
- margin-top:4px;
- flex-shrink:0;
+.timeline-item:last-child{border-bottom:0}
+.timeline-item:hover{background:#fafcfb;margin:0 -12px;padding:14px 12px;border-radius:10px}
+.timeline-dot{
+ width:12px;height:12px;border-radius:50%;margin-top:3px;
+ flex-shrink:0;border:2px solid white;box-shadow:0 0 0 2px var(--line)
 }
-.profile-timeline-dot.evolution{background:#8eb29d}
-.profile-timeline-dot.observation{background:#8db0c8}
-.profile-timeline-dot.alert{background:#c9a87c}
-.profile-timeline-content{flex:1;min-width:0}
-.profile-timeline-content .title{font-weight:700;font-size:13px}
-.profile-timeline-content .meta{font-size:10px;color:#8a9892;margin:2px 0 5px}
-.profile-timeline-content .text{font-size:12px;color:#596761;line-height:1.6;white-space:pre-wrap}
-.profile-timeline-content .actions{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.timeline-dot.evolution{background:#8eb29d;box-shadow:0 0 0 2px #8eb29d}
+.timeline-dot.observation{background:#8db0c8;box-shadow:0 0 0 2px #8db0c8}
+.timeline-dot.alert{background:#c9a87c;box-shadow:0 0 0 2px #c9a87c}
+.timeline-content{flex:1;min-width:0}
+.timeline-content .title{font-weight:700;font-size:13px;color:#263238}
+.timeline-content .meta{font-size:10px;color:#8a9892;margin:2px 0 6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.timeline-content .text{font-size:12px;color:#596761;line-height:1.6;white-space:pre-wrap}
+.timeline-badge{font-size:9px;padding:2px 8px;border-radius:12px;font-weight:600}
+.timeline-badge.evo{background:#eaf3ee;color:#5d806c}
+.timeline-badge.obs{background:#edf4f8;color:#557792}
+
+.profile-config-item{
+ display:flex;align-items:center;justify-content:space-between;
+ padding:10px 0;border-bottom:1px solid #f0f3f2
+}
+.profile-config-item:last-child{border-bottom:0}
+.profile-config-item .info{display:flex;align-items:center;gap:10px}
+.profile-config-item .info .icon{color:#8a9892}
+.profile-config-item .info .label{font-size:12px;font-weight:500;color:#34413c;margin:0}
+.profile-config-item .info .desc{font-size:10px;color:#8a9892}
+.switch{
+ width:38px;height:20px;border-radius:12px;
+ background:#dfe7e3;cursor:pointer;transition:.2s;
+ position:relative;flex-shrink:0
+}
+.switch.on{background:var(--sage)}
+.switch .thumb{
+ width:16px;height:16px;border-radius:50%;
+ background:white;position:absolute;top:2px;left:2px;
+ transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.15)
+}
+.switch.on .thumb{left:20px}
 
 @media(max-width:950px){
  .stats{grid-template-columns:repeat(2,1fr)}
@@ -366,12 +413,13 @@ function defaultData(){
      especialidade:"Psicopedagogia Clínica",
      bio:"Profissional dedicado ao desenvolvimento acadêmico, emocional e cognitivo.",
      foto:"",
-     observacoes:[],  // Novo campo para observações pessoais do professor
-     evolucoesPessoais:[], // Novo campo para evolução pessoal/profissional
+     observacoes:[],
+     evolucoesPessoais:[],
      configuracoes:{
        notificacoes:true,
        tema:"claro",
-       lembretes:true
+       lembretes:true,
+       lembreteAntecedencia:1
      }
    },
    alunos:[
@@ -455,7 +503,7 @@ function load(){
    if(!d.professor)d.professor=defaultData().professor;
    if(!d.professor.observacoes)d.professor.observacoes=[];
    if(!d.professor.evolucoesPessoais)d.professor.evolucoesPessoais=[];
-   if(!d.professor.configuracoes)d.professor.configuracoes={notificacoes:true,tema:"claro",lembretes:true};
+   if(!d.professor.configuracoes)d.professor.configuracoes={notificacoes:true,tema:"claro",lembretes:true,lembreteAntecedencia:1};
    if(!d.alunos)d.alunos=[];
    if(!d.agenda)d.agenda=[];
    if(!d.transacoes)d.transacoes=[];
@@ -1774,79 +1822,146 @@ function generateFinancePDF(){
 }
 
 // ============================================================
-// PERFIL COMPLETO - Com histórico de evoluções e observações
+// PERFIL COMPLETO - Design Rico e Funcional
 // ============================================================
 function renderPerfil(){
 
- const p=data.professor;
+ const p = data.professor;
 
- // Ordenar observações e evoluções por data (mais recentes primeiro)
- const obsOrdenadas = (p.observacoes||[]).slice().sort((a,b) => b.data.localeCompare(a.data));
- const evoOrdenadas = (p.evolucoesPessoais||[]).slice().sort((a,b) => b.data.localeCompare(a.data));
+ // Garantir propriedades
+ if (!p.observacoes) p.observacoes = [];
+ if (!p.evolucoesPessoais) p.evolucoesPessoais = [];
+ if (!p.configuracoes) p.configuracoes = { notificacoes: true, lembretes: true, lembreteAntecedencia: 1 };
 
- // Combinar todos os registros em uma timeline
+ // Ordenar registros (mais recentes primeiro)
+ const obsOrdenadas = p.observacoes.slice().sort((a,b) => b.data.localeCompare(a.data));
+ const evoOrdenadas = p.evolucoesPessoais.slice().sort((a,b) => b.data.localeCompare(a.data));
+
+ // Timeline combinada
  const timeline = [];
  obsOrdenadas.forEach(o => timeline.push({...o, tipo: 'observacao'}));
  evoOrdenadas.forEach(e => timeline.push({...e, tipo: 'evolucao'}));
  timeline.sort((a,b) => b.data.localeCompare(a.data));
 
- // Estatísticas do profissional
+ // Estatísticas
  const totalAlunos = data.alunos.length;
  const totalAtendimentos = activeAppointments().length;
- const totalTransacoes = data.transacoes.length;
  const totalEvolucoes = evoOrdenadas.length;
  const totalObservacoes = obsOrdenadas.length;
+ const totalTransacoes = data.transacoes.length;
+ const totalAlertas = getClinicalAlerts().length;
 
- document.getElementById("page-perfil").innerHTML=`
+ // Calcular porcentagem de presença geral
+ const todasPresencas = activeAppointments().filter(a => a.presente || a.status === 'falta');
+ const taxaPresenca = todasPresencas.length ? Math.round(todasPresencas.filter(a => a.presente).length / todasPresencas.length * 100) : 0;
+
+ // Contar atendimentos por tipo
+ const porTipo = { psicopedagogia: 0, psicologia: 0, aula: 0 };
+ activeAppointments().forEach(a => { if (porTipo[a.tipo] !== undefined) porTipo[a.tipo]++; });
+
+ document.getElementById("page-perfil").innerHTML = `
 
  <div class="section-head">
    <div>
      <div class="section-title">Meu Perfil</div>
-     <div class="section-sub">Gerencie suas informações pessoais e acompanhe sua trajetória profissional.</div>
+     <div class="section-sub">Gerencie suas informações e acompanhe sua trajetória profissional.</div>
+   </div>
+   <button class="btn btn-blue btn-sm" onclick="generateProfilePDF()">
+     <i data-lucide="file-down"></i>Exportar perfil
+   </button>
+ </div>
+
+ <!-- ====== CARDS DE ESTATÍSTICAS ====== -->
+ <div class="grid" style="grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 18px;">
+
+   <div class="profile-stat-card">
+     <div class="icon-wrap green"><i data-lucide="users" style="width:20px;"></i></div>
+     <div class="number">${totalAlunos}</div>
+     <div class="label">Alunos ativos</div>
+   </div>
+
+   <div class="profile-stat-card">
+     <div class="icon-wrap blue"><i data-lucide="calendar-check" style="width:20px;"></i></div>
+     <div class="number">${totalAtendimentos}</div>
+     <div class="label">Atendimentos</div>
+   </div>
+
+   <div class="profile-stat-card">
+     <div class="icon-wrap gold"><i data-lucide="trending-up" style="width:20px;"></i></div>
+     <div class="number">${totalEvolucoes}</div>
+     <div class="label">Evoluções</div>
+   </div>
+
+   <div class="profile-stat-card">
+     <div class="icon-wrap rose"><i data-lucide="file-text" style="width:20px;"></i></div>
+     <div class="number">${totalObservacoes}</div>
+     <div class="label">Observações</div>
+   </div>
+
+ </div>
+
+ <!-- ====== SEGUNDA LINHA DE ESTATÍSTICAS ====== -->
+ <div class="grid" style="grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 18px;">
+
+   <div class="profile-stat-card" style="background:linear-gradient(135deg,#f5f8f7,#eef3f1);">
+     <div class="icon-wrap" style="background:#e8eee6;color:#6a8a7a;"><i data-lucide="wallet" style="width:20px;"></i></div>
+     <div class="number">${money(data.transacoes.reduce((s,t) => s + Number(t.valor||0), 0))}</div>
+     <div class="label">Total faturado</div>
+   </div>
+
+   <div class="profile-stat-card" style="background:linear-gradient(135deg,#f5f6f8,#eef1f5);">
+     <div class="icon-wrap" style="background:#e6edf4;color:#5a7a94;"><i data-lucide="percent" style="width:20px;"></i></div>
+     <div class="number">${taxaPresenca}%</div>
+     <div class="label">Assiduidade</div>
+   </div>
+
+   <div class="profile-stat-card" style="background:linear-gradient(135deg,#f8f5f0,#f3efe8);">
+     <div class="icon-wrap" style="background:#efe8de;color:#a08060;"><i data-lucide="bell" style="width:20px;"></i></div>
+     <div class="number">${totalAlertas}</div>
+     <div class="label">Alertas ativos</div>
+   </div>
+
+   <div class="profile-stat-card" style="background:linear-gradient(135deg,#f5f2f8,#efeaf5);">
+     <div class="icon-wrap" style="background:#e8e2f0;color:#7a6a8e;"><i data-lucide="clock" style="width:20px;"></i></div>
+     <div class="number">${activeAppointments().filter(a => a.data >= today()).length}</div>
+     <div class="label">Próximos atend.</div>
+   </div>
+
+ </div>
+
+ <!-- ====== ATENDIMENTOS POR TIPO ====== -->
+ <div class="card" style="margin-bottom:18px;">
+   <div class="section-title" style="font-size:13px;">Atendimentos por tipo</div>
+   <div style="display:flex;gap:20px;flex-wrap:wrap;margin-top:10px;">
+     <div><span class="tag" style="background:#f0f5ec;color:#5d806c;">🧠 Psicopedagogia</span> <strong>${porTipo.psicopedagogia}</strong></div>
+     <div><span class="tag" style="background:#edf4f8;color:#557792;">🧘 Psicologia</span> <strong>${porTipo.psicologia}</strong></div>
+     <div><span class="tag" style="background:#f5f0f8;color:#80678c;">📚 Aula</span> <strong>${porTipo.aula}</strong></div>
    </div>
  </div>
 
- <!-- Cards de estatísticas -->
- <div class="grid stats">
-   <div class="card">
-     <div class="stat-label">Alunos</div>
-     <div class="stat-value">${totalAlunos}</div>
-     <div class="stat-sub">Ativos na base</div>
-   </div>
-   <div class="card">
-     <div class="stat-label">Atendimentos</div>
-     <div class="stat-value">${totalAtendimentos}</div>
-     <div class="stat-sub">Agendamentos totais</div>
-   </div>
-   <div class="card">
-     <div class="stat-label">Evoluções</div>
-     <div class="stat-value">${totalEvolucoes}</div>
-     <div class="stat-sub">Registros próprios</div>
-   </div>
-   <div class="card">
-     <div class="stat-label">Observações</div>
-     <div class="stat-value">${totalObservacoes}</div>
-     <div class="stat-sub">Anotações pessoais</div>
-   </div>
- </div>
+ <!-- ====== PERFIL + FORMULÁRIO ====== -->
+ <div class="grid" style="grid-template-columns: 1fr 1.8fr; gap: 18px;">
 
- <div class="grid" style="grid-template-columns:1fr 1.6fr;margin-top:18px">
+   <!-- COLUNA ESQUERDA - AVATAR E INFO -->
+   <div class="card" style="text-align:center; padding:24px 16px;">
+     ${avatarHTML(p, "profile-avatar")}
+     <div style="font-size:20px;font-weight:800;margin-top:14px;color:#263238;">${esc(p.nome)}</div>
+     <div style="font-size:12px;color:#8a9892;margin-top:3px;">${esc(p.especialidade)}</div>
+     <div style="font-size:11px;color:#8a9892;margin-top:6px;line-height:1.5;max-width:280px;margin-left:auto;margin-right:auto;">${p.bio ? esc(p.bio) : 'Profissional dedicado ao desenvolvimento acadêmico, emocional e cognitivo.'}</div>
 
-   <!-- Coluna esquerda: Avatar e dados básicos -->
-   <div class="card">
-     <div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding:15px">
-       ${avatarHTML(p,"profile-avatar")}
-       <div style="font-size:18px;font-weight:700;margin-top:12px">${esc(p.nome)}</div>
-       <div style="font-size:11px;color:#8a9892;margin-top:4px">${esc(p.especialidade)}</div>
-       <div style="font-size:11px;color:#8a9892;margin-top:4px">${p.bio?esc(p.bio):""}</div>
-       <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
-         <span class="tag">${totalAlunos} alunos</span>
-         <span class="tag">${totalAtendimentos} atendimentos</span>
-       </div>
+     <div style="margin-top:14px;display:flex;gap:6px;flex-wrap:wrap;justify-content:center;">
+       <span class="tag">${totalAlunos} alunos</span>
+       <span class="tag">${totalAtendimentos} atend.</span>
+       <span class="tag">${totalEvolucoes} evoluções</span>
+     </div>
+
+     <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line);">
+       <div style="font-size:10px;color:#8a9892;text-transform:uppercase;letter-spacing:.05em;">Membro desde</div>
+       <div style="font-size:12px;font-weight:600;color:#34413c;">${fmtDate(data.alunos.length ? data.alunos[0]?.evolucoes?.[0]?.data || today() : today())}</div>
      </div>
    </div>
 
-   <!-- Coluna direita: Formulário de edição -->
+   <!-- COLUNA DIREITA - FORMULÁRIO -->
    <div class="card">
 
      <div class="form-grid two">
@@ -1861,42 +1976,52 @@ function renderPerfil(){
          <input id="profEspecialidade" class="input" value="${esc(p.especialidade)}">
        </div>
 
-       <div class="field" style="grid-column:1/-1">
+       <div class="field" style="grid-column:1/-1;">
          <label class="label">URL da foto</label>
-         <input id="profFoto" class="input" value="${esc(p.foto||"")}" placeholder="https://...">
+         <input id="profFoto" class="input" value="${esc(p.foto||"")}" placeholder="https://exemplo.com/foto.jpg">
        </div>
 
-       <div class="field" style="grid-column:1/-1">
+       <div class="field" style="grid-column:1/-1;">
          <label class="label">Bio profissional</label>
-         <textarea id="profBio" class="textarea">${esc(p.bio||"")}</textarea>
-       </div>
-
-       <div class="field" style="grid-column:1/-1">
-         <label class="label">Configurações</label>
-         <div style="display:flex;gap:15px;flex-wrap:wrap;padding-top:5px">
-           <label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer">
-             <input type="checkbox" id="cfgNotif" ${p.configuracoes?.notificacoes!==false?"checked":""}> Notificações
-           </label>
-           <label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer">
-             <input type="checkbox" id="cfgLembretes" ${p.configuracoes?.lembretes!==false?"checked":""}> Lembretes
-           </label>
-         </div>
+         <textarea id="profBio" class="textarea" rows="2">${esc(p.bio||"")}</textarea>
        </div>
 
      </div>
 
-     <button class="btn btn-primary" onclick="saveProfile()">
-       <i data-lucide="save"></i>Salvar perfil
+     <div class="field" style="margin-top:6px;">
+       <label class="label">Configurações</label>
+       <div class="profile-config-item">
+         <div class="info">
+           <span class="icon"><i data-lucide="bell" style="width:16px;"></i></span>
+           <div><div class="label">Notificações</div><div class="desc">Receber alertas e lembretes</div></div>
+         </div>
+         <div class="switch ${p.configuracoes?.notificacoes !== false ? 'on' : ''}" onclick="toggleSwitch(this, 'cfgNotif')">
+           <div class="thumb"></div>
+         </div>
+       </div>
+       <div class="profile-config-item">
+         <div class="info">
+           <span class="icon"><i data-lucide="clock" style="width:16px;"></i></span>
+           <div><div class="label">Lembretes</div><div class="desc">Lembrar de atendimentos próximos</div></div>
+         </div>
+         <div class="switch ${p.configuracoes?.lembretes !== false ? 'on' : ''}" onclick="toggleSwitch(this, 'cfgLembretes')">
+           <div class="thumb"></div>
+         </div>
+       </div>
+     </div>
+
+     <button class="btn btn-primary" onclick="saveProfile()" style="width:100%;">
+       <i data-lucide="save"></i> Salvar perfil
      </button>
 
    </div>
  </div>
 
- <!-- SEÇÃO: NOVA OBSERVAÇÃO -->
- <div class="card" style="margin-top:18px">
+ <!-- ====== NOVA OBSERVAÇÃO ====== -->
+ <div class="card" style="margin-top:18px; border-left:4px solid #8db0c8;">
    <div class="section-head">
      <div>
-       <div class="section-title">Nova Observação</div>
+       <div class="section-title"><i data-lucide="file-text" style="width:16px;color:#8db0c8;"></i> Nova Observação</div>
        <div class="section-sub">Registre anotações pessoais, reflexões ou lembretes sobre sua prática.</div>
      </div>
    </div>
@@ -1912,18 +2037,18 @@ function renderPerfil(){
    </div>
    <div class="field">
      <label class="label">Observação</label>
-     <textarea id="obsTexto" class="textarea" placeholder="Descreva sua observação ou reflexão..."></textarea>
+     <textarea id="obsTexto" class="textarea" rows="2" placeholder="Descreva sua observação ou reflexão..."></textarea>
    </div>
-   <button class="btn btn-primary" onclick="saveObservacao()">
-     <i data-lucide="file-text"></i>Salvar observação
+   <button class="btn btn-blue" onclick="saveObservacao()">
+     <i data-lucide="file-text"></i> Salvar observação
    </button>
  </div>
 
- <!-- SEÇÃO: NOVA EVOLUÇÃO PESSOAL -->
- <div class="card" style="margin-top:16px">
+ <!-- ====== NOVA EVOLUÇÃO PESSOAL ====== -->
+ <div class="card" style="margin-top:14px; border-left:4px solid #8eb29d;">
    <div class="section-head">
      <div>
-       <div class="section-title">Nova Evolução Pessoal</div>
+       <div class="section-title"><i data-lucide="trending-up" style="width:16px;color:#8eb29d;"></i> Nova Evolução Pessoal</div>
        <div class="section-sub">Registre marcos, aprendizados ou mudanças na sua prática profissional.</div>
      </div>
    </div>
@@ -1939,46 +2064,53 @@ function renderPerfil(){
    </div>
    <div class="field">
      <label class="label">Descrição</label>
-     <textarea id="evoPessoalTexto" class="textarea" placeholder="Descreva sua evolução, aprendizado ou conquista..."></textarea>
+     <textarea id="evoPessoalTexto" class="textarea" rows="2" placeholder="Descreva sua evolução, aprendizado ou conquista..."></textarea>
    </div>
    <button class="btn btn-primary" onclick="saveEvolucaoPessoal()">
-     <i data-lucide="trending-up"></i>Salvar evolução
+     <i data-lucide="trending-up"></i> Salvar evolução
    </button>
  </div>
 
- <!-- TIMELINE: Histórico completo -->
- <div class="card" style="margin-top:18px">
+ <!-- ====== LINHA DO TEMPO ====== -->
+ <div class="card" style="margin-top:18px;">
    <div class="section-head">
      <div>
-       <div class="section-title">Linha do Tempo</div>
-       <div class="section-sub">Histórico de observações e evoluções pessoais.</div>
+       <div class="section-title">📜 Linha do Tempo</div>
+       <div class="section-sub">Histórico completo de observações e evoluções pessoais.</div>
      </div>
-     ${timeline.length>0?`<span style="font-size:11px;color:#89968f">${timeline.length} registros</span>`:''}
+     ${timeline.length > 0 ? `<span style="font-size:11px;color:#89968f;">${timeline.length} registro(s)</span>` : ''}
    </div>
 
-   ${timeline.length===0?`
-     <div class="empty">Nenhuma observação ou evolução registrada ainda.</div>
-   `:`
-     <div style="max-height:400px;overflow-y:auto">
-     ${timeline.map(item => {
-       const isEvolucao = item.tipo === 'evolucao';
-       const dotClass = isEvolucao ? 'evolution' : 'observation';
-       const icon = isEvolucao ? 'trending-up' : 'file-text';
-       const label = isEvolucao ? 'Evolução' : 'Observação';
-       return `
-         <div class="profile-timeline-item">
-           <div class="profile-timeline-dot ${dotClass}"></div>
-           <div class="profile-timeline-content">
-             <div class="title">${esc(item.titulo||label)}</div>
-             <div class="meta">
-               ${fmtDate(item.data)} · ${label}
-               <button style="border:0;background:none;color:#a3aea9;margin-left:10px;font-size:10px;cursor:pointer" onclick="deletarRegistroPessoal('${item.id}','${item.tipo}')">Excluir</button>
+   ${timeline.length === 0 ? `
+     <div class="empty" style="padding:20px;">
+       <i data-lucide="inbox" style="width:28px;color:#c1ccc7;display:block;margin:0 auto 8px;"></i>
+       Nenhuma observação ou evolução registrada ainda.
+     </div>
+   ` : `
+     <div style="max-height:420px;overflow-y:auto;padding-right:4px;">
+       ${timeline.map(item => {
+         const isEvo = item.tipo === 'evolucao';
+         const dotClass = isEvo ? 'evolution' : 'observation';
+         const badgeClass = isEvo ? 'evo' : 'obs';
+         const badgeText = isEvo ? 'Evolução' : 'Observação';
+         const icon = isEvo ? 'trending-up' : 'file-text';
+         return `
+           <div class="timeline-item">
+             <div class="timeline-dot ${dotClass}"></div>
+             <div class="timeline-content">
+               <div class="title">${esc(item.titulo || badgeText)}</div>
+               <div class="meta">
+                 ${fmtDate(item.data)}
+                 <span class="timeline-badge ${badgeClass}">${badgeText}</span>
+                 <button style="border:0;background:none;color:#b5b5b5;font-size:10px;cursor:pointer;" onclick="deletarRegistroPessoal('${item.id}','${item.tipo}')">
+                   <i data-lucide="trash-2" style="width:12px;"></i>
+                 </button>
+               </div>
+               <div class="text">${esc(item.texto || item.descricao || '')}</div>
              </div>
-             <div class="text">${esc(item.texto||item.descricao||"")}</div>
            </div>
-         </div>
-       `;
-     }).join("")}
+         `;
+       }).join('')}
      </div>
    `}
  </div>
@@ -1988,8 +2120,13 @@ function renderPerfil(){
 }
 
 // ============================================================
-// FUNÇÕES PARA O PERFIL
+// FUNÇÕES DO PERFIL
 // ============================================================
+
+function toggleSwitch(el, inputId) {
+  el.classList.toggle('on');
+  // O valor será salvo ao clicar em "Salvar perfil"
+}
 
 function saveObservacao(){
  const titulo = document.getElementById("obsTitulo").value.trim() || "Observação";
@@ -2010,7 +2147,7 @@ function saveObservacao(){
  });
 
  save();
- notify("Observação salva com sucesso.");
+ notify("✅ Observação salva com sucesso!");
  renderPerfil();
 }
 
@@ -2033,7 +2170,7 @@ function saveEvolucaoPessoal(){
  });
 
  save();
- notify("Evolução pessoal registrada.");
+ notify("✅ Evolução pessoal registrada!");
  renderPerfil();
 }
 
@@ -2060,15 +2197,99 @@ function saveProfile(){
  p.foto = document.getElementById("profFoto").value.trim();
  p.bio = document.getElementById("profBio").value.trim();
 
- // Configurações
+ // Ler configurações dos switches
+ const switches = document.querySelectorAll('.switch');
  p.configuracoes = p.configuracoes || {};
- p.configuracoes.notificacoes = document.getElementById("cfgNotif").checked;
- p.configuracoes.lembretes = document.getElementById("cfgLembretes").checked;
+ switches.forEach((sw, index) => {
+   const key = index === 0 ? 'notificacoes' : 'lembretes';
+   p.configuracoes[key] = sw.classList.contains('on');
+ });
 
  save();
  updateUser();
- notify("Perfil salvo com sucesso.");
+ notify("✅ Perfil salvo com sucesso!");
  renderPerfil();
+}
+
+function generateProfilePDF() {
+  const doc = pdfInstance();
+  if (!doc) return;
+
+  const p = data.professor;
+  const pageW = doc.internal.pageSize.getWidth();
+  let y = 18;
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(22);
+  doc.text("ASAS", 15, y);
+  y += 10;
+
+  doc.setFontSize(16);
+  doc.text("Perfil Profissional", 15, y);
+  y += 8;
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.text(`Gerado em: ${fmtDate(today())}`, 15, y);
+  y += 10;
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(14);
+  doc.text(p.nome || "Professor", 15, y);
+  y += 6;
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  y = pdfText(doc, `Especialidade: ${p.especialidade || "Não informada"}`, 15, y, pageW - 30);
+  y = pdfText(doc, `Bio: ${p.bio || "Não informada"}`, 15, y, pageW - 30);
+  y += 4;
+
+  // Estatísticas
+  const totalAlunos = data.alunos.length;
+  const totalAtendimentos = activeAppointments().length;
+  const totalEvolucoes = (p.evolucoesPessoais || []).length;
+  const totalObservacoes = (p.observacoes || []).length;
+
+  doc.setFont("helvetica", "bold");
+  doc.text("Resumo estatístico", 15, y);
+  y += 6;
+  doc.setFont("helvetica", "normal");
+  y = pdfText(doc, `Alunos: ${totalAlunos} | Atendimentos: ${totalAtendimentos} | Evoluções: ${totalEvolucoes} | Observações: ${totalObservacoes}`, 15, y, pageW - 30);
+  y += 6;
+
+  // Evoluções
+  doc.setFont("helvetica", "bold");
+  doc.text("Evoluções pessoais", 15, y);
+  y += 6;
+  doc.setFont("helvetica", "normal");
+  const evos = (p.evolucoesPessoais || []).slice().sort((a,b) => b.data.localeCompare(a.data));
+  if (!evos.length) {
+    y = pdfText(doc, "Nenhuma evolução registrada.", 15, y, pageW - 30);
+  } else {
+    evos.forEach(e => {
+      y = pdfText(doc, `${fmtDate(e.data)} - ${e.titulo || "Evolução"}`, 15, y, pageW - 30);
+      y = pdfText(doc, `  ${e.texto || ""}`, 15, y, pageW - 30);
+    });
+  }
+  y += 4;
+
+  // Observações
+  doc.setFont("helvetica", "bold");
+  doc.text("Observações pessoais", 15, y);
+  y += 6;
+  doc.setFont("helvetica", "normal");
+  const obs = (p.observacoes || []).slice().sort((a,b) => b.data.localeCompare(a.data));
+  if (!obs.length) {
+    y = pdfText(doc, "Nenhuma observação registrada.", 15, y, pageW - 30);
+  } else {
+    obs.forEach(o => {
+      y = pdfText(doc, `${fmtDate(o.data)} - ${o.titulo || "Observação"}`, 15, y, pageW - 30);
+      y = pdfText(doc, `  ${o.texto || ""}`, 15, y, pageW - 30);
+    });
+  }
+
+  doc.save(`perfil-${p.nome?.replace(/\s/g, '-') || 'professor'}.pdf`);
+  notify("✅ Perfil exportado em PDF!");
 }
 
 function updateUser(){
@@ -2147,7 +2368,7 @@ function init(){
 
 init();
 
-// Expor funções para uso inline
+// Expor funções
 window.navigate=navigate;
 window.openStudent=openStudent;
 window.toggleStudentForm=toggleStudentForm;
@@ -2187,6 +2408,8 @@ window.focusAlertEvolution=focusAlertEvolution;
 window.saveObservacao=saveObservacao;
 window.saveEvolucaoPessoal=saveEvolucaoPessoal;
 window.deletarRegistroPessoal=deletarRegistroPessoal;
+window.toggleSwitch=toggleSwitch;
+window.generateProfilePDF=generateProfilePDF;
 
 </script>
 
