@@ -362,6 +362,7 @@ let currentConsultation = null;
 let financeYear = new Date().getFullYear();
 let financeMonth = new Date().getMonth();
 let currentUserId = null;
+let window = {};
 
 const TYPES = {
     psicologia: { label: "Psicologia", cls: "psico" },
@@ -374,11 +375,10 @@ const HOURS = [];
 for (let h = 8; h <= 18; h++) HOURS.push(String(h).padStart(2, "0") + ":00");
 
 // ============================================================
-// FUNÇÕES AUXILIARES - CORRIGIDAS
+// FUNÇÕES AUXILIARES
 // ============================================================
 
 function uid() {
-    // UUID v4 válido para o Supabase
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
         var r = Math.random() * 16 | 0;
         var v = c === 'x' ? r : (r & 0x3 | 0x8);
@@ -438,6 +438,7 @@ function avatarHTML(person, cls = "student-avatar") {
 
 function notify(message) {
     const t = document.getElementById("toast");
+    if (!t) return;
     t.textContent = message;
     t.classList.add("show");
     clearTimeout(window.toastTimer);
@@ -780,7 +781,7 @@ async function loadDataFromSupabase() {
 }
 
 // ============================================================
-// FUNÇÕES SUPABASE - SAVE (TODAS CORRIGIDAS COM UUID)
+// FUNÇÕES SUPABASE - SAVE
 // ============================================================
 
 async function saveAluno(aluno) {
@@ -1200,7 +1201,7 @@ async function saveData() {
 }
 
 // ============================================================
-// NAVEGAÇÃO
+// FUNÇÕES DE NAVEGAÇÃO
 // ============================================================
 
 function navigate(page) {
@@ -1772,7 +1773,7 @@ async function deleteSchoolRecord(id) {
 }
 
 // ============================================================
-// AGENDA (COMPLETA)
+// AGENDA
 // ============================================================
 
 function renderAgenda() {
