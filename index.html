@@ -195,6 +195,31 @@ button{cursor:pointer}
 }
 .toast.show{opacity:1;transform:none}
 
+/* Profile timeline enhancements */
+.profile-timeline-item{
+ padding:14px 0;
+ border-bottom:1px solid #f0f3f2;
+ display:flex;
+ gap:14px;
+ align-items:flex-start;
+}
+.profile-timeline-item:last-child{border-bottom:0}
+.profile-timeline-dot{
+ width:10px;
+ height:10px;
+ border-radius:50%;
+ margin-top:4px;
+ flex-shrink:0;
+}
+.profile-timeline-dot.evolution{background:#8eb29d}
+.profile-timeline-dot.observation{background:#8db0c8}
+.profile-timeline-dot.alert{background:#c9a87c}
+.profile-timeline-content{flex:1;min-width:0}
+.profile-timeline-content .title{font-weight:700;font-size:13px}
+.profile-timeline-content .meta{font-size:10px;color:#8a9892;margin:2px 0 5px}
+.profile-timeline-content .text{font-size:12px;color:#596761;line-height:1.6;white-space:pre-wrap}
+.profile-timeline-content .actions{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+
 @media(max-width:950px){
  .stats{grid-template-columns:repeat(2,1fr)}
  .profile-layout{grid-template-columns:1fr}
@@ -340,7 +365,14 @@ function defaultData(){
      nome:"Professor ASAS",
      especialidade:"Psicopedagogia Clínica",
      bio:"Profissional dedicado ao desenvolvimento acadêmico, emocional e cognitivo.",
-     foto:""
+     foto:"",
+     observacoes:[],  // Novo campo para observações pessoais do professor
+     evolucoesPessoais:[], // Novo campo para evolução pessoal/profissional
+     configuracoes:{
+       notificacoes:true,
+       tema:"claro",
+       lembretes:true
+     }
    },
    alunos:[
      {
@@ -394,7 +426,7 @@ function defaultData(){
      {id:uid(),data:today,hora:"14:00",alunoId:"a3",tipo:"aula",status:"agendado",presente:false,pago:true}
    ],
    transacoes:[],
-    clinicalAlerts:[]
+   clinicalAlerts:[]
  };
 }
 
@@ -421,6 +453,9 @@ function load(){
  try{
    const d=JSON.parse(raw);
    if(!d.professor)d.professor=defaultData().professor;
+   if(!d.professor.observacoes)d.professor.observacoes=[];
+   if(!d.professor.evolucoesPessoais)d.professor.evolucoesPessoais=[];
+   if(!d.professor.configuracoes)d.professor.configuracoes={notificacoes:true,tema:"claro",lembretes:true};
    if(!d.alunos)d.alunos=[];
    if(!d.agenda)d.agenda=[];
    if(!d.transacoes)d.transacoes=[];
@@ -1738,29 +1773,80 @@ function generateFinancePDF(){
   notify("Relatório financeiro do mês salvo em PDF.");
 }
 
+// ============================================================
+// PERFIL COMPLETO - Com histórico de evoluções e observações
+// ============================================================
 function renderPerfil(){
 
  const p=data.professor;
+
+ // Ordenar observações e evoluções por data (mais recentes primeiro)
+ const obsOrdenadas = (p.observacoes||[]).slice().sort((a,b) => b.data.localeCompare(a.data));
+ const evoOrdenadas = (p.evolucoesPessoais||[]).slice().sort((a,b) => b.data.localeCompare(a.data));
+
+ // Combinar todos os registros em uma timeline
+ const timeline = [];
+ obsOrdenadas.forEach(o => timeline.push({...o, tipo: 'observacao'}));
+ evoOrdenadas.forEach(e => timeline.push({...e, tipo: 'evolucao'}));
+ timeline.sort((a,b) => b.data.localeCompare(a.data));
+
+ // Estatísticas do profissional
+ const totalAlunos = data.alunos.length;
+ const totalAtendimentos = activeAppointments().length;
+ const totalTransacoes = data.transacoes.length;
+ const totalEvolucoes = evoOrdenadas.length;
+ const totalObservacoes = obsOrdenadas.length;
 
  document.getElementById("page-perfil").innerHTML=`
 
  <div class="section-head">
    <div>
      <div class="section-title">Meu Perfil</div>
-     <div class="section-sub">As informações ficam salvas neste dispositivo.</div>
+     <div class="section-sub">Gerencie suas informações pessoais e acompanhe sua trajetória profissional.</div>
    </div>
  </div>
 
- <div class="grid" style="grid-template-columns:1fr 1.4fr">
+ <!-- Cards de estatísticas -->
+ <div class="grid stats">
+   <div class="card">
+     <div class="stat-label">Alunos</div>
+     <div class="stat-value">${totalAlunos}</div>
+     <div class="stat-sub">Ativos na base</div>
+   </div>
+   <div class="card">
+     <div class="stat-label">Atendimentos</div>
+     <div class="stat-value">${totalAtendimentos}</div>
+     <div class="stat-sub">Agendamentos totais</div>
+   </div>
+   <div class="card">
+     <div class="stat-label">Evoluções</div>
+     <div class="stat-value">${totalEvolucoes}</div>
+     <div class="stat-sub">Registros próprios</div>
+   </div>
+   <div class="card">
+     <div class="stat-label">Observações</div>
+     <div class="stat-value">${totalObservacoes}</div>
+     <div class="stat-sub">Anotações pessoais</div>
+   </div>
+ </div>
 
+ <div class="grid" style="grid-template-columns:1fr 1.6fr;margin-top:18px">
+
+   <!-- Coluna esquerda: Avatar e dados básicos -->
    <div class="card">
      <div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding:15px">
        ${avatarHTML(p,"profile-avatar")}
        <div style="font-size:18px;font-weight:700;margin-top:12px">${esc(p.nome)}</div>
        <div style="font-size:11px;color:#8a9892;margin-top:4px">${esc(p.especialidade)}</div>
+       <div style="font-size:11px;color:#8a9892;margin-top:4px">${p.bio?esc(p.bio):""}</div>
+       <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
+         <span class="tag">${totalAlunos} alunos</span>
+         <span class="tag">${totalAtendimentos} atendimentos</span>
+       </div>
      </div>
    </div>
 
+   <!-- Coluna direita: Formulário de edição -->
    <div class="card">
 
      <div class="form-grid two">
@@ -1785,6 +1871,18 @@ function renderPerfil(){
          <textarea id="profBio" class="textarea">${esc(p.bio||"")}</textarea>
        </div>
 
+       <div class="field" style="grid-column:1/-1">
+         <label class="label">Configurações</label>
+         <div style="display:flex;gap:15px;flex-wrap:wrap;padding-top:5px">
+           <label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer">
+             <input type="checkbox" id="cfgNotif" ${p.configuracoes?.notificacoes!==false?"checked":""}> Notificações
+           </label>
+           <label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer">
+             <input type="checkbox" id="cfgLembretes" ${p.configuracoes?.lembretes!==false?"checked":""}> Lembretes
+           </label>
+         </div>
+       </div>
+
      </div>
 
      <button class="btn btn-primary" onclick="saveProfile()">
@@ -1794,34 +1892,178 @@ function renderPerfil(){
    </div>
  </div>
 
- <div class="card" style="margin-top:16px">
-   <div class="section-title">Resumo da conta</div>
-   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px">
-     <div style="padding:14px;background:#f7faf8;border-radius:12px">
-       <div class="stat-label">Alunos</div>
-       <div class="stat-value" style="font-size:21px">${data.alunos.length}</div>
-     </div>
-     <div style="padding:14px;background:#f7faf8;border-radius:12px">
-       <div class="stat-label">Agendamentos</div>
-       <div class="stat-value" style="font-size:21px">${activeAppointments().length}</div>
-     </div>
-     <div style="padding:14px;background:#f7faf8;border-radius:12px">
-       <div class="stat-label">Transações</div>
-       <div class="stat-value" style="font-size:21px">${data.transacoes.length}</div>
+ <!-- SEÇÃO: NOVA OBSERVAÇÃO -->
+ <div class="card" style="margin-top:18px">
+   <div class="section-head">
+     <div>
+       <div class="section-title">Nova Observação</div>
+       <div class="section-sub">Registre anotações pessoais, reflexões ou lembretes sobre sua prática.</div>
      </div>
    </div>
+   <div class="form-grid two">
+     <div class="field">
+       <label class="label">Título</label>
+       <input id="obsTitulo" class="input" placeholder="Ex.: Reflexão sobre atendimento">
+     </div>
+     <div class="field">
+       <label class="label">Data</label>
+       <input id="obsData" class="input" type="date" value="${today()}">
+     </div>
+   </div>
+   <div class="field">
+     <label class="label">Observação</label>
+     <textarea id="obsTexto" class="textarea" placeholder="Descreva sua observação ou reflexão..."></textarea>
+   </div>
+   <button class="btn btn-primary" onclick="saveObservacao()">
+     <i data-lucide="file-text"></i>Salvar observação
+   </button>
+ </div>
+
+ <!-- SEÇÃO: NOVA EVOLUÇÃO PESSOAL -->
+ <div class="card" style="margin-top:16px">
+   <div class="section-head">
+     <div>
+       <div class="section-title">Nova Evolução Pessoal</div>
+       <div class="section-sub">Registre marcos, aprendizados ou mudanças na sua prática profissional.</div>
+     </div>
+   </div>
+   <div class="form-grid two">
+     <div class="field">
+       <label class="label">Título</label>
+       <input id="evoPessoalTitulo" class="input" placeholder="Ex.: Curso de Neuropsicopedagogia">
+     </div>
+     <div class="field">
+       <label class="label">Data</label>
+       <input id="evoPessoalData" class="input" type="date" value="${today()}">
+     </div>
+   </div>
+   <div class="field">
+     <label class="label">Descrição</label>
+     <textarea id="evoPessoalTexto" class="textarea" placeholder="Descreva sua evolução, aprendizado ou conquista..."></textarea>
+   </div>
+   <button class="btn btn-primary" onclick="saveEvolucaoPessoal()">
+     <i data-lucide="trending-up"></i>Salvar evolução
+   </button>
+ </div>
+
+ <!-- TIMELINE: Histórico completo -->
+ <div class="card" style="margin-top:18px">
+   <div class="section-head">
+     <div>
+       <div class="section-title">Linha do Tempo</div>
+       <div class="section-sub">Histórico de observações e evoluções pessoais.</div>
+     </div>
+     ${timeline.length>0?`<span style="font-size:11px;color:#89968f">${timeline.length} registros</span>`:''}
+   </div>
+
+   ${timeline.length===0?`
+     <div class="empty">Nenhuma observação ou evolução registrada ainda.</div>
+   `:`
+     <div style="max-height:400px;overflow-y:auto">
+     ${timeline.map(item => {
+       const isEvolucao = item.tipo === 'evolucao';
+       const dotClass = isEvolucao ? 'evolution' : 'observation';
+       const icon = isEvolucao ? 'trending-up' : 'file-text';
+       const label = isEvolucao ? 'Evolução' : 'Observação';
+       return `
+         <div class="profile-timeline-item">
+           <div class="profile-timeline-dot ${dotClass}"></div>
+           <div class="profile-timeline-content">
+             <div class="title">${esc(item.titulo||label)}</div>
+             <div class="meta">
+               ${fmtDate(item.data)} · ${label}
+               <button style="border:0;background:none;color:#a3aea9;margin-left:10px;font-size:10px;cursor:pointer" onclick="deletarRegistroPessoal('${item.id}','${item.tipo}')">Excluir</button>
+             </div>
+             <div class="text">${esc(item.texto||item.descricao||"")}</div>
+           </div>
+         </div>
+       `;
+     }).join("")}
+     </div>
+   `}
  </div>
  `;
 
  lucide.createIcons();
 }
 
+// ============================================================
+// FUNÇÕES PARA O PERFIL
+// ============================================================
+
+function saveObservacao(){
+ const titulo = document.getElementById("obsTitulo").value.trim() || "Observação";
+ const data = document.getElementById("obsData").value || today();
+ const texto = document.getElementById("obsTexto").value.trim();
+
+ if(!texto){
+   notify("Escreva a observação antes de salvar.");
+   return;
+ }
+
+ data.professor.observacoes = data.professor.observacoes || [];
+ data.professor.observacoes.push({
+   id: uid(),
+   data: data,
+   titulo: titulo,
+   texto: texto
+ });
+
+ save();
+ notify("Observação salva com sucesso.");
+ renderPerfil();
+}
+
+function saveEvolucaoPessoal(){
+ const titulo = document.getElementById("evoPessoalTitulo").value.trim() || "Evolução pessoal";
+ const data = document.getElementById("evoPessoalData").value || today();
+ const texto = document.getElementById("evoPessoalTexto").value.trim();
+
+ if(!texto){
+   notify("Descreva sua evolução antes de salvar.");
+   return;
+ }
+
+ data.professor.evolucoesPessoais = data.professor.evolucoesPessoais || [];
+ data.professor.evolucoesPessoais.push({
+   id: uid(),
+   data: data,
+   titulo: titulo,
+   texto: texto
+ });
+
+ save();
+ notify("Evolução pessoal registrada.");
+ renderPerfil();
+}
+
+function deletarRegistroPessoal(id, tipo){
+ if(!confirm("Excluir este registro?")) return;
+
+ if(tipo === 'observacao'){
+   data.professor.observacoes = (data.professor.observacoes||[]).filter(o => o.id !== id);
+ } else if(tipo === 'evolucao'){
+   data.professor.evolucoesPessoais = (data.professor.evolucoesPessoais||[]).filter(e => e.id !== id);
+ }
+
+ save();
+ notify("Registro removido.");
+ renderPerfil();
+}
+
 function saveProfile(){
 
- data.professor.nome=document.getElementById("profNome").value.trim()||"Professor ASAS";
- data.professor.especialidade=document.getElementById("profEspecialidade").value.trim();
- data.professor.foto=document.getElementById("profFoto").value.trim();
- data.professor.bio=document.getElementById("profBio").value.trim();
+ const p = data.professor;
+
+ p.nome = document.getElementById("profNome").value.trim() || "Professor ASAS";
+ p.especialidade = document.getElementById("profEspecialidade").value.trim();
+ p.foto = document.getElementById("profFoto").value.trim();
+ p.bio = document.getElementById("profBio").value.trim();
+
+ // Configurações
+ p.configuracoes = p.configuracoes || {};
+ p.configuracoes.notificacoes = document.getElementById("cfgNotif").checked;
+ p.configuracoes.lembretes = document.getElementById("cfgLembretes").checked;
 
  save();
  updateUser();
@@ -1905,6 +2147,7 @@ function init(){
 
 init();
 
+// Expor funções para uso inline
 window.navigate=navigate;
 window.openStudent=openStudent;
 window.toggleStudentForm=toggleStudentForm;
@@ -1934,11 +2177,17 @@ window.setStudentSectionPage=setStudentSectionPage;
 window.setFinancePage=setFinancePage;
 window.changeFinanceMonth=changeFinanceMonth;
 window.saveProfile=saveProfile;
-  window.generateStudentPDF=generateStudentPDF;
-  window.generateFinancePDF=generateFinancePDF;
-  window.resolveClinicalAlert=resolveClinicalAlert;
-  window.reopenClinicalAlert=reopenClinicalAlert;
-  window.focusAlertEvolution=focusAlertEvolution;
+window.generateStudentPDF=generateStudentPDF;
+window.generateFinancePDF=generateFinancePDF;
+window.resolveClinicalAlert=resolveClinicalAlert;
+window.reopenClinicalAlert=reopenClinicalAlert;
+window.focusAlertEvolution=focusAlertEvolution;
+
+// Novas funções do perfil
+window.saveObservacao=saveObservacao;
+window.saveEvolucaoPessoal=saveEvolucaoPessoal;
+window.deletarRegistroPessoal=deletarRegistroPessoal;
+
 </script>
 
 </body>
