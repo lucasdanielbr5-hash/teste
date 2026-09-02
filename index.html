@@ -376,6 +376,7 @@ let financeYear = new Date().getFullYear();
 let financeMonth = new Date().getMonth();
 let currentUserId = null;
 let financePage = 1;
+let isSaving = false;
 
 const TYPES = {
     psicologia: { label: "Psicologia", cls: "psico" },
@@ -655,7 +656,7 @@ async function getUserId() {
 }
 
 // ============================================================
-// FUNÇÕES SUPABASE - LOAD (COM FILTRO POR user_id)
+// FUNÇÕES SUPABASE - LOAD
 // ============================================================
 
 async function loadDataFromSupabase() {
@@ -666,7 +667,6 @@ async function loadDataFromSupabase() {
             return null;
         }
 
-        // Buscar professor do usuário atual
         const { data: professorData, error: profError } = await supabaseClient
             .from('professores')
             .select('*')
@@ -674,7 +674,6 @@ async function loadDataFromSupabase() {
             .maybeSingle();
         if (profError && profError.code !== 'PGRST116') throw profError;
 
-        // Buscar alunos do usuário atual
         const { data: alunosData, error: alunosError } = await supabaseClient
             .from('alunos')
             .select('*')
@@ -682,49 +681,42 @@ async function loadDataFromSupabase() {
             .order('nome');
         if (alunosError) throw alunosError;
 
-        // Buscar evoluções do usuário atual
         const { data: evolucoesData, error: evoError } = await supabaseClient
             .from('evolucoes')
             .select('*')
             .eq('user_id', userId);
         if (evoError && evoError.code !== '42703' && evoError.code !== 'PGRST116') throw evoError;
 
-        // Buscar consultas do usuário atual
         const { data: consultasData, error: consError } = await supabaseClient
             .from('consultas')
             .select('*')
             .eq('user_id', userId);
         if (consError && consError.code !== '42703' && consError.code !== 'PGRST116') throw consError;
 
-        // Buscar avaliações do usuário atual
         const { data: avaliacoesData, error: avError } = await supabaseClient
             .from('avaliacoes')
             .select('*')
             .eq('user_id', userId);
         if (avError && avError.code !== '42703' && avError.code !== 'PGRST116') throw avError;
 
-        // Buscar resultados do usuário atual
         const { data: resultadosData, error: resError } = await supabaseClient
             .from('resultados_avaliacoes')
             .select('*')
             .eq('user_id', userId);
         if (resError && resError.code !== '42703' && resError.code !== 'PGRST116') throw resError;
 
-        // Buscar escola do usuário atual
         const { data: escolaData, error: escError } = await supabaseClient
             .from('escola')
             .select('*')
             .eq('user_id', userId);
         if (escError && escError.code !== '42703' && escError.code !== 'PGRST116') throw escError;
 
-        // Buscar registros escola do usuário atual
         const { data: registrosEscolaData, error: regError } = await supabaseClient
             .from('registros_escola')
             .select('*')
             .eq('user_id', userId);
         if (regError && regError.code !== '42703' && regError.code !== 'PGRST116') throw regError;
 
-        // Buscar agenda do usuário atual
         const { data: agendaData, error: agendaError } = await supabaseClient
             .from('agenda')
             .select('*')
@@ -732,21 +724,18 @@ async function loadDataFromSupabase() {
             .order('data');
         if (agendaError) throw agendaError;
 
-        // Buscar transações do usuário atual
         const { data: transacoesData, error: transError } = await supabaseClient
             .from('transacoes')
             .select('*')
             .eq('user_id', userId);
         if (transError) throw transError;
 
-        // Buscar alertas do usuário atual
         const { data: alertasData, error: alertError } = await supabaseClient
             .from('alertas_clinicos')
             .select('*')
             .eq('user_id', userId);
         if (alertError) throw alertError;
 
-        // Buscar observações do professor
         const { data: obsProfData, error: obsError } = await supabaseClient
             .from('observacoes_professor')
             .select('*')
@@ -754,7 +743,6 @@ async function loadDataFromSupabase() {
             .order('data', { ascending: false });
         if (obsError && obsError.code !== '42703' && obsError.code !== 'PGRST116') throw obsError;
 
-        // Buscar evoluções do professor
         const { data: evoProfData, error: evoProfError } = await supabaseClient
             .from('evolucoes_professor')
             .select('*')
@@ -807,7 +795,7 @@ async function loadDataFromSupabase() {
 }
 
 // ============================================================
-// FUNÇÕES SUPABASE - SAVE (COM user_id)
+// FUNÇÕES SUPABASE - SAVE
 // ============================================================
 
 async function saveAluno(aluno) {
@@ -1178,6 +1166,18 @@ async function loadData() {
 }
 
 async function saveData() {
+    // Evitar salvamento duplicado
+    if (isSaving) return false;
+    
+    // Verificar se está logado
+    const isLoggedIn = await checkSession();
+    if (!isLoggedIn) {
+        console.warn('Usuário não está logado, dados não salvos.');
+        return false;
+    }
+    
+    isSaving = true;
+    
     try {
         if (data.professor) await saveProfessor(data.professor);
 
@@ -1223,6 +1223,8 @@ async function saveData() {
         console.error('Erro ao salvar dados:', error);
         notify('Erro ao salvar dados no servidor.');
         return false;
+    } finally {
+        isSaving = false;
     }
 }
 
@@ -1283,7 +1285,7 @@ function updateUser() {
 }
 
 // ============================================================
-// LOGIN/LOGOUT
+// LOGIN/LOGOUT (CORRIGIDO)
 // ============================================================
 
 async function login() {
@@ -1317,14 +1319,46 @@ async function login() {
 }
 
 async function logout() {
-    await logoutSupabase();
-    data.session = false;
-    await saveData();
-
+    // Limpar dados da memória
+    data = {
+        session: false,
+        professor: {
+            nome: "Professor ASAS",
+            especialidade: "Psicopedagogia Clínica",
+            bio: "Profissional dedicado ao desenvolvimento acadêmico, emocional e cognitivo.",
+            foto: "",
+            observacoes: [],
+            evolucoesPessoais: [],
+            configuracoes: { notificacoes: true, tema: "claro", lembretes: true }
+        },
+        alunos: [],
+        agenda: [],
+        transacoes: [],
+        clinicalAlerts: []
+    };
+    
+    currentUserId = null;
+    
+    // Fazer logout do Supabase
+    try {
+        await supabaseClient.auth.signOut();
+    } catch (error) {
+        console.warn('Erro no logout do Supabase:', error);
+    }
+    
+    // Esconder app e mostrar login
     document.getElementById("app").style.display = "none";
     document.getElementById("loginScreen").style.display = "grid";
-    notify("Até logo!");
+    
+    // Limpar campos
+    document.getElementById("loginPass").value = "";
+    
+    notify("Logout realizado com sucesso!");
 }
+
+// ============================================================
+// [AQUI SEGUEM TODAS AS FUNÇÕES DE RENDERIZAÇÃO]
+// ============================================================
 
 // ============================================================
 // DASHBOARD
@@ -2284,7 +2318,6 @@ function gerarRecibo() {
     const aluno = getStudent(alunoId);
     if (!aluno) { notify("Aluno não encontrado."); return; }
     
-    // Buscar transações do aluno no mês/ano
     const transacoes = (data.transacoes || []).filter(t => {
         const d = parseDate(t.data);
         return t.alunoId === alunoId && d.getMonth() + 1 === mes && d.getFullYear() === ano;
@@ -2302,7 +2335,6 @@ function gerarRecibo() {
     const pageW = doc.internal.pageSize.getWidth();
     let y = 25;
     
-    // Cabeçalho
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(20);
     doc.text('RECIBO DE PAGAMENTO', pageW / 2, y, { align: 'center' });
@@ -2330,7 +2362,6 @@ function gerarRecibo() {
     doc.text(`no período de ${mesNome}/${ano}.`, 20, y);
     y += 15;
     
-    // Assinatura
     doc.text('________________________________________', 40, y);
     y += 5;
     doc.text(esc(data.professor?.nome || 'Professor'), 40, y);
@@ -2338,7 +2369,6 @@ function gerarRecibo() {
     doc.text('Profissional Responsável', 40, y);
     y += 15;
     
-    // Rodapé
     doc.setFontSize(8);
     doc.text('Este recibo serve como comprovante de pagamento para fins educacionais e fiscais.', 20, y);
     
@@ -2360,7 +2390,6 @@ function gerarDeclaracao() {
     const pageW = doc.internal.pageSize.getWidth();
     let y = 30;
     
-    // Cabeçalho
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(22);
     doc.text('DECLARAÇÃO DE ACOMPANHAMENTO', pageW / 2, y, { align: 'center' });
@@ -2413,7 +2442,6 @@ function gerarDeclaracao() {
 
 function numeroPorExtenso(valor) {
     const unidades = ['zero', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove'];
-    const especiais = ['dez', 'onze', 'doze', 'treze', 'quatorze', 'quinze', 'dezesseis', 'dezessete', 'dezoito', 'dezenove'];
     const dezenas = ['', '', 'vinte', 'trinta', 'quarenta', 'cinquenta', 'sessenta', 'setenta', 'oitenta', 'noventa'];
     const centenas = ['', 'cento', 'duzentos', 'trezentos', 'quatrocentos', 'quinhentos', 'seiscentos', 'setecentos', 'oitocentos', 'novecentos'];
     
