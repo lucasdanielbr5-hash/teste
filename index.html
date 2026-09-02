@@ -377,6 +377,7 @@ let financeMonth = new Date().getMonth();
 let currentUserId = null;
 let financePage = 1;
 let isSaving = false;
+let isDataLoaded = false;
 
 const TYPES = {
     psicologia: { label: "Psicologia", cls: "psico" },
@@ -460,11 +461,17 @@ function notify(message) {
 }
 
 function activeAppointments() {
-    return data.agenda ? data.agenda.filter(x => x.status !== "cancelado") : [];
+    if (!data.agenda) return [];
+    return data.agenda.filter(x => {
+        if (x.status === "cancelado") return false;
+        const student = getStudent(x.alunoId);
+        return student !== null && student !== undefined;
+    });
 }
 
 function getStudent(id) {
-    return data.alunos ? data.alunos.find(a => a.id === id) : null;
+    if (!data.alunos) return null;
+    return data.alunos.find(a => a.id === id) || null;
 }
 
 function ensureStudentModules(s) {
@@ -786,6 +793,7 @@ async function loadDataFromSupabase() {
             ensureStudentModules(aluno);
         });
 
+        isDataLoaded = true;
         return result;
     } catch (error) {
         console.error('Erro ao carregar dados:', error);
@@ -1160,16 +1168,16 @@ async function loadData() {
             loaded.professor.configuracoes = { notificacoes: true, tema: "claro", lembretes: true };
         }
         loaded.alunos.forEach(s => ensureStudentModules(s));
+        isDataLoaded = true;
         return loaded;
     }
+    isDataLoaded = false;
     return defaultData();
 }
 
 async function saveData() {
-    // Evitar salvamento duplicado
     if (isSaving) return false;
     
-    // Verificar se está logado
     const isLoggedIn = await checkSession();
     if (!isLoggedIn) {
         console.warn('Usuário não está logado, dados não salvos.');
@@ -1262,6 +1270,13 @@ function navigate(page) {
 }
 
 function renderPage() {
+    if (!isDataLoaded) {
+        document.querySelectorAll(".view").forEach(view => {
+            view.innerHTML = `<div class="empty">Carregando dados...</div>`;
+        });
+        return;
+    }
+    
     if (currentPage === "dashboard") renderDashboard();
     if (currentPage === "alunos") renderAlunos();
     if (currentPage === "agenda") renderAgenda();
@@ -1285,7 +1300,7 @@ function updateUser() {
 }
 
 // ============================================================
-// LOGIN/LOGOUT (CORRIGIDO)
+// LOGIN/LOGOUT (CORRIGIDOS)
 // ============================================================
 
 async function login() {
@@ -1300,77 +1315,104 @@ async function login() {
     const result = await loginSupabase(user, pass);
 
     if (result) {
-        data.session = true;
-        
-        const loadedData = await loadData();
-        if (loadedData) {
-            data = loadedData;
+        try {
+            const loadedData = await loadData();
+            if (loadedData) {
+                data = loadedData;
+                data.session = true;
+                isDataLoaded = true;
+            } else {
+                data = defaultData();
+                data.session = true;
+                isDataLoaded = false;
+            }
+            
+            document.getElementById("loginScreen").style.display = "none";
+            document.getElementById("app").style.display = "flex";
+
+            updateUser();
+            navigate("dashboard");
+            notify(`Bem-vindo, ${data.professor?.nome || "Professor"}!`);
+        } catch (error) {
+            console.error('Erro no login:', error);
+            notify('Erro ao carregar dados. Tente novamente.');
         }
-        
-        await saveData();
-
-        document.getElementById("loginScreen").style.display = "none";
-        document.getElementById("app").style.display = "flex";
-
-        updateUser();
-        navigate("dashboard");
-        notify(`Bem-vindo, ${data.professor?.nome || "Professor"}!`);
     }
 }
 
 async function logout() {
-    // Limpar dados da memória
-    data = {
-        session: false,
-        professor: {
-            nome: "Professor ASAS",
-            especialidade: "Psicopedagogia Clínica",
-            bio: "Profissional dedicado ao desenvolvimento acadêmico, emocional e cognitivo.",
-            foto: "",
-            observacoes: [],
-            evolucoesPessoais: [],
-            configuracoes: { notificacoes: true, tema: "claro", lembretes: true }
-        },
-        alunos: [],
-        agenda: [],
-        transacoes: [],
-        clinicalAlerts: []
-    };
-    
-    currentUserId = null;
-    
-    // Fazer logout do Supabase
     try {
         await supabaseClient.auth.signOut();
     } catch (error) {
         console.warn('Erro no logout do Supabase:', error);
     }
     
-    // Esconder app e mostrar login
+    data = defaultData();
+    data.session = false;
+    isDataLoaded = false;
+    currentUserId = null;
+    currentStudent = null;
+    currentPage = "dashboard";
+    
     document.getElementById("app").style.display = "none";
     document.getElementById("loginScreen").style.display = "grid";
-    
-    // Limpar campos
     document.getElementById("loginPass").value = "";
+    
+    document.querySelectorAll(".view").forEach(view => {
+        view.innerHTML = '';
+        view.classList.remove('active');
+    });
+    
+    const dashboardView = document.getElementById("page-dashboard");
+    if (dashboardView) {
+        dashboardView.classList.add('active');
+        dashboardView.innerHTML = `<div class="empty">Faça login para visualizar o dashboard.</div>`;
+    }
     
     notify("Logout realizado com sucesso!");
 }
 
 // ============================================================
-// [AQUI SEGUEM TODAS AS FUNÇÕES DE RENDERIZAÇÃO]
-// ============================================================
-
-// ============================================================
-// DASHBOARD
+// DASHBOARD (CORRIGIDO)
 // ============================================================
 
 function renderDashboard() {
+    if (!isDataLoaded || !data || !data.alunos) {
+        document.getElementById("page-dashboard").innerHTML = `
+            <div class="empty" style="padding:40px;text-align:center">
+                <p>Carregando dados...</p>
+            </div>
+        `;
+        return;
+    }
+
+    if (!data.professor) {
+        data.professor = {
+            nome: "Professor",
+            especialidade: "Psicopedagogia",
+            bio: "",
+            foto: "",
+            observacoes: [],
+            evolucoesPessoais: [],
+            configuracoes: { notificacoes: true, tema: "claro", lembretes: true }
+        };
+    }
+
     const monthRevenue = monthPaid();
     const pending = weekPending();
     const done = monthDone();
     const rate = attendanceRate();
     const alerts = getClinicalAlerts();
-    const todays = activeAppointments().filter(a => a.data === today()).sort((a, b) => a.hora.localeCompare(b.hora));
+    
+    const todays = activeAppointments()
+        .filter(a => a.data === today())
+        .filter(a => {
+            const s = getStudent(a.alunoId);
+            return s !== null && s !== undefined;
+        })
+        .sort((a, b) => a.hora.localeCompare(b.hora));
+
+    const alunosAtivos = (data.alunos || []).filter(a => a.ativo !== false);
 
     document.getElementById("page-dashboard").innerHTML = `
         <div class="section-head">
@@ -1400,12 +1442,13 @@ function renderDashboard() {
                     <div style="display:flex;flex-direction:column;gap:8px">
                     ${todays.map(a => {
                         const s = getStudent(a.alunoId);
+                        if (!s) return '';
                         const typ = TYPES[a.tipo];
                         return `
                         <div style="display:flex;align-items:center;gap:12px;padding:11px;border:1px solid var(--line);border-radius:13px">
                             ${avatarHTML(s)}
-                            <div style="flex:1;min-width:0;cursor:pointer" onclick="openStudent('${s?.id}')">
-                                <div style="font-size:13px;font-weight:700">${esc(s?.nome || "Aluno removido")}</div>
+                            <div style="flex:1;min-width:0;cursor:pointer" onclick="openStudent('${s.id}')">
+                                <div style="font-size:13px;font-weight:700">${esc(s.nome)}</div>
                                 <div style="font-size:10px;color:#8a9892">${a.hora} · ${typ?.label || a.tipo}</div>
                             </div>
                             <button class="btn ${a.presente ? 'btn-soft' : 'btn-outline'} btn-sm" onclick="event.stopPropagation();togglePresence('${a.id}')">
@@ -1444,7 +1487,7 @@ function renderDashboard() {
             <div class="card">
                 <div class="section-title">Alunos ativos</div>
                 <div class="section-sub">Base atual de acompanhamento</div>
-                <div style="font-size:30px;font-weight:700;margin-top:14px">${(data.alunos || []).filter(a => a.ativo !== false).length}</div>
+                <div style="font-size:30px;font-weight:700;margin-top:14px">${alunosAtivos.length}</div>
                 <button class="btn btn-outline btn-sm" onclick="navigate('alunos')" style="margin-top:8px">Ver todos</button>
             </div>
         </div>
@@ -1456,6 +1499,15 @@ function renderDashboard() {
 // ============================================================
 
 function renderAlunos() {
+    if (!isDataLoaded || !data || !data.alunos) {
+        document.getElementById("page-alunos").innerHTML = `
+            <div class="empty" style="padding:40px;text-align:center">
+                <p>Carregando dados...</p>
+            </div>
+        `;
+        return;
+    }
+
     document.getElementById("page-alunos").innerHTML = `
         <div class="section-head">
             <div><div class="section-title">Alunos</div><div class="section-sub">Cadastro, acompanhamento e prontuário individual.</div></div>
@@ -1879,10 +1931,19 @@ async function deleteSchoolRecord(id) {
 }
 
 // ============================================================
-// AGENDA
+// AGENDA (COMPLETA)
 // ============================================================
 
 function renderAgenda() {
+    if (!isDataLoaded || !data || !data.agenda) {
+        document.getElementById("page-agenda").innerHTML = `
+            <div class="empty" style="padding:40px;text-align:center">
+                <p>Carregando dados...</p>
+            </div>
+        `;
+        return;
+    }
+
     const title = calendarMode === "week" ?
         `${fmtDate(dateISO(weekDates(calendarDate)[0]))} — ${fmtDate(dateISO(weekDates(calendarDate)[4]))}` :
         monthName(calendarDate);
@@ -1953,10 +2014,14 @@ function renderWeek() {
                 html += `<div class="slot">`;
                 appointments.forEach(a => {
                     const s = getStudent(a.alunoId);
+                    if (!s) {
+                        html += `<div class="event" style="background:#f0f0f0;color:#999"><strong>Aluno removido</strong> - ${a.hora}</div>`;
+                        return;
+                    }
                     const t = TYPES[a.tipo];
                     html += `
-                        <div class="event ${t?.cls || ''}" onclick="openStudent('${s?.id}')">
-                            <strong>${esc(s?.nome || "Aluno removido")}</strong>
+                        <div class="event ${t?.cls || ''}" onclick="openStudent('${s.id}')">
+                            <strong>${esc(s.nome)}</strong>
                             ${t?.label || a.tipo}
                             <div class="event-actions">
                                 <button onclick="event.stopPropagation();togglePresence('${a.id}')">${a.presente ? "Presente" : "Presença"}</button>
@@ -2035,12 +2100,13 @@ function renderDayPanel(day) {
             </div>
             ${events.length ? events.map(a => {
                 const s = getStudent(a.alunoId);
+                if (!s) return `<div style="padding:10px 0;border-bottom:1px solid #f0f3f2;color:#999">Aluno removido - ${a.hora}</div>`;
                 const t = TYPES[a.tipo];
                 return `
                     <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f0f3f2">
                         <strong style="width:45px;font-size:12px">${a.hora}</strong>
                         ${avatarHTML(s, "student-avatar")}
-                        <div style="flex:1"><div style="font-size:12px;font-weight:700;cursor:pointer" onclick="openStudent('${s?.id}')">${esc(s?.nome || "Aluno removido")}</div><div style="font-size:10px;color:#8a9892">${t?.label || a.tipo}</div></div>
+                        <div style="flex:1"><div style="font-size:12px;font-weight:700;cursor:pointer" onclick="openStudent('${s.id}')">${esc(s.nome)}</div><div style="font-size:10px;color:#8a9892">${t?.label || a.tipo}</div></div>
                         <button class="btn btn-sm ${a.presente ? "btn-soft" : "btn-outline"}" onclick="togglePresence('${a.id}')">${a.presente ? "Presente" : "Presença"}</button>
                         <button class="btn btn-sm ${a.pago ? "btn-soft" : "btn-outline"}" onclick="togglePayment('${a.id}')">${a.pago ? "Pago" : "Pagamento"}</button>
                         <button class="btn btn-danger btn-sm" onclick="cancelAppointment('${a.id}')">Cancelar</button>
@@ -2154,6 +2220,15 @@ function setCalendarMode(mode) {
 // ============================================================
 
 function renderFinanceiro() {
+    if (!isDataLoaded || !data || !data.transacoes) {
+        document.getElementById("page-financeiro").innerHTML = `
+            <div class="empty" style="padding:40px;text-align:center">
+                <p>Carregando dados...</p>
+            </div>
+        `;
+        return;
+    }
+
     const now = new Date();
     if (typeof financeYear !== "number") financeYear = now.getFullYear();
     if (typeof financeMonth !== "number") financeMonth = now.getMonth();
@@ -2240,6 +2315,15 @@ function changeFinanceMonth(delta) {
 // ============================================================
 
 function renderRecibos() {
+    if (!isDataLoaded || !data || !data.alunos) {
+        document.getElementById("page-recibos").innerHTML = `
+            <div class="empty" style="padding:40px;text-align:center">
+                <p>Carregando dados...</p>
+            </div>
+        `;
+        return;
+    }
+
     document.getElementById("page-recibos").innerHTML = `
         <div class="section-head">
             <div>
@@ -2492,6 +2576,15 @@ function numeroPorExtensoSimples(n) {
 // ============================================================
 
 function renderPerfil() {
+    if (!isDataLoaded || !data || !data.professor) {
+        document.getElementById("page-perfil").innerHTML = `
+            <div class="empty" style="padding:40px;text-align:center">
+                <p>Carregando dados...</p>
+            </div>
+        `;
+        return;
+    }
+
     const p = data.professor;
     if (!p) return;
 
@@ -2877,6 +2970,7 @@ async function init() {
         if (loadedData) {
             data = loadedData;
             data.session = true;
+            isDataLoaded = true;
         }
         
         document.getElementById("loginScreen").style.display = "none";
@@ -2887,6 +2981,7 @@ async function init() {
     } else {
         document.getElementById("loginScreen").style.display = "grid";
         document.getElementById("app").style.display = "none";
+        isDataLoaded = false;
     }
 }
 
