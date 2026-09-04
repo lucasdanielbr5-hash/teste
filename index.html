@@ -1197,14 +1197,18 @@ async function deleteRegistroEscolaDB(id) {
 
 async function saveAgendaItem(item) {
     try {
-        const userId = await getUserId();
-        const id = ensureValidUUID(item.id);
-
-        const aluno = getStudent(item.alunoId);
-        if (!aluno) {
-            console.warn('Aluno não encontrado para o agendamento:', item.alunoId);
+        // CORRIGIDO: pula silenciosamente itens órfãos (alunoId nulo/vazio
+        // ou aluno removido) em vez de gerar avisos repetidos no console.
+        if (!item || !item.alunoId) {
             return null;
         }
+        const aluno = getStudent(item.alunoId);
+        if (!aluno) {
+            return null;
+        }
+
+        const userId = await getUserId();
+        const id = ensureValidUUID(item.id);
 
         const data = await upsertSafe('agenda', {
             id: id,
@@ -1238,6 +1242,10 @@ async function deleteAgendaItemDB(id) {
 
 async function saveTransacao(transacao) {
     try {
+        // CORRIGIDO: pula transações órfãs (sem alunoId) silenciosamente.
+        if (!transacao || !transacao.alunoId) {
+            return null;
+        }
         const userId = await getUserId();
         const id = ensureValidUUID(transacao.id);
         const data = await upsertSafe('transacoes', {
@@ -1417,13 +1425,20 @@ async function saveData() {
             }
         }
 
-        for (const item of (data.agenda || [])) {
+        // CORRIGIDO: filtra itens órfãos (sem alunoId ou aluno inexistente)
+        // antes de salvar, para nao gerar avisos/erros repetidos no console.
+        const validAgenda = (data.agenda || []).filter(item => item && item.alunoId && getStudent(item.alunoId));
+        for (const item of validAgenda) {
             await saveAgendaItem(item);
         }
+        // remove da memória os itens órfãos para nao persistirem indefinidamente
+        if (data.agenda) data.agenda = validAgenda;
 
-        for (const trans of (data.transacoes || [])) {
+        const validTrans = (data.transacoes || []).filter(t => t && t.alunoId && getStudent(t.alunoId));
+        for (const trans of validTrans) {
             await saveTransacao(trans);
         }
+        if (data.transacoes) data.transacoes = validTrans;
 
         for (const alerta of (data.clinicalAlerts || [])) {
             await saveAlertaClinico(alerta);
