@@ -1000,12 +1000,19 @@ async function saveAgendaItem(item) {
         const userId = await getUserId();
         const id = ensureValidUUID(item.id);
         
+        // Verificar se o aluno existe
+        const aluno = getStudent(item.alunoId);
+        if (!aluno) {
+            console.warn('Aluno não encontrado para o agendamento:', item.alunoId);
+            return null;
+        }
+        
         const { data, error } = await supabaseClient
             .from('agenda')
             .upsert({
                 id: id,
                 user_id: userId,
-                aluno_id: item.aluno_id,
+                aluno_id: item.alunoId,
                 data: item.data,
                 hora: item.hora,
                 tipo: item.tipo,
@@ -1220,11 +1227,26 @@ async function saveData() {
             }
         }
 
-        for (const item of (data.agenda || [])) await saveAgendaItem(item);
-        for (const trans of (data.transacoes || [])) await saveTransacao(trans);
-        for (const alerta of (data.clinicalAlerts || [])) await saveAlertaClinico(alerta);
-        for (const obs of (data.professor?.observacoes || [])) await saveObservacaoProfessor(obs);
-        for (const evo of (data.professor?.evolucoesPessoais || [])) await saveEvolucaoProfessor(evo);
+        // SALVAR AGENDAMENTOS (IMPORTANTE)
+        for (const item of (data.agenda || [])) {
+            await saveAgendaItem(item);
+        }
+        
+        for (const trans of (data.transacoes || [])) {
+            await saveTransacao(trans);
+        }
+        
+        for (const alerta of (data.clinicalAlerts || [])) {
+            await saveAlertaClinico(alerta);
+        }
+        
+        for (const obs of (data.professor?.observacoes || [])) {
+            await saveObservacaoProfessor(obs);
+        }
+        
+        for (const evo of (data.professor?.evolucoesPessoais || [])) {
+            await saveEvolucaoProfessor(evo);
+        }
 
         return true;
     } catch (error) {
@@ -1346,10 +1368,14 @@ async function logout() {
     // PRIMEIRO: Salvar dados antes de fazer logout
     if (data && data.session) {
         try {
-            await saveData();
-            console.log('✅ Dados salvos antes do logout');
+            const saved = await saveData();
+            if (saved) {
+                console.log('✅ Dados salvos com sucesso antes do logout');
+            } else {
+                console.warn('⚠️ Falha ao salvar dados, mas continuando logout');
+            }
         } catch (error) {
-            console.warn('Erro ao salvar dados:', error);
+            console.error('Erro ao salvar dados:', error);
         }
     }
     
@@ -1398,11 +1424,10 @@ async function logout() {
 }
 
 // ============================================================
-// DASHBOARD (CORRIGIDO)
+// DASHBOARD
 // ============================================================
 
 function renderDashboard() {
-    // Verificar se há dados carregados
     if (!data || !data.alunos) {
         document.getElementById("page-dashboard").innerHTML = `
             <div class="empty" style="padding:40px;text-align:center">
@@ -1412,7 +1437,6 @@ function renderDashboard() {
         return;
     }
 
-    // Verificar se está logado
     if (!data.session) {
         document.getElementById("page-dashboard").innerHTML = `
             <div class="empty" style="padding:60px;text-align:center">
@@ -1422,7 +1446,6 @@ function renderDashboard() {
         return;
     }
 
-    // Garantir que professor existe
     if (!data.professor) {
         data.professor = {
             nome: "Professor",
@@ -1435,14 +1458,12 @@ function renderDashboard() {
         };
     }
 
-    // Calcular métricas
     const monthRevenue = monthPaid();
     const pending = weekPending();
     const done = monthDone();
     const rate = attendanceRate();
     const alerts = getClinicalAlerts();
     
-    // Filtrar atendimentos de hoje
     const todays = activeAppointments()
         .filter(a => a.data === today())
         .filter(a => {
@@ -1970,7 +1991,7 @@ async function deleteSchoolRecord(id) {
 }
 
 // ============================================================
-// AGENDA (COMPLETA)
+// AGENDA
 // ============================================================
 
 function renderAgenda() {
@@ -2160,25 +2181,44 @@ async function saveAppointment() {
     const hora = document.getElementById("agHora").value;
     const tipo = document.getElementById("agTipo").value;
 
-    if (!alunoId || !dataValue || !hora) { notify("Preencha aluno, data e horário."); return; }
+    if (!alunoId || !dataValue || !hora) { 
+        notify("Preencha aluno, data e horário."); 
+        return; 
+    }
+
+    const aluno = getStudent(alunoId);
+    if (!aluno) {
+        notify("Aluno não encontrado. Recarregue a página.");
+        return;
+    }
 
     const occupied = activeAppointments().some(a => a.data === dataValue && a.hora === hora);
-    if (occupied) { notify("Este horário já possui atendimento."); return; }
+    if (occupied) { 
+        notify("Este horário já possui atendimento."); 
+        return; 
+    }
 
-    data.agenda.push({
+    const newAppointment = {
         id: uid(),
-        alunoId,
+        alunoId: alunoId,
         data: dataValue,
-        hora,
-        tipo,
+        hora: hora,
+        tipo: tipo,
         status: "agendado",
         presente: false,
         pago: false
-    });
+    };
 
-    await saveData();
-    notify("Atendimento agendado.");
-    renderAgenda();
+    data.agenda.push(newAppointment);
+    
+    const saved = await saveData();
+    if (saved) {
+        notify("Atendimento agendado com sucesso!");
+        renderAgenda();
+    } else {
+        data.agenda = data.agenda.filter(a => a.id !== newAppointment.id);
+        notify("Erro ao salvar agendamento. Tente novamente.");
+    }
 }
 
 async function cancelAppointment(id) {
