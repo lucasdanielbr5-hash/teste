@@ -1013,10 +1013,14 @@ async function loadDataFromSupabase() {
 async function upsertSafe(tableName, payload, selectSingle = true) {
     let attempt = { ...payload };
     for (let i = 0; i < 4; i++) {
-        let res = await supabaseClient.from(tableName).upsert(attempt);
-        if (selectSingle) res = res.select().single();
-        else res = res.select();
-        const { data, error } = await res;
+        // CORRIGIDO: encadear .select()/.single() ANTES do await.
+        // Antes o código fazia `await ...upsert(attempt)` primeiro, o que
+        // resolvia para um objeto {data,error} (sem metodo .select),
+        // causando "TypeError: res.select is not a function".
+        let query = supabaseClient.from(tableName).upsert(attempt);
+        if (selectSingle) query = query.select().single();
+        else query = query.select();
+        const { data, error } = await query;
         if (!error) return data;
         // erro de coluna inexistente: remove a coluna e tenta de novo
         if (error && (error.code === '42703' || /could not find the column/i.test(error.message || ''))) {
