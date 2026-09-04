@@ -1270,9 +1270,11 @@ function navigate(page) {
 }
 
 function renderPage() {
-    if (!isDataLoaded) {
+    if (!isDataLoaded || !data.session) {
         document.querySelectorAll(".view").forEach(view => {
-            view.innerHTML = `<div class="empty">Carregando dados...</div>`;
+            if (view.id !== "page-dashboard") {
+                view.innerHTML = `<div class="empty">Faça login para visualizar.</div>`;
+            }
         });
         return;
     }
@@ -1341,33 +1343,56 @@ async function login() {
 }
 
 async function logout() {
+    // PRIMEIRO: Salvar dados antes de fazer logout
+    if (data && data.session) {
+        try {
+            await saveData();
+            console.log('✅ Dados salvos antes do logout');
+        } catch (error) {
+            console.warn('Erro ao salvar dados:', error);
+        }
+    }
+    
+    // SEGUNDO: Fazer logout do Supabase
     try {
         await supabaseClient.auth.signOut();
     } catch (error) {
         console.warn('Erro no logout do Supabase:', error);
     }
     
-    data = defaultData();
+    // TERCEIRO: Atualizar estado (manter dados na memória)
     data.session = false;
     isDataLoaded = false;
     currentUserId = null;
     currentStudent = null;
     currentPage = "dashboard";
     
+    // QUARTO: Esconder app e mostrar login
     document.getElementById("app").style.display = "none";
     document.getElementById("loginScreen").style.display = "grid";
     document.getElementById("loginPass").value = "";
     
+    // QUINTO: Limpar views
     document.querySelectorAll(".view").forEach(view => {
         view.innerHTML = '';
         view.classList.remove('active');
     });
     
+    // SEXTO: Ativar dashboard com mensagem
     const dashboardView = document.getElementById("page-dashboard");
     if (dashboardView) {
         dashboardView.classList.add('active');
-        dashboardView.innerHTML = `<div class="empty">Faça login para visualizar o dashboard.</div>`;
+        dashboardView.innerHTML = `
+            <div class="empty" style="padding:60px;text-align:center">
+                <p style="font-size:18px;color:#8a9892">👋 Logout realizado com sucesso!</p>
+                <p style="font-size:13px;color:#a0aaa6;margin-top:8px">Faça login para visualizar seus dados.</p>
+            </div>
+        `;
     }
+    
+    // SÉTIMO: Limpar nome do usuário
+    document.getElementById("topUserName").textContent = "";
+    document.getElementById("topAvatar").textContent = "?";
     
     notify("Logout realizado com sucesso!");
 }
@@ -1377,7 +1402,8 @@ async function logout() {
 // ============================================================
 
 function renderDashboard() {
-    if (!isDataLoaded || !data || !data.alunos) {
+    // Verificar se há dados carregados
+    if (!data || !data.alunos) {
         document.getElementById("page-dashboard").innerHTML = `
             <div class="empty" style="padding:40px;text-align:center">
                 <p>Carregando dados...</p>
@@ -1386,6 +1412,17 @@ function renderDashboard() {
         return;
     }
 
+    // Verificar se está logado
+    if (!data.session) {
+        document.getElementById("page-dashboard").innerHTML = `
+            <div class="empty" style="padding:60px;text-align:center">
+                <p style="font-size:18px;color:#8a9892">🔒 Faça login para visualizar o dashboard</p>
+            </div>
+        `;
+        return;
+    }
+
+    // Garantir que professor existe
     if (!data.professor) {
         data.professor = {
             nome: "Professor",
@@ -1398,12 +1435,14 @@ function renderDashboard() {
         };
     }
 
+    // Calcular métricas
     const monthRevenue = monthPaid();
     const pending = weekPending();
     const done = monthDone();
     const rate = attendanceRate();
     const alerts = getClinicalAlerts();
     
+    // Filtrar atendimentos de hoje
     const todays = activeAppointments()
         .filter(a => a.data === today())
         .filter(a => {
