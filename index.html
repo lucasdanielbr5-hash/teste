@@ -46,26 +46,27 @@ button{cursor:pointer}
 
 .app{height:100vh;display:flex}
 .sidebar{
- width:76px;background:#fff;border-right:1px solid var(--line);
- display:flex;flex-direction:column;align-items:center;padding:20px 10px;
- flex-shrink:0;transition:.25s;z-index:20
+ width:218px;
+ background:#fff;
+ border-right:1px solid var(--line);
+ display:flex;
+ flex-direction:column;
+ padding:20px 14px;
+ flex-shrink:0;
+ z-index:20;
 }
-.sidebar:hover{width:218px;align-items:stretch}
 .brand{height:52px;display:flex;align-items:center;gap:12px;color:var(--sage-dark);font-weight:700;padding:0 10px;white-space:nowrap;overflow:hidden}
 .brand-mark{width:36px;height:36px;border-radius:12px;background:var(--sage-light);display:grid;place-items:center;flex-shrink:0}
-.brand span{opacity:0;transition:.2s}
-.sidebar:hover .brand span{opacity:1}
 .nav{margin-top:22px;display:flex;flex-direction:column;gap:5px}
 .nav button{
  border:0;background:transparent;color:#718096;border-radius:12px;
- min-height:44px;padding:0 12px;display:flex;align-items:center;gap:13px;
- font-size:13px;font-weight:500;text-align:left;white-space:nowrap;overflow:hidden
+ min-height:44px;padding:0 14px;display:flex;align-items:center;gap:13px;
+ font-size:13px;font-weight:500;text-align:left;
 }
 .nav button:hover{background:#f3f6f5;color:var(--ink)}
 .nav button.active{background:var(--sage-light);color:var(--sage-dark);font-weight:600}
 .nav svg{width:20px;min-width:20px}
-.nav-label{opacity:0;transition:.2s}
-.sidebar:hover .nav-label{opacity:1}
+.nav-label{opacity:1}
 .side-bottom{margin-top:auto}
 .main{min-width:0;flex:1;height:100vh;display:flex;flex-direction:column}
 .topbar{
@@ -188,13 +189,6 @@ button{cursor:pointer}
 .kpi-bar{height:6px;border-radius:10px;background:#edf1ef;overflow:hidden;margin-top:10px}
 .kpi-fill{height:100%;background:var(--sage);border-radius:10px}
 
-.clinical-alert{padding:13px;border-radius:13px;background:#fff8ef;border:1px solid #f1dfc8;margin-bottom:9px}
-.clinical-alert.resolved{background:#f5faf7;border-color:#dcebe2;opacity:.8}
-.clinical-alert-title{font-size:12px;font-weight:700;color:#795f42}
-.clinical-alert.resolved .clinical-alert-title{color:#5d806c}
-.clinical-alert-text{font-size:11px;color:#7d7368;line-height:1.5;margin-top:4px}
-.clinical-alert-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
-.clinical-alert-actions .btn{font-size:10px;padding:6px 8px}
 .login-screen{height:100vh;display:grid;place-items:center;background:linear-gradient(135deg,#f4f8f6,#f1f5f8)}
 .login-box{width:min(420px,calc(100% - 30px));background:#fff;border:1px solid var(--line);border-radius:24px;padding:34px;box-shadow:0 20px 60px rgba(40,70,55,.08)}
 .login-brand{display:flex;justify-content:center;align-items:center;gap:10px;color:var(--sage-dark);font-weight:700;font-size:22px}
@@ -237,10 +231,9 @@ button{cursor:pointer}
 }
 @media(max-width:680px){
  .sidebar{width:58px;padding:15px 6px}
- .sidebar:hover{width:58px}
- .sidebar:hover .brand span,.sidebar:hover .nav-label{opacity:0}
  .brand{padding:0 5px;justify-content:center}
- .nav button{justify-content:center;padding:0}
+ .nav button{justify-content:center;padding:0 8px}
+ .nav-label{display:none}
  .main{margin-left:0}
  .topbar{height:62px;padding:0 15px}
  .content{height:calc(100vh - 62px);padding:17px 13px}
@@ -254,11 +247,9 @@ button{cursor:pointer}
  .month-grid{min-width:620px}
 }
 
-/* ===== Ajuda contextual - agora no topo ===== */
 .help-box{display:flex;gap:10px;align-items:flex-start;background:#f4f8f6;border:1px solid #d9e6e0;border-radius:14px;padding:13px 16px;margin-bottom:18px;font-size:12px;line-height:1.6;color:#5a6b64}
 .help-box i{flex-shrink:0}
 
-/* ===== Mini calendário lateral (financeiro) ===== */
 .finance-layout{display:grid;grid-template-columns:1fr 280px;gap:18px;align-items:start}
 .finance-side{position:sticky;top:10px}
 .mini-cal{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px}
@@ -280,7 +271,6 @@ button{cursor:pointer}
 .side-card .sc-row:last-child{border:0}
 .side-card .sc-row .sc-val{font-weight:700}
 
-/* ===== Tipos de avaliação (badges) ===== */
 .aval-type-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;background:#eaf3ee;color:#3d8a6b}
 .aval-type-badge.survey{background:#eef0f8;color:#5b63b3}
 .aval-type-badge.screening{background:#fef3e8;color:#b8732a}
@@ -293,7 +283,6 @@ button{cursor:pointer}
  .finance-side{position:static}
 }
 
-/* ===== Perfil do aluno - timeline enriquecida ===== */
 .timeline-item{
  padding:16px 0;
  border-bottom:1px solid #f0f3f2;
@@ -319,11 +308,9 @@ button{cursor:pointer}
 .timeline-content .tl-meta{font-size:10px;color:#8a9892;margin:2px 0 5px}
 .timeline-content .tl-text{font-size:12px;color:#596761;line-height:1.6;white-space:pre-wrap}
 
-/* ===== Botão de PDF nas avaliações ===== */
 .aval-pdf-btn{display:inline-flex;align-items:center;gap:5px;font-size:10px;padding:4px 10px;border-radius:8px;border:1px solid var(--line);background:#fff;color:#53615c;cursor:pointer;transition:.15s}
 .aval-pdf-btn:hover{background:#f7faf8}
 
-/* ===== Layout com barra lateral direita ===== */
 .two-col-layout{display:grid;grid-template-columns:1fr 280px;gap:18px;align-items:start}
 .right-sidebar{position:sticky;top:10px}
 @media(max-width:950px){
@@ -468,6 +455,18 @@ const TYPES = {
 const WEEK = ["Seg", "Ter", "Qua", "Qui", "Sex"];
 const HOURS = [];
 for (let h = 8; h <= 18; h++) HOURS.push(String(h).padStart(2, "0") + ":00");
+
+// ============================================================
+// FUNÇÃO DE SAUDAÇÃO POR HORÁRIO
+// ============================================================
+
+function getSaudacao() {
+    const hora = new Date().getHours();
+    if (hora >= 6 && hora < 12) return "Bom dia";
+    if (hora >= 12 && hora < 18) return "Boa tarde";
+    if (hora >= 18 && hora < 24) return "Boa noite";
+    return "Boa noite";
+}
 
 // ============================================================
 // FUNÇÕES AUXILIARES
@@ -1593,6 +1592,7 @@ function renderDashboard() {
     const pending = weekPending();
     const done = monthDone();
     const rate = attendanceRate();
+    const saudacao = getSaudacao();
 
     const todays = activeAppointments()
         .filter(a => a.data === today())
@@ -1606,7 +1606,7 @@ function renderDashboard() {
 
         <div class="section-head">
             <div>
-                <div class="section-title">Bom dia, ${esc(data.professor?.nome?.split(" ")[0] || "Professor")}</div>
+                <div class="section-title">${saudacao}, ${esc(data.professor?.nome?.split(" ")[0] || "Professor")}</div>
                 <div class="section-sub">Visão geral do seu trabalho clínico e pedagógico.</div>
             </div>
             <button class="btn btn-primary" onclick="navigate('alunos');setTimeout(()=>{toggleStudentForm(true);},100)">
@@ -2093,7 +2093,6 @@ async function deleteStudent(id) {
     const s = getStudent(id);
     if (!s) return;
     data.alunos = data.alunos.filter(a => a.id !== id);
-    // Remover agendamentos e transações associadas
     data.agenda = (data.agenda || []).filter(a => a.alunoId !== id);
     data.transacoes = (data.transacoes || []).filter(t => t.alunoId !== id);
     await saveData();
@@ -3445,7 +3444,6 @@ function renderFinanceiro() {
 
 function abrirFormRecibo() {
     document.getElementById("despesaFormCard").style.display = "none";
-    // Rola para o recibo na sidebar
     const side = document.querySelector('.finance-side');
     if (side) side.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
