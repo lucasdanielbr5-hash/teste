@@ -97,6 +97,7 @@ button{cursor:pointer}
 .btn-danger{background:#fff0f0;color:#b85b5b}
 .btn-outline{background:#fff;border:1px solid var(--line);color:#53615c}
 .btn-outline:hover{background:#f7faf8}
+.btn-outline:disabled{opacity:.5;cursor:not-allowed}
 .btn-sm{padding:7px 10px;font-size:12px}
 
 .input,.select,.textarea{
@@ -253,6 +254,7 @@ button{cursor:pointer}
  .month-grid{min-width:620px}
 }
 </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
 </head>
 
 <body>
@@ -422,7 +424,9 @@ function dateISO(d) {
 }
 
 function parseDate(s) {
-    const [y, m, d] = s.split("-").map(Number);
+    if (!s) return new Date(NaN);
+    if (s instanceof Date) return new Date(s);
+    const [y, m, d] = String(s).split("-").map(Number);
     return new Date(y, m - 1, d);
 }
 
@@ -432,7 +436,9 @@ function today() {
 
 function fmtDate(s) {
     if (!s) return "";
-    return parseDate(s).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
+    const d = parseDate(s);
+    if (isNaN(d)) return String(s);
+    return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
 }
 
 function monthName(d) {
@@ -510,9 +516,10 @@ function monthAppointments(date) {
     });
 }
 
+// CORRIGIDO: usa o mês/ano atual (não calendarDate) para refletir o mês corrente real
 function monthPaid() {
-    const y = calendarDate.getFullYear();
-    const m = calendarDate.getMonth();
+    const y = new Date().getFullYear();
+    const m = new Date().getMonth();
     return (data.transacoes || []).filter(t => {
         const d = parseDate(t.data);
         return d.getFullYear() === y && d.getMonth() === m;
@@ -594,6 +601,176 @@ function clinicalAlertReason(a) {
 }
 
 // ============================================================
+// MAPEAMENTO SUPABASE <-> MEMÓRIA (CORRIGIDO)
+// ============================================================
+// Converte linhas do banco (snake_case) para o formato usado em memória (camelCase).
+
+function mapAlunoFromDB(row) {
+    if (!row) return row;
+    return {
+        id: row.id,
+        nome: row.nome,
+        idade: row.idade || 0,
+        serie: row.serie || '',
+        responsavel: row.responsavel || '',
+        telefone: row.telefone || '',
+        valor: row.valor || 0,
+        foto: row.foto || '',
+        tags: row.tags || [],
+        observacoes: row.observacoes || '',
+        ativo: row.ativo !== false,
+        // sub-estruturas preenchidas depois
+        evolucoes: [],
+        consultas: [],
+        avaliacoes: [],
+        escola: { nome: '', professores: '', registros: [] }
+    };
+}
+
+function mapEvolucaoFromDB(row) {
+    return {
+        id: row.id,
+        aluno_id: row.aluno_id,
+        data: row.data || today(),
+        titulo: row.titulo || 'Evolução',
+        texto: row.texto || ''
+    };
+}
+
+function mapConsultaFromDB(row) {
+    return {
+        id: row.id,
+        aluno_id: row.aluno_id,
+        data: row.data || today(),
+        observacoes: row.observacoes || '',
+        acoes: row.acoes || '',
+        pais: row.pais || '',
+        solicitacoes: row.solicitacoes || '',
+        comportamentos: row.comportamentos || {}
+    };
+}
+
+function mapAvaliacaoFromDB(row) {
+    return {
+        id: row.id,
+        aluno_id: row.aluno_id,
+        data: row.data || today(),
+        titulo: row.titulo || '',
+        objetivo: row.objetivo || '',
+        questoes: row.questoes || [],
+        finalizada: row.finalizada || false,
+        resultados: []
+    };
+}
+
+function mapResultadoFromDB(row) {
+    return {
+        id: row.id,
+        avaliacao_id: row.avaliacao_id,
+        data: row.data || today(),
+        respostas: row.respostas || [],
+        resumo: row.resumo || ''
+    };
+}
+
+function mapEscolaFromDB(row, registros) {
+    return {
+        id: row.id,
+        aluno_id: row.aluno_id,
+        nome: row.nome || '',
+        professores: row.professores || '',
+        registros: registros || []
+    };
+}
+
+function mapRegistroEscolaFromDB(row) {
+    return {
+        id: row.id,
+        escola_id: row.escola_id,
+        data: row.data || today(),
+        contato: row.contato || '',
+        tipo: row.tipo || 'Conversa',
+        assunto: row.assunto || '',
+        relato: row.relato || ''
+    };
+}
+
+function mapAgendaFromDB(row) {
+    return {
+        id: row.id,
+        alunoId: row.aluno_id,
+        data: row.data,
+        hora: row.hora,
+        tipo: row.tipo,
+        status: row.status || 'agendado',
+        presente: row.presente || false,
+        pago: row.pago || false
+    };
+}
+
+function mapTransacaoFromDB(row) {
+    return {
+        id: row.id,
+        data: row.data || today(),
+        agendaId: row.agenda_id || null,
+        alunoId: row.aluno_id,
+        descricao: row.descricao || '',
+        valor: row.valor || 0
+    };
+}
+
+function mapAlertaFromDB(row) {
+    return {
+        id: row.id,
+        student_id: row.student_id,
+        evolution_id: row.evolution_id || null,
+        title: row.title || 'Alerta clínico',
+        text: row.text || '',
+        status: row.status || 'active',
+        created_at: row.created_at || today(),
+        resolved_at: row.resolved_at || null,
+        key: row.key || row.id
+    };
+}
+
+function mapObsProfFromDB(row) {
+    return {
+        id: row.id,
+        data: row.data || today(),
+        titulo: row.titulo || 'Observação',
+        texto: row.texto || ''
+    };
+}
+
+function mapEvoProfFromDB(row) {
+    return {
+        id: row.id,
+        data: row.data || today(),
+        titulo: row.titulo || 'Evolução pessoal',
+        texto: row.texto || ''
+    };
+}
+
+function mapProfessorFromDB(row) {
+    if (!row) return null;
+    return {
+        id: row.id,
+        user_id: row.user_id,
+        nome: row.nome || "Professor ASAS",
+        especialidade: row.especialidade || "",
+        bio: row.bio || "",
+        foto: row.foto || "",
+        observacoes: [],
+        evolucoesPessoais: [],
+        configuracoes: {
+            notificacoes: row.config_notificacoes !== false,
+            tema: "claro",
+            lembretes: row.config_lembretes !== false
+        }
+    };
+}
+
+// ============================================================
 // FUNÇÕES SUPABASE - AUTH
 // ============================================================
 
@@ -666,6 +843,12 @@ async function getUserId() {
 // FUNÇÕES SUPABASE - LOAD
 // ============================================================
 
+// Helper para tratar erros de coluna inexistente (tabelas novas/parciais)
+function isMissingColumnError(err) {
+    if (!err) return false;
+    return err.code === '42703' || err.code === 'PGRST116' || /column/i.test(err.message || '');
+}
+
 async function loadDataFromSupabase() {
     try {
         const userId = await getUserId();
@@ -679,7 +862,7 @@ async function loadDataFromSupabase() {
             .select('*')
             .eq('user_id', userId)
             .maybeSingle();
-        if (profError && profError.code !== 'PGRST116') throw profError;
+        if (profError && !isMissingColumnError(profError)) throw profError;
 
         const { data: alunosData, error: alunosError } = await supabaseClient
             .from('alunos')
@@ -692,37 +875,37 @@ async function loadDataFromSupabase() {
             .from('evolucoes')
             .select('*')
             .eq('user_id', userId);
-        if (evoError && evoError.code !== '42703' && evoError.code !== 'PGRST116') throw evoError;
+        if (evoError && !isMissingColumnError(evoError)) throw evoError;
 
         const { data: consultasData, error: consError } = await supabaseClient
             .from('consultas')
             .select('*')
             .eq('user_id', userId);
-        if (consError && consError.code !== '42703' && consError.code !== 'PGRST116') throw consError;
+        if (consError && !isMissingColumnError(consError)) throw consError;
 
         const { data: avaliacoesData, error: avError } = await supabaseClient
             .from('avaliacoes')
             .select('*')
             .eq('user_id', userId);
-        if (avError && avError.code !== '42703' && avError.code !== 'PGRST116') throw avError;
+        if (avError && !isMissingColumnError(avError)) throw avError;
 
         const { data: resultadosData, error: resError } = await supabaseClient
             .from('resultados_avaliacoes')
             .select('*')
             .eq('user_id', userId);
-        if (resError && resError.code !== '42703' && resError.code !== 'PGRST116') throw resError;
+        if (resError && !isMissingColumnError(resError)) throw resError;
 
         const { data: escolaData, error: escError } = await supabaseClient
             .from('escola')
             .select('*')
             .eq('user_id', userId);
-        if (escError && escError.code !== '42703' && escError.code !== 'PGRST116') throw escError;
+        if (escError && !isMissingColumnError(escError)) throw escError;
 
         const { data: registrosEscolaData, error: regError } = await supabaseClient
             .from('registros_escola')
             .select('*')
             .eq('user_id', userId);
-        if (regError && regError.code !== '42703' && regError.code !== 'PGRST116') throw regError;
+        if (regError && !isMissingColumnError(regError)) throw regError;
 
         const { data: agendaData, error: agendaError } = await supabaseClient
             .from('agenda')
@@ -748,50 +931,70 @@ async function loadDataFromSupabase() {
             .select('*')
             .eq('user_id', userId)
             .order('data', { ascending: false });
-        if (obsError && obsError.code !== '42703' && obsError.code !== 'PGRST116') throw obsError;
+        if (obsError && !isMissingColumnError(obsError)) throw obsError;
 
         const { data: evoProfData, error: evoProfError } = await supabaseClient
             .from('evolucoes_professor')
             .select('*')
             .eq('user_id', userId)
             .order('data', { ascending: false });
-        if (evoProfError && evoProfError.code !== '42703' && evoProfError.code !== 'PGRST116') throw evoProfError;
+        if (evoProfError && !isMissingColumnError(evoProfError)) throw evoProfError;
 
-        const result = {
-            session: true,
-            professor: professorData || {
-                nome: "Professor ASAS",
-                especialidade: "Psicopedagogia Clínica",
-                bio: "Profissional dedicado ao desenvolvimento acadêmico, emocional e cognitivo.",
-                foto: "",
-                observacoes: obsProfData || [],
-                evolucoesPessoais: evoProfData || [],
-                configuracoes: { notificacoes: true, tema: "claro", lembretes: true }
-            },
-            alunos: alunosData || [],
-            agenda: agendaData || [],
-            transacoes: transacoesData || [],
-            clinicalAlerts: alertasData || []
-        };
+        // Normaliza todos os dados do banco para o formato da memória
+        const alunosNormalizados = (alunosData || []).map(mapAlunoFromDB);
+        const evolucoesNorm = (evolucoesData || []).map(mapEvolucaoFromDB);
+        const consultasNorm = (consultasData || []).map(mapConsultaFromDB);
+        const avaliacoesNorm = (avaliacoesData || []).map(mapAvaliacaoFromDB);
+        const resultadosNorm = (resultadosData || []).map(mapResultadoFromDB);
+        const escolasNorm = (escolaData || []).map(mapEscolaFromDB);
+        const registrosEscolaNorm = (registrosEscolaData || []).map(mapRegistroEscolaFromDB);
 
-        result.alunos.forEach(aluno => {
-            aluno.evolucoes = evolucoesData?.filter(e => e.aluno_id === aluno.id) || [];
-            aluno.consultas = consultasData?.filter(c => c.aluno_id === aluno.id) || [];
-            aluno.avaliacoes = avaliacoesData?.filter(a => a.aluno_id === aluno.id) || [];
+        // Reconstrói as relações aluno -> sub-estruturas
+        alunosNormalizados.forEach(aluno => {
+            aluno.evolucoes = evolucoesNorm.filter(e => e.aluno_id === aluno.id);
+            aluno.consultas = consultasNorm.filter(c => c.aluno_id === aluno.id);
+            aluno.avaliacoes = avaliacoesNorm.filter(a => a.aluno_id === aluno.id);
             aluno.avaliacoes.forEach(av => {
-                av.resultados = resultadosData?.filter(r => r.avaliacao_id === av.id) || [];
+                av.resultados = resultadosNorm.filter(r => r.avaliacao_id === av.id);
             });
-            const escola = escolaData?.find(e => e.aluno_id === aluno.id);
-            if (escola) {
+            const esc = escolasNorm.find(e => e.aluno_id === aluno.id);
+            if (esc) {
                 aluno.escola = {
-                    ...escola,
-                    registros: registrosEscolaData?.filter(r => r.escola_id === escola.id) || []
+                    id: esc.id,
+                    aluno_id: esc.aluno_id,
+                    nome: esc.nome || '',
+                    professores: esc.professores || '',
+                    registros: registrosEscolaNorm.filter(r => r.escola_id === esc.id)
                 };
             } else {
                 aluno.escola = { nome: '', professores: '', registros: [] };
             }
             ensureStudentModules(aluno);
         });
+
+        const professorNormalizado = professorData
+            ? mapProfessorFromDB(professorData)
+            : {
+                nome: "Professor ASAS",
+                especialidade: "Psicopedagogia Clínica",
+                bio: "Profissional dedicado ao desenvolvimento acadêmico, emocional e cognitivo.",
+                foto: "",
+                observacoes: [],
+                evolucoesPessoais: [],
+                configuracoes: { notificacoes: true, tema: "claro", lembretes: true }
+            };
+
+        if (obsProfData) professorNormalizado.observacoes = obsProfData.map(mapObsProfFromDB);
+        if (evoProfData) professorNormalizado.evolucoesPessoais = evoProfData.map(mapEvoProfFromDB);
+
+        const result = {
+            session: true,
+            professor: professorNormalizado,
+            alunos: alunosNormalizados,
+            agenda: (agendaData || []).map(mapAgendaFromDB),
+            transacoes: (transacoesData || []).map(mapTransacaoFromDB),
+            clinicalAlerts: (alertasData || []).map(mapAlertaFromDB)
+        };
 
         isDataLoaded = true;
         return result;
@@ -803,34 +1006,52 @@ async function loadDataFromSupabase() {
 }
 
 // ============================================================
-// FUNÇÕES SUPABASE - SAVE (CORRIGIDAS)
+// FUNÇÕES SUPABASE - SAVE (com tratamento de erro por coluna)
 // ============================================================
+
+// Helper: remove chaves que causaram erro de coluna inexistente e tenta de novo
+async function upsertSafe(tableName, payload, selectSingle = true) {
+    let attempt = { ...payload };
+    for (let i = 0; i < 4; i++) {
+        let res = await supabaseClient.from(tableName).upsert(attempt);
+        if (selectSingle) res = res.select().single();
+        else res = res.select();
+        const { data, error } = await res;
+        if (!error) return data;
+        // erro de coluna inexistente: remove a coluna e tenta de novo
+        if (error && (error.code === '42703' || /could not find the column/i.test(error.message || ''))) {
+            const m = (error.message || '').match(/column "([^"]+)"/i) || (error.message || '').match(/([^"]+).*does not exist/i);
+            const col = m ? m[1] : null;
+            if (col && col in attempt) {
+                delete attempt[col];
+                continue;
+            }
+        }
+        // outros erros: propaga
+        throw error;
+    }
+    return null;
+}
 
 async function saveAluno(aluno) {
     try {
         const userId = await getUserId();
         const id = ensureValidUUID(aluno.id);
-        
-        const { data, error } = await supabaseClient
-            .from('alunos')
-            .upsert({
-                id: id,
-                user_id: userId,
-                nome: aluno.nome,
-                idade: aluno.idade || 0,
-                serie: aluno.serie || '',
-                responsavel: aluno.responsavel || '',
-                telefone: aluno.telefone || '',
-                valor: aluno.valor || 0,
-                foto: aluno.foto || '',
-                tags: aluno.tags || [],
-                observacoes: aluno.observacoes || '',
-                ativo: aluno.ativo !== false,
-                updated_at: new Date().toISOString()
-            })
-            .select()
-            .single();
-        if (error) throw error;
+        const data = await upsertSafe('alunos', {
+            id: id,
+            user_id: userId,
+            nome: aluno.nome,
+            idade: aluno.idade || 0,
+            serie: aluno.serie || '',
+            responsavel: aluno.responsavel || '',
+            telefone: aluno.telefone || '',
+            valor: aluno.valor || 0,
+            foto: aluno.foto || '',
+            tags: aluno.tags || [],
+            observacoes: aluno.observacoes || '',
+            ativo: aluno.ativo !== false,
+            updated_at: new Date().toISOString()
+        });
         return data;
     } catch (error) {
         console.error('Erro ao salvar aluno:', error);
@@ -842,20 +1063,14 @@ async function saveEvolucao(evolucao) {
     try {
         const userId = await getUserId();
         const id = ensureValidUUID(evolucao.id);
-        
-        const { data, error } = await supabaseClient
-            .from('evolucoes')
-            .upsert({
-                id: id,
-                user_id: userId,
-                aluno_id: evolucao.aluno_id,
-                titulo: evolucao.titulo || 'Evolução',
-                texto: evolucao.texto,
-                data: evolucao.data || today()
-            })
-            .select()
-            .single();
-        if (error) throw error;
+        const data = await upsertSafe('evolucoes', {
+            id: id,
+            user_id: userId,
+            aluno_id: evolucao.aluno_id,
+            titulo: evolucao.titulo || 'Evolução',
+            texto: evolucao.texto,
+            data: evolucao.data || today()
+        });
         return data;
     } catch (error) {
         console.error('Erro ao salvar evolução:', error);
@@ -867,23 +1082,17 @@ async function saveConsulta(consulta) {
     try {
         const userId = await getUserId();
         const id = ensureValidUUID(consulta.id);
-        
-        const { data, error } = await supabaseClient
-            .from('consultas')
-            .upsert({
-                id: id,
-                user_id: userId,
-                aluno_id: consulta.aluno_id,
-                data: consulta.data || today(),
-                observacoes: consulta.observacoes || '',
-                acoes: consulta.acoes || '',
-                pais: consulta.pais || '',
-                solicitacoes: consulta.solicitacoes || '',
-                comportamentos: consulta.comportamentos || {}
-            })
-            .select()
-            .single();
-        if (error) throw error;
+        const data = await upsertSafe('consultas', {
+            id: id,
+            user_id: userId,
+            aluno_id: consulta.aluno_id,
+            data: consulta.data || today(),
+            observacoes: consulta.observacoes || '',
+            acoes: consulta.acoes || '',
+            pais: consulta.pais || '',
+            solicitacoes: consulta.solicitacoes || '',
+            comportamentos: consulta.comportamentos || {}
+        });
         return data;
     } catch (error) {
         console.error('Erro ao salvar consulta:', error);
@@ -895,22 +1104,16 @@ async function saveAvaliacao(avaliacao) {
     try {
         const userId = await getUserId();
         const id = ensureValidUUID(avaliacao.id);
-        
-        const { data, error } = await supabaseClient
-            .from('avaliacoes')
-            .upsert({
-                id: id,
-                user_id: userId,
-                aluno_id: avaliacao.aluno_id,
-                data: avaliacao.data || today(),
-                titulo: avaliacao.titulo,
-                objetivo: avaliacao.objetivo || '',
-                questoes: avaliacao.questoes || [],
-                finalizada: avaliacao.finalizada || false
-            })
-            .select()
-            .single();
-        if (error) throw error;
+        const data = await upsertSafe('avaliacoes', {
+            id: id,
+            user_id: userId,
+            aluno_id: avaliacao.aluno_id,
+            data: avaliacao.data || today(),
+            titulo: avaliacao.titulo,
+            objetivo: avaliacao.objetivo || '',
+            questoes: avaliacao.questoes || [],
+            finalizada: avaliacao.finalizada || false
+        });
         return data;
     } catch (error) {
         console.error('Erro ao salvar avaliação:', error);
@@ -922,20 +1125,14 @@ async function saveResultadoAvaliacao(resultado) {
     try {
         const userId = await getUserId();
         const id = ensureValidUUID(resultado.id);
-        
-        const { data, error } = await supabaseClient
-            .from('resultados_avaliacoes')
-            .upsert({
-                id: id,
-                user_id: userId,
-                avaliacao_id: resultado.avaliacao_id,
-                data: resultado.data || today(),
-                respostas: resultado.respostas || [],
-                resumo: resultado.resumo || ''
-            })
-            .select()
-            .single();
-        if (error) throw error;
+        const data = await upsertSafe('resultados_avaliacoes', {
+            id: id,
+            user_id: userId,
+            avaliacao_id: resultado.avaliacao_id,
+            data: resultado.data || today(),
+            respostas: resultado.respostas || [],
+            resumo: resultado.resumo || ''
+        });
         return data;
     } catch (error) {
         console.error('Erro ao salvar resultado:', error);
@@ -947,20 +1144,14 @@ async function saveEscola(escola) {
     try {
         const userId = await getUserId();
         const id = ensureValidUUID(escola.id);
-        
-        const { data, error } = await supabaseClient
-            .from('escola')
-            .upsert({
-                id: id,
-                user_id: userId,
-                aluno_id: escola.aluno_id,
-                nome: escola.nome || '',
-                professores: escola.professores || '',
-                updated_at: new Date().toISOString()
-            })
-            .select()
-            .single();
-        if (error) throw error;
+        const data = await upsertSafe('escola', {
+            id: id,
+            user_id: userId,
+            aluno_id: escola.aluno_id,
+            nome: escola.nome || '',
+            professores: escola.professores || '',
+            updated_at: new Date().toISOString()
+        });
         return data;
     } catch (error) {
         console.error('Erro ao salvar escola:', error);
@@ -972,22 +1163,16 @@ async function saveRegistroEscola(registro) {
     try {
         const userId = await getUserId();
         const id = ensureValidUUID(registro.id);
-        
-        const { data, error } = await supabaseClient
-            .from('registros_escola')
-            .upsert({
-                id: id,
-                user_id: userId,
-                escola_id: registro.escola_id,
-                data: registro.data || today(),
-                contato: registro.contato || '',
-                tipo: registro.tipo || 'Conversa',
-                assunto: registro.assunto || '',
-                relato: registro.relato
-            })
-            .select()
-            .single();
-        if (error) throw error;
+        const data = await upsertSafe('registros_escola', {
+            id: id,
+            user_id: userId,
+            escola_id: registro.escola_id,
+            data: registro.data || today(),
+            contato: registro.contato || '',
+            tipo: registro.tipo || 'Conversa',
+            assunto: registro.assunto || '',
+            relato: registro.relato
+        });
         return data;
     } catch (error) {
         console.error('Erro ao salvar registro escolar:', error);
@@ -995,40 +1180,40 @@ async function saveRegistroEscola(registro) {
     }
 }
 
+async function deleteRegistroEscolaDB(id) {
+    try {
+        const { error } = await supabaseClient.from('registros_escola').delete().eq('id', id);
+        if (error) throw error;
+        return true;
+    } catch (error) {
+        console.error('Erro ao excluir registro escolar:', error);
+        return false;
+    }
+}
+
 async function saveAgendaItem(item) {
     try {
         const userId = await getUserId();
         const id = ensureValidUUID(item.id);
-        
-        // Verificar se o aluno existe
-        if (!item.alunoId) {
-            console.warn('Aluno ID não informado para o agendamento:', item);
-            return null;
-        }
-        
+
         const aluno = getStudent(item.alunoId);
         if (!aluno) {
             console.warn('Aluno não encontrado para o agendamento:', item.alunoId);
             return null;
         }
-        
-        const { data, error } = await supabaseClient
-            .from('agenda')
-            .upsert({
-                id: id,
-                user_id: userId,
-                aluno_id: item.alunoId,
-                data: item.data,
-                hora: item.hora,
-                tipo: item.tipo,
-                status: item.status || 'agendado',
-                presente: item.presente || false,
-                pago: item.pago || false,
-                updated_at: new Date().toISOString()
-            })
-            .select()
-            .single();
-        if (error) throw error;
+
+        const data = await upsertSafe('agenda', {
+            id: id,
+            user_id: userId,
+            aluno_id: item.alunoId,
+            data: item.data,
+            hora: item.hora,
+            tipo: item.tipo,
+            status: item.status || 'agendado',
+            presente: item.presente || false,
+            pago: item.pago || false,
+            updated_at: new Date().toISOString()
+        });
         return data;
     } catch (error) {
         console.error('Erro ao salvar agenda:', error);
@@ -1036,25 +1221,30 @@ async function saveAgendaItem(item) {
     }
 }
 
+async function deleteAgendaItemDB(id) {
+    try {
+        const { error } = await supabaseClient.from('agenda').delete().eq('id', id);
+        if (error) throw error;
+        return true;
+    } catch (error) {
+        console.error('Erro ao excluir agendamento:', error);
+        return false;
+    }
+}
+
 async function saveTransacao(transacao) {
     try {
         const userId = await getUserId();
         const id = ensureValidUUID(transacao.id);
-        
-        const { data, error } = await supabaseClient
-            .from('transacoes')
-            .upsert({
-                id: id,
-                user_id: userId,
-                agenda_id: transacao.agenda_id || null,
-                aluno_id: transacao.aluno_id,
-                data: transacao.data || today(),
-                descricao: transacao.descricao || '',
-                valor: transacao.valor
-            })
-            .select()
-            .single();
-        if (error) throw error;
+        const data = await upsertSafe('transacoes', {
+            id: id,
+            user_id: userId,
+            agenda_id: transacao.agendaId || null,
+            aluno_id: transacao.alunoId,
+            data: transacao.data || today(),
+            descricao: transacao.descricao || '',
+            valor: transacao.valor
+        });
         return data;
     } catch (error) {
         console.error('Erro ao salvar transação:', error);
@@ -1062,28 +1252,33 @@ async function saveTransacao(transacao) {
     }
 }
 
+async function deleteTransacaoDB(id) {
+    try {
+        const { error } = await supabaseClient.from('transacoes').delete().eq('id', id);
+        if (error) throw error;
+        return true;
+    } catch (error) {
+        console.error('Erro ao excluir transação:', error);
+        return false;
+    }
+}
+
 async function saveAlertaClinico(alerta) {
     try {
         const userId = await getUserId();
         const id = ensureValidUUID(alerta.id);
-        
-        const { data, error } = await supabaseClient
-            .from('alertas_clinicos')
-            .upsert({
-                id: id,
-                user_id: userId,
-                student_id: alerta.student_id,
-                evolution_id: alerta.evolution_id || null,
-                title: alerta.title || 'Alerta clínico',
-                text: alerta.text || '',
-                status: alerta.status || 'active',
-                created_at: alerta.created_at || today(),
-                resolved_at: alerta.resolved_at || null,
-                key: alerta.key || alerta.id
-            })
-            .select()
-            .single();
-        if (error) throw error;
+        const data = await upsertSafe('alertas_clinicos', {
+            id: id,
+            user_id: userId,
+            student_id: alerta.student_id,
+            evolution_id: alerta.evolution_id || null,
+            title: alerta.title || 'Alerta clínico',
+            text: alerta.text || '',
+            status: alerta.status || 'active',
+            created_at: alerta.created_at || today(),
+            resolved_at: alerta.resolved_at || null,
+            key: alerta.key || alerta.id
+        });
         return data;
     } catch (error) {
         console.error('Erro ao salvar alerta:', error);
@@ -1095,19 +1290,13 @@ async function saveObservacaoProfessor(obs) {
     try {
         const userId = await getUserId();
         const id = ensureValidUUID(obs.id);
-        
-        const { data, error } = await supabaseClient
-            .from('observacoes_professor')
-            .upsert({
-                id: id,
-                user_id: userId,
-                titulo: obs.titulo || 'Observação',
-                texto: obs.texto,
-                data: obs.data || today()
-            })
-            .select()
-            .single();
-        if (error) throw error;
+        const data = await upsertSafe('observacoes_professor', {
+            id: id,
+            user_id: userId,
+            titulo: obs.titulo || 'Observação',
+            texto: obs.texto,
+            data: obs.data || today()
+        });
         return data;
     } catch (error) {
         console.error('Erro ao salvar observação:', error);
@@ -1119,19 +1308,13 @@ async function saveEvolucaoProfessor(evo) {
     try {
         const userId = await getUserId();
         const id = ensureValidUUID(evo.id);
-        
-        const { data, error } = await supabaseClient
-            .from('evolucoes_professor')
-            .upsert({
-                id: id,
-                user_id: userId,
-                titulo: evo.titulo || 'Evolução pessoal',
-                texto: evo.texto,
-                data: evo.data || today()
-            })
-            .select()
-            .single();
-        if (error) throw error;
+        const data = await upsertSafe('evolucoes_professor', {
+            id: id,
+            user_id: userId,
+            titulo: evo.titulo || 'Evolução pessoal',
+            texto: evo.texto,
+            data: evo.data || today()
+        });
         return data;
     } catch (error) {
         console.error('Erro ao salvar evolução:', error);
@@ -1143,23 +1326,17 @@ async function saveProfessor(professor) {
     try {
         const userId = await getUserId();
         const id = ensureValidUUID(professor.id || userId);
-        
-        const { data, error } = await supabaseClient
-            .from('professores')
-            .upsert({
-                id: id,
-                user_id: userId,
-                nome: professor.nome,
-                especialidade: professor.especialidade || '',
-                bio: professor.bio || '',
-                foto: professor.foto || '',
-                config_notificacoes: professor.configuracoes?.notificacoes !== false,
-                config_lembretes: professor.configuracoes?.lembretes !== false,
-                updated_at: new Date().toISOString()
-            })
-            .select()
-            .single();
-        if (error) throw error;
+        const data = await upsertSafe('professores', {
+            id: id,
+            user_id: userId,
+            nome: professor.nome,
+            especialidade: professor.especialidade || '',
+            bio: professor.bio || '',
+            foto: professor.foto || '',
+            config_notificacoes: professor.configuracoes?.notificacoes !== false,
+            config_lembretes: professor.configuracoes?.lembretes !== false,
+            updated_at: new Date().toISOString()
+        });
         return data;
     } catch (error) {
         console.error('Erro ao salvar professor:', error);
@@ -1189,15 +1366,15 @@ async function loadData() {
 
 async function saveData() {
     if (isSaving) return false;
-    
+
     const isLoggedIn = await checkSession();
     if (!isLoggedIn) {
         console.warn('Usuário não está logado, dados não salvos.');
         return false;
     }
-    
+
     isSaving = true;
-    
+
     try {
         if (data.professor) await saveProfessor(data.professor);
 
@@ -1224,37 +1401,34 @@ async function saveData() {
                     nome: aluno.escola.nome || '',
                     professores: aluno.escola.professores || ''
                 });
-                if (savedEscola && aluno.escola.registros) {
+                if (savedEscola) {
+                    // mantém o id retornado pelo banco no objeto em memória
+                    aluno.escola.id = savedEscola.id;
+                }
+                if (aluno.escola.registros) {
                     for (const reg of aluno.escola.registros) {
-                        await saveRegistroEscola({ ...reg, escola_id: savedEscola.id });
+                        await saveRegistroEscola({ ...reg, escola_id: aluno.escola.id });
                     }
                 }
             }
         }
 
-        // SALVAR AGENDAMENTOS - VERIFICANDO SE TÊM ALUNO VÁLIDO
         for (const item of (data.agenda || [])) {
-            // Verificar se o aluno existe antes de salvar
-            const aluno = getStudent(item.alunoId);
-            if (aluno) {
-                await saveAgendaItem(item);
-            } else {
-                console.warn('Agendamento ignorado - aluno não encontrado:', item);
-            }
+            await saveAgendaItem(item);
         }
-        
+
         for (const trans of (data.transacoes || [])) {
             await saveTransacao(trans);
         }
-        
+
         for (const alerta of (data.clinicalAlerts || [])) {
             await saveAlertaClinico(alerta);
         }
-        
+
         for (const obs of (data.professor?.observacoes || [])) {
             await saveObservacaoProfessor(obs);
         }
-        
+
         for (const evo of (data.professor?.evolucoesPessoais || [])) {
             await saveEvolucaoProfessor(evo);
         }
@@ -1311,7 +1485,7 @@ function renderPage() {
         });
         return;
     }
-    
+
     if (currentPage === "dashboard") renderDashboard();
     if (currentPage === "alunos") renderAlunos();
     if (currentPage === "agenda") renderAgenda();
@@ -1361,7 +1535,7 @@ async function login() {
                 data.session = true;
                 isDataLoaded = false;
             }
-            
+
             document.getElementById("loginScreen").style.display = "none";
             document.getElementById("app").style.display = "flex";
 
@@ -1381,33 +1555,36 @@ async function logout() {
             const saved = await saveData();
             if (saved) {
                 console.log('✅ Dados salvos com sucesso antes do logout');
+            } else {
+                console.warn('⚠️ Falha ao salvar dados, mas continuando logout');
             }
         } catch (error) {
             console.error('Erro ao salvar dados:', error);
         }
     }
-    
+
     try {
         await supabaseClient.auth.signOut();
     } catch (error) {
         console.warn('Erro no logout do Supabase:', error);
     }
-    
+
+    data = defaultData();
     data.session = false;
     isDataLoaded = false;
     currentUserId = null;
     currentStudent = null;
     currentPage = "dashboard";
-    
+
     document.getElementById("app").style.display = "none";
     document.getElementById("loginScreen").style.display = "grid";
     document.getElementById("loginPass").value = "";
-    
+
     document.querySelectorAll(".view").forEach(view => {
         view.innerHTML = '';
         view.classList.remove('active');
     });
-    
+
     const dashboardView = document.getElementById("page-dashboard");
     if (dashboardView) {
         dashboardView.classList.add('active');
@@ -1418,10 +1595,12 @@ async function logout() {
             </div>
         `;
     }
-    
+
     document.getElementById("topUserName").textContent = "";
-    document.getElementById("topAvatar").textContent = "?";
-    
+    const avatarEl = document.getElementById("topAvatar");
+    avatarEl.style.backgroundImage = "";
+    avatarEl.textContent = "?";
+
     notify("Logout realizado com sucesso!");
 }
 
@@ -1465,7 +1644,7 @@ function renderDashboard() {
     const done = monthDone();
     const rate = attendanceRate();
     const alerts = getClinicalAlerts();
-    
+
     const todays = activeAppointments()
         .filter(a => a.data === today())
         .filter(a => {
@@ -1482,7 +1661,7 @@ function renderDashboard() {
                 <div class="section-title">Bom dia, ${esc(data.professor?.nome?.split(" ")[0] || "Professor")}</div>
                 <div class="section-sub">Visão geral do seu trabalho clínico e pedagógico.</div>
             </div>
-            <button class="btn btn-primary" onclick="navigate('alunos');setTimeout(()=>document.getElementById('newStudentForm')?.scrollIntoView({behavior:'smooth'}),100)">
+            <button class="btn btn-primary" onclick="navigate('alunos');setTimeout(()=>{toggleStudentForm(true);},100)">
                 <i data-lucide="user-plus"></i>Novo aluno
             </button>
         </div>
@@ -1639,10 +1818,14 @@ function filterStudents() {
     `).join("");
 }
 
-function toggleStudentForm() {
+function toggleStudentForm(forceShow) {
     const f = document.getElementById("newStudentForm");
     if (!f) return;
-    f.style.display = f.style.display === "none" ? "block" : "none";
+    if (typeof forceShow === "boolean") {
+        f.style.display = forceShow ? "block" : "none";
+    } else {
+        f.style.display = f.style.display === "none" ? "block" : "none";
+    }
     if (f.style.display === "block") f.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
@@ -1665,8 +1848,10 @@ async function saveStudent() {
     };
 
     data.alunos.push(student);
+    ensureStudentModules(student);
     await saveData();
     notify("Aluno cadastrado com sucesso.");
+    toggleStudentForm(false);
     renderAlunos();
 }
 
@@ -1680,13 +1865,18 @@ function openStudent(id) {
     document.getElementById("page-prontuario").classList.add("active");
     document.querySelectorAll(".nav button").forEach(x => x.classList.remove("active"));
     document.getElementById("pageTitle").innerHTML = `<i data-lucide="notebook-tabs"></i>Prontuário`;
+    studentSectionPage = { overview: 1, avaliacoes: 1, escola: 1 };
     renderStudentProfile();
     lucide.createIcons();
 }
 
 function setStudentSectionPage(section, page) {
+    // descobre o modo atual a partir da seção
+    let mode = "overview";
+    if (section === "avaliacoes") mode = "avaliacoes";
+    else if (section === "escola") mode = "escola";
     studentSectionPage[section] = page;
-    renderStudentProfile(section);
+    renderStudentProfile(mode);
 }
 
 function renderStudentProfile(mode = "overview") {
@@ -1700,6 +1890,7 @@ function renderStudentProfile(mode = "overview") {
     const upcoming = activeAppointments().filter(a => a.alunoId === s.id && a.data >= today())
         .sort((a, b) => (a.data + a.hora).localeCompare(b.data + b.hora)).slice(0, 3);
 
+    // ===== MODO: visualização de consulta específica =====
     if (mode === "consulta") {
         const c = (s.consultas || []).find(x => x.id === currentConsultation);
         if (!c) { renderStudentProfile("overview"); return; }
@@ -1723,6 +1914,36 @@ function renderStudentProfile(mode = "overview") {
         return;
     }
 
+    // ===== MODO: aplicar avaliação (CORRIGIDO - antes não existia) =====
+    if (mode === "aplicar") {
+        const a = s.avaliacoes.find(x => x.id === currentAssessment);
+        if (!a) { renderStudentProfile("avaliacoes"); return; }
+        document.getElementById("page-prontuario").innerHTML = `
+            <button class="btn btn-outline btn-sm" onclick="renderStudentProfile('avaliacoes')" style="margin-bottom:14px"><i data-lucide="arrow-left"></i>Voltar para avaliações</button>
+            <div class="card" style="max-width:900px;margin:0 auto">
+                <div class="section-head"><div><div class="section-title">${esc(a.titulo)}</div><div class="section-sub">${fmtDate(a.data)} · Aplicação da avaliação · ${esc(s.nome)}</div></div></div>
+                ${a.objetivo ? `<div class="card" style="background:#fbfcfc;margin-bottom:14px"><div class="section-title">Objetivo</div><div style="font-size:12px;color:#596761;margin-top:6px">${esc(a.objetivo)}</div></div>` : ""}
+                <div class="card" style="background:#fbfcfc">
+                    <div class="section-title">Respostas do aluno</div>
+                    <div class="section-sub" style="margin-bottom:14px">Registre a resposta de cada questão/atividade.</div>
+                    ${(a.questoes || []).map((q, i) => `
+                        <div class="field" style="border-bottom:1px solid #f0f3f2;padding-bottom:12px">
+                            <div style="font-size:12px;font-weight:700;margin-bottom:6px">${q.numero}. ${esc(q.texto)}</div>
+                            <textarea id="resp_${i}" class="textarea" placeholder="Resposta do aluno..." style="min-height:60px"></textarea>
+                        </div>
+                    `).join("")}
+                    <div class="field"><label class="label">Resumo da aplicação</label><textarea id="avResumo" class="textarea" placeholder="Considerações, desempenho geral, observações..."></textarea></div>
+                    <div class="form-actions">
+                        <button class="btn btn-primary" onclick="saveAssessmentApplication()"><i data-lucide="save"></i>Registrar aplicação</button>
+                        <button class="btn btn-outline" onclick="renderStudentProfile('avaliacoes')">Cancelar</button>
+                    </div>
+                </div>
+            </div>`;
+        lucide.createIcons();
+        return;
+    }
+
+    // ===== CONTEÚDO DAS ABAS =====
     let content = "";
     if (mode === "edit") {
         content = `
@@ -1771,6 +1992,7 @@ function renderStudentProfile(mode = "overview") {
                 <div style="margin-top:20px"><div class="section-title">Histórico</div>${reg.slice.map(r => `<div class="evolution" style="margin-top:9px"><div style="display:flex;justify-content:space-between"><span class="evolution-date">${fmtDate(r.data)} · ${esc(r.tipo || "Contato")}</span><button style="border:0;background:none;color:#a3aea9" onclick="deleteSchoolRecord('${r.id}')">Excluir</button></div><div class="evolution-title">${esc(r.assunto || "Registro escolar")}</div><div class="evolution-text">${esc(r.relato)}</div></div>`).join("") || `<div class="empty">Nenhum contato registrado.</div>`}${reg.controls}</div>
             </div>`;
     } else {
+        // overview
         const p = studentPager(consultations, studentSectionPage.overview, 5, "setStudentSectionPage");
         content = `
             <div class="card">
@@ -1905,7 +2127,7 @@ async function createAssessment() {
 
     if (!titulo || !questoes.length) { notify("Informe o título e pelo menos uma questão."); return; }
 
-    s.avaliacoes.push({ id: uid(), data: today(), titulo, objetivo, questoes, resultados: [] });
+    s.avaliacoes.push({ id: uid(), data: today(), titulo, objetivo, questoes, resultados: [], finalizada: false });
     await saveData();
     notify("Avaliação criada.");
     renderStudentProfile("avaliacoes");
@@ -1951,6 +2173,7 @@ async function saveSchoolInfo() {
     if (!s) return;
     ensureStudentModules(s);
 
+    // mantém id e registros existentes
     s.escola.nome = document.getElementById("escNome")?.value.trim() || "";
     s.escola.professores = document.getElementById("escProf")?.value.trim() || "";
 
@@ -1986,7 +2209,10 @@ async function deleteSchoolRecord(id) {
     if (!s) return;
     ensureStudentModules(s);
 
+    if (!confirm("Excluir este registro escolar?")) return;
+
     s.escola.registros = s.escola.registros.filter(x => x.id !== id);
+    await deleteRegistroEscolaDB(id); // remove do banco
     await saveData();
     renderStudentProfile("escola");
     notify("Registro escolar removido.");
@@ -2177,19 +2403,15 @@ function renderDayPanel(day) {
         </div>`;
 }
 
-// ============================================================
-// SAVE APPOINTMENT - FUNÇÃO CORRIGIDA
-// ============================================================
-
 async function saveAppointment() {
     const alunoId = document.getElementById("agAluno").value;
     const dataValue = document.getElementById("agData").value;
     const hora = document.getElementById("agHora").value;
     const tipo = document.getElementById("agTipo").value;
 
-    if (!alunoId || !dataValue || !hora) { 
-        notify("Preencha aluno, data e horário."); 
-        return; 
+    if (!alunoId || !dataValue || !hora) {
+        notify("Preencha aluno, data e horário.");
+        return;
     }
 
     const aluno = getStudent(alunoId);
@@ -2199,9 +2421,9 @@ async function saveAppointment() {
     }
 
     const occupied = activeAppointments().some(a => a.data === dataValue && a.hora === hora);
-    if (occupied) { 
-        notify("Este horário já possui atendimento."); 
-        return; 
+    if (occupied) {
+        notify("Este horário já possui atendimento.");
+        return;
     }
 
     const newAppointment = {
@@ -2216,7 +2438,7 @@ async function saveAppointment() {
     };
 
     data.agenda.push(newAppointment);
-    
+
     const saved = await saveData();
     if (saved) {
         notify("Atendimento agendado com sucesso!");
@@ -2256,21 +2478,28 @@ async function togglePayment(id) {
 
     if (!a.pago) {
         a.pago = true;
-        data.transacoes.push({
+        const transacao = {
             id: uid(),
             data: a.data,
             agendaId: a.id,
             alunoId: s.id,
             descricao: `Sessão de ${s.nome}`,
             valor: Number(s.valor) || 0
-        });
+        };
+        data.transacoes.push(transacao);
+        await saveData();
         notify(`Pagamento de ${money(s.valor)} registrado.`);
     } else {
         a.pago = false;
+        const transacoesRemovidas = data.transacoes.filter(t => t.agendaId === a.id);
         data.transacoes = data.transacoes.filter(t => t.agendaId !== a.id);
+        // remove do banco também
+        for (const t of transacoesRemovidas) {
+            await deleteTransacaoDB(t.id);
+        }
+        await saveData();
         notify("Pagamento revertido.");
     }
-    await saveData();
     renderPage();
 }
 
@@ -2382,17 +2611,17 @@ function renderFinanceiro() {
     lucide.createIcons();
 }
 
-function setFinancePage(page) { 
-    financePage = page; 
-    renderFinanceiro(); 
+function setFinancePage(page) {
+    financePage = page;
+    renderFinanceiro();
 }
 
-function changeFinanceMonth(delta) { 
-    const d = new Date(financeYear, financeMonth + delta, 1); 
-    financeYear = d.getFullYear(); 
-    financeMonth = d.getMonth(); 
-    financePage = 1; 
-    renderFinanceiro(); 
+function changeFinanceMonth(delta) {
+    const d = new Date(financeYear, financeMonth + delta, 1);
+    financeYear = d.getFullYear();
+    financeMonth = d.getMonth();
+    financePage = 1;
+    renderFinanceiro();
 }
 
 // ============================================================
@@ -2420,12 +2649,12 @@ function renderRecibos() {
         <div class="card" style="margin-bottom:16px">
             <div class="section-title">Emitir Recibo de Pagamento</div>
             <div class="section-sub" style="margin-bottom:15px">Selecione o aluno e o período para gerar o recibo.</div>
-            
+
             <div class="form-grid">
                 <div class="field">
                     <label class="label">Aluno</label>
                     <select id="reciboAluno" class="select">
-                        ${(data.alunos || []).filter(a => a.ativo !== false).map(a => 
+                        ${(data.alunos || []).filter(a => a.ativo !== false).map(a =>
                             `<option value="${a.id}">${esc(a.nome)}</option>`
                         ).join("")}
                     </select>
@@ -2433,7 +2662,7 @@ function renderRecibos() {
                 <div class="field">
                     <label class="label">Mês</label>
                     <select id="reciboMes" class="select">
-                        ${['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'].map((m, i) => 
+                        ${['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'].map((m, i) =>
                             `<option value="${i+1}" ${i === new Date().getMonth() ? 'selected' : ''}>${m}</option>`
                         ).join("")}
                     </select>
@@ -2441,7 +2670,7 @@ function renderRecibos() {
                 <div class="field">
                     <label class="label">Ano</label>
                     <select id="reciboAno" class="select">
-                        ${[new Date().getFullYear() - 1, new Date().getFullYear(), new Date().getFullYear() + 1].map(a => 
+                        ${[new Date().getFullYear() - 1, new Date().getFullYear(), new Date().getFullYear() + 1].map(a =>
                             `<option value="${a}" ${a === new Date().getFullYear() ? 'selected' : ''}>${a}</option>`
                         ).join("")}
                     </select>
@@ -2483,64 +2712,63 @@ function gerarRecibo() {
     const alunoId = document.getElementById('reciboAluno').value;
     const mes = parseInt(document.getElementById('reciboMes').value);
     const ano = parseInt(document.getElementById('reciboAno').value);
-    
+
     const aluno = getStudent(alunoId);
     if (!aluno) { notify("Aluno não encontrado."); return; }
-    
+
     const transacoes = (data.transacoes || []).filter(t => {
         const d = parseDate(t.data);
         return t.alunoId === alunoId && d.getMonth() + 1 === mes && d.getFullYear() === ano;
     });
-    
+
     if (!transacoes.length) {
         notify("Nenhum pagamento encontrado para este período.");
         return;
     }
-    
+
     const total = transacoes.reduce((s, t) => s + Number(t.valor), 0);
     const mesNome = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'][mes - 1];
-    
+
     const doc = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4' });
     const pageW = doc.internal.pageSize.getWidth();
     let y = 25;
-    
+
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(20);
     doc.text('RECIBO DE PAGAMENTO', pageW / 2, y, { align: 'center' });
     y += 12;
-    
+
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(11);
     doc.text(`Nº: ${String(Date.now()).slice(-6)}`, 20, y);
     doc.text(`Data: ${fmtDate(today())}`, pageW - 50, y);
     y += 10;
-    
+
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(14);
     doc.text('INSTITUIÇÃO ASAS', 20, y);
     y += 8;
-    
+
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(11);
     doc.text(`Recebi(emos) de ${esc(aluno.responsavel || 'Responsável')}`, 20, y);
     y += 7;
-    doc.text(`a importância de ${money(total)} (${numeroPorExtenso(total)})`, 20, y);
-    y += 7;
-    doc.text(`referente a ${transacoes.length} sessão(ões) de acompanhamento do(a) aluno(a) ${esc(aluno.nome)}`, 20, y);
-    y += 7;
-    doc.text(`no período de ${mesNome}/${ano}.`, 20, y);
-    y += 15;
-    
+    const linhasValor = doc.splitTextToSize(`a importância de ${money(total)} (${numeroPorExtenso(total)})`, pageW - 40);
+    linhasValor.forEach(l => { doc.text(l, 20, y); y += 6; });
+    const linhasRef = doc.splitTextToSize(`referente a ${transacoes.length} sessão(ões) de acompanhamento do(a) aluno(a) ${esc(aluno.nome)} no período de ${mesNome}/${ano}.`, pageW - 40);
+    linhasRef.forEach(l => { doc.text(l, 20, y); y += 6; });
+    y += 10;
+
     doc.text('________________________________________', 40, y);
     y += 5;
     doc.text(esc(data.professor?.nome || 'Professor'), 40, y);
     y += 5;
     doc.text('Profissional Responsável', 40, y);
     y += 15;
-    
+
     doc.setFontSize(8);
     doc.text('Este recibo serve como comprovante de pagamento para fins educacionais e fiscais.', 20, y);
-    
+
     doc.save(`recibo-${aluno.nome}-${mesNome}-${ano}.pdf`);
     notify("Recibo gerado com sucesso!");
 }
@@ -2549,32 +2777,32 @@ function gerarDeclaracao() {
     const alunoId = document.getElementById('reciboAluno').value;
     const mes = parseInt(document.getElementById('reciboMes').value);
     const ano = parseInt(document.getElementById('reciboAno').value);
-    
+
     const aluno = getStudent(alunoId);
     if (!aluno) { notify("Aluno não encontrado."); return; }
-    
+
     const mesNome = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'][mes - 1];
-    
+
     const doc = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4' });
     const pageW = doc.internal.pageSize.getWidth();
     let y = 30;
-    
+
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(22);
     doc.text('DECLARAÇÃO DE ACOMPANHAMENTO', pageW / 2, y, { align: 'center' });
     y += 15;
-    
+
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(11);
     doc.text(`Declaro para os devidos fins que o(a) aluno(a) ${esc(aluno.nome)}`, 20, y);
     y += 8;
     doc.text(`realizou acompanhamento psicopedagógico no período de ${mesNome}/${ano}.`, 20, y);
     y += 10;
-    
+
     doc.setFont('helvetica', 'bold');
     doc.text('Informações do Aluno:', 20, y);
     y += 7;
-    
+
     doc.setFont('helvetica', 'normal');
     doc.text(`Nome: ${esc(aluno.nome)}`, 25, y);
     y += 6;
@@ -2584,76 +2812,80 @@ function gerarDeclaracao() {
     y += 6;
     doc.text(`Responsável: ${esc(aluno.responsavel || 'Não informado')}`, 25, y);
     y += 10;
-    
+
     doc.setFont('helvetica', 'bold');
     doc.text('Informações do Profissional:', 20, y);
     y += 7;
-    
+
     doc.setFont('helvetica', 'normal');
     doc.text(`Nome: ${esc(data.professor?.nome || 'Professor')}`, 25, y);
     y += 6;
     doc.text(`Especialidade: ${esc(data.professor?.especialidade || 'Psicopedagogia')}`, 25, y);
     y += 15;
-    
+
     doc.text('________________________________________', 40, y);
     y += 5;
     doc.text(esc(data.professor?.nome || 'Professor'), 40, y);
     y += 5;
     doc.text('Profissional Responsável', 40, y);
     y += 15;
-    
+
     doc.setFontSize(8);
     doc.text(`Documento emitido em ${fmtDate(today())} - ASAS Gestão Psicopedagógica`, 20, y);
-    
+
     doc.save(`declaracao-${aluno.nome}-${mesNome}-${ano}.pdf`);
     notify("Declaração gerada com sucesso!");
 }
 
-function numeroPorExtenso(valor) {
-    const unidades = ['zero', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove'];
+// CORRIGIDO: númeroPorExtensoSimples agora tem suas próprias tabelas (antes usava dezenas/centenas indefinidas)
+function numeroPorExtensoSimples(n) {
+    const unidades = ['', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove'];
+    const especiais = ['dez', 'onze', 'doze', 'treze', 'quatorze', 'quinze', 'dezesseis', 'dezessete', 'dezoito', 'dezenove'];
     const dezenas = ['', '', 'vinte', 'trinta', 'quarenta', 'cinquenta', 'sessenta', 'setenta', 'oitenta', 'noventa'];
     const centenas = ['', 'cento', 'duzentos', 'trezentos', 'quatrocentos', 'quinhentos', 'seiscentos', 'setecentos', 'oitocentos', 'novecentos'];
-    
-    const inteiro = Math.floor(valor);
-    const centavos = Math.round((valor - inteiro) * 100);
-    
-    if (inteiro === 0) return 'zero reais';
-    
-    let texto = '';
-    const milhares = Math.floor(inteiro / 1000);
-    const resto = inteiro % 1000;
-    
-    if (milhares > 0) {
-        texto += `${numeroPorExtensoSimples(milhares)} mil`;
-        if (resto > 0) texto += ' e ';
-    }
-    
-    texto += numeroPorExtensoSimples(resto);
-    texto += inteiro === 1 ? ' real' : ' reais';
-    
-    if (centavos > 0) {
-        texto += ` e ${centavos} centavo${centavos > 1 ? 's' : ''}`;
-    }
-    
-    return texto.charAt(0).toUpperCase() + texto.slice(1);
-}
 
-function numeroPorExtensoSimples(n) {
     if (n === 0) return '';
-    if (n < 10) return ['', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove'][n];
-    if (n < 20) return ['dez', 'onze', 'doze', 'treze', 'quatorze', 'quinze', 'dezesseis', 'dezessete', 'dezoito', 'dezenove'][n - 10];
+    if (n < 10) return unidades[n];
+    if (n < 20) return especiais[n - 10];
     if (n < 100) {
         const d = Math.floor(n / 10);
         const u = n % 10;
         return dezenas[d] + (u > 0 ? ` e ${numeroPorExtensoSimples(u)}` : '');
     }
+    if (n === 100) return 'cem';
     if (n < 1000) {
         const c = Math.floor(n / 100);
         const r = n % 100;
-        if (n === 100) return 'cem';
         return centenas[c] + (r > 0 ? ` e ${numeroPorExtensoSimples(r)}` : '');
     }
-    return '';
+    if (n < 1000000) {
+        const mil = Math.floor(n / 1000);
+        const r = n % 1000;
+        let txt = mil === 1 ? 'mil' : `${numeroPorExtensoSimples(mil)} mil`;
+        if (r > 0) txt += r < 100 ? ` e ${numeroPorExtensoSimples(r)}` : ` e ${numeroPorExtensoSimples(r)}`;
+        return txt;
+    }
+    return String(n);
+}
+
+function numeroPorExtenso(valor) {
+    const inteiro = Math.floor(valor);
+    const centavos = Math.round((valor - inteiro) * 100);
+
+    if (inteiro === 0 && centavos === 0) return 'Zero reais';
+
+    let texto = '';
+    if (inteiro > 0) {
+        texto = numeroPorExtensoSimples(inteiro);
+        texto += inteiro === 1 ? ' real' : ' reais';
+    }
+    if (centavos > 0) {
+        if (inteiro > 0) texto += ' e ';
+        texto += numeroPorExtensoSimples(centavos);
+        texto += centavos === 1 ? ' centavo' : ' centavos';
+    }
+
+    return texto.charAt(0).toUpperCase() + texto.slice(1);
 }
 
 // ============================================================
@@ -2673,13 +2905,13 @@ function renderPerfil() {
     const p = data.professor;
     if (!p) return;
 
-    const obsOrdenadas = (p.observacoes || []).slice().sort((a, b) => b.data?.localeCompare(a.data) || 0);
-    const evoOrdenadas = (p.evolucoesPessoais || []).slice().sort((a, b) => b.data?.localeCompare(a.data) || 0);
+    const obsOrdenadas = (p.observacoes || []).slice().sort((a, b) => (b.data || '').localeCompare(a.data || ''));
+    const evoOrdenadas = (p.evolucoesPessoais || []).slice().sort((a, b) => (b.data || '').localeCompare(a.data || ''));
 
     const timeline = [];
     obsOrdenadas.forEach(o => timeline.push({ ...o, tipo: 'observacao' }));
     evoOrdenadas.forEach(e => timeline.push({ ...e, tipo: 'evolucao' }));
-    timeline.sort((a, b) => b.data?.localeCompare(a.data) || 0);
+    timeline.sort((a, b) => (b.data || '').localeCompare(a.data || ''));
 
     const totalAlunos = (data.alunos || []).length;
     const totalAtendimentos = activeAppointments().length;
@@ -2916,7 +3148,7 @@ function generateStudentPDF(id) {
     para(s.observacoes || "Nenhuma observação registrada.");
 
     heading("Histórico de evolução");
-    const evs = (s.evolucoes || []).slice().sort((a, b) => a.data.localeCompare(b.data));
+    const evs = (s.evolucoes || []).slice().sort((a, b) => (a.data || '').localeCompare(b.data || ''));
     if (!evs.length) para("Nenhuma evolução registrada.");
     evs.forEach(e => {
         heading(`${fmtDate(e.data)} · ${e.titulo || "Registro"}`, 10);
@@ -2924,7 +3156,7 @@ function generateStudentPDF(id) {
     });
 
     heading("Comportamento observado nas consultas");
-    const br = s.consultas.slice().sort((a, b) => a.data.localeCompare(b.data));
+    const br = s.consultas.slice().sort((a, b) => (a.data || '').localeCompare(b.data || ''));
     if (!br.length) para("Nenhum registro de comportamento.");
     br.forEach(r => {
         heading(`Consulta de ${fmtDate(r.data)}`, 10);
@@ -2953,7 +3185,7 @@ function generateStudentPDF(id) {
     heading("Informações recebidas da escola");
     if (s.escola.nome) para(`Escola: ${s.escola.nome}`);
     if (s.escola.professores) para(`Equipe/professora: ${s.escola.professores}`);
-    const school = s.escola.registros.slice().sort((a, b) => a.data.localeCompare(b.data));
+    const school = s.escola.registros.slice().sort((a, b) => (a.data || '').localeCompare(b.data || ''));
     if (!school.length) para("Nenhum contato com a escola registrado.");
     school.forEach(r => {
         heading(`${fmtDate(r.data)} · ${r.tipo || "Contato"} · ${r.assunto || "Registro escolar"}`, 10);
@@ -2974,7 +3206,7 @@ function generateFinancePDF() {
     const monthTx = (data.transacoes || []).filter(t => {
         const d = parseDate(t.data);
         return d.getFullYear() === year && d.getMonth() === m;
-    }).sort((a, b) => (b.data + a.id).localeCompare(a.data + b.id));
+    }).sort((a, b) => (b.data || '').localeCompare(a.data || ''));
 
     const monthAppts = activeAppointments().filter(a => {
         const d = parseDate(a.data);
@@ -3056,13 +3288,15 @@ async function init() {
             data = loadedData;
             data.session = true;
             isDataLoaded = true;
+        } else {
+            data = defaultData();
         }
-        
+
         document.getElementById("loginScreen").style.display = "none";
         document.getElementById("app").style.display = "flex";
         updateUser();
         navigate("dashboard");
-        notify("Bem-vindo de volta!");
+        if (isDataLoaded) notify("Bem-vindo de volta!");
     } else {
         document.getElementById("loginScreen").style.display = "grid";
         document.getElementById("app").style.display = "none";
@@ -3121,6 +3355,12 @@ window.saveEvolucaoPessoal = saveEvolucaoPessoal;
 window.deletarRegistroPessoal = deletarRegistroPessoal;
 window.gerarRecibo = gerarRecibo;
 window.gerarDeclaracao = gerarDeclaracao;
+window.createAssessment = createAssessment;
+window.applyAssessment = applyAssessment;
+window.saveAssessmentApplication = saveAssessmentApplication;
+window.saveSchoolInfo = saveSchoolInfo;
+window.addSchoolRecord = addSchoolRecord;
+window.deleteSchoolRecord = deleteSchoolRecord;
 
 // ============================================================
 // INICIAR
