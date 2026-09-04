@@ -253,6 +253,45 @@ button{cursor:pointer}
  .profile-name{font-size:18px}
  .month-grid{min-width:620px}
 }
+
+/* ===== Ajuda contextual (barra inferior) ===== */
+.help-box{display:flex;gap:10px;align-items:flex-start;background:#f4f8f6;border:1px solid #d9e6e0;border-radius:14px;padding:13px 16px;margin-top:18px;font-size:12px;line-height:1.6;color:#5a6b64}
+.help-box i{flex-shrink:0}
+
+/* ===== Mini calendário lateral (financeiro) ===== */
+.finance-layout{display:grid;grid-template-columns:1fr 280px;gap:18px;align-items:start}
+.finance-side{position:sticky;top:10px}
+.mini-cal{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px}
+.mini-cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.mini-cal-head .mc-title{font-size:12px;font-weight:700;text-transform:capitalize;color:#4a5852}
+.mini-cal-head button{border:0;background:#f4f8f6;border-radius:8px;width:24px;height:24px;cursor:pointer;font-size:13px;color:#6b7a73;display:flex;align-items:center;justify-content:center}
+.mini-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.mini-cal-dow{font-size:8px;color:#a3aea9;text-align:center;padding:2px 0}
+.mini-cal-day{aspect-ratio:1;font-size:10px;display:flex;align-items:center;justify-content:center;border-radius:6px;cursor:default;color:#6b7a73;position:relative}
+.mini-cal-day.other{color:#d0d8d4}
+.mini-cal-day.today{background:var(--sage);color:#fff;font-weight:700}
+.mini-cal-day.has-event::after{content:"";position:absolute;bottom:2px;width:4px;height:4px;border-radius:50%;background:#e8a23d}
+.mini-cal-day.has-event.paid::after{background:var(--sage)}
+.mini-cal-day.has-event.pending::after{background:#e8a23d}
+.mini-cal-day.sel{outline:2px solid var(--sage);outline-offset:-2px}
+.side-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:12px}
+.side-card .sc-title{font-size:12px;font-weight:700;margin-bottom:8px;color:#4a5852}
+.side-card .sc-row{display:flex;justify-content:space-between;font-size:11px;padding:5px 0;border-bottom:1px solid #f0f3f2}
+.side-card .sc-row:last-child{border:0}
+.side-card .sc-row .sc-val{font-weight:700}
+
+/* ===== Tipos de avaliação (badges) ===== */
+.aval-type-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;background:#eaf3ee;color:#3d8a6b}
+.aval-type-badge.survey{background:#eef0f8;color:#5b63b3}
+.aval-type-badge.screening{background:#fef3e8;color:#b8732a}
+.aval-type-badge.anamnese{background:#e8f0fe;color:#3a6cb8}
+.aval-list-item{padding:14px 0;border-top:1px solid var(--line)}
+.aval-applied-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f5f7f6}
+.aval-applied-row:last-child{border:0}
+@media(max-width:950px){
+ .finance-layout{grid-template-columns:1fr}
+ .finance-side{position:static}
+}
 </style>
 <script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
 </head>
@@ -305,6 +344,9 @@ button{cursor:pointer}
     <button data-page="agenda">
       <i data-lucide="calendar-days"></i><span class="nav-label">Agenda</span>
     </button>
+    <button data-page="avaliacoes">
+      <i data-lucide="clipboard-check"></i><span class="nav-label">Avaliações</span>
+    </button>
     <button data-page="financeiro">
       <i data-lucide="wallet-cards"></i><span class="nav-label">Financeiro</span>
     </button>
@@ -340,6 +382,7 @@ button{cursor:pointer}
 <section id="page-dashboard" class="view active"></section>
 <section id="page-alunos" class="view"></section>
 <section id="page-agenda" class="view"></section>
+<section id="page-avaliacoes" class="view"></section>
 <section id="page-financeiro" class="view"></section>
 <section id="page-recibos" class="view"></section>
 <section id="page-perfil" class="view"></section>
@@ -656,6 +699,7 @@ function mapAvaliacaoFromDB(row) {
         aluno_id: row.aluno_id,
         data: row.data || today(),
         titulo: row.titulo || '',
+        tipo: row.tipo || 'custom',
         objetivo: row.objetivo || '',
         questoes: row.questoes || [],
         finalizada: row.finalizada || false,
@@ -715,7 +759,9 @@ function mapTransacaoFromDB(row) {
         agendaId: row.agenda_id || null,
         alunoId: row.aluno_id,
         descricao: row.descricao || '',
-        valor: row.valor || 0
+        valor: row.valor || 0,
+        tipo: row.tipo || 'receita',
+        categoria: row.categoria || ''
     };
 }
 
@@ -1114,6 +1160,7 @@ async function saveAvaliacao(avaliacao) {
             aluno_id: avaliacao.aluno_id,
             data: avaliacao.data || today(),
             titulo: avaliacao.titulo,
+            tipo: avaliacao.tipo || 'custom',
             objetivo: avaliacao.objetivo || '',
             questoes: avaliacao.questoes || [],
             finalizada: avaliacao.finalizada || false
@@ -1242,8 +1289,11 @@ async function deleteAgendaItemDB(id) {
 
 async function saveTransacao(transacao) {
     try {
-        // CORRIGIDO: pula transações órfãs (sem alunoId) silenciosamente.
-        if (!transacao || !transacao.alunoId) {
+        // CORRIGIDO: despesas (tipo='despesa') não exigem alunoId.
+        // Receitas (tipo='receita') pulam se órfãs (sem alunoId) silenciosamente.
+        const tipo = transacao.tipo || 'receita';
+        if (!transacao) return null;
+        if (tipo === 'receita' && !transacao.alunoId) {
             return null;
         }
         const userId = await getUserId();
@@ -1252,10 +1302,12 @@ async function saveTransacao(transacao) {
             id: id,
             user_id: userId,
             agenda_id: transacao.agendaId || null,
-            aluno_id: transacao.alunoId,
+            aluno_id: transacao.alunoId || null,
             data: transacao.data || today(),
             descricao: transacao.descricao || '',
-            valor: transacao.valor
+            valor: Number(transacao.valor) || 0,
+            tipo: tipo,
+            categoria: transacao.categoria || ''
         });
         return data;
     } catch (error) {
@@ -1434,7 +1486,11 @@ async function saveData() {
         // remove da memória os itens órfãos para nao persistirem indefinidamente
         if (data.agenda) data.agenda = validAgenda;
 
-        const validTrans = (data.transacoes || []).filter(t => t && t.alunoId && getStudent(t.alunoId));
+        const validTrans = (data.transacoes || []).filter(t => {
+            if (!t) return false;
+            if (t.tipo === 'despesa') return true; // despesas não precisam de alunoId
+            return t.alunoId && getStudent(t.alunoId);
+        });
         for (const trans of validTrans) {
             await saveTransacao(trans);
         }
@@ -1463,6 +1519,25 @@ async function saveData() {
 }
 
 // ============================================================
+// AJUDA CONTEXTUAL (barra inferior de cada pagina)
+// ============================================================
+const HELP_TEXTS = {
+    dashboard: "Bem-vindo ao ASAS! Aqui voce acompanha o resumo geral: total de alunos, atendimentos do mes, pendencias financeiras e alertas clinicos. Use o menu lateral para navegar entre os modulos. Cada aluno possui um prontuario completo com consultas, avaliacoes e contato com a escola.",
+    alunos: "Cadastre e gerencie seus alunos. Clique em um aluno para abrir o prontuario completo, onde voce registra consultas, aplica avaliacoes e mantem contato com a escola. Use o botao Novo Aluno para adicionar. O campo valor define quanto cada sessao custa para o financeiro.",
+    agenda: "Sua agenda de atendimentos. Clique em um horario vazio ou use Adicionar para agendar uma nova sessao. Marque presenca e pagamento diretamente nos botoes de cada atendimento. Navegue entre meses com as setas. Atendimentos cancelados nao aparecem na agenda ativa.",
+    avaliacoes: "A central de avaliacoes psicopedagogicas. Crie modelos de avaliacao (Anamnese, SNAP, M-CHAT-R, ASRS e outros) e aplique a qualquer aluno. No historico de cada avaliacao voce ve todos os alunos que aplicou, com data e resultados. As avaliacoes ficam tambem vinculadas ao prontuario do aluno.",
+    financeiro: "Controle financeiro completo: entradas (recebimentos de sessoes) e saidas (despesas). O dashboard mostra o saldo do mes, total recebido e total gasto. O calendario a direita exibe os atendimentos do mes. Adicione despesas com o botao Nova despesa. Use as setas para navegar entre meses.",
+    recibos: "Gere recibos de pagamento e declaracoes em PDF para seus alunos. Selecione o aluno, o mes de referencia e o tipo de documento. Os PDFs sao gerados automaticamente com seus dados profissionais e podem ser impressos ou enviados.",
+    perfil: "Suas informacoes profissionais: nome, especialidade, foto e bio. Configure notificacoes e lembretes. Os dados aparecem nos recibos e declaracoes gerados pelo sistema."
+};
+
+function renderHelpBox(page) {
+    const text = HELP_TEXTS[page] || "";
+    if (!text) return "";
+    return `<div class="help-box"><i data-lucide="info" style="flex-shrink:0;width:16px;height:16px;color:var(--sage);margin-top:1px"></i><div>${esc(text)}</div></div>`;
+}
+
+// ============================================================
 // NAVEGAÇÃO
 // ============================================================
 
@@ -1482,6 +1557,7 @@ function navigate(page) {
         dashboard: ["layout-dashboard", "Dashboard"],
         alunos: ["users", "Alunos"],
         agenda: ["calendar-days", "Agenda"],
+        avaliacoes: ["clipboard-check", "Avaliações"],
         financeiro: ["wallet-cards", "Financeiro"],
         recibos: ["file-text", "Recibos e Declarações"],
         perfil: ["user-round", "Meu Perfil"]
@@ -1508,6 +1584,7 @@ function renderPage() {
     if (currentPage === "dashboard") renderDashboard();
     if (currentPage === "alunos") renderAlunos();
     if (currentPage === "agenda") renderAgenda();
+    if (currentPage === "avaliacoes") renderAvaliacoes();
     if (currentPage === "financeiro") renderFinanceiro();
     if (currentPage === "recibos") renderRecibos();
     if (currentPage === "perfil") renderPerfil();
@@ -1751,6 +1828,7 @@ function renderDashboard() {
                 <button class="btn btn-outline btn-sm" onclick="navigate('alunos')" style="margin-top:8px">Ver todos</button>
             </div>
         </div>
+        ${renderHelpBox("dashboard")}
     `;
 }
 
@@ -1802,6 +1880,7 @@ function renderAlunos() {
         </div>
 
         <div id="studentGrid" class="student-grid"></div>
+        ${renderHelpBox("alunos")}
     `;
     filterStudents();
     lucide.createIcons();
@@ -2146,7 +2225,7 @@ async function createAssessment() {
 
     if (!titulo || !questoes.length) { notify("Informe o título e pelo menos uma questão."); return; }
 
-    s.avaliacoes.push({ id: uid(), data: today(), titulo, objetivo, questoes, resultados: [], finalizada: false });
+    s.avaliacoes.push({ id: uid(), data: today(), titulo, tipo: "custom", objetivo, questoes, resultados: [], finalizada: false });
     await saveData();
     notify("Avaliação criada.");
     renderStudentProfile("avaliacoes");
@@ -2290,6 +2369,7 @@ function renderAgenda() {
         </div>
 
         ${selectedDay && calendarMode === "month" ? renderDayPanel(selectedDay) : ""}
+        ${renderHelpBox("agenda")}
     `;
     lucide.createIcons();
 }
@@ -2503,7 +2583,9 @@ async function togglePayment(id) {
             agendaId: a.id,
             alunoId: s.id,
             descricao: `Sessão de ${s.nome}`,
-            valor: Number(s.valor) || 0
+            valor: Number(s.valor) || 0,
+            tipo: "receita",
+            categoria: "Sessão"
         };
         data.transacoes.push(transacao);
         await saveData();
@@ -2549,6 +2631,596 @@ function setCalendarMode(mode) {
 }
 
 // ============================================================
+// AVALIAÇÕES PSICOPEDAGÓGICAS (página dedicada)
+// ============================================================
+
+// --- Modelos de instrumentos psicopedagógicos ---
+// Cada modelo tem: id, nome, tipo, descricao, secao (para anamnese com blocos),
+// questoes (array de strings) OU campos (array de {rotulo, chave, tipo} para anamnese estruturada)
+const ASSESSMENT_TEMPLATES = [
+  {
+    id: "tpl_anamnese",
+    nome: "Anamnese Psicopedagógica",
+    tipo: "anamnese",
+    descricao: "Histórico completo: gestacional, nascimento, desenvolvimento, família, saúde, alimentação e seletividade.",
+    campos: [
+      { secao: "Dados de Identificação", itens: [
+        { rotulo: "Nome da criança", chave: "nome_crianca", tipo: "text" },
+        { rotulo: "Data de nascimento", chave: "dt_nascimento", tipo: "date" },
+        { rotulo: "Idade", chave: "idade", tipo: "text" },
+        { rotulo: "Escola", chave: "escola", tipo: "text" },
+        { rotulo: "Série", chave: "serie", tipo: "text" },
+        { rotulo: "Nome da mãe", chave: "nome_mae", tipo: "text" },
+        { rotulo: "Nome do pai", chave: "nome_pai", tipo: "text" },
+        { rotulo: "Profissão da mãe", chave: "profissao_mae", tipo: "text" },
+        { rotulo: "Profissão do pai", chave: "profissao_pai", tipo: "text" },
+        { rotulo: "Responsável pela criança", chave: "responsavel", tipo: "text" },
+        { rotulo: "Telefone", chave: "telefone", tipo: "text" },
+      ]},
+      { secao: "Histórico Gestacional e Nascimento", itens: [
+        { rotulo: "A gravidez foi planejada?", chave: "gravidez_planejada", tipo: "text" },
+        { rotulo: "Tipo de parto (normal/cesárea)", chave: "tipo_parto", tipo: "text" },
+        { rotulo: "Idade gestacional ao nascer", chave: "idade_gestacional", tipo: "text" },
+        { rotulo: "Peso ao nascer", chave: "peso_nascer", tipo: "text" },
+        { rotulo: "Complicações durante a gestação", chave: "complicacoes_gestacao", tipo: "textarea" },
+        { rotulo: "Complicações no parto", chave: "complicacoes_parto", tipo: "textarea" },
+        { rotulo: "Necessitou UTI neonatal?", chave: "uti_neonatal", tipo: "text" },
+        { rotulo: "Tempo de internação", chave: "tempo_internacao", tipo: "text" },
+      ]},
+      { secao: "Desenvolvimento Neuropsicomotor", itens: [
+        { rotulo: "Sustentou a cabeça (mês)", chave: "sustentou_cabeca", tipo: "text" },
+        { rotulo: "Sentou sem apoio (mês)", chave: "sentou_so", tipo: "text" },
+        { rotulo: "Engatinhou (mês)", chave: "engatinhou", tipo: "text" },
+        { rotulo: "Andou sozinho (mês)", chave: "andou_so", tipo: "text" },
+        { rotulo: "Primeiras palavras (mês)", chave: "primeiras_palavras", tipo: "text" },
+        { rotulo: "Frases de 2 palavras (mês)", chave: "frases_duas_palavras", tipo: "text" },
+        { rotulo: "Controle esfincteriano diurno (mês)", chave: "controle_esfincter_diurno", tipo: "text" },
+        { rotulo: "Controle esfincteriano noturno (mês)", chave: "controle_esfincter_noturno", tipo: "text" },
+        { rotulo: "Observações sobre o desenvolvimento", chave: "obs_desenvolvimento", tipo: "textarea" },
+      ]},
+      { secao: "Histórico da Família", itens: [
+        { rotulo: "Composição familiar", chave: "composicao_familiar", tipo: "textarea" },
+        { rotulo: "Quem mora na mesma casa?", chave: "mora_casa", tipo: "textarea" },
+        { rotulo: "Histórico de dificuldades de aprendizagem na família", chave: "hist_aprendizagem_familia", tipo: "textarea" },
+        { rotulo: "Histórico de transtornos na família (TDAH, dislexia, autismo, etc.)", chave: "hist_transtornos_familia", tipo: "textarea" },
+        { rotulo: "Mudanças familiares recentes (separação, mudança, luto)", chave: "mudancas_familiares", tipo: "textarea" },
+        { rotulo: "Relacionamento entre os familiares", chave: "relacionamento_familiares", tipo: "textarea" },
+      ]},
+      { secao: "Saúde e Histórico Médico", itens: [
+        { rotulo: "Problemas de saúde relevantes", chave: "problemas_saude", tipo: "textarea" },
+        { rotulo: "Hospitalizações anteriores", chave: "hospitalizacoes", tipo: "textarea" },
+        { rotulo: "Cirurgias", chave: "cirurgias", tipo: "text" },
+        { rotulo: "Medicações em uso", chave: "medicacoes", tipo: "text" },
+        { rotulo: "Alergias", chave: "alergias", tipo: "text" },
+        { rotulo: "Audição e visão (já avaliou?)", chave: "audicao_visao", tipo: "text" },
+        { rotulo: "Histórico de convulsões", chave: "convulsoes", tipo: "text" },
+      ]},
+      { secao: "Alimentação e Seletividade", itens: [
+        { rotulo: "Amamentação (até quando?)", chave: "amamentacao", tipo: "text" },
+        { rotulo: "Apego a alimentos específicos?", chave: "apego_alimentos", tipo: "text" },
+        { rotulo: "Recusa alimentos por textura?", chave: "recusa_textura", tipo: "text" },
+        { rotulo: "Recusa alimentos por cor/aparência?", chave: "recusa_cor", tipo: "text" },
+        { rotulo: "Recusa alimentos por cheiro?", chave: "recusa_cheiro", tipo: "text" },
+        { rotulo: "Come apenas marcas/escolhas específicas?", chave: "marcas_especificas", tipo: "text" },
+        { rotulo: "Aceita experimentar alimentos novos?", chave: "experimenta_novos", tipo: "text" },
+        { rotulo: "Há restrições alimentares (alérgicas, religiosas, etc.)?", chave: "restricoes_alimentares", tipo: "text" },
+        { rotulo: "Como é a rotina de alimentação?", chave: "rotina_alimentacao", tipo: "textarea" },
+        { rotulo: "Observações sobre seletividade alimentar", chave: "obs_seletividade", tipo: "textarea" },
+      ]},
+      { secao: "Sono e Rotina", itens: [
+        { rotulo: "Horário que dorme", chave: "hora_dorme", tipo: "text" },
+        { rotulo: "Horário que acorda", chave: "hora_acorda", tipo: "text" },
+        { rotulo: "Dorme sozinho ou acompanhado?", chave: "dorme_sozinho", tipo: "text" },
+        { rotulo: "Dificuldades para dormir?", chave: "dificuldades_dormir", tipo: "textarea" },
+        { rotulo: "Acorda durante a noite?", chave: "acorda_noite", tipo: "text" },
+      ]},
+      { secao: "Comportamento e Socialização", itens: [
+        { rotulo: "Como é o comportamento em casa?", chave: "comportamento_casa", tipo: "textarea" },
+        { rotulo: "Como é o comportamento na escola?", chave: "comportamento_escola", tipo: "textarea" },
+        { rotulo: "Relacionamento com colegas", chave: "relacionamento_colegas", tipo: "textarea" },
+        { rotulo: "Brinca de forma simbólica/imaginativa?", chave: "brinca_simbolica", tipo: "text" },
+        { rotulo: "Faz contato visual?", chave: "contato_visual", tipo: "text" },
+        { rotulo: "Apresenta birras/agressividade?", chave: "birras_agressividade", tipo: "textarea" },
+        { rotulo: "Nível de ansiedade observado", chave: "ansiedade", tipo: "text" },
+      ]},
+      { secao: "Vida Escolar", itens: [
+        { rotulo: "Idade ao ingressar na escola", chave: "idade_escola", tipo: "text" },
+        { rotulo: "Adaptação à escola", chave: "adaptacao_escola", tipo: "textarea" },
+        { rotulo: "Dificuldades relatadas pela escola", chave: "dificuldades_escola", tipo: "textarea" },
+        { rotulo: "Já repetiu de ano?", chave: "repetiu_ano", tipo: "text" },
+        { rotulo: "Recebe apoio/reforço escolar?", chave: "apoio_escolar", tipo: "text" },
+        { rotulo: "Atividades de que mais gosta", chave: "atividades_gosta", tipo: "textarea" },
+        { rotulo: "Atividades que mais evita", chave: "atividades_evita", tipo: "textarea" },
+      ]},
+      { secao: "Queixa Principal e Expectativas", itens: [
+        { rotulo: "Queixa principal (motivo da procura)", chave: "queixa_principal", tipo: "textarea" },
+        { rotulo: "Quando começou a perceber a dificuldade?", chave: "inicio_dificuldade", tipo: "text" },
+        { rotulo: "Já realizou avaliação anterior?", chave: "avaliacao_anterior", tipo: "text" },
+        { rotulo: "Quais profissionais já acompanharam?", chave: "profissionais_anteriores", tipo: "textarea" },
+        { rotulo: "Expectativas da família", chave: "expectativas_familia", tipo: "textarea" },
+      ]},
+    ]
+  },
+  {
+    id: "tpl_snap",
+    nome: "SNAP-IV (Rastreio TDAH)",
+    tipo: "screening",
+    descricao: "Swanson, Nolan e Pelham — escala de rastreio para TDAH (versão simplificada, 18 itens).",
+    questoes: [
+      "Não presta atenção suficiente a detalhes ou comete erros por descuido nos trabalhos escolares.",
+      "Tem dificuldade em manter a atenção em tarefas ou atividades lúdicas.",
+      "Parece não escutar quando lhe falam diretamente.",
+      "Não segue instruções até o fim e não termina trabalhos escolares.",
+      "Tem dificuldade em organizar tarefas e atividades.",
+      "Evita, não gosta ou se envolve contra a vontade em tarefas que exigem esforço mental prolongado.",
+      "Perde coisas necessárias para tarefas ou atividades (brinquedos, tarefas, lápis, livros).",
+      "Distrai-se facilmente com estímulos externos.",
+      "Esquece-se de atividades diárias.",
+      "Move as mãos ou os pés ou se remexe na cadeira.",
+      "Sai do lugar na sala de aula ou em outras situações em que se espera que fique sentado.",
+      "Corre ou sobe em coisas excessivamente em situações inadequadas.",
+      "Tem dificuldade em brincar ou envolver-se silenciosamente em atividades de lazer.",
+      "Está a mil por hora ou age como se fosse movido por um motor.",
+      "Fala em excesso.",
+      "Responde precipitadamente antes de as perguntas terem sido concluídas.",
+      "Tem dificuldade em aguardar sua vez.",
+      "Interrompe os outros ou se intromete em conversas ou jogos."
+    ],
+    escala: [
+      { valor: 0, rotulo: "Nenhuma" },
+      { valor: 1, rotulo: "Pouca" },
+      { valor: 2, rotulo: "Bastante" },
+      { valor: 3, rotulo: "Muita" }
+    ]
+  },
+  {
+    id: "tpl_mchat",
+    nome: "M-CHAT-R (Rastreio Autismo)",
+    tipo: "screening",
+    descricao: "Modified Checklist for Autism in Toddlers — rastreio para sinais do espectro autista (20 itens Sim/Não).",
+    questoes: [
+      "A criança gosta de ser balançada, pular no seu colo ou nos seus joelhos?",
+      "A criança tem interesse em outras crianças?",
+      "A criança gosta de usar objetos como ponto de apoio (andar pelos móveis) ou para alcançar algo?",
+      "A criança tem prazer em brincar de esconde-esconde ou de cabra-cega?",
+      "A criança faz de conta (por exemplo, falar ao telefone, cuidar de bonecas ou outras brincadeiras de faz de conta)?",
+      "A criança aponta com o dedo para pedir algo (apontar para um lanche distante)?",
+      "A criança aponta com o dedo para compartilhar interesse em algo (apontar para um avião no céu)?",
+      "A criança é capaz de brincar apropriadamente com pequenos brinquedos (carros, blocos) sem apenas colocar na boca, bater ou jogá-los?",
+      "A criança já trouxe algum objeto para lhe mostrar?",
+      "A criança olha para você por 2-3 segundos, estabelecendo contato visual?",
+      "A criança parece ser muito sensível ao barulho?",
+      "A criança sorri em resposta ao seu rosto ou ao seu sorriso?",
+      "A criança imita você (por exemplo, se você fizer uma careta, ela copia)?",
+      "A criança responde ao nome quando é chamada?",
+      "Se você aponta para um brinquedo distante, a criança olha para ele?",
+      "A criança consegue andar?",
+      "A criança olha para as coisas que você está olhando?",
+      "A criança faz movimentos incomuns com os dedos perto do rosto?",
+      "A criança tenta atrair sua atenção para sua própria atividade?",
+      "Você já questionou se a criança é surda?"
+    ],
+    escala: [
+      { valor: 0, rotulo: "Sim" },
+      { valor: 1, rotulo: "Não" }
+    ]
+  },
+  {
+    id: "tpl_asrs",
+    nome: "ASRS (Rastreio TDAH Adulto)",
+    tipo: "screening",
+    descricao: "Adult ADHD Self-Report Scale — rastreio de TDAH em adultos (18 itens).",
+    questoes: [
+      "Com que frequência você comete erros por descuido quando trabalha em algo chato ou difícil?",
+      "Com que frequência você tem dificuldade de concentração no que faz?",
+      "Com que frequência você tem dificuldade em lembrar de compromissos ou obrigações?",
+      "Com que frequência você pula de uma tarefa para outra ou tem dificuldade em fazer uma coisa de cada vez?",
+      "Com que frequência você procrastina ou adia o que precisa ser feito?",
+      "Com que frequência você se impacienta com pessoas que demoram a concluir o que têm a dizer?",
+      "Com que frequência você perde a paciência quando está em uma fila ou no trânsito?",
+      "Com que frequência você tem dificuldade de relaxar em momentos de lazer?",
+      "Com que frequência você sente inquietação ou agitação, mesmo em situações tranquilas?",
+      "Com que frequência você se sente com muita energia como se fosse movido por um motor?",
+      "Com que frequência você fala em excesso em situações sociais?",
+      "Com que frequência você termina as frases dos outros antes que eles terminem?",
+      "Com que frequência você se sente sobrecarregado pelas coisas que tem que fazer?",
+      "Com que frequência você tem dificuldade em manter a atenção em conversas ou leituras?",
+      "Com que frequência você perde ou esquece coisas importantes?",
+      "Com que frequência você se distrai com atividades ou ruídos ao seu redor?",
+      "Com que frequência você inicia vários projetos ao mesmo tempo e tem dificuldade em concluí-los?",
+      "Com que frequência você age impulsivamente antes de pensar nas consequências?"
+    ],
+    escala: [
+      { valor: 0, rotulo: "Nunca" },
+      { valor: 1, rotulo: "Raramente" },
+      { valor: 2, rotulo: "Às vezes" },
+      { valor: 3, rotulo: "Frequentemente" },
+      { valor: 4, rotulo: "Muito frequentemente" }
+    ]
+  },
+  {
+    id: "tpl_custom",
+    nome: "Avaliação Personalizada",
+    tipo: "custom",
+    descricao: "Crie sua própria avaliação com questões personalizadas (uma por linha).",
+    campos: null,
+    questoes: []
+  }
+];
+
+// --- Variáveis de estado da página de avaliações ---
+let avalPage = 1;
+let currentAvalMode = "list"; // list | new | apply | history
+let currentAvalTemplate = null;
+let currentAvalId = null;     // id da avaliação sendo aplicada/visualizada
+
+// --- Funções auxiliares ---
+function getAvaliacoesGlobais() {
+    // coleta todas as avaliações de todos os alunos
+    const todas = [];
+    (data.alunos || []).forEach(aluno => {
+        (aluno.avaliacoes || []).forEach(av => {
+            todas.push({ ...av, alunoId: aluno.id, alunoNome: aluno.nome });
+        });
+    });
+    return todas;
+}
+
+function getAvalTypeBadge(tipo) {
+    const map = { anamnese: "anamnese", screening: "screening", survey: "survey", custom: "survey" };
+    return map[tipo] || "survey";
+}
+
+function getTemplateById(id) {
+    return ASSESSMENT_TEMPLATES.find(t => t.id === id);
+}
+
+// --- Render principal ---
+function renderAvaliacoes() {
+    if (!isDataLoaded || !data || !data.session) {
+        document.getElementById("page-avaliacoes").innerHTML = `<div class="empty" style="padding:40px;text-align:center"><p>Faça login para visualizar.</p></div>`;
+        return;
+    }
+
+    if (currentAvalMode === "new") return renderAvaliacoesNew();
+    if (currentAvalMode === "apply") return renderAvaliacoesApply();
+    if (currentAvalMode === "history") return renderAvaliacoesHistory();
+    return renderAvaliacoesList();
+}
+
+// --- Lista de avaliações (criadas pelo professor) ---
+function renderAvaliacoesList() {
+    const todas = getAvaliacoesGlobais();
+    const porTitulo = {};
+    todas.forEach(av => {
+        const key = av.titulo;
+        if (!porTitulo[key]) porTitulo[key] = { titulo: av.titulo, tipo: av.tipo || "custom", count: 0, aplicacoes: 0, ids: [] };
+        porTitulo[key].count++;
+        porTitulo[key].aplicacoes += (av.resultados || []).length;
+        porTitulo[key].ids.push(av.id);
+    });
+    const grupos = Object.values(porTitulo).sort((a, b) => a.titulo.localeCompare(b.titulo));
+
+    document.getElementById("page-avaliacoes").innerHTML = `
+        <div class="section-head">
+            <div><div class="section-title">Avaliações Psicopedagógicas</div><div class="section-sub">Crie e aplique instrumentos de avaliação. Veja o histórico de aplicações por aluno.</div></div>
+            <button class="btn btn-primary" onclick="startNewAvaliacao()"><i data-lucide="plus"></i>Nova avaliação</button>
+        </div>
+
+        <div class="grid stats" style="grid-template-columns:repeat(4,minmax(0,1fr))">
+            <div class="card"><div class="stat-label">Modelos disponíveis</div><div class="stat-value">${ASSESSMENT_TEMPLATES.length}</div><div class="stat-sub">Instrumentos prontos</div></div>
+            <div class="card"><div class="stat-label">Avaliações criadas</div><div class="stat-value">${grupos.length}</div><div class="stat-sub">Tipos distintos</div></div>
+            <div class="card"><div class="stat-label">Total de aplicações</div><div class="stat-value">${grupos.reduce((s, g) => s + g.aplicacoes, 0)}</div><div class="stat-sub">Respostas registradas</div></div>
+            <div class="card"><div class="stat-label">Alunos avaliados</div><div class="stat-value">${[...new Set(todas.map(a => a.alunoId))].length}</div><div class="stat-sub">Com pelo menos 1 avaliação</div></div>
+        </div>
+
+        <div class="card" style="margin-top:18px">
+            <div class="section-head"><div><div class="section-title">Modelos de instrumentos</div><div class="section-sub">Selecione um modelo para aplicar a um aluno.</div></div></div>
+            ${ASSESSMENT_TEMPLATES.map(t => `
+                <div class="aval-list-item" style="display:flex;justify-content:space-between;align-items:center;gap:14px">
+                    <div style="flex:1">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+                            <strong style="font-size:13px">${esc(t.nome)}</strong>
+                            <span class="aval-type-badge ${getAvalTypeBadge(t.tipo)}">${t.tipo}</span>
+                        </div>
+                        <div class="section-sub">${esc(t.descricao)}</div>
+                        <div class="section-sub" style="margin-top:3px">${t.campos ? t.campos.reduce((s, c) => s + c.itens.length, 0) + " campos em " + t.campos.length + " seções" : (t.questoes || []).length + " questões"}</div>
+                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="startApplyTemplate('${t.id}')"><i data-lucide="play"></i>Aplicar</button>
+                </div>
+            `).join("")}
+        </div>
+
+        <div class="card" style="margin-top:16px">
+            <div class="section-head"><div><div class="section-title">Avaliações já aplicadas</div><div class="section-sub">Clique para ver o histórico de alunos que receberam cada avaliação.</div></div></div>
+            ${grupos.length === 0 ? `<div class="empty">Nenhuma avaliação aplicada ainda. Use um modelo acima para começar.</div>` :
+                grupos.map(g => `
+                    <div class="aval-list-item" style="display:flex;justify-content:space-between;align-items:center;gap:14px;cursor:pointer" onclick="viewAvaliacaoHistory('${esc(g.titulo).replace(/'/g, "\\'")}')">
+                        <div style="flex:1">
+                            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+                                <strong style="font-size:13px">${esc(g.titulo)}</strong>
+                                <span class="aval-type-badge ${getAvalTypeBadge(g.tipo)}">${g.tipo}</span>
+                            </div>
+                            <div class="section-sub">${g.count} instância(s) · ${g.aplicacoes} aplicação(ões) registrada(s)</div>
+                        </div>
+                        <button class="btn btn-outline btn-sm"><i data-lucide="history"></i>Histórico</button>
+                    </div>
+                `).join("")
+            }
+        </div>
+        ${renderHelpBox("avaliacoes")}
+    `;
+    lucide.createIcons();
+}
+
+// --- Iniciar nova avaliação (personalizada) ---
+function startNewAvaliacao() {
+    currentAvalMode = "new";
+    currentAvalTemplate = null;
+    renderAvaliacoes();
+}
+
+// --- Formulário de nova avaliação personalizada ---
+function renderAvaliacoesNew() {
+    document.getElementById("page-avaliacoes").innerHTML = `
+        <button class="btn btn-outline btn-sm" onclick="cancelAvaliacao()" style="margin-bottom:14px"><i data-lucide="arrow-left"></i>Voltar</button>
+        <div class="section-head"><div><div class="section-title">Nova Avaliação Personalizada</div><div class="section-sub">Crie um instrumento com suas próprias questões.</div></div></div>
+        <div class="card">
+            <div class="form-grid two">
+                <div class="field"><label class="label">Título da avaliação</label><input id="newAvalTitulo" class="input" placeholder="Ex.: Avaliação de leitura e escrita"></div>
+                <div class="field"><label class="label">Aluno (opcional — deixe vazio para aplicar depois)</label>
+                    <select id="newAvalAluno" class="select"><option value="">— Selecionar aluno —</option>${(data.alunos || []).map(a => `<option value="${a.id}">${esc(a.nome)}</option>`).join("")}</select>
+                </div>
+            </div>
+            <div class="field" style="margin-top:10px"><label class="label">Objetivo</label><input id="newAvalObjetivo" class="input" placeholder="Descreva o objetivo da avaliação"></div>
+            <div class="field" style="margin-top:10px"><label class="label">Questões (uma por linha)</label><textarea id="newAvalQuestoes" class="textarea" style="min-height:200px" placeholder="Escreva uma questão por linha.&#10;Ex.: A criança reconhece as letras do próprio nome?&#10;Ex.: Consegue associar letra e som?"></textarea></div>
+            <button class="btn btn-primary" onclick="saveNewAvaliacao()"><i data-lucide="check"></i>Criar avaliação</button>
+        </div>
+        ${renderHelpBox("avaliacoes")}
+    `;
+    lucide.createIcons();
+}
+
+// --- Salvar nova avaliação personalizada ---
+async function saveNewAvaliacao() {
+    const titulo = document.getElementById("newAvalTitulo")?.value.trim();
+    const objetivo = document.getElementById("newAvalObjetivo")?.value.trim();
+    const alunoId = document.getElementById("newAvalAluno")?.value;
+    const raw = document.getElementById("newAvalQuestoes")?.value || "";
+    const questoes = raw.split(/\n+/).map(x => x.trim()).filter(Boolean).map((texto, i) => ({ id: uid(), numero: i + 1, texto }));
+
+    if (!titulo) { notify("Informe o título da avaliação."); return; }
+    if (!questoes.length) { notify("Escreva pelo menos uma questão."); return; }
+
+    if (alunoId) {
+        const s = getStudent(alunoId);
+        if (s) {
+            ensureStudentModules(s);
+            s.avaliacoes.push({ id: uid(), data: today(), titulo, objetivo, tipo: "custom", questoes, resultados: [], finalizada: false });
+            await saveData();
+            notify(`Avaliação criada e vinculada a ${s.nome}.`);
+        }
+    } else {
+        // sem aluno: cria como avaliação "global" vinculada a um aluno placeholder?
+        // Melhor: exigir aluno ou permitir aplicar depois via template custom salvo.
+        notify("Selecione um aluno para vincular a avaliação.");
+        return;
+    }
+    cancelAvaliacao();
+}
+
+// --- Iniciar aplicação de um template ---
+function startApplyTemplate(tplId) {
+    currentAvalTemplate = getTemplateById(tplId);
+    currentAvalMode = "apply";
+    renderAvaliacoes();
+}
+
+// --- Formulário de aplicação de template ---
+function renderAvaliacoesApply() {
+    const tpl = currentAvalTemplate;
+    if (!tpl) { cancelAvaliacao(); return; }
+
+    let formHtml = "";
+
+    // Seleção de aluno (sempre necessária)
+    formHtml += `
+        <div class="card" style="margin-bottom:16px">
+            <div class="section-head"><div><div class="section-title">Aplicar: ${esc(tpl.nome)}</div><div class="section-sub">${esc(tpl.descricao)}</div></div>
+                <span class="aval-type-badge ${getAvalTypeBadge(tpl.tipo)}">${tpl.tipo}</span>
+            </div>
+            <div class="field"><label class="label">Aluno avaliado</label>
+                <select id="applyAvalAluno" class="select"><option value="">— Selecionar aluno —</option>${(data.alunos || []).map(a => `<option value="${a.id}">${esc(a.nome)}</option>`).join("")}</select>
+            </div>
+        </div>
+    `;
+
+    // Anamnese: campos estruturados por seção
+    if (tpl.tipo === "anamnese" && tpl.campos) {
+        tpl.campos.forEach(secao => {
+            formHtml += `<div class="card" style="margin-bottom:14px"><div class="section-title" style="margin-bottom:12px">${esc(secao.secao)}</div><div class="form-grid two">`;
+            secao.itens.forEach(item => {
+                const fieldId = "anam_" + item.chave;
+                if (item.tipo === "textarea") {
+                    formHtml += `<div class="field" style="grid-column:1/-1"><label class="label">${esc(item.rotulo)}</label><textarea id="${fieldId}" class="textarea"></textarea></div>`;
+                } else {
+                    formHtml += `<div class="field"><label class="label">${esc(item.rotulo)}</label><input id="${fieldId}" class="input" ${item.tipo === "date" ? 'type="date"' : ''}></div>`;
+                }
+            });
+            formHtml += `</div></div>`;
+        });
+        formHtml += `<div class="card" style="margin-bottom:14px"><div class="field"><label class="label">Resumo / Observações da anamnese</label><textarea id="applyAvalResumo" class="textarea" placeholder="Síntese dos dados colhidos, impressões e próximos passos..."></textarea></div></div>`;
+    } else if (tpl.questoes && tpl.questoes.length) {
+        // Screening / survey: questões com escala
+        const escala = tpl.escala || [{ valor: 0, rotulo: "Resposta" }];
+        formHtml += `<div class="card" style="margin-bottom:14px"><div class="section-title" style="margin-bottom:10px">Questões</div>`;
+        tpl.questoes.forEach((q, i) => {
+            formHtml += `
+                <div style="padding:10px 0;border-top:${i > 0 ? '1px solid var(--line)' : '0'}">
+                    <div style="font-size:12px;font-weight:600;margin-bottom:7px">${i + 1}. ${esc(q)}</div>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap">
+                        ${escala.map(op => `<label style="display:flex;align-items:center;gap:5px;font-size:11px;cursor:pointer;border:1px solid var(--line);border-radius:8px;padding:4px 10px"><input type="radio" name="q_${i}" value="${op.valor}"> ${esc(op.rotulo)}</label>`).join("")}
+                    </div>
+                </div>`;
+        });
+        formHtml += `</div>`;
+        formHtml += `<div class="card" style="margin-bottom:14px"><div class="field"><label class="label">Resumo / Observações</label><textarea id="applyAvalResumo" class="textarea" placeholder="Análise dos resultados, pontuação e impressões..."></textarea></div></div>`;
+    }
+
+    document.getElementById("page-avaliacoes").innerHTML = `
+        <button class="btn btn-outline btn-sm" onclick="cancelAvaliacao()" style="margin-bottom:14px"><i data-lucide="arrow-left"></i>Voltar</button>
+        ${formHtml}
+        <button class="btn btn-primary" onclick="saveAvaliacaoAplicacao('${tpl.id}')"><i data-lucide="check"></i>Registrar aplicação</button>
+        ${renderHelpBox("avaliacoes")}
+    `;
+    lucide.createIcons();
+}
+
+// --- Salvar aplicação de avaliação (a partir de template) ---
+async function saveAvaliacaoAplicacao(tplId) {
+    const tpl = getTemplateById(tplId);
+    if (!tpl) { notify("Modelo não encontrado."); return; }
+
+    const alunoId = document.getElementById("applyAvalAluno")?.value;
+    if (!alunoId) { notify("Selecione o aluno avaliado."); return; }
+
+    const s = getStudent(alunoId);
+    if (!s) { notify("Aluno não encontrado."); return; }
+    ensureStudentModules(s);
+
+    const resumo = document.getElementById("applyAvalResumo")?.value.trim() || "";
+    let respostas = [];
+    let questoes = [];
+
+    if (tpl.tipo === "anamnese" && tpl.campos) {
+        // coletar todos os campos estruturados
+        tpl.campos.forEach(secao => {
+            secao.itens.forEach(item => {
+                const el = document.getElementById("anam_" + item.chave);
+                respostas.push({ secao: secao.secao, rotulo: item.rotulo, chave: item.chave, valor: el?.value.trim() || "" });
+            });
+        });
+        questoes = tpl.campos.flatMap(sec => sec.itens.map(it => it.rotulo));
+    } else if (tpl.questoes) {
+        tpl.questoes.forEach((q, i) => {
+            const selected = document.querySelector(`input[name="q_${i}"]:checked`);
+            const escala = tpl.escala || [];
+            const op = selected ? escala.find(e => String(e.valor) === selected.value) : null;
+            respostas.push({ questao: q, valor: selected ? Number(selected.value) : null, rotulo: op ? op.rotulo : "Sem resposta" });
+        });
+        questoes = tpl.questoes.map((q, i) => ({ id: uid(), numero: i + 1, texto: q }));
+    }
+
+    // Cria a avaliação vinculada ao aluno + registra o resultado
+    const avId = uid();
+    const novaAval = {
+        id: avId,
+        data: today(),
+        titulo: tpl.nome,
+        tipo: tpl.tipo,
+        objetivo: tpl.descricao,
+        questoes,
+        resultados: [{
+            id: uid(),
+            data: today(),
+            respostas,
+            resumo
+        }],
+        finalizada: true
+    };
+    s.avaliacoes.push(novaAval);
+
+    await saveData();
+    notify(`Avaliação "${tpl.nome}" aplicada a ${s.nome} com sucesso.`);
+    currentAvalMode = "history";
+    currentAvalId = novaAval.id;
+    renderAvaliacoes();
+}
+
+// --- Histórico de uma avaliação específica (ver alunos que apliquei) ---
+function viewAvaliacaoHistory(titulo) {
+    currentAvalMode = "history";
+    currentAvalTemplate = null;
+    // armazenar título em variável temporária
+    window._avalHistTitulo = titulo;
+    renderAvaliacoes();
+}
+
+function renderAvaliacoesHistory() {
+    const titulo = window._avalHistTitulo || "";
+    if (!titulo) { cancelAvaliacao(); return; }
+
+    const todas = getAvaliacoesGlobais().filter(a => a.titulo === titulo);
+    const alunosAvaliados = todas.map(av => {
+        const s = getStudent(av.alunoId);
+        return {
+            avalId: av.id,
+            alunoId: av.alunoId,
+            alunoNome: av.alunoNome,
+            alunoObj: s,
+            data: av.data,
+            tipo: av.tipo,
+            resultados: av.resultados || [],
+            aplicacoes: (av.resultados || []).length,
+            ultimaAplicacao: (av.resultados || []).length ? av.resultados[av.resultados.length - 1].data : av.data
+        };
+    }).sort((a, b) => (b.ultimaAplicacao || '').localeCompare(a.ultimaAplicacao || ''));
+
+    document.getElementById("page-avaliacoes").innerHTML = `
+        <button class="btn btn-outline btn-sm" onclick="cancelAvaliacao()" style="margin-bottom:14px"><i data-lucide="arrow-left"></i>Voltar para avaliações</button>
+        <div class="section-head">
+            <div><div class="section-title">Histórico: ${esc(titulo)}</div><div class="section-sub">Alunos que receberam esta avaliação e suas aplicações.</div></div>
+        </div>
+        <div class="grid stats" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+            <div class="card"><div class="stat-label">Alunos avaliados</div><div class="stat-value">${alunosAvaliados.length}</div></div>
+            <div class="card"><div class="stat-label">Total de aplicações</div><div class="stat-value">${alunosAvaliados.reduce((s, a) => s + a.aplicacoes, 0)}</div></div>
+            <div class="card"><div class="stat-label">Última aplicação</div><div class="stat-value" style="font-size:14px">${alunosAvaliados.length ? fmtDate(alunosAvaliados[0].ultimaAplicacao) : "—"}</div></div>
+        </div>
+        <div class="card" style="margin-top:18px">
+            <div class="section-head"><div><div class="section-title">Alunos que aplicou</div><div class="section-sub">Clique no aluno para abrir o prontuário.</div></div></div>
+            ${alunosAvaliados.length === 0 ? `<div class="empty">Nenhum aluno recebeu esta avaliação ainda.</div>` :
+                alunosAvaliados.map(a => `
+                    <div class="aval-applied-row">
+                        ${avatarHTML(a.alunoObj || { nome: a.alunoNome, foto: "" }, "student-avatar")}
+                        <div style="flex:1;cursor:pointer" onclick="openStudent('${a.alunoId}')">
+                            <strong style="font-size:13px">${esc(a.alunoNome)}</strong>
+                            <div class="section-sub">Criada em ${fmtDate(a.data)} · ${a.aplicacoes} aplicação(ões) · Última: ${fmtDate(a.ultimaAplicacao)}</div>
+                        </div>
+                        <span class="aval-type-badge ${getAvalTypeBadge(a.tipo)}">${a.tipo || "custom"}</span>
+                        <button class="btn btn-outline btn-sm" onclick="viewAvaliacaoResultado('${a.alunoId}','${a.avalId}')"><i data-lucide="eye"></i>Ver resultado</button>
+                    </div>
+                `).join("")
+            }
+        </div>
+        ${renderHelpBox("avaliacoes")}
+    `;
+    lucide.createIcons();
+}
+
+// --- Ver resultado de uma aplicação específica ---
+function viewAvaliacaoResultado(alunoId, avalId) {
+    const s = getStudent(alunoId);
+    if (!s) return;
+    openStudent(alunoId);
+    // navegar para a seção de avaliações do aluno
+    setTimeout(() => {
+        currentStudent = alunoId;
+        currentAssessment = avalId;
+        renderStudentProfile("aplicar");
+    }, 100);
+}
+
+// --- Cancelar / voltar ao modo lista ---
+function cancelAvaliacao() {
+    currentAvalMode = "list";
+    currentAvalTemplate = null;
+    currentAvalId = null;
+    window._avalHistTitulo = null;
+    renderAvaliacoes();
+}
+
+
+// ============================================================
 // FINANCEIRO
 // ============================================================
 
@@ -2566,27 +3238,80 @@ function renderFinanceiro() {
     if (typeof financeYear !== "number") financeYear = now.getFullYear();
     if (typeof financeMonth !== "number") financeMonth = now.getMonth();
 
-    const transactions = (data.transacoes || []).filter(t => {
+    const allTrans = (data.transacoes || []).filter(t => {
         const d = parseDate(t.data);
         return d.getFullYear() === financeYear && d.getMonth() === financeMonth;
-    }).sort((a, b) => b.data.localeCompare(a.data));
+    }).sort((a, b) => (b.data || '').localeCompare(a.data || ''));
+
+    const receitas = allTrans.filter(t => (t.tipo || "receita") === "receita");
+    const despesas = allTrans.filter(t => t.tipo === "despesa");
+
+    const totalRecebido = receitas.reduce((s, t) => s + Number(t.valor || 0), 0);
+    const totalDespesas = despesas.reduce((s, t) => s + Number(t.valor || 0), 0);
+    const saldo = totalRecebido - totalDespesas;
 
     const monthAppts = activeAppointments().filter(a => {
         const d = parseDate(a.data);
         return d.getFullYear() === financeYear && d.getMonth() === financeMonth;
     }).sort((a, b) => (a.data + a.hora).localeCompare(b.data + b.hora));
 
-    const received = transactions.reduce((s, t) => s + Number(t.valor || 0), 0);
     const expected = monthAppts.reduce((s, a) => s + Number(getStudent(a.alunoId)?.valor || 0), 0);
     const pending = monthAppts.filter(a => !a.pago).reduce((s, a) => s + Number(getStudent(a.alunoId)?.valor || 0), 0);
+    const taxaRecebimento = expected ? Math.round(totalRecebido / expected * 100) : 0;
 
-    const rows = studentPager(transactions, financePage || 1, 10, "setFinancePage");
+    // Agrupar despesas por categoria
+    const despesasPorCategoria = {};
+    despesas.forEach(d => {
+        const cat = d.categoria || "Outros";
+        if (!despesasPorCategoria[cat]) despesasPorCategoria[cat] = 0;
+        despesasPorCategoria[cat] += Number(d.valor || 0);
+    });
+
+    const rows = studentPager(receitas, financePage || 1, 10, "setFinancePage");
     const monthLabel = new Date(financeYear, financeMonth, 1).toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+
+    // --- Mini calendário lateral ---
+    const todayISO = today();
+    const calY = financeYear, calM = financeMonth;
+    const firstDay = new Date(calY, calM, 1);
+    const lastDay = new Date(calY, calM + 1, 0);
+    let startOffset = firstDay.getDay(); // 0=domingo
+    startOffset = startOffset === 0 ? 6 : startOffset - 1; // ajustar para segunda=0
+    const totalCells = Math.ceil((startOffset + lastDay.getDate()) / 7) * 7;
+    const eventosDoMes = {};
+    monthAppts.forEach(a => {
+        if (!eventosDoMes[a.data]) eventosDoMes[a.data] = [];
+        eventosDoMes[a.data].push(a);
+    });
+
+    let miniCalHtml = '<div class="mini-cal-grid">';
+    ["S","T","Q","Q","S","S","D"].forEach(d => { miniCalHtml += `<div class="mini-cal-dow">${d}</div>`; });
+    for (let i = 0; i < totalCells; i++) {
+        const dayNum = i - startOffset + 1;
+        const d = new Date(calY, calM, dayNum);
+        const inMonth = d.getMonth() === calM;
+        const iso = dateISO(d);
+        const isToday = iso === todayISO;
+        const eventos = eventosDoMes[iso] || [];
+        const hasEvent = eventos.length > 0;
+        const allPaid = hasEvent && eventos.every(e => e.pago);
+        const cls = (inMonth ? "" : "other") + (isToday ? " today" : "") + (hasEvent ? " has-event" : "") + (hasEvent && allPaid ? " paid" : "") + (hasEvent && !allPaid ? " pending" : "");
+        miniCalHtml += `<div class="mini-cal-day ${cls}" title="${hasEvent ? eventos.length + ' atendimento(s)' : ''}">${inMonth ? d.getDate() : ""}</div>`;
+    }
+    miniCalHtml += '</div>';
+
+    // --- Card informativo lateral ---
+    const atendimentosPagos = monthAppts.filter(a => a.pago).length;
+    const atendimentosPendentes = monthAppts.filter(a => !a.pago).length;
+    const maiorDespesa = despesas.length ? despesas.reduce((m, d) => Number(d.valor) > Number(m.valor) ? d : m) : null;
 
     document.getElementById("page-financeiro").innerHTML = `
         <div class="section-head">
-            <div><div class="section-title">Financeiro</div><div class="section-sub">Consulte qualquer mês, de janeiro a dezembro, e mantenha cada período separado.</div></div>
-            <div style="display:flex;gap:7px;flex-wrap:wrap"><button class="btn btn-blue btn-sm" onclick="generateFinancePDF()"><i data-lucide="file-down"></i>PDF do período</button><button class="btn btn-soft btn-sm" onclick="navigate('recibos')">Recibos</button></div>
+            <div><div class="section-title">Financeiro</div><div class="section-sub">Controle completo de receitas e despesas. Navegue entre meses com as setas.</div></div>
+            <div style="display:flex;gap:7px;flex-wrap:wrap">
+                <button class="btn btn-blue btn-sm" onclick="generateFinancePDF()"><i data-lucide="file-down"></i>PDF do período</button>
+                <button class="btn btn-soft btn-sm" onclick="navigate('recibos')">Recibos</button>
+            </div>
         </div>
 
         <div class="card" style="margin-bottom:16px">
@@ -2597,39 +3322,167 @@ function renderFinanceiro() {
             </div>
         </div>
 
-        <div class="grid stats">
-            <div class="card"><div class="stat-label">Recebido</div><div class="stat-value">${money(received)}</div><div class="stat-sub">No período</div></div>
-            <div class="card"><div class="stat-label">A receber</div><div class="stat-value">${money(pending)}</div><div class="stat-sub">Pendências do período</div></div>
-            <div class="card"><div class="stat-label">Previsto</div><div class="stat-value">${money(expected)}</div><div class="stat-sub">Atendimentos do período</div></div>
-            <div class="card"><div class="stat-label">Taxa de recebimento</div><div class="stat-value">${expected ? Math.round(received / expected * 100) : 0}%</div></div>
-        </div>
+        <div class="finance-layout">
+            <div>
+                <!-- DASHBOARD -->
+                <div class="grid stats" style="grid-template-columns:repeat(4,minmax(0,1fr))">
+                    <div class="card" style="border-left:3px solid var(--sage)"><div class="stat-label">Saldo do mês</div><div class="stat-value" style="color:${saldo >= 0 ? 'var(--sage)' : '#c0504d'}">${money(saldo)}</div><div class="stat-sub">Recebido - Despesas</div></div>
+                    <div class="card"><div class="stat-label">Recebido</div><div class="stat-value">${money(totalRecebido)}</div><div class="stat-sub">Entradas do período</div></div>
+                    <div class="card"><div class="stat-label">Despesas</div><div class="stat-value" style="color:#c0504d">${money(totalDespesas)}</div><div class="stat-sub">Saídas do período</div></div>
+                    <div class="card"><div class="stat-label">A receber</div><div class="stat-value">${money(pending)}</div><div class="stat-sub">Pendências</div></div>
+                </div>
 
-        <div class="card" style="margin-top:18px">
-            <div class="section-head"><div><div class="section-title">Recebimentos</div><div class="section-sub">${rows.slice.length} registro(s) nesta página</div></div></div>
-            ${rows.slice.length ? `
-                <div style="overflow:auto"><table class="finance-table">
-                    <thead><tr><th>Data</th><th>Aluno</th><th>Descrição</th><th>Valor</th><th>Status</th></tr></thead>
-                    <tbody>${rows.slice.map(t => { const s = getStudent(t.alunoId); return `<tr><td>${fmtDate(t.data)}</td><td><strong>${esc(s?.nome || "Aluno removido")}</strong></td><td>${esc(t.descricao)}</td><td><strong>${money(t.valor)}</strong></td><td class="paid">Recebido</td></tr>`; }).join("")}</tbody>
-                </table></div>${rows.controls}
-            ` : `<div class="empty">Nenhum recebimento registrado em ${monthLabel}.</div>`}
-        </div>
+                <!-- FORMULÁRIO NOVA DESPESA -->
+                <div class="card" style="margin-top:18px;display:none" id="despesaFormCard">
+                    <div class="section-head"><div><div class="section-title">Nova Despesa</div><div class="section-sub">Registre uma saída financeira.</div></div>
+                        <button class="btn btn-outline btn-sm" onclick="document.getElementById('despesaFormCard').style.display='none'">Cancelar</button>
+                    </div>
+                    <div class="form-grid two">
+                        <div class="field"><label class="label">Descrição</label><input id="despDescricao" class="input" placeholder="Ex.: Material didático"></div>
+                        <div class="field"><label class="label">Valor</label><input id="despValor" class="input" type="number" step="0.01" placeholder="0,00"></div>
+                        <div class="field"><label class="label">Data</label><input id="despData" class="input" type="date" value="${today()}"></div>
+                        <div class="field"><label class="label">Categoria</label><select id="despCategoria" class="select">
+                            <option>Material didático</option>
+                            <option>Aluguel / Espaço</option>
+                            <option>Equipamentos</option>
+                            <option>Capacitação / Cursos</option>
+                            <option>Marketing / Divulgação</option>
+                            <option>Transporte</option>
+                            <option>Impostos</option>
+                            <option>Outros</option>
+                        </select></div>
+                    </div>
+                    <button class="btn btn-primary" onclick="saveDespesa()"><i data-lucide="minus-circle"></i>Registrar despesa</button>
+                </div>
 
-        <div class="card" style="margin-top:16px">
-            <div class="section-title">Pendências do período</div>
-            <div class="section-sub">Atendimentos deste mês ainda não pagos.</div>
-            ${monthAppts.filter(a => !a.pago).slice(0, 10).map(a => {
-                const s = getStudent(a.alunoId);
-                return `<div style="display:flex;align-items:center;gap:10px;padding:11px 0;border-top:1px solid var(--line)">
-                    <div style="flex:1;cursor:pointer" onclick="openStudent('${s?.id}')"><strong>${esc(s?.nome || "Aluno")}</strong><div class="section-sub">${fmtDate(a.data)} · ${a.hora}</div></div>
-                    <strong>${money(s?.valor || 0)}</strong>
-                    <button class="btn btn-primary btn-sm" onclick="togglePayment('${a.id}')">Registrar</button>
-                </div>`;
-            }).join("") || `<div class="empty" style="margin-top:12px">Nenhuma pendência neste período.</div>`}
+                <!-- RECEITAS -->
+                <div class="card" style="margin-top:18px">
+                    <div class="section-head"><div><div class="section-title">Receitas</div><div class="section-sub">${rows.slice.length} registro(s) nesta página</div></div>
+                        <button class="btn btn-primary btn-sm" onclick="showDespesaForm()"><i data-lucide="minus-circle"></i>Nova despesa</button>
+                    </div>
+                    ${rows.slice.length ? `
+                        <div style="overflow:auto"><table class="finance-table">
+                            <thead><tr><th>Data</th><th>Aluno</th><th>Descrição</th><th>Valor</th><th>Status</th></tr></thead>
+                            <tbody>${rows.slice.map(t => { const s = getStudent(t.alunoId); return `<tr><td>${fmtDate(t.data)}</td><td><strong>${esc(s?.nome || "—")}</strong></td><td>${esc(t.descricao)}</td><td><strong style="color:var(--sage)">${money(t.valor)}</strong></td><td class="paid">Recebido</td></tr>`; }).join("")}</tbody>
+                        </table></div>${rows.controls}
+                    ` : `<div class="empty">Nenhuma receita registrada em ${monthLabel}.</div>`}
+                </div>
+
+                <!-- DESPESAS -->
+                <div class="card" style="margin-top:16px">
+                    <div class="section-head"><div><div class="section-title">Despesas</div><div class="section-sub">${despesas.length} despesa(s) no período</div></div>
+                        <button class="btn btn-primary btn-sm" onclick="showDespesaForm()"><i data-lucide="minus-circle"></i>Nova despesa</button>
+                    </div>
+                    ${despesas.length ? `
+                        <div style="overflow:auto"><table class="finance-table">
+                            <thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Valor</th><th></th></tr></thead>
+                            <tbody>${despesas.map(t => `<tr><td>${fmtDate(t.data)}</td><td><strong>${esc(t.descricao)}</strong></td><td><span class="tag">${esc(t.categoria || "Outros")}</span></td><td><strong style="color:#c0504d">-${money(t.valor)}</strong></td><td><button class="btn btn-danger btn-sm" onclick="deleteDespesa('${t.id}')"><i data-lucide="trash-2"></i></button></td></tr>`).join("")}</tbody>
+                        </table></div>
+                    ` : `<div class="empty">Nenhuma despesa registrada em ${monthLabel}. Clique em Nova despesa para começar.</div>`}
+                </div>
+
+                <!-- PENDÊNCIAS -->
+                <div class="card" style="margin-top:16px">
+                    <div class="section-title">Pendências do período</div>
+                    <div class="section-sub">Atendimentos deste mês ainda não pagos.</div>
+                    ${monthAppts.filter(a => !a.pago).slice(0, 10).map(a => {
+                        const s = getStudent(a.alunoId);
+                        return `<div style="display:flex;align-items:center;gap:10px;padding:11px 0;border-top:1px solid var(--line)">
+                            <div style="flex:1;cursor:pointer" onclick="openStudent('${s?.id}')"><strong>${esc(s?.nome || "Aluno")}</strong><div class="section-sub">${fmtDate(a.data)} · ${a.hora}</div></div>
+                            <strong>${money(s?.valor || 0)}</strong>
+                            <button class="btn btn-primary btn-sm" onclick="togglePayment('${a.id}')">Registrar</button>
+                        </div>`;
+                    }).join("") || `<div class="empty" style="margin-top:12px">Nenhuma pendência neste período.</div>`}
+                </div>
+            </div>
+
+            <!-- COLUNA LATERAL: calendário + card -->
+            <div class="finance-side">
+                <div class="mini-cal">
+                    <div class="mini-cal-head">
+                        <button onclick="changeFinanceMonth(-1)">‹</button>
+                        <div class="mc-title">${monthLabel}</div>
+                        <button onclick="changeFinanceMonth(1)">›</button>
+                    </div>
+                    ${miniCalHtml}
+                    <div style="display:flex;gap:12px;margin-top:10px;font-size:9px;color:#8a9892;flex-wrap:wrap">
+                        <span style="display:flex;align-items:center;gap:4px"><span style="width:6px;height:6px;border-radius:50%;background:var(--sage)"></span>Pago</span>
+                        <span style="display:flex;align-items:center;gap:4px"><span style="width:6px;height:6px;border-radius:50%;background:#e8a23d"></span>Pendente</span>
+                        <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:var(--sage)"></span>Hoje</span>
+                    </div>
+                </div>
+
+                <div class="side-card">
+                    <div class="sc-title">Resumo do mês</div>
+                    <div class="sc-row"><span>Atendimentos pagos</span><span class="sc-val" style="color:var(--sage)">${atendimentosPagos}</span></div>
+                    <div class="sc-row"><span>Atendimentos pendentes</span><span class="sc-val" style="color:#e8a23d">${atendimentosPendentes}</span></div>
+                    <div class="sc-row"><span>Total previsto</span><span class="sc-val">${money(expected)}</span></div>
+                    <div class="sc-row"><span>Taxa de recebimento</span><span class="sc-val">${taxaRecebimento}%</span></div>
+                </div>
+
+                ${Object.keys(despesasPorCategoria).length ? `
+                <div class="side-card">
+                    <div class="sc-title">Despesas por categoria</div>
+                    ${Object.entries(despesasPorCategoria).sort((a,b) => b[1]-a[1]).map(([cat, val]) => `
+                        <div class="sc-row"><span>${esc(cat)}</span><span class="sc-val" style="color:#c0504d">${money(val)}</span></div>
+                    `).join("")}
+                </div>` : ''}
+
+                ${maiorDespesa ? `
+                <div class="side-card">
+                    <div class="sc-title">Maior despesa</div>
+                    <div style="font-size:12px;font-weight:600">${esc(maiorDespesa.descricao)}</div>
+                    <div class="section-sub">${esc(maiorDespesa.categoria || "Outros")} · ${fmtDate(maiorDespesa.data)}</div>
+                    <div style="font-size:16px;font-weight:700;color:#c0504d;margin-top:4px">${money(maiorDespesa.valor)}</div>
+                </div>` : ''}
+            </div>
         </div>
+        ${renderHelpBox("financeiro")}
     `;
     lucide.createIcons();
 }
 
+function showDespesaForm() {
+    const card = document.getElementById("despesaFormCard");
+    if (card) {
+        card.style.display = "block";
+        card.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+}
+
+async function saveDespesa() {
+    const descricao = document.getElementById("despDescricao")?.value.trim();
+    const valor = Number(document.getElementById("despValor")?.value) || 0;
+    const dataVal = document.getElementById("despData")?.value || today();
+    const categoria = document.getElementById("despCategoria")?.value || "Outros";
+
+    if (!descricao) { notify("Descreva a despesa."); return; }
+    if (valor <= 0) { notify("Informe um valor válido."); return; }
+
+    if (!data.transacoes) data.transacoes = [];
+    data.transacoes.push({
+        id: uid(),
+        data: dataVal,
+        agendaId: null,
+        alunoId: null,
+        descricao,
+        valor,
+        tipo: "despesa",
+        categoria
+    });
+    await saveData();
+    notify("Despesa registrada.");
+    renderFinanceiro();
+}
+
+async function deleteDespesa(id) {
+    if (!confirm("Excluir esta despesa?")) return;
+    data.transacoes = (data.transacoes || []).filter(t => t.id !== id);
+    await deleteTransacaoDB(id);
+    await saveData();
+    notify("Despesa removida.");
+    renderFinanceiro();
+}
 function setFinancePage(page) {
     financePage = page;
     renderFinanceiro();
@@ -2719,6 +3572,7 @@ function renderRecibos() {
                 }).join("") || `<div class="empty">Nenhum recibo emitido ainda.</div>`}
             </div>
         </div>
+        ${renderHelpBox("recibos")}
     `;
     lucide.createIcons();
 }
@@ -2924,27 +3778,18 @@ function renderPerfil() {
     const p = data.professor;
     if (!p) return;
 
-    const obsOrdenadas = (p.observacoes || []).slice().sort((a, b) => (b.data || '').localeCompare(a.data || ''));
-    const evoOrdenadas = (p.evolucoesPessoais || []).slice().sort((a, b) => (b.data || '').localeCompare(a.data || ''));
-
-    const timeline = [];
-    obsOrdenadas.forEach(o => timeline.push({ ...o, tipo: 'observacao' }));
-    evoOrdenadas.forEach(e => timeline.push({ ...e, tipo: 'evolucao' }));
-    timeline.sort((a, b) => (b.data || '').localeCompare(a.data || ''));
-
     const totalAlunos = (data.alunos || []).length;
     const totalAtendimentos = activeAppointments().length;
-    const totalEvolucoes = evoOrdenadas.length;
-    const totalObservacoes = obsOrdenadas.length;
+    const totalAvaliacoesAplicadas = (data.alunos || []).reduce((acc, a) => acc + (a.avaliacoes || []).reduce((s2, av) => s2 + (av.resultados || []).length, 0), 0);
 
     document.getElementById("page-perfil").innerHTML = `
-        <div class="section-head"><div><div class="section-title">Meu Perfil</div><div class="section-sub">Gerencie suas informações pessoais e acompanhe sua trajetória profissional.</div></div></div>
+        <div class="section-head"><div><div class="section-title">Meu Perfil</div><div class="section-sub">Gerencie suas informa\u00e7\u00f5es pessoais e acompanhe sua trajet\u00f3ria profissional.</div></div></div>
 
         <div class="grid stats">
             <div class="card"><div class="stat-label">Alunos</div><div class="stat-value">${totalAlunos}</div><div class="stat-sub">Ativos na base</div></div>
             <div class="card"><div class="stat-label">Atendimentos</div><div class="stat-value">${totalAtendimentos}</div><div class="stat-sub">Agendamentos totais</div></div>
-            <div class="card"><div class="stat-label">Evoluções</div><div class="stat-value">${totalEvolucoes}</div><div class="stat-sub">Registros próprios</div></div>
-            <div class="card"><div class="stat-label">Observações</div><div class="stat-value">${totalObservacoes}</div><div class="stat-sub">Anotações pessoais</div></div>
+            <div class="card"><div class="stat-label">Avalia\u00e7\u00f5es aplicadas</div><div class="stat-value">${totalAvaliacoesAplicadas}</div><div class="stat-sub">Aplica\u00e7\u00f5es registradas</div></div>
+            <div class="card"><div class="stat-label">Especialidade</div><div class="stat-value" style="font-size:14px">${esc(p.especialidade || "Psicopedagogia")}</div><div class="stat-sub">\u00c1rea de atua\u00e7\u00e3o</div></div>
         </div>
 
         <div class="grid" style="grid-template-columns:1fr 1.6fr;margin-top:18px">
@@ -2968,9 +3813,9 @@ function renderPerfil() {
                     <div class="field" style="grid-column:1/-1"><label class="label">URL da foto</label><input id="profFoto" class="input" value="${esc(p.foto || "")}" placeholder="https://..."></div>
                     <div class="field" style="grid-column:1/-1"><label class="label">Bio profissional</label><textarea id="profBio" class="textarea">${esc(p.bio || "")}</textarea></div>
                     <div class="field" style="grid-column:1/-1">
-                        <label class="label">Configurações</label>
+                        <label class="label">Configura\u00e7\u00f5es</label>
                         <div style="display:flex;gap:15px;flex-wrap:wrap;padding-top:5px">
-                            <label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer"><input type="checkbox" id="cfgNotif" ${p.configuracoes?.notificacoes !== false ? "checked" : ""}> Notificações</label>
+                            <label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer"><input type="checkbox" id="cfgNotif" ${p.configuracoes?.notificacoes !== false ? "checked" : ""}> Notifica\u00e7\u00f5es</label>
                             <label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer"><input type="checkbox" id="cfgLembretes" ${p.configuracoes?.lembretes !== false ? "checked" : ""}> Lembretes</label>
                         </div>
                     </div>
@@ -2978,48 +3823,7 @@ function renderPerfil() {
                 <button class="btn btn-primary" onclick="saveProfile()"><i data-lucide="save"></i>Salvar perfil</button>
             </div>
         </div>
-
-        <div class="card" style="margin-top:18px">
-            <div class="section-head"><div><div class="section-title">Nova Observação</div><div class="section-sub">Registre anotações pessoais, reflexões ou lembretes sobre sua prática.</div></div></div>
-            <div class="form-grid two">
-                <div class="field"><label class="label">Título</label><input id="obsTitulo" class="input" placeholder="Ex.: Reflexão sobre atendimento"></div>
-                <div class="field"><label class="label">Data</label><input id="obsData" class="input" type="date" value="${today()}"></div>
-            </div>
-            <div class="field"><label class="label">Observação</label><textarea id="obsTexto" class="textarea" placeholder="Descreva sua observação ou reflexão..."></textarea></div>
-            <button class="btn btn-primary" onclick="saveObservacao()"><i data-lucide="file-text"></i>Salvar observação</button>
-        </div>
-
-        <div class="card" style="margin-top:16px">
-            <div class="section-head"><div><div class="section-title">Nova Evolução Pessoal</div><div class="section-sub">Registre marcos, aprendizados ou mudanças na sua prática profissional.</div></div></div>
-            <div class="form-grid two">
-                <div class="field"><label class="label">Título</label><input id="evoPessoalTitulo" class="input" placeholder="Ex.: Curso de Neuropsicopedagogia"></div>
-                <div class="field"><label class="label">Data</label><input id="evoPessoalData" class="input" type="date" value="${today()}"></div>
-            </div>
-            <div class="field"><label class="label">Descrição</label><textarea id="evoPessoalTexto" class="textarea" placeholder="Descreva sua evolução, aprendizado ou conquista..."></textarea></div>
-            <button class="btn btn-primary" onclick="saveEvolucaoPessoal()"><i data-lucide="trending-up"></i>Salvar evolução</button>
-        </div>
-
-        <div class="card" style="margin-top:18px">
-            <div class="section-head"><div><div class="section-title">Linha do Tempo</div><div class="section-sub">Histórico de observações e evoluções pessoais.</div></div>${timeline.length > 0 ? `<span style="font-size:11px;color:#89968f">${timeline.length} registros</span>` : ''}</div>
-            ${timeline.length === 0 ? `<div class="empty">Nenhuma observação ou evolução registrada ainda.</div>` : `
-                <div style="max-height:400px;overflow-y:auto">
-                ${timeline.map(item => {
-                    const isEvolucao = item.tipo === 'evolucao';
-                    const dotClass = isEvolucao ? 'evolution' : 'observation';
-                    const label = isEvolucao ? 'Evolução' : 'Observação';
-                    return `
-                        <div class="profile-timeline-item">
-                            <div class="profile-timeline-dot ${dotClass}"></div>
-                            <div class="profile-timeline-content">
-                                <div class="title">${esc(item.titulo || label)}</div>
-                                <div class="meta">${fmtDate(item.data)} · ${label}<button style="border:0;background:none;color:#a3aea9;margin-left:10px;font-size:10px;cursor:pointer" onclick="deletarRegistroPessoal('${item.id}','${item.tipo}')">Excluir</button></div>
-                                <div class="text">${esc(item.texto || item.descricao || "")}</div>
-                            </div>
-                        </div>`;
-                }).join("")}
-                </div>
-            `}
-        </div>
+        ${renderHelpBox("perfil")}
     `;
     lucide.createIcons();
 }
@@ -3380,6 +4184,18 @@ window.saveAssessmentApplication = saveAssessmentApplication;
 window.saveSchoolInfo = saveSchoolInfo;
 window.addSchoolRecord = addSchoolRecord;
 window.deleteSchoolRecord = deleteSchoolRecord;
+window.renderHelpBox = renderHelpBox;
+window.renderAvaliacoes = renderAvaliacoes;
+window.startNewAvaliacao = startNewAvaliacao;
+window.startApplyTemplate = startApplyTemplate;
+window.saveNewAvaliacao = saveNewAvaliacao;
+window.saveAvaliacaoAplicacao = saveAvaliacaoAplicacao;
+window.viewAvaliacaoHistory = viewAvaliacaoHistory;
+window.viewAvaliacaoResultado = viewAvaliacaoResultado;
+window.cancelAvaliacao = cancelAvaliacao;
+window.showDespesaForm = showDespesaForm;
+window.saveDespesa = saveDespesa;
+window.deleteDespesa = deleteDespesa;
 
 // ============================================================
 // INICIAR
