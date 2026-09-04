@@ -803,7 +803,7 @@ async function loadDataFromSupabase() {
 }
 
 // ============================================================
-// FUNÇÕES SUPABASE - SAVE
+// FUNÇÕES SUPABASE - SAVE (CORRIGIDAS)
 // ============================================================
 
 async function saveAluno(aluno) {
@@ -1001,6 +1001,11 @@ async function saveAgendaItem(item) {
         const id = ensureValidUUID(item.id);
         
         // Verificar se o aluno existe
+        if (!item.alunoId) {
+            console.warn('Aluno ID não informado para o agendamento:', item);
+            return null;
+        }
+        
         const aluno = getStudent(item.alunoId);
         if (!aluno) {
             console.warn('Aluno não encontrado para o agendamento:', item.alunoId);
@@ -1227,9 +1232,15 @@ async function saveData() {
             }
         }
 
-        // SALVAR AGENDAMENTOS (IMPORTANTE)
+        // SALVAR AGENDAMENTOS - VERIFICANDO SE TÊM ALUNO VÁLIDO
         for (const item of (data.agenda || [])) {
-            await saveAgendaItem(item);
+            // Verificar se o aluno existe antes de salvar
+            const aluno = getStudent(item.alunoId);
+            if (aluno) {
+                await saveAgendaItem(item);
+            } else {
+                console.warn('Agendamento ignorado - aluno não encontrado:', item);
+            }
         }
         
         for (const trans of (data.transacoes || [])) {
@@ -1324,7 +1335,7 @@ function updateUser() {
 }
 
 // ============================================================
-// LOGIN/LOGOUT (CORRIGIDOS)
+// LOGIN/LOGOUT
 // ============================================================
 
 async function login() {
@@ -1365,46 +1376,38 @@ async function login() {
 }
 
 async function logout() {
-    // PRIMEIRO: Salvar dados antes de fazer logout
     if (data && data.session) {
         try {
             const saved = await saveData();
             if (saved) {
                 console.log('✅ Dados salvos com sucesso antes do logout');
-            } else {
-                console.warn('⚠️ Falha ao salvar dados, mas continuando logout');
             }
         } catch (error) {
             console.error('Erro ao salvar dados:', error);
         }
     }
     
-    // SEGUNDO: Fazer logout do Supabase
     try {
         await supabaseClient.auth.signOut();
     } catch (error) {
         console.warn('Erro no logout do Supabase:', error);
     }
     
-    // TERCEIRO: Atualizar estado (manter dados na memória)
     data.session = false;
     isDataLoaded = false;
     currentUserId = null;
     currentStudent = null;
     currentPage = "dashboard";
     
-    // QUARTO: Esconder app e mostrar login
     document.getElementById("app").style.display = "none";
     document.getElementById("loginScreen").style.display = "grid";
     document.getElementById("loginPass").value = "";
     
-    // QUINTO: Limpar views
     document.querySelectorAll(".view").forEach(view => {
         view.innerHTML = '';
         view.classList.remove('active');
     });
     
-    // SEXTO: Ativar dashboard com mensagem
     const dashboardView = document.getElementById("page-dashboard");
     if (dashboardView) {
         dashboardView.classList.add('active');
@@ -1416,7 +1419,6 @@ async function logout() {
         `;
     }
     
-    // SÉTIMO: Limpar nome do usuário
     document.getElementById("topUserName").textContent = "";
     document.getElementById("topAvatar").textContent = "?";
     
@@ -2174,6 +2176,10 @@ function renderDayPanel(day) {
             }).join("") : `<div class="empty">Nenhuma sessão neste dia.</div>`}
         </div>`;
 }
+
+// ============================================================
+// SAVE APPOINTMENT - FUNÇÃO CORRIGIDA
+// ============================================================
 
 async function saveAppointment() {
     const alunoId = document.getElementById("agAluno").value;
