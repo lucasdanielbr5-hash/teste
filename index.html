@@ -138,6 +138,7 @@ button{cursor:pointer}
 .profile-meta{font-size:12px;color:#81908a;margin-top:4px}
 .profile-actions{margin-left:auto;display:flex;gap:7px}
 .profile-body{padding:20px 24px}
+.profile-layout{display:grid;grid-template-columns:2fr 1fr;gap:18px;margin-top:18px}
 
 .timeline{display:flex;flex-direction:column;gap:10px}
 .evolution{border:1px solid var(--line);border-radius:13px;padding:14px;background:#fbfcfc}
@@ -145,82 +146,88 @@ button{cursor:pointer}
 .evolution-title{font-size:13px;font-weight:700;margin:5px 0}
 .evolution-text{font-size:12px;line-height:1.65;color:#596761;white-space:pre-wrap}
 
-/* AGENDA REFORMULADA - MAIS LIMPA E PRÁTICA */
-.agenda-slim .agenda-header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px;flex-wrap:wrap}
-.agenda-slim .agenda-nav{display:flex;align-items:center;gap:6px}
-.agenda-slim .agenda-nav button{background:#f5f8f7;border:0;border-radius:10px;padding:6px 12px;font-size:12px;font-weight:600;color:#5a6b64;transition:.15s}
-.agenda-slim .agenda-nav button:hover{background:#eaf0ed}
-.agenda-slim .agenda-nav .month-label{font-size:16px;font-weight:700;min-width:140px;text-align:center;color:#263238}
-.agenda-slim .agenda-grid{display:grid;grid-template-columns:60px repeat(5,1fr);gap:0;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff}
-.agenda-slim .agenda-grid .header-cell{background:#fafcfb;padding:10px 6px;text-align:center;font-size:10px;font-weight:600;color:#68766f;border-bottom:1px solid var(--line);border-right:1px solid var(--line)}
-.agenda-slim .agenda-grid .header-cell:last-child{border-right:0}
-.agenda-slim .agenda-grid .hour-cell{padding:6px;font-size:10px;color:#97a39e;text-align:right;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:#fafcfb}
-.agenda-slim .agenda-grid .slot-cell{padding:3px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);min-height:56px;background:#fff;transition:.1s}
-.agenda-slim .agenda-grid .slot-cell:hover{background:#f8fbf9}
-.agenda-slim .agenda-grid .slot-cell:last-child{border-right:0}
-.agenda-slim .agenda-event{background:var(--sage-light);border-radius:8px;padding:4px 6px;font-size:10px;cursor:pointer;display:flex;flex-direction:column;gap:2px;min-height:44px;border-left:3px solid var(--sage)}
-.agenda-slim .agenda-event .ev-name{font-weight:700;font-size:10px;color:#34413c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.agenda-slim .agenda-event .ev-time{font-size:8px;color:#8a9892}
-.agenda-slim .agenda-event .ev-actions{display:flex;gap:3px;margin-top:2px;flex-wrap:wrap}
-.agenda-slim .agenda-event .ev-actions button{border:0;background:rgba(255,255,255,.7);border-radius:4px;padding:1px 5px;font-size:8px;font-weight:600}
-.agenda-slim .agenda-event .ev-actions .act-presence{color:var(--sage)}
-.agenda-slim .agenda-event .ev-actions .act-payment{color:#6288a8}
-.agenda-slim .agenda-event .ev-actions .act-cancel{color:#b85b5b}
-.agenda-slim .empty-slot{height:100%;display:flex;align-items:center;justify-content:center;color:#c1ccc7;font-size:10px;cursor:pointer}
-.agenda-slim .empty-slot:hover{color:var(--sage)}
+.agenda-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:15px}
+.toolbar-group{display:flex;gap:5px;align-items:center}
+.month-label{font-size:16px;font-weight:700;min-width:150px;text-align:center}
+.week-grid{display:grid;grid-template-columns:70px repeat(5,minmax(130px,1fr));min-width:700px}
+.week-head{background:#fafcfb;border-bottom:1px solid var(--line);padding:10px;text-align:center;font-size:11px;font-weight:700;color:#68766f}
+.time-cell{height:72px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:7px;font-size:10px;color:#97a39e;text-align:right}
+.slot{height:72px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:4px;background:#fff}
+.slot:hover{background:#fbfdfc}
+.event{padding:7px;border-radius:9px;font-size:10px;line-height:1.3;cursor:pointer;position:relative;min-height:58px}
+.event.psico{background:#edf4f8;color:#557792}
+.event.psicopeg{background:#f0f5ec;color:#5d806c}
+.event.aula{background:#f5f0f8;color:#80678c}
+.event strong{display:block;font-size:10px;margin-bottom:2px}
+.event-actions{display:flex;gap:3px;margin-top:5px}
+.event-actions button{border:0;background:rgba(255,255,255,.65);border-radius:5px;padding:2px 5px;font-size:9px}
+.empty-slot{height:100%;display:grid;place-items:center;color:#c1ccc7;font-size:11px}
 
-/* AVALIAÇÕES - INTERFACE PASSO A PASSO */
-.aval-step{max-width:700px;margin:0 auto}
-.aval-step .step-progress{display:flex;gap:6px;margin-bottom:20px;justify-content:center}
-.aval-step .step-progress .dot{width:10px;height:10px;border-radius:50%;background:#dfe7e3;transition:.3s}
-.aval-step .step-progress .dot.active{background:var(--sage)}
-.aval-step .step-progress .dot.done{background:var(--sage-dark)}
-.aval-step .step-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px;box-shadow:0 4px 16px rgba(0,0,0,.04)}
-.aval-step .step-card .step-number{font-size:11px;color:#8a9892;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
-.aval-step .step-card .step-question{font-size:16px;font-weight:700;margin:10px 0 16px;color:#263238;line-height:1.5}
-.aval-step .step-card .step-options{display:flex;flex-direction:column;gap:8px}
-.aval-step .step-card .step-options label{display:flex;align-items:center;gap:10px;padding:12px 14px;border:2px solid var(--line);border-radius:12px;cursor:pointer;transition:.15s;font-size:13px}
-.aval-step .step-card .step-options label:hover{border-color:#b8ccc2;background:#f8fbf9}
-.aval-step .step-card .step-options label.selected{border-color:var(--sage);background:var(--sage-light)}
-.aval-step .step-card .step-options label input[type="radio"]{accent-color:var(--sage);width:16px;height:16px}
-.aval-step .step-nav{display:flex;justify-content:space-between;margin-top:20px;gap:10px}
-.aval-step .step-nav button{padding:10px 20px;border:0;border-radius:10px;font-weight:600;font-size:12px;transition:.15s}
-.aval-step .step-nav .btn-prev{background:#f5f8f7;color:#5a6b64}
-.aval-step .step-nav .btn-prev:hover{background:#eaf0ed}
-.aval-step .step-nav .btn-next{background:var(--sage);color:#fff}
-.aval-step .step-nav .btn-next:hover{background:var(--sage-dark)}
-.aval-step .step-nav .btn-next:disabled{opacity:.4;cursor:not-allowed}
+.month-grid{display:grid;grid-template-columns:repeat(7,1fr);border:1px solid var(--line);border-radius:15px;overflow:hidden;background:white}
+.month-week{display:contents}
+.month-day{
+ min-height:105px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);
+ padding:8px;cursor:pointer
+}
+.month-day:hover{background:#fafcfb}
+.month-day.other{background:#fafafa;color:#b9c2be}
+.day-number{font-size:11px;font-weight:700}
+.dot-row{display:flex;flex-wrap:wrap;gap:3px;margin-top:9px}
+.dot{width:7px;height:7px;border-radius:50%}
+.dot.psico{background:#8db0c8}.dot.psicopeg{background:#8eb29d}.dot.aula{background:#ad94b9}
+.day-events{margin-top:7px;display:flex;flex-direction:column;gap:3px}
+.day-event{font-size:9px;padding:3px 5px;border-radius:5px;background:#edf4f8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-/* PERFIL - COM ELEMENTOS GRÁFICOS */
-.profile-stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
-.profile-stats-grid .stat-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;text-align:center}
-.profile-stats-grid .stat-card .number{font-size:28px;font-weight:700;color:#263238}
-.profile-stats-grid .stat-card .label{font-size:10px;color:#8a9892;text-transform:uppercase;letter-spacing:.05em;margin-top:4px}
-.profile-stats-grid .stat-card .icon{font-size:24px;margin-bottom:4px}
-.profile-timeline-compact{max-height:300px;overflow-y:auto;padding-right:6px}
-.profile-timeline-compact .tl-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid #f0f3f2}
-.profile-timeline-compact .tl-item:last-child{border:0}
-.profile-timeline-compact .tl-dot{width:10px;height:10px;border-radius:50%;margin-top:4px;flex-shrink:0}
-.profile-timeline-compact .tl-dot.consulta{background:#8db0c8}
-.profile-timeline-compact .tl-dot.evolucao{background:#8eb29d}
-.profile-timeline-compact .tl-dot.avaliacao{background:#ad94b9}
-.profile-timeline-compact .tl-dot.escola{background:#c9a87c}
-.profile-timeline-compact .tl-content{flex:1;min-width:0}
-.profile-timeline-compact .tl-content .tl-title{font-weight:600;font-size:12px}
-.profile-timeline-compact .tl-content .tl-date{font-size:10px;color:#8a9892}
-.profile-timeline-compact .tl-content .tl-desc{font-size:11px;color:#596761;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.finance-table{width:100%;border-collapse:collapse}
+.finance-table th{text-align:left;font-size:10px;color:#87948e;text-transform:uppercase;padding:10px;border-bottom:1px solid var(--line)}
+.finance-table td{padding:12px 10px;border-bottom:1px solid #f0f3f2;font-size:12px}
+.paid{color:#5d8a70;font-weight:700}.pending{color:#a98058;font-weight:700}
+.alert{padding:12px;border-radius:12px;background:#fff8ef;border:1px solid #f3e5d2}
+.alert-title{font-size:12px;font-weight:700;color:#876f51}
+.alert-text{font-size:11px;color:#8d8171;margin-top:3px}
+.empty{padding:30px;text-align:center;color:#98a49f;font-size:13px}
+.kpi-bar{height:6px;border-radius:10px;background:#edf1ef;overflow:hidden;margin-top:10px}
+.kpi-fill{height:100%;background:var(--sage);border-radius:10px}
 
-/* FINANCEIRO - SEM DECLARAÇÃO */
-.finance-side .side-card .sc-row{display:flex;justify-content:space-between;font-size:11px;padding:5px 0;border-bottom:1px solid #f0f3f2}
-.finance-side .side-card .sc-row:last-child{border:0}
-.finance-side .side-card .sc-row .sc-val{font-weight:700}
+.login-screen{height:100vh;display:grid;place-items:center;background:linear-gradient(135deg,#f4f8f6,#f1f5f8)}
+.login-box{width:min(420px,calc(100% - 30px));background:#fff;border:1px solid var(--line);border-radius:24px;padding:34px;box-shadow:0 20px 60px rgba(40,70,55,.08)}
+.login-brand{display:flex;justify-content:center;align-items:center;gap:10px;color:var(--sage-dark);font-weight:700;font-size:22px}
+.login-sub{text-align:center;color:#87948e;font-size:12px;margin:8px 0 28px}
 
-/* RESPONSIVO */
+.toast{
+ position:fixed;right:22px;bottom:22px;background:#263d35;color:#fff;padding:12px 16px;
+ border-radius:12px;font-size:12px;z-index:100;opacity:0;transform:translateY(10px);pointer-events:none;transition:.25s
+}
+.toast.show{opacity:1;transform:none}
+
+.profile-timeline-item{
+ padding:14px 0;
+ border-bottom:1px solid #f0f3f2;
+ display:flex;
+ gap:14px;
+ align-items:flex-start;
+}
+.profile-timeline-item:last-child{border-bottom:0}
+.profile-timeline-dot{
+ width:10px;
+ height:10px;
+ border-radius:50%;
+ margin-top:4px;
+ flex-shrink:0;
+}
+.profile-timeline-dot.evolution{background:#8eb29d}
+.profile-timeline-dot.observation{background:#8db0c8}
+.profile-timeline-dot.alert{background:#c9a87c}
+.profile-timeline-content{flex:1;min-width:0}
+.profile-timeline-content .title{font-weight:700;font-size:13px}
+.profile-timeline-content .meta{font-size:10px;color:#8a9892;margin:2px 0 5px}
+.profile-timeline-content .text{font-size:12px;color:#596761;line-height:1.6;white-space:pre-wrap}
+.profile-timeline-content .actions{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+
 @media(max-width:950px){
  .stats{grid-template-columns:repeat(2,1fr)}
- .profile-stats-grid{grid-template-columns:repeat(2,1fr)}
+ .profile-layout{grid-template-columns:1fr}
  .form-grid{grid-template-columns:repeat(2,1fr)}
- .agenda-slim .agenda-grid{grid-template-columns:50px repeat(5,1fr);font-size:9px}
 }
 @media(max-width:680px){
  .sidebar{width:58px;padding:15px 6px}
@@ -237,9 +244,118 @@ button{cursor:pointer}
  .profile-body{padding:15px}
  .profile-avatar{width:75px;height:75px}
  .profile-name{font-size:18px}
- .profile-stats-grid{grid-template-columns:1fr 1fr}
- .agenda-slim .agenda-grid{grid-template-columns:40px repeat(5,1fr);font-size:8px;overflow-x:auto;min-width:500px}
+ .month-grid{min-width:620px}
 }
+
+.help-box{display:flex;gap:10px;align-items:flex-start;background:#f4f8f6;border:1px solid #d9e6e0;border-radius:14px;padding:13px 16px;margin-bottom:18px;font-size:12px;line-height:1.6;color:#5a6b64}
+.help-box i{flex-shrink:0}
+
+.finance-layout{display:grid;grid-template-columns:1fr 280px;gap:18px;align-items:start}
+.finance-side{position:sticky;top:10px}
+.mini-cal{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px}
+.mini-cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.mini-cal-head .mc-title{font-size:12px;font-weight:700;text-transform:capitalize;color:#4a5852}
+.mini-cal-head button{border:0;background:#f4f8f6;border-radius:8px;width:24px;height:24px;cursor:pointer;font-size:13px;color:#6b7a73;display:flex;align-items:center;justify-content:center}
+.mini-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.mini-cal-dow{font-size:8px;color:#a3aea9;text-align:center;padding:2px 0}
+.mini-cal-day{aspect-ratio:1;font-size:10px;display:flex;align-items:center;justify-content:center;border-radius:6px;cursor:default;color:#6b7a73;position:relative}
+.mini-cal-day.other{color:#d0d8d4}
+.mini-cal-day.today{background:var(--sage);color:#fff;font-weight:700}
+.mini-cal-day.has-event::after{content:"";position:absolute;bottom:2px;width:4px;height:4px;border-radius:50%;background:#e8a23d}
+.mini-cal-day.has-event.paid::after{background:var(--sage)}
+.mini-cal-day.has-event.pending::after{background:#e8a23d}
+.mini-cal-day.sel{outline:2px solid var(--sage);outline-offset:-2px}
+.side-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:12px}
+.side-card .sc-title{font-size:12px;font-weight:700;margin-bottom:8px;color:#4a5852}
+.side-card .sc-row{display:flex;justify-content:space-between;font-size:11px;padding:5px 0;border-bottom:1px solid #f0f3f2}
+.side-card .sc-row:last-child{border:0}
+.side-card .sc-row .sc-val{font-weight:700}
+
+.aval-type-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;background:#eaf3ee;color:#3d8a6b}
+.aval-type-badge.survey{background:#eef0f8;color:#5b63b3}
+.aval-type-badge.screening{background:#fef3e8;color:#b8732a}
+.aval-type-badge.anamnese{background:#e8f0fe;color:#3a6cb8}
+.aval-list-item{padding:14px 0;border-top:1px solid var(--line)}
+.aval-applied-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f5f7f6}
+.aval-applied-row:last-child{border:0}
+@media(max-width:950px){
+ .finance-layout{grid-template-columns:1fr}
+ .finance-side{position:static}
+}
+
+.timeline-item{
+ padding:16px 0;
+ border-bottom:1px solid #f0f3f2;
+ display:flex;
+ gap:14px;
+ align-items:flex-start;
+}
+.timeline-item:last-child{border-bottom:0}
+.timeline-dot{
+ width:12px;
+ height:12px;
+ border-radius:50%;
+ margin-top:3px;
+ flex-shrink:0;
+}
+.timeline-dot.consulta{background:#8db0c8}
+.timeline-dot.evolucao{background:#8eb29d}
+.timeline-dot.avaliacao{background:#ad94b9}
+.timeline-dot.escola{background:#c9a87c}
+.timeline-dot.observacao{background:#b8b0a8}
+.timeline-content{flex:1;min-width:0}
+.timeline-content .tl-title{font-weight:700;font-size:13px}
+.timeline-content .tl-meta{font-size:10px;color:#8a9892;margin:2px 0 5px}
+.timeline-content .tl-text{font-size:12px;color:#596761;line-height:1.6;white-space:pre-wrap}
+
+.aval-pdf-btn{display:inline-flex;align-items:center;gap:5px;font-size:10px;padding:4px 10px;border-radius:8px;border:1px solid var(--line);background:#fff;color:#53615c;cursor:pointer;transition:.15s}
+.aval-pdf-btn:hover{background:#f7faf8}
+
+.two-col-layout{display:grid;grid-template-columns:1fr 280px;gap:18px;align-items:start}
+.right-sidebar{position:sticky;top:10px}
+@media(max-width:950px){
+ .two-col-layout{grid-template-columns:1fr}
+ .right-sidebar{position:static}
+}
+
+/* PERFIL - CARDS GRÁFICOS */
+.profile-stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.profile-stats-grid .stat-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;text-align:center}
+.profile-stats-grid .stat-card .number{font-size:28px;font-weight:700;color:#263238}
+.profile-stats-grid .stat-card .label{font-size:10px;color:#8a9892;text-transform:uppercase;letter-spacing:.05em;margin-top:4px}
+.profile-stats-grid .stat-card .icon{font-size:24px;margin-bottom:4px}
+.profile-timeline-compact{max-height:250px;overflow-y:auto;padding-right:6px}
+.profile-timeline-compact .tl-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid #f0f3f2}
+.profile-timeline-compact .tl-item:last-child{border:0}
+.profile-timeline-compact .tl-dot{width:10px;height:10px;border-radius:50%;margin-top:4px;flex-shrink:0}
+.profile-timeline-compact .tl-dot.observation{background:#8db0c8}
+.profile-timeline-compact .tl-dot.evolution{background:#8eb29d}
+.profile-timeline-compact .tl-content{flex:1;min-width:0}
+.profile-timeline-compact .tl-content .tl-title{font-weight:600;font-size:12px}
+.profile-timeline-compact .tl-content .tl-date{font-size:10px;color:#8a9892}
+.profile-timeline-compact .tl-content .tl-desc{font-size:11px;color:#596761;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* AVALIAÇÕES - PASSO A PASSO */
+.aval-step{max-width:650px;margin:0 auto}
+.aval-step .step-progress{display:flex;gap:6px;margin-bottom:20px;justify-content:center;flex-wrap:wrap}
+.aval-step .step-progress .dot{width:10px;height:10px;border-radius:50%;background:#dfe7e3;transition:.3s}
+.aval-step .step-progress .dot.active{background:var(--sage)}
+.aval-step .step-progress .dot.done{background:var(--sage-dark)}
+.aval-step .step-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px}
+.aval-step .step-card .step-number{font-size:11px;color:#8a9892;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.aval-step .step-card .step-question{font-size:16px;font-weight:700;margin:10px 0 16px;color:#263238;line-height:1.5}
+.aval-step .step-card .step-options{display:flex;flex-direction:column;gap:8px}
+.aval-step .step-card .step-options label{display:flex;align-items:center;gap:10px;padding:12px 14px;border:2px solid var(--line);border-radius:12px;cursor:pointer;transition:.15s;font-size:13px}
+.aval-step .step-card .step-options label:hover{border-color:#b8ccc2;background:#f8fbf9}
+.aval-step .step-card .step-options label.selected{border-color:var(--sage);background:var(--sage-light)}
+.aval-step .step-card .step-options label input[type="radio"]{accent-color:var(--sage);width:16px;height:16px}
+.aval-step .step-nav{display:flex;justify-content:space-between;margin-top:20px;gap:10px}
+.aval-step .step-nav button{padding:10px 20px;border:0;border-radius:10px;font-weight:600;font-size:12px;transition:.15s}
+.aval-step .step-nav .btn-prev{background:#f5f8f7;color:#5a6b64}
+.aval-step .step-nav .btn-prev:hover{background:#eaf0ed}
+.aval-step .step-nav .btn-next{background:var(--sage);color:#fff}
+.aval-step .step-nav .btn-next:hover{background:var(--sage-dark)}
+.aval-step .step-nav .btn-next:disabled{opacity:.4;cursor:not-allowed}
 </style>
 <script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
 </head>
@@ -357,6 +473,7 @@ let currentPage = "dashboard";
 let currentStudent = null;
 let currentAssessment = null;
 let calendarDate = new Date();
+let calendarMode = "week";
 let selectedDay = null;
 let studentSectionPage = { overview: 1, avaliacoes: 1, escola: 1 };
 let currentConsultation = null;
@@ -368,12 +485,13 @@ let isSaving = false;
 let isDataLoaded = false;
 
 // Variáveis para avaliação passo a passo
-let avalStepData = null;
-let avalStepIndex = 0;
-let avalStepAnswers = [];
+let avalStepMode = null; // 'select', 'answering', 'done'
+let avalStepQuestions = [];
+let avalStepCurrentIndex = 0;
+let avalStepResponses = [];
+let avalStepTemplateId = null;
 let avalStepAlunoId = null;
-let avalStepTemplate = null;
-let avalStepResumo = "";
+let avalStepResumo = '';
 
 const TYPES = {
     psicologia: { label: "Psicologia", cls: "psico" },
@@ -386,7 +504,7 @@ const HOURS = [];
 for (let h = 8; h <= 18; h++) HOURS.push(String(h).padStart(2, "0") + ":00");
 
 // ============================================================
-// FUNÇÕES AUXILIARES
+// FUNÇÕES AUXILIARES (MANTIDAS IGUAIS)
 // ============================================================
 
 function uid() {
@@ -587,7 +705,7 @@ function studentPager(items, page, size = 5, onclick = "") {
 }
 
 // ============================================================
-// MAPEAMENTO SUPABASE <-> MEMÓRIA
+// MAPEAMENTO SUPABASE <-> MEMÓRIA (MANTIDO)
 // ============================================================
 
 function mapAlunoFromDB(row) {
@@ -745,7 +863,7 @@ function mapProfessorFromDB(row) {
 }
 
 // ============================================================
-// FUNÇÕES SUPABASE - AUTH
+// FUNÇÕES SUPABASE - AUTH (MANTIDAS)
 // ============================================================
 
 async function getCurrentUserId() {
@@ -807,7 +925,7 @@ async function getUserId() {
 }
 
 // ============================================================
-// FUNÇÕES SUPABASE - LOAD
+// FUNÇÕES SUPABASE - LOAD (MANTIDAS)
 // ============================================================
 
 async function loadDataFromSupabase() {
@@ -943,7 +1061,7 @@ async function loadDataFromSupabase() {
 }
 
 // ============================================================
-// FUNÇÕES SUPABASE - SAVE
+// FUNÇÕES SUPABASE - SAVE (MANTIDAS)
 // ============================================================
 
 const COLUMN_MAP = {
@@ -1271,7 +1389,7 @@ async function saveProfessor(professor) {
 }
 
 // ============================================================
-// FUNÇÕES PRINCIPAIS LOAD/SAVE
+// FUNÇÕES PRINCIPAIS LOAD/SAVE (MANTIDAS)
 // ============================================================
 
 async function loadData() {
@@ -1371,7 +1489,7 @@ async function saveData() {
 }
 
 // ============================================================
-// AJUDA CONTEXTUAL
+// AJUDA CONTEXTUAL (MANTIDA)
 // ============================================================
 const HELP_TEXTS = {
     dashboard: "Bem-vindo ao ASAS! Aqui você acompanha o resumo geral: total de alunos, atendimentos do mês, pendências financeiras.",
@@ -1389,7 +1507,7 @@ function renderHelpBox(page) {
 }
 
 // ============================================================
-// NAVEGAÇÃO
+// NAVEGAÇÃO (MANTIDA)
 // ============================================================
 
 function navigate(page) {
@@ -1419,11 +1537,12 @@ function navigate(page) {
 
     // Reset avaliação passo a passo ao sair da página
     if (page !== "avaliacoes") {
-        avalStepData = null;
-        avalStepIndex = 0;
-        avalStepAnswers = [];
+        avalStepMode = null;
+        avalStepQuestions = [];
+        avalStepCurrentIndex = 0;
+        avalStepResponses = [];
+        avalStepTemplateId = null;
         avalStepAlunoId = null;
-        avalStepTemplate = null;
     }
 
     renderPage();
@@ -1463,7 +1582,7 @@ function updateUser() {
 }
 
 // ============================================================
-// LOGIN/LOGOUT
+// LOGIN/LOGOUT (MANTIDO)
 // ============================================================
 
 async function login() {
@@ -1542,7 +1661,7 @@ async function logout() {
 }
 
 // ============================================================
-// DASHBOARD
+// DASHBOARD (MANTIDO)
 // ============================================================
 
 function renderDashboard() {
@@ -1642,8 +1761,16 @@ function renderDashboard() {
     lucide.createIcons();
 }
 
+function getSaudacao() {
+    const hora = new Date().getHours();
+    if (hora >= 6 && hora < 12) return "Bom dia";
+    if (hora >= 12 && hora < 18) return "Boa tarde";
+    if (hora >= 18 && hora < 24) return "Boa noite";
+    return "Boa noite";
+}
+
 // ============================================================
-// ALUNOS
+// ALUNOS (MANTIDO)
 // ============================================================
 
 function renderAlunos() {
@@ -1762,7 +1889,7 @@ async function saveStudent() {
 }
 
 // ============================================================
-// PRONTUÁRIO
+// PRONTUÁRIO (MANTIDO)
 // ============================================================
 
 function openStudent(id) {
@@ -2038,7 +2165,7 @@ function renderStudentProfile(mode = "overview") {
 }
 
 // ============================================================
-// EVOLUÇÕES
+// EVOLUÇÕES (MANTIDO)
 // ============================================================
 
 function newEvolucaoForm() {
@@ -2080,7 +2207,7 @@ async function saveEvolucaoHandler() {
 }
 
 // ============================================================
-// EXCLUIR ALUNO
+// EXCLUIR ALUNO (MANTIDO)
 // ============================================================
 
 async function deleteStudent(id) {
@@ -2095,7 +2222,7 @@ async function deleteStudent(id) {
 }
 
 // ============================================================
-// CONSULTAS
+// CONSULTAS (MANTIDO)
 // ============================================================
 
 function newConsultationForm() {
@@ -2152,7 +2279,7 @@ function openConsultation(id) {
 }
 
 // ============================================================
-// AVALIAÇÕES
+// AVALIAÇÕES (REVISADO - MANTENDO ESTRUTURA)
 // ============================================================
 
 async function createAssessment() {
@@ -2205,7 +2332,7 @@ async function saveAssessmentApplication() {
 }
 
 // ============================================================
-// ESCOLA
+// ESCOLA (MANTIDO)
 // ============================================================
 
 async function saveSchoolInfo() {
@@ -2258,7 +2385,7 @@ async function deleteSchoolRecord(id) {
 }
 
 // ============================================================
-// AGENDA - REFORMULADA MAIS LIMPA E PRÁTICA
+// AGENDA (MANTIDA - APENAS PEQUENAS MELHORIAS VISUAIS)
 // ============================================================
 
 function renderAgenda() {
@@ -2268,81 +2395,91 @@ function renderAgenda() {
         return;
     }
 
-    const title = monthName(calendarDate);
+    const title = calendarMode === "week" ?
+        `${fmtDate(dateISO(weekDates(calendarDate)[0]))} — ${fmtDate(dateISO(weekDates(calendarDate)[4]))}` :
+        monthName(calendarDate);
 
     document.getElementById("page-agenda").innerHTML = `
         ${renderHelpBox("agenda")}
 
         <div class="section-head">
-            <div><div class="section-title">Agenda</div><div class="section-sub">Visualização semanal - clique em um horário vazio para agendar.</div></div>
+            <div><div class="section-title">Agenda</div><div class="section-sub">Organize sessões, aulas e acompanhamentos.</div></div>
             <button class="btn btn-primary" onclick="toggleAgendaForm()"><i data-lucide="calendar-plus"></i>Novo agendamento</button>
         </div>
 
-        <div id="agendaForm" style="display:none;background:#f8fbf9;border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:16px">
-            <div class="section-title" style="margin-bottom:14px">Novo atendimento</div>
-            <div class="form-grid">
-                <div class="field"><label class="label">Aluno</label><select id="agAluno" class="select">${(data.alunos || []).map(a => `<option value="${a.id}" ${a.id === currentStudent ? "selected" : ""}>${esc(a.nome)}</option>`).join("")}</select></div>
-                <div class="field"><label class="label">Data</label><input id="agData" class="input" type="date" value="${selectedDay || today()}"></div>
-                <div class="field"><label class="label">Horário</label><input id="agHora" class="input" type="time" value="09:00"></div>
-                <div class="field"><label class="label">Tipo</label><select id="agTipo" class="select"><option value="psicopedagogia">Psicopedagogia</option><option value="psicologia">Psicologia</option><option value="aula">Aula Particular</option></select></div>
-            </div>
-            <div class="form-actions"><button class="btn btn-primary" onclick="saveAppointment()"><i data-lucide="save"></i>Agendar</button><button class="btn btn-outline" onclick="toggleAgendaForm()">Cancelar</button></div>
-        </div>
-
-        <div class="agenda-slim">
-            <div class="agenda-header">
-                <div class="agenda-nav">
-                    <button onclick="calendarPrev()"><i data-lucide="chevron-left"></i></button>
+        <div class="card">
+            <div class="agenda-toolbar">
+                <div class="toolbar-group">
+                    <button class="btn btn-outline btn-sm" onclick="calendarPrev()"><i data-lucide="chevron-left"></i></button>
                     <div class="month-label">${esc(title)}</div>
-                    <button onclick="calendarNext()"><i data-lucide="chevron-right"></i></button>
+                    <button class="btn btn-outline btn-sm" onclick="calendarNext()"><i data-lucide="chevron-right"></i></button>
                     <button class="btn btn-soft btn-sm" onclick="calendarToday()">Hoje</button>
                 </div>
-                <div style="display:flex;gap:6px">
-                    <button class="btn ${calendarMode === "week" ? "btn-soft" : "btn-outline"} btn-sm" onclick="setCalendarMode('week')">Semana</button>
-                    <button class="btn ${calendarMode === "month" ? "btn-soft" : "btn-outline"} btn-sm" onclick="setCalendarMode('month')">Mês</button>
+                <div class="toolbar-group">
+                    <button class="btn ${calendarMode === "week" ? "btn-soft" : "btn-outline"} btn-sm" onclick="setCalendarMode('week')">Visão semanal</button>
+                    <button class="btn ${calendarMode === "month" ? "btn-soft" : "btn-outline"} btn-sm" onclick="setCalendarMode('month')">Visão mensal</button>
                 </div>
             </div>
 
-            ${calendarMode === "week" ? renderAgendaWeek() : renderAgendaMonth()}
+            <div id="agendaForm" style="display:none;background:#f8fbf9;border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:16px">
+                <div class="section-title" style="margin-bottom:14px">Novo atendimento</div>
+                <div class="form-grid">
+                    <div class="field"><label class="label">Aluno</label><select id="agAluno" class="select">${(data.alunos || []).map(a => `<option value="${a.id}" ${a.id === currentStudent ? "selected" : ""}>${esc(a.nome)}</option>`).join("")}</select></div>
+                    <div class="field"><label class="label">Data</label><input id="agData" class="input" type="date" value="${selectedDay || today()}"></div>
+                    <div class="field"><label class="label">Horário</label><input id="agHora" class="input" type="time" value="09:00"></div>
+                    <div class="field"><label class="label">Tipo</label><select id="agTipo" class="select"><option value="psicopedagogia">Psicopedagogia</option><option value="psicologia">Psicologia</option><option value="aula">Aula Particular</option></select></div>
+                </div>
+                <div class="form-actions"><button class="btn btn-primary" onclick="saveAppointment()"><i data-lucide="save"></i>Agendar</button><button class="btn btn-outline" onclick="toggleAgendaForm()">Cancelar</button></div>
+            </div>
+
+            ${calendarMode === "week" ? renderWeek() : renderMonth()}
         </div>
+
+        ${selectedDay && calendarMode === "month" ? renderDayPanel(selectedDay) : ""}
     `;
     lucide.createIcons();
 }
 
-function renderAgendaWeek() {
-    const dates = weekDates(calendarDate);
-    let html = `<div style="overflow:auto"><div class="agenda-grid">`;
+function toggleAgendaForm() {
+    const f = document.getElementById("agendaForm");
+    if (!f) return;
+    f.style.display = f.style.display === "none" ? "block" : "none";
+    if (f.style.display === "block") f.scrollIntoView({ behavior: "smooth", block: "center" });
+}
 
-    html += `<div class="header-cell"></div>`;
+function renderWeek() {
+    const dates = weekDates(calendarDate);
+    let html = `<div style="overflow:auto"><div class="week-grid"><div class="week-head"></div>`;
+
     dates.forEach(d => {
-        html += `<div class="header-cell">${d.toLocaleDateString("pt-BR", { weekday: "short" })} ${d.getDate()}</div>`;
+        html += `<div class="week-head">${d.toLocaleDateString("pt-BR", { weekday: "short" })}<br><span style="font-size:14px;color:#34413c">${d.getDate()}</span></div>`;
     });
 
     HOURS.forEach(hour => {
-        html += `<div class="hour-cell">${hour}</div>`;
+        html += `<div class="time-cell">${hour}</div>`;
         dates.forEach(d => {
             const iso = dateISO(d);
             const appointments = activeAppointments().filter(a => a.data === iso && a.hora === hour);
 
             if (!appointments.length) {
-                html += `<div class="slot-cell" onclick="quickSchedule('${iso}','${hour}')"><div class="empty-slot">+</div></div>`;
+                html += `<div class="slot" onclick="quickSchedule('${iso}','${hour}')"><div class="empty-slot">+</div></div>`;
             } else {
-                html += `<div class="slot-cell">`;
+                html += `<div class="slot">`;
                 appointments.forEach(a => {
                     const s = getStudent(a.alunoId);
                     if (!s) {
-                        html += `<div class="agenda-event" style="background:#f0f0f0;border-left-color:#999"><div class="ev-name">Aluno removido</div></div>`;
+                        html += `<div class="event" style="background:#f0f0f0;color:#999"><strong>Aluno removido</strong> - ${a.hora}</div>`;
                         return;
                     }
                     const t = TYPES[a.tipo];
                     html += `
-                        <div class="agenda-event" onclick="openStudent('${s.id}')" style="${a.presente ? 'border-left-color:var(--sage)' : ''}">
-                            <div class="ev-name">${esc(s.nome)}</div>
-                            <div class="ev-time">${t?.label || a.tipo} · ${a.hora}</div>
-                            <div class="ev-actions">
-                                <button class="act-presence" onclick="event.stopPropagation();togglePresence('${a.id}')">${a.presente ? "✓" : "Presença"}</button>
-                                <button class="act-payment" onclick="event.stopPropagation();togglePayment('${a.id}')">${a.pago ? "💰" : "Pagar"}</button>
-                                <button class="act-cancel" onclick="event.stopPropagation();cancelAppointment('${a.id}')">✕</button>
+                        <div class="event ${t?.cls || ''}" onclick="openStudent('${s.id}')">
+                            <strong>${esc(s.nome)}</strong>
+                            ${t?.label || a.tipo}
+                            <div class="event-actions">
+                                <button onclick="event.stopPropagation();togglePresence('${a.id}')">${a.presente ? "Presente" : "Presença"}</button>
+                                <button onclick="event.stopPropagation();togglePayment('${a.id}')">${a.pago ? "Pago" : "Pagar"}</button>
+                                <button onclick="event.stopPropagation();cancelAppointment('${a.id}')">Cancelar</button>
                             </div>
                         </div>`;
                 });
@@ -2355,7 +2492,16 @@ function renderAgendaWeek() {
     return html;
 }
 
-function renderAgendaMonth() {
+function quickSchedule(date, hour) {
+    const f = document.getElementById("agendaForm");
+    if (!f) return;
+    f.style.display = "block";
+    document.getElementById("agData").value = date;
+    document.getElementById("agHora").value = hour;
+    f.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+function renderMonth() {
     const y = calendarDate.getFullYear();
     const m = calendarDate.getMonth();
     const first = new Date(y, m, 1);
@@ -2382,57 +2528,44 @@ function renderAgendaMonth() {
                 <div class="dot-row">${events.slice(0, 7).map(a => `<span class="dot ${TYPES[a.tipo]?.cls || ''}"></span>`).join("")}</div>
                 <div class="day-events">
                     ${events.slice(0, 3).map(a => { const s = getStudent(a.alunoId); return `<div class="day-event">${a.hora} · ${esc(s?.nome || "Aluno")}</div>`; }).join("")}
-                    ${events.length > 3 ? `<div style="font-size:9px;color:#8a9892">+${events.length - 3}</div>` : ""}
+                    ${events.length > 3 ? `<div style="font-size:9px;color:#8a9892">+${events.length - 3} atendimentos</div>` : ""}
                 </div>
             </div>`;
     }
 
     html += `</div></div>`;
-
-    if (selectedDay) {
-        const events = activeAppointments().filter(a => a.data === selectedDay).sort((a, b) => a.hora.localeCompare(b.hora));
-        html += `
-            <div class="card" style="margin-top:16px">
-                <div class="section-head">
-                    <div><div class="section-title">${fmtDate(selectedDay)}</div><div class="section-sub">${events.length} atendimento(s)</div></div>
-                    <button class="btn btn-primary btn-sm" onclick="quickSchedule('${selectedDay}','09:00')"><i data-lucide="plus"></i>Adicionar</button>
-                </div>
-                ${events.length ? events.map(a => {
-                    const s = getStudent(a.alunoId);
-                    if (!s) return `<div style="padding:6px 0;border-bottom:1px solid #f0f3f2;color:#999">Aluno removido - ${a.hora}</div>`;
-                    return `<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid #f0f3f2;font-size:12px">
-                        <strong style="width:40px">${a.hora}</strong>
-                        <div style="flex:1;cursor:pointer" onclick="openStudent('${s.id}')">${esc(s.nome)}</div>
-                        <button class="btn btn-sm ${a.presente ? "btn-soft" : "btn-outline"}" onclick="togglePresence('${a.id}')">${a.presente ? "Presente" : "Presença"}</button>
-                        <button class="btn btn-sm ${a.pago ? "btn-soft" : "btn-outline"}" onclick="togglePayment('${a.id}')">${a.pago ? "Pago" : "Pagar"}</button>
-                        <button class="btn btn-danger btn-sm" onclick="cancelAppointment('${a.id}')">✕</button>
-                    </div>`;
-                }).join("") : `<div class="empty">Nenhuma sessão.</div>`}
-            </div>`;
-    }
-
     return html;
-}
-
-function toggleAgendaForm() {
-    const f = document.getElementById("agendaForm");
-    if (!f) return;
-    f.style.display = f.style.display === "none" ? "block" : "none";
-    if (f.style.display === "block") f.scrollIntoView({ behavior: "smooth", block: "center" });
-}
-
-function quickSchedule(date, hour) {
-    const f = document.getElementById("agendaForm");
-    if (!f) return;
-    f.style.display = "block";
-    document.getElementById("agData").value = date;
-    document.getElementById("agHora").value = hour;
-    f.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
 function selectMonthDay(day) {
     selectedDay = day;
     renderAgenda();
+}
+
+function renderDayPanel(day) {
+    const events = activeAppointments().filter(a => a.data === day).sort((a, b) => a.hora.localeCompare(b.hora));
+
+    return `
+        <div class="card" style="margin-top:16px">
+            <div class="section-head">
+                <div><div class="section-title">Sessões de ${fmtDate(day)}</div><div class="section-sub">${events.length} atendimento(s)</div></div>
+                <button class="btn btn-primary btn-sm" onclick="quickSchedule('${day}','09:00')"><i data-lucide="plus"></i>Adicionar</button>
+            </div>
+            ${events.length ? events.map(a => {
+                const s = getStudent(a.alunoId);
+                if (!s) return `<div style="padding:10px 0;border-bottom:1px solid #f0f3f2;color:#999">Aluno removido - ${a.hora}</div>`;
+                const t = TYPES[a.tipo];
+                return `
+                    <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f0f3f2">
+                        <strong style="width:45px;font-size:12px">${a.hora}</strong>
+                        ${avatarHTML(s, "student-avatar")}
+                        <div style="flex:1"><div style="font-size:12px;font-weight:700;cursor:pointer" onclick="openStudent('${s.id}')">${esc(s.nome)}</div><div style="font-size:10px;color:#8a9892">${t?.label || a.tipo}</div></div>
+                        <button class="btn btn-sm ${a.presente ? "btn-soft" : "btn-outline"}" onclick="togglePresence('${a.id}')">${a.presente ? "Presente" : "Presença"}</button>
+                        <button class="btn btn-sm ${a.pago ? "btn-soft" : "btn-outline"}" onclick="togglePayment('${a.id}')">${a.pago ? "Pago" : "Pagamento"}</button>
+                        <button class="btn btn-danger btn-sm" onclick="cancelAppointment('${a.id}')">Cancelar</button>
+                    </div>`;
+            }).join("") : `<div class="empty">Nenhuma sessão neste dia.</div>`}
+        </div>`;
 }
 
 async function saveAppointment() {
@@ -2563,7 +2696,7 @@ function setCalendarMode(mode) {
 }
 
 // ============================================================
-// AVALIAÇÕES - INTERFACE PASSO A PASSO
+// AVALIAÇÕES PSICOPEDAGÓGICAS - PÁGINA DEDICADA
 // ============================================================
 
 const ASSESSMENT_TEMPLATES = [
@@ -2674,26 +2807,26 @@ const ASSESSMENT_TEMPLATES = [
     id: "tpl_snap",
     nome: "SNAP-IV (Rastreio TDAH)",
     tipo: "screening",
-    descricao: "Swanson, Nolan e Pelham — escala de rastreio para TDAH (18 itens).",
+    descricao: "Swanson, Nolan e Pelham — escala de rastreio para TDAH (versão simplificada, 18 itens).",
     questoes: [
-      "Não presta atenção suficiente a detalhes ou comete erros por descuido.",
+      "Não presta atenção suficiente a detalhes ou comete erros por descuido nos trabalhos escolares.",
       "Tem dificuldade em manter a atenção em tarefas ou atividades lúdicas.",
       "Parece não escutar quando lhe falam diretamente.",
-      "Não segue instruções até o fim e não termina trabalhos.",
+      "Não segue instruções até o fim e não termina trabalhos escolares.",
       "Tem dificuldade em organizar tarefas e atividades.",
-      "Evita tarefas que exigem esforço mental prolongado.",
-      "Perde coisas necessárias para tarefas ou atividades.",
+      "Evita, não gosta ou se envolve contra a vontade em tarefas que exigem esforço mental prolongado.",
+      "Perde coisas necessárias para tarefas ou atividades (brinquedos, tarefas, lápis, livros).",
       "Distrai-se facilmente com estímulos externos.",
       "Esquece-se de atividades diárias.",
       "Move as mãos ou os pés ou se remexe na cadeira.",
-      "Sai do lugar na sala de aula ou em outras situações.",
-      "Corre ou sobe em coisas excessivamente.",
-      "Tem dificuldade em brincar silenciosamente.",
+      "Sai do lugar na sala de aula ou em outras situações em que se espera que fique sentado.",
+      "Corre ou sobe em coisas excessivamente em situações inadequadas.",
+      "Tem dificuldade em brincar ou envolver-se silenciosamente em atividades de lazer.",
       "Está a mil por hora ou age como se fosse movido por um motor.",
       "Fala em excesso.",
-      "Responde precipitadamente antes das perguntas serem concluídas.",
+      "Responde precipitadamente antes de as perguntas terem sido concluídas.",
       "Tem dificuldade em aguardar sua vez.",
-      "Interrompe os outros ou se intromete."
+      "Interrompe os outros ou se intromete em conversas ou jogos."
     ],
     escala: [
       { valor: 0, rotulo: "Nenhuma" },
@@ -2706,27 +2839,27 @@ const ASSESSMENT_TEMPLATES = [
     id: "tpl_mchat",
     nome: "M-CHAT-R (Rastreio Autismo)",
     tipo: "screening",
-    descricao: "Modified Checklist for Autism in Toddlers — 20 itens Sim/Não.",
+    descricao: "Modified Checklist for Autism in Toddlers — rastreio para sinais do espectro autista (20 itens Sim/Não).",
     questoes: [
-      "A criança gosta de ser balançada?",
+      "A criança gosta de ser balançada, pular no seu colo ou nos seus joelhos?",
       "A criança tem interesse em outras crianças?",
-      "A criança gosta de usar objetos como ponto de apoio?",
-      "A criança tem prazer em brincar de esconde-esconde?",
-      "A criança faz de conta?",
-      "A criança aponta com o dedo para pedir algo?",
-      "A criança aponta para compartilhar interesse?",
-      "A criança brinca apropriadamente com pequenos brinquedos?",
+      "A criança gosta de usar objetos como ponto de apoio (andar pelos móveis) ou para alcançar algo?",
+      "A criança tem prazer em brincar de esconde-esconde ou de cabra-cega?",
+      "A criança faz de conta (por exemplo, falar ao telefone, cuidar de bonecas ou outras brincadeiras de faz de conta)?",
+      "A criança aponta com o dedo para pedir algo (apontar para um lanche distante)?",
+      "A criança aponta com o dedo para compartilhar interesse em algo (apontar para um avião no céu)?",
+      "A criança é capaz de brincar apropriadamente com pequenos brinquedos (carros, blocos) sem apenas colocar na boca, bater ou jogá-los?",
       "A criança já trouxe algum objeto para lhe mostrar?",
-      "A criança olha para você por 2-3 segundos?",
+      "A criança olha para você por 2-3 segundos, estabelecendo contato visual?",
       "A criança parece ser muito sensível ao barulho?",
-      "A criança sorri em resposta ao seu sorriso?",
-      "A criança imita você?",
-      "A criança responde ao nome?",
-      "Se você aponta para um brinquedo, a criança olha?",
+      "A criança sorri em resposta ao seu rosto ou ao seu sorriso?",
+      "A criança imita você (por exemplo, se você fizer uma careta, ela copia)?",
+      "A criança responde ao nome quando é chamada?",
+      "Se você aponta para um brinquedo distante, a criança olha para ele?",
       "A criança consegue andar?",
       "A criança olha para as coisas que você está olhando?",
-      "A criança faz movimentos incomuns com os dedos?",
-      "A criança tenta atrair sua atenção?",
+      "A criança faz movimentos incomuns com os dedos perto do rosto?",
+      "A criança tenta atrair sua atenção para sua própria atividade?",
       "Você já questionou se a criança é surda?"
     ],
     escala: [
@@ -2738,26 +2871,26 @@ const ASSESSMENT_TEMPLATES = [
     id: "tpl_asrs",
     nome: "ASRS (Rastreio TDAH Adulto)",
     tipo: "screening",
-    descricao: "Adult ADHD Self-Report Scale — 18 itens.",
+    descricao: "Adult ADHD Self-Report Scale — rastreio de TDAH em adultos (18 itens).",
     questoes: [
-      "Com que frequência você comete erros por descuido?",
-      "Com que frequência você tem dificuldade de concentração?",
-      "Com que frequência você tem dificuldade em lembrar compromissos?",
-      "Com que frequência você pula de uma tarefa para outra?",
-      "Com que frequência você procrastina?",
-      "Com que frequência você se impacienta com pessoas?",
-      "Com que frequência você perde a paciência em filas?",
-      "Com que frequência você tem dificuldade de relaxar?",
-      "Com que frequência você sente inquietação?",
-      "Com que frequência você se sente com muita energia?",
-      "Com que frequência você fala em excesso?",
-      "Com que frequência você termina as frases dos outros?",
-      "Com que frequência você se sente sobrecarregado?",
-      "Com que frequência você tem dificuldade em manter atenção?",
+      "Com que frequência você comete erros por descuido quando trabalha em algo chato ou difícil?",
+      "Com que frequência você tem dificuldade de concentração no que faz?",
+      "Com que frequência você tem dificuldade em lembrar de compromissos ou obrigações?",
+      "Com que frequência você pula de uma tarefa para outra ou tem dificuldade em fazer uma coisa de cada vez?",
+      "Com que frequência você procrastina ou adia o que precisa ser feito?",
+      "Com que frequência você se impacienta com pessoas que demoram a concluir o que têm a dizer?",
+      "Com que frequência você perde a paciência quando está em uma fila ou no trânsito?",
+      "Com que frequência você tem dificuldade de relaxar em momentos de lazer?",
+      "Com que frequência você sente inquietação ou agitação, mesmo em situações tranquilas?",
+      "Com que frequência você se sente com muita energia como se fosse movido por um motor?",
+      "Com que frequência você fala em excesso em situações sociais?",
+      "Com que frequência você termina as frases dos outros antes que eles terminem?",
+      "Com que frequência você se sente sobrecarregado pelas coisas que tem que fazer?",
+      "Com que frequência você tem dificuldade em manter a atenção em conversas ou leituras?",
       "Com que frequência você perde ou esquece coisas importantes?",
-      "Com que frequência você se distrai?",
-      "Com que frequência você inicia vários projetos?",
-      "Com que frequência você age impulsivamente?"
+      "Com que frequência você se distrai com atividades ou ruídos ao seu redor?",
+      "Com que frequência você inicia vários projetos ao mesmo tempo e tem dificuldade em concluí-los?",
+      "Com que frequência você age impulsivamente antes de pensar nas consequências?"
     ],
     escala: [
       { valor: 0, rotulo: "Nunca" },
@@ -2771,7 +2904,7 @@ const ASSESSMENT_TEMPLATES = [
     id: "tpl_custom",
     nome: "Avaliação Personalizada",
     tipo: "custom",
-    descricao: "Crie sua própria avaliação com questões personalizadas.",
+    descricao: "Crie sua própria avaliação com questões personalizadas (uma por linha).",
     campos: null,
     questoes: []
   }
@@ -2782,15 +2915,6 @@ let currentAvalMode = "list";
 let currentAvalTemplate = null;
 let currentAvalId = null;
 let window_avalHistTitulo = null;
-
-// Estado da avaliação passo a passo
-let avalStepMode = null; // 'select', 'answering', 'done'
-let avalStepQuestions = [];
-let avalStepCurrentIndex = 0;
-let avalStepResponses = [];
-let avalStepTemplateId = null;
-let avalStepAlunoId = null;
-let avalStepResumo = '';
 
 function getAvaliacoesGlobais() {
     const todas = [];
@@ -2817,6 +2941,7 @@ function renderAvaliacoes() {
         return;
     }
 
+    // Verifica se está em modo passo a passo
     if (avalStepMode === 'select') return renderAvalStepSelect();
     if (avalStepMode === 'answering') return renderAvalStepAnswer();
     if (avalStepMode === 'done') return renderAvalStepDone();
@@ -2843,15 +2968,15 @@ function renderAvaliacoesList() {
         ${renderHelpBox("avaliacoes")}
 
         <div class="section-head">
-            <div><div class="section-title">Avaliações Psicopedagógicas</div><div class="section-sub">Responda questão por questão de forma organizada.</div></div>
-            <button class="btn btn-primary" onclick="startAvalStep()"><i data-lucide="play"></i>Aplicar avaliação</button>
+            <div><div class="section-title">Avaliações Psicopedagógicas</div><div class="section-sub">Crie e aplique instrumentos de avaliação. Veja o histórico de aplicações por aluno.</div></div>
+            <button class="btn btn-primary" onclick="startNewAvaliacao()"><i data-lucide="plus"></i>Nova avaliação</button>
         </div>
 
         <div class="grid stats" style="grid-template-columns:repeat(4,minmax(0,1fr))">
-            <div class="card"><div class="stat-label">Modelos</div><div class="stat-value">${ASSESSMENT_TEMPLATES.length}</div></div>
-            <div class="card"><div class="stat-label">Avaliações criadas</div><div class="stat-value">${grupos.length}</div></div>
-            <div class="card"><div class="stat-label">Total de aplicações</div><div class="stat-value">${grupos.reduce((s, g) => s + g.aplicacoes, 0)}</div></div>
-            <div class="card"><div class="stat-label">Alunos avaliados</div><div class="stat-value">${[...new Set(todas.map(a => a.alunoId))].length}</div></div>
+            <div class="card"><div class="stat-label">Modelos disponíveis</div><div class="stat-value">${ASSESSMENT_TEMPLATES.length}</div><div class="stat-sub">Instrumentos prontos</div></div>
+            <div class="card"><div class="stat-label">Avaliações criadas</div><div class="stat-value">${grupos.length}</div><div class="stat-sub">Tipos distintos</div></div>
+            <div class="card"><div class="stat-label">Total de aplicações</div><div class="stat-value">${grupos.reduce((s, g) => s + g.aplicacoes, 0)}</div><div class="stat-sub">Respostas registradas</div></div>
+            <div class="card"><div class="stat-label">Alunos avaliados</div><div class="stat-value">${[...new Set(todas.map(a => a.alunoId))].length}</div><div class="stat-sub">Com pelo menos 1 avaliação</div></div>
         </div>
 
         <div class="card" style="margin-top:18px">
@@ -2866,14 +2991,14 @@ function renderAvaliacoesList() {
                         <div class="section-sub">${esc(t.descricao)}</div>
                         <div class="section-sub" style="margin-top:3px">${t.campos ? t.campos.reduce((s, c) => s + c.itens.length, 0) + " campos em " + t.campos.length + " seções" : (t.questoes || []).length + " questões"}</div>
                     </div>
-                    <button class="btn btn-primary btn-sm" onclick="startAvalStepWithTemplate('${t.id}')"><i data-lucide="play"></i>Aplicar</button>
+                    <button class="btn btn-primary btn-sm" onclick="startAvalStepWithTemplate('${t.id}')"><i data-lucide="play"></i>Aplicar (passo a passo)</button>
                 </div>
             `).join("")}
         </div>
 
         <div class="card" style="margin-top:16px">
-            <div class="section-head"><div><div class="section-title">Avaliações já aplicadas</div><div class="section-sub">Clique para ver o histórico de alunos.</div></div></div>
-            ${grupos.length === 0 ? `<div class="empty">Nenhuma avaliação aplicada ainda.</div>` :
+            <div class="section-head"><div><div class="section-title">Avaliações já aplicadas</div><div class="section-sub">Clique para ver o histórico de alunos que receberam cada avaliação.</div></div></div>
+            ${grupos.length === 0 ? `<div class="empty">Nenhuma avaliação aplicada ainda. Use um modelo acima para começar.</div>` :
                 grupos.map(g => `
                     <div class="aval-list-item" style="display:flex;justify-content:space-between;align-items:center;gap:14px;cursor:pointer" onclick="viewAvaliacaoHistory('${esc(g.titulo).replace(/'/g, "\\'")}')">
                         <div style="flex:1">
@@ -2881,7 +3006,7 @@ function renderAvaliacoesList() {
                                 <strong style="font-size:13px">${esc(g.titulo)}</strong>
                                 <span class="aval-type-badge ${getAvalTypeBadge(g.tipo)}">${g.tipo}</span>
                             </div>
-                            <div class="section-sub">${g.count} instância(s) · ${g.aplicacoes} aplicação(ões)</div>
+                            <div class="section-sub">${g.count} instância(s) · ${g.aplicacoes} aplicação(ões) registrada(s)</div>
                         </div>
                         <button class="btn btn-outline btn-sm"><i data-lucide="history"></i>Histórico</button>
                     </div>
@@ -2891,6 +3016,10 @@ function renderAvaliacoesList() {
     `;
     lucide.createIcons();
 }
+
+// ============================================================
+// AVALIAÇÕES - MODO PASSO A PASSO
+// ============================================================
 
 function startAvalStep() {
     avalStepMode = 'select';
@@ -2918,7 +3047,7 @@ function renderAvalStepSelect() {
 
     document.getElementById("page-avaliacoes").innerHTML = `
         <button class="btn btn-outline btn-sm" onclick="cancelAvalStep()" style="margin-bottom:14px"><i data-lucide="arrow-left"></i>Voltar</button>
-        <div class="section-head"><div><div class="section-title">Aplicar avaliação</div><div class="section-sub">Selecione o aluno e o instrumento.</div></div></div>
+        <div class="section-head"><div><div class="section-title">Aplicar avaliação (passo a passo)</div><div class="section-sub">Selecione o aluno e o instrumento.</div></div></div>
 
         <div class="card" style="max-width:600px;margin:0 auto">
             <div class="field"><label class="label">Aluno</label>
@@ -2994,7 +3123,6 @@ function renderAvalStepAnswer() {
         return;
     }
 
-    const progress = Math.round(((idx) / total) * 100);
     const isAnamnese = q.secao !== undefined;
 
     let content = '';
@@ -3390,9 +3518,9 @@ function renderAvaliacoesHistory() {
     }).sort((a, b) => (b.ultimaAplicacao || '').localeCompare(a.ultimaAplicacao || ''));
 
     document.getElementById("page-avaliacoes").innerHTML = `
-        <button class="btn btn-outline btn-sm" onclick="cancelAvaliacao()" style="margin-bottom:14px"><i data-lucide="arrow-left"></i>Voltar</button>
+        <button class="btn btn-outline btn-sm" onclick="cancelAvaliacao()" style="margin-bottom:14px"><i data-lucide="arrow-left"></i>Voltar para avaliações</button>
         <div class="section-head">
-            <div><div class="section-title">Histórico: ${esc(titulo)}</div><div class="section-sub">Alunos que receberam esta avaliação.</div></div>
+            <div><div class="section-title">Histórico: ${esc(titulo)}</div><div class="section-sub">Alunos que receberam esta avaliação e suas aplicações.</div></div>
         </div>
         <div class="grid stats" style="grid-template-columns:repeat(3,minmax(0,1fr))">
             <div class="card"><div class="stat-label">Alunos avaliados</div><div class="stat-value">${alunosAvaliados.length}</div></div>
@@ -3407,10 +3535,10 @@ function renderAvaliacoesHistory() {
                         ${avatarHTML(a.alunoObj || { nome: a.alunoNome, foto: "" }, "student-avatar")}
                         <div style="flex:1;cursor:pointer" onclick="openStudent('${a.alunoId}')">
                             <strong style="font-size:13px">${esc(a.alunoNome)}</strong>
-                            <div class="section-sub">Criada em ${fmtDate(a.data)} · ${a.aplicacoes} aplicação(ões)</div>
+                            <div class="section-sub">Criada em ${fmtDate(a.data)} · ${a.aplicacoes} aplicação(ões) · Última: ${fmtDate(a.ultimaAplicacao)}</div>
                         </div>
                         <span class="aval-type-badge ${getAvalTypeBadge(a.tipo)}">${a.tipo || "custom"}</span>
-                        <button class="btn btn-outline btn-sm" onclick="viewAvaliacaoResultado('${a.alunoId}','${a.avalId}')"><i data-lucide="eye"></i>Ver</button>
+                        <button class="btn btn-outline btn-sm" onclick="viewAvaliacaoResultado('${a.alunoId}','${a.avalId}')"><i data-lucide="eye"></i>Ver resultado</button>
                     </div>
                 `).join("")
             }
@@ -3598,7 +3726,7 @@ function renderFinanceiro() {
         ${renderHelpBox("financeiro")}
 
         <div class="section-head">
-            <div><div class="section-title">Financeiro</div><div class="section-sub">Controle completo de receitas e despesas.</div></div>
+            <div><div class="section-title">Financeiro</div><div class="section-sub">Controle completo de receitas e despesas. Navegue entre meses com as setas.</div></div>
             <div style="display:flex;gap:7px;flex-wrap:wrap">
                 <button class="btn btn-blue btn-sm" onclick="generateFinancePDF()"><i data-lucide="file-down"></i>PDF do período</button>
                 <button class="btn btn-soft btn-sm" onclick="navigate('perfil')">Meu Perfil</button>
@@ -3947,7 +4075,7 @@ function renderPerfil() {
     profTimeline.sort((a, b) => (b.data || '').localeCompare(a.data || ''));
 
     const timelineHTML = profTimeline.slice(0, 10).map(t => {
-        const dotColor = t.type === 'observacao' ? 'consulta' : 'evolucao';
+        const dotColor = t.type === 'observacao' ? 'observation' : 'evolution';
         const title = t.type === 'observacao' ? t.item.titulo || 'Observação' : t.item.titulo || 'Evolução';
         const desc = t.item.texto || '';
         return `
