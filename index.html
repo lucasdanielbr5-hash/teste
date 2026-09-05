@@ -195,195 +195,81 @@ button{cursor:pointer}
 .kpi-fill{height:100%;background:var(--sage);border-radius:10px}
 
 /* ============================================================
-   TELA DE LOGIN - DESIGN PROFISSIONAL
+   TELA DE LOGIN
    ============================================================ */
-.login-screen {
-    height:100vh;
+.login-screen{
+    min-height:100vh;
     display:grid;
     place-items:center;
-    background: linear-gradient(145deg, #eef5f2 0%, #dce8e2 50%, #cddbd4 100%);
+    padding:28px;
+    background:
+        radial-gradient(circle at 15% 20%, rgba(95,143,122,.13), transparent 30%),
+        radial-gradient(circle at 85% 80%, rgba(98,136,168,.10), transparent 30%),
+        #f5f8f6;
     position:relative;
-    overflow:hidden;
+    overflow:auto;
 }
-.login-screen::before {
-    content:'';
-    position:absolute;
-    top:-30%;
-    right:-10%;
-    width:500px;
-    height:500px;
-    background: radial-gradient(circle, rgba(95,143,122,0.12) 0%, transparent 70%);
-    border-radius:50%;
-    animation: floatBg 20s ease-in-out infinite alternate;
-}
-.login-screen::after {
-    content:'';
-    position:absolute;
-    bottom:-25%;
-    left:-8%;
-    width:400px;
-    height:400px;
-    background: radial-gradient(circle, rgba(98,136,168,0.08) 0%, transparent 70%);
-    border-radius:50%;
-    animation: floatBg2 18s ease-in-out infinite alternate;
-}
-@keyframes floatBg {
-    0% { transform: translate(0, 0) scale(1); }
-    100% { transform: translate(-30px, 40px) scale(1.1); }
-}
-@keyframes floatBg2 {
-    0% { transform: translate(0, 0) scale(1); }
-    100% { transform: translate(40px, -30px) scale(1.15); }
-}
-.login-box {
-    width:min(400px,calc(100% - 30px));
-    background:rgba(255,255,255,0.92);
-    backdrop-filter:blur(24px);
-    -webkit-backdrop-filter:blur(24px);
-    border:1px solid rgba(255,255,255,0.4);
-    border-radius:32px;
-    padding:44px 38px 38px;
-    box-shadow:0 40px 80px rgba(40,70,55,0.12), 0 12px 40px rgba(40,70,55,0.06);
+.login-box{
+    width:min(430px,100%);
+    background:rgba(255,255,255,.97);
+    border:1px solid #e4ebe7;
+    border-radius:24px;
+    padding:42px;
+    box-shadow:0 24px 70px rgba(38,50,56,.10);
     position:relative;
     z-index:2;
-    animation: slideUp 0.6s ease-out;
+    animation:loginEnter .45s ease-out;
 }
-@keyframes slideUp {
-    from { opacity:0; transform:translateY(30px) scale(0.97); }
-    to { opacity:1; transform:translateY(0) scale(1); }
+@keyframes loginEnter{
+    from{opacity:0;transform:translateY(14px)}
+    to{opacity:1;transform:none}
 }
-.login-box .logo-area {
-    text-align:center;
-    margin-bottom:30px;
+.login-box .logo-area{text-align:center;margin-bottom:30px}
+.login-box .logo-area .logo-img{
+    width:68px;height:68px;object-fit:contain;border-radius:18px;margin-bottom:16px
 }
-.login-box .logo-area .logo-img {
-    width:80px;
-    height:80px;
-    object-fit:contain;
-    border-radius:20px;
-    margin-bottom:14px;
-    box-shadow:0 8px 24px rgba(95,143,122,0.20);
-    transition:transform 0.3s;
+.login-box .logo-area .brand-name{
+    font-size:25px;font-weight:800;color:#20362d;letter-spacing:-.04em
 }
-.login-box .logo-area .logo-img:hover {
-    transform:scale(1.03);
+.login-box .logo-area .brand-name span{color:var(--sage)}
+.login-box .logo-area .brand-sub{
+    font-size:12px;color:#82918a;margin-top:6px
 }
-.login-box .logo-area .brand-name {
-    font-size:26px;
-    font-weight:800;
-    color:#1a332a;
-    letter-spacing:-0.04em;
+.login-box .login-sub{
+    text-align:left;color:#66756f;font-size:13px;margin-bottom:24px
 }
-.login-box .logo-area .brand-name span {
-    color:var(--sage);
+.login-box .field{margin-bottom:17px}
+.login-box .field .label{
+    display:block;font-size:12px;font-weight:700;color:#4c5f57;margin-bottom:7px
 }
-.login-box .logo-area .brand-sub {
-    font-size:13px;
-    color:#8a9e96;
-    font-weight:400;
-    margin-top:4px;
-    letter-spacing:0.02em;
+.login-box .field .input{
+    width:100%;min-height:48px;padding:12px 14px;border:1px solid #dce6e1;
+    border-radius:12px;font-size:14px;background:#fbfcfc;transition:.2s;
+    outline:none;color:#263832
 }
-.login-box .login-sub {
-    text-align:center;
-    color:#8a9e96;
-    font-size:14px;
-    font-weight:400;
-    margin-bottom:28px;
+.login-box .field .input:hover{border-color:#cbd9d3}
+.login-box .field .input:focus{
+    border-color:#76a18e;background:#fff;box-shadow:0 0 0 4px rgba(95,143,122,.10)
 }
-.login-box .field {
-    margin-bottom:16px;
+.login-box .field .input::placeholder{color:#aebbb5}
+.login-box .login-btn{
+    width:100%;min-height:50px;padding:13px 16px;border:0;border-radius:12px;
+    font-size:14px;font-weight:700;background:var(--sage);color:#fff;transition:.2s;
+    display:flex;align-items:center;justify-content:center;gap:8px;margin-top:7px;cursor:pointer
 }
-.login-box .field .label {
-    display:block;
-    font-size:12px;
-    font-weight:600;
-    color:#4d6b5e;
-    margin-bottom:5px;
-    letter-spacing:0.03em;
+.login-box .login-btn:hover{
+    background:var(--sage-dark);transform:translateY(-1px);
+    box-shadow:0 8px 22px rgba(71,115,99,.20)
 }
-.login-box .field .input {
-    width:100%;
-    padding:13px 16px;
-    border:2px solid #e4ece8;
-    border-radius:14px;
-    font-size:14px;
-    background:#f8fbfa;
-    transition:all 0.3s;
-    outline:none;
-    color:#1a2e26;
+.login-box .login-btn:active{transform:none}
+.login-box .login-btn:disabled{opacity:.7;cursor:wait;transform:none}
+.login-box .login-note{
+    display:flex;align-items:flex-start;gap:9px;margin-top:22px;padding:12px 13px;
+    border:1px solid #e7eee9;border-radius:12px;background:#f8faf9;color:#788881;
+    font-size:11px;line-height:1.5
 }
-.login-box .field .input:focus {
-    border-color:var(--sage);
-    background:#ffffff;
-    box-shadow:0 0 0 5px rgba(95,143,122,0.08);
-}
-.login-box .field .input::placeholder {
-    color:#b8c8c0;
-}
-.login-box .login-btn {
-    width:100%;
-    padding:15px;
-    border:0;
-    border-radius:14px;
-    font-size:15px;
-    font-weight:600;
-    background:linear-gradient(135deg, var(--sage) 0%, var(--sage-dark) 100%);
-    color:white;
-    transition:all 0.3s;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:8px;
-    margin-top:6px;
-    cursor:pointer;
-    position:relative;
-    overflow:hidden;
-}
-.login-box .login-btn::after {
-    content:'';
-    position:absolute;
-    inset:0;
-    background:linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.1) 100%);
-    opacity:0;
-    transition:opacity 0.3s;
-}
-.login-box .login-btn:hover::after {
-    opacity:1;
-}
-.login-box .login-btn:hover {
-    transform:translateY(-2px);
-    box-shadow:0 10px 32px rgba(95,143,122,0.30);
-}
-.login-box .login-btn:active {
-    transform:scale(0.97);
-}
-.login-box .login-footer {
-    text-align:center;
-    color:#b8c8c0;
-    font-size:11px;
-    margin-top:22px;
-    padding-top:18px;
-    border-top:1px solid #eef4f1;
-}
-.login-box .login-footer .demo-hint {
-    display:inline-flex;
-    align-items:center;
-    gap:6px;
-    font-size:10px;
-    color:#9aaea5;
-    background:#f4f8f6;
-    padding:4px 14px;
-    border-radius:20px;
-}
-.login-box .login-footer .demo-hint code {
-    background:#e8eee9;
-    padding:2px 10px;
-    border-radius:4px;
-    font-size:10px;
-    color:#4d6b5e;
-    font-family:monospace;
-}
+.login-box .login-note svg{width:15px;min-width:15px;margin-top:1px;color:var(--sage)}
+
 
 .toast{
  position:fixed;right:22px;bottom:22px;background:#263d35;color:#fff;padding:12px 16px;
@@ -557,22 +443,21 @@ button{cursor:pointer}
 
     <div class="field">
       <label class="label">E-mail</label>
-      <input id="loginUser" class="input" type="email" placeholder="seu@email.com" autocomplete="username">
+      <input id="loginUser" class="input" type="email" placeholder="seu@email.com" autocomplete="off">
     </div>
 
     <div class="field">
       <label class="label">Senha</label>
-      <input id="loginPass" class="input" type="password" placeholder="••••••••" autocomplete="current-password">
+      <input id="loginPass" class="input" type="password" placeholder="••••••••" autocomplete="new-password">
     </div>
 
     <button id="loginBtn" class="login-btn">
       <i data-lucide="log-in"></i> Entrar
     </button>
 
-    <div class="login-footer">
-      <span class="demo-hint">
-        <span style="opacity:0.4;">🔑</span> Demo: <code>professor@asas.com</code> <span style="opacity:0.3;">·</span> <code>123456</code>
-      </span>
+    <div class="login-note">
+      <i data-lucide="shield-check"></i>
+      <span>Entre com o e-mail e a senha da sua própria conta. Nenhuma conta de demonstração ou credencial é exibida nesta tela.</span>
     </div>
   </div>
 </div>
@@ -652,7 +537,13 @@ button{cursor:pointer}
 const SUPABASE_URL = 'https://teujmiojdyytzpavritf.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRldWptaW9qZHl5dHpwYXZyaXRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc5NTYxMjUsImV4cCI6MjEwMzUzMjEyNX0.rGLzx-B1bdrlcaa9a_gAOHrDv52UGHQfg-dquLJtyIk';
 
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+        persistSession: false,
+        autoRefreshToken: true,
+        detectSessionInUrl: false
+    }
+});
 
 // ============================================================
 // VARIÁVEIS GLOBAIS
@@ -1863,6 +1754,10 @@ async function logout() {
     const avatarEl = document.getElementById("topAvatar");
     avatarEl.style.backgroundImage = "";
     avatarEl.textContent = "?";
+
+    document.getElementById("loginUser").value = "";
+    document.getElementById("loginPass").value = "";
+    document.getElementById("loginUser").focus();
 
     notify("Logout realizado com sucesso!");
 }
@@ -4626,30 +4521,22 @@ function generateFinancePDF() {
 // ============================================================
 
 async function init() {
+    // Sempre começa na tela de login.
+    // Nenhuma sessão anterior é reaproveitada automaticamente.
     lucide.createIcons();
 
-    const isLoggedIn = await checkSession();
+    data = defaultData();
+    data.session = false;
+    currentUserId = null;
+    currentStudent = null;
+    currentPage = "dashboard";
+    isDataLoaded = false;
 
-    if (isLoggedIn) {
-        const loadedData = await loadData();
-        if (loadedData) {
-            data = loadedData;
-            data.session = true;
-            isDataLoaded = true;
-        } else {
-            data = defaultData();
-        }
+    document.getElementById("loginScreen").style.display = "grid";
+    document.getElementById("app").style.display = "none";
 
-        document.getElementById("loginScreen").style.display = "none";
-        document.getElementById("app").style.display = "flex";
-        updateUser();
-        navigate("dashboard");
-        if (isDataLoaded) notify("Bem-vindo de volta!");
-    } else {
-        document.getElementById("loginScreen").style.display = "grid";
-        document.getElementById("app").style.display = "none";
-        isDataLoaded = false;
-    }
+    const userInput = document.getElementById("loginUser");
+    if (userInput) userInput.focus();
 }
 
 // ============================================================
