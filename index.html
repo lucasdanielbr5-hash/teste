@@ -340,12 +340,11 @@ button{cursor:pointer}
 .aval-step .step-nav .btn-next:hover{background:var(--sage-dark)}
 .aval-step .step-nav .btn-next:disabled{opacity:.4;cursor:not-allowed}
 
-/* Estilos para forma de pagamento */
 .payment-method-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:2px 8px;border-radius:12px}
 .payment-method-badge.dinheiro{background:#eaf3ee;color:#3d8a6b}
 .payment-method-badge.pix{background:#e8f0fe;color:#3a6cb8}
 .payment-method-badge.cartao{background:#fef3e8;color:#b8732a}
-.payment-method-badge.parcelado{background:#f5f0f8;color:#80678c}
+.payment-method-badge.cartao_parcelado{background:#f5f0f8;color:#80678c}
 </style>
 <script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
 </head>
@@ -1053,12 +1052,12 @@ async function loadDataFromSupabase() {
 }
 
 // ============================================================
-// FUNÇÕES SUPABASE - SAVE
+// FUNÇÕES SUPABASE - SAVE (CORRIGIDAS)
 // ============================================================
 
 const COLUMN_MAP = {
     'transacoes': ['id', 'user_id', 'agenda_id', 'aluno_id', 'data', 'descricao', 'valor', 'tipo', 'categoria', 'metodo_pagamento', 'parcelas'],
-    'agenda': ['id', 'user_id', 'aluno_id', 'data', 'hora', 'tipo', 'status', 'presente', 'pago', 'metodo_pagamento', 'parcelas', 'updated_at'],
+    'agenda': ['id', 'user_id', 'aluno_id', 'data', 'hora', 'tipo', 'status', 'presente', 'pago', 'updated_at'],
     'alunos': ['id', 'user_id', 'nome', 'idade', 'serie', 'responsavel', 'telefone', 'valor', 'foto', 'tags', 'observacoes', 'ativo', 'updated_at'],
     'professores': ['id', 'user_id', 'nome', 'especialidade', 'bio', 'foto', 'config_notificacoes', 'config_lembretes', 'updated_at'],
     'evolucoes': ['id', 'user_id', 'aluno_id', 'data', 'titulo', 'texto'],
@@ -1275,8 +1274,6 @@ async function saveAgendaItem(item) {
             status: item.status || 'agendado',
             presente: item.presente || false,
             pago: item.pago || false,
-            metodo_pagamento: item.metodo_pagamento || '',
-            parcelas: item.parcelas || 0,
             updated_at: new Date().toISOString()
         });
     } catch (error) {
@@ -1306,11 +1303,12 @@ async function saveTransacao(transacao) {
             data: transacao.data || today(),
             descricao: transacao.descricao || '',
             valor: Number(transacao.valor) || 0,
-            tipo: transacao.tipo || 'receita',
-            metodo_pagamento: transacao.metodo_pagamento || '',
-            parcelas: transacao.parcelas || 0
+            tipo: transacao.tipo || 'receita'
         };
 
+        // Só adiciona metodo_pagamento e parcelas se existirem
+        if (transacao.metodo_pagamento) payload.metodo_pagamento = transacao.metodo_pagamento;
+        if (transacao.parcelas) payload.parcelas = transacao.parcelas;
         if (transacao.agendaId) payload.agenda_id = transacao.agendaId;
         if (transacao.alunoId) payload.aluno_id = transacao.alunoId;
         if (transacao.categoria) payload.categoria = transacao.categoria;
@@ -1884,6 +1882,30 @@ async function saveStudent() {
 }
 
 // ============================================================
+// FUNÇÕES PARA MÉTODO DE PAGAMENTO
+// ============================================================
+
+function getMetodoPagamentoLabel(metodo) {
+    const map = {
+        'dinheiro': 'Dinheiro',
+        'pix': 'PIX',
+        'cartao': 'Cartão',
+        'cartao_parcelado': 'Cartão Parcelado'
+    };
+    return map[metodo] || metodo || 'Não informado';
+}
+
+function getMetodoPagamentoClass(metodo) {
+    const map = {
+        'dinheiro': 'dinheiro',
+        'pix': 'pix',
+        'cartao': 'cartao',
+        'cartao_parcelado': 'cartao_parcelado'
+    };
+    return map[metodo] || '';
+}
+
+// ============================================================
 // PRONTUÁRIO - LAYOUT PADRONIZADO
 // ============================================================
 
@@ -1929,26 +1951,6 @@ async function saveStudentEdit() {
     await saveData();
     notify("Dados do aluno atualizados.");
     renderStudentProfile("overview");
-}
-
-function getMetodoPagamentoLabel(metodo) {
-    const map = {
-        'dinheiro': 'Dinheiro',
-        'pix': 'PIX',
-        'cartao': 'Cartão',
-        'cartao_parcelado': 'Cartão Parcelado'
-    };
-    return map[metodo] || metodo || 'Não informado';
-}
-
-function getMetodoPagamentoClass(metodo) {
-    const map = {
-        'dinheiro': 'dinheiro',
-        'pix': 'pix',
-        'cartao': 'cartao',
-        'cartao_parcelado': 'parcelado'
-    };
-    return map[metodo] || '';
 }
 
 function renderStudentProfile(mode = "overview") {
@@ -2076,7 +2078,7 @@ function renderStudentProfile(mode = "overview") {
             t.alunoId === s.id && (t.tipo || "receita") === "receita"
         ).sort((a, b) => (b.data || '').localeCompare(a.data || ''));
 
-        const timelineHTML = timeline.slice(0, 15).map(t => {
+        const timelineHTML = timeline.slice(0, 10).map(t => {
             let dotColor = '';
             let contentHTML = '';
             if (t.type === 'consulta') {
@@ -2084,7 +2086,7 @@ function renderStudentProfile(mode = "overview") {
                 const c = t.item;
                 contentHTML = `
                     <div class="tl-title">Consulta · ${fmtDate(c.data)}</div>
-                    <div class="tl-meta">${esc((c.observacoes || "").slice(0, 120))}${(c.observacoes || "").length > 120 ? "…" : ""}</div>
+                    <div class="tl-meta">${esc((c.observacoes || "").slice(0, 100))}${(c.observacoes || "").length > 100 ? "…" : ""}</div>
                     <button class="btn btn-outline btn-sm" onclick="openConsultation('${c.id}')">Ver detalhes</button>
                 `;
             } else if (t.type === 'evolucao') {
@@ -2093,14 +2095,14 @@ function renderStudentProfile(mode = "overview") {
                 contentHTML = `
                     <div class="tl-title">${esc(e.titulo || "Evolução")}</div>
                     <div class="tl-meta">${fmtDate(e.data)}</div>
-                    <div class="tl-text">${esc((e.texto || "").slice(0, 150))}${(e.texto || "").length > 150 ? "…" : ""}</div>
+                    <div class="tl-text">${esc((e.texto || "").slice(0, 120))}${(e.texto || "").length > 120 ? "…" : ""}</div>
                 `;
             } else if (t.type === 'avaliacao') {
                 dotColor = 'avaliacao';
                 const a = t.item;
                 contentHTML = `
                     <div class="tl-title">${esc(a.titulo)}</div>
-                    <div class="tl-meta">${fmtDate(a.data)} · ${(a.questoes || []).length} questões · ${(a.resultados || []).length} aplicações</div>
+                    <div class="tl-meta">${fmtDate(a.data)} · ${(a.questoes || []).length} questões</div>
                     <button class="btn btn-outline btn-sm" onclick="renderStudentProfile('avaliacoes')">Ver avaliações</button>
                 `;
             } else if (t.type === 'escola') {
@@ -2108,7 +2110,7 @@ function renderStudentProfile(mode = "overview") {
                 const r = t.item;
                 contentHTML = `
                     <div class="tl-title">${esc(r.assunto || "Contato escola")}</div>
-                    <div class="tl-meta">${fmtDate(r.data)} · ${esc(r.tipo || "Contato")} · ${esc(r.contato || "")}</div>
+                    <div class="tl-meta">${fmtDate(r.data)} · ${esc(r.tipo || "Contato")}</div>
                     <div class="tl-text">${esc((r.relato || "").slice(0, 120))}${(r.relato || "").length > 120 ? "…" : ""}</div>
                 `;
             }
@@ -2120,14 +2122,14 @@ function renderStudentProfile(mode = "overview") {
             `;
         }).join("");
 
-        // Cards de resumo do aluno
+        // Cards de resumo do aluno - PADRONIZADO
         const totalConsultas = (s.consultas || []).length;
         const totalEvolucoes = (s.evolucoes || []).length;
         const totalAvaliacoes = (s.avaliacoes || []).length;
         const totalPagamentos = pagamentos.reduce((sum, t) => sum + Number(t.valor || 0), 0);
 
         content = `
-            <!-- Cards de resumo do aluno -->
+            <!-- Cards de resumo do aluno - PADRONIZADO -->
             <div class="grid stats" style="margin-bottom:18px">
                 <div class="card"><div class="stat-label">Consultas</div><div class="stat-value">${totalConsultas}</div><div class="stat-sub">Registros de atendimento</div></div>
                 <div class="card"><div class="stat-label">Evoluções</div><div class="stat-value">${totalEvolucoes}</div><div class="stat-sub">Registros de progresso</div></div>
@@ -2137,12 +2139,14 @@ function renderStudentProfile(mode = "overview") {
 
             <div class="two-col-layout">
                 <div>
+                    <!-- CONSULTAS -->
                     <div class="card">
                         <div class="section-head"><div><div class="section-title">Consultas</div><div class="section-sub">Cada atendimento é um documento próprio.</div></div><button class="btn btn-primary" onclick="newConsultationForm()"><i data-lucide="plus"></i>Registrar consulta</button></div>
                         ${p.slice.map(c => `<div style="display:flex;align-items:center;gap:14px;padding:14px 0;border-top:1px solid var(--line);cursor:pointer" onclick="openConsultation('${c.id}')"><div style="width:74px;text-align:center"><div style="font-size:11px;color:#8a9892">${new Date(c.data + "T12:00:00").toLocaleDateString("pt-BR", { weekday: "short" })}</div><strong style="font-size:17px">${new Date(c.data + "T12:00:00").getDate()}</strong><div style="font-size:10px">${new Date(c.data + "T12:00:00").toLocaleDateString("pt-BR", { month: "short" })}</div></div><div style="flex:1"><div style="font-weight:700;font-size:13px">Consulta registrada</div><div class="section-sub">${esc((c.observacoes || "Sem observações").slice(0, 110))}${(c.observacoes || "").length > 110 ? "…" : ""}</div></div><i data-lucide="chevron-right"></i></div>`).join("") || `<div class="empty">Nenhuma consulta registrada.</div>`}
                         ${p.controls}
                     </div>
 
+                    <!-- EVOLUÇÕES -->
                     <div class="card" style="margin-top:16px">
                         <div class="section-title">Evoluções</div>
                         <div class="section-sub">Registros de progresso do aluno.</div>
@@ -2160,17 +2164,20 @@ function renderStudentProfile(mode = "overview") {
                 </div>
 
                 <div class="right-sidebar">
+                    <!-- PRÓXIMOS ATENDIMENTOS -->
                     <div class="card">
                         <div class="section-title">Próximos atendimentos</div>
                         ${upcoming.map(a => `<div style="padding:10px 0;border-top:1px solid var(--line);font-size:12px">${fmtDate(a.data)} · ${a.hora} · ${esc(s.nome)}</div>`).join("") || `<div class="empty">Nenhum atendimento próximo.</div>`}
                     </div>
 
+                    <!-- HISTÓRICO RECENTE -->
                     <div class="card" style="margin-top:12px">
                         <div class="section-title">Histórico recente</div>
                         <div class="section-sub">Últimos registros do aluno</div>
                         ${timelineHTML || `<div class="empty">Nenhum registro recente.</div>`}
                     </div>
 
+                    <!-- HISTÓRICO DE PAGAMENTOS -->
                     <div class="card" style="margin-top:12px">
                         <div class="section-title">Histórico de pagamentos</div>
                         <div class="section-sub">Últimos recebimentos</div>
@@ -2654,9 +2661,7 @@ async function saveAppointment() {
         tipo: tipo,
         status: "agendado",
         presente: false,
-        pago: false,
-        metodo_pagamento: '',
-        parcelas: 0
+        pago: false
     };
 
     data.agenda.push(newAppointment);
@@ -2729,8 +2734,6 @@ async function togglePayment(id) {
         }
 
         a.pago = true;
-        a.metodo_pagamento = metodoSelecionado;
-        a.parcelas = parcelas;
 
         const transacao = {
             id: uid(),
@@ -2749,8 +2752,6 @@ async function togglePayment(id) {
         notify(`Pagamento de ${money(s.valor)} registrado via ${getMetodoPagamentoLabel(metodoSelecionado)}${parcelas > 0 ? ` em ${parcelas}x` : ''}.`);
     } else {
         a.pago = false;
-        a.metodo_pagamento = '';
-        a.parcelas = 0;
         const transacoesRemovidas = data.transacoes.filter(t => t.agendaId === a.id);
         data.transacoes = data.transacoes.filter(t => t.agendaId !== a.id);
         for (const t of transacoesRemovidas) {
