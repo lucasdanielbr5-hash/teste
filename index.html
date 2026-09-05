@@ -201,18 +201,18 @@ button{cursor:pointer}
     height:100vh;
     display:grid;
     place-items:center;
-    background: linear-gradient(135deg, #f0f5f2 0%, #e8eee9 100%);
+    background: linear-gradient(135deg, #e8f0ec 0%, #d5e3dd 50%, #c8d8d1 100%);
     position:relative;
     overflow:hidden;
 }
 .login-screen::before {
     content:'';
     position:absolute;
-    top:-50%;
-    right:-20%;
-    width:600px;
-    height:600px;
-    background: radial-gradient(circle, rgba(95,143,122,0.08) 0%, transparent 70%);
+    top:-40%;
+    right:-15%;
+    width:550px;
+    height:550px;
+    background: radial-gradient(circle, rgba(95,143,122,0.10) 0%, transparent 70%);
     border-radius:50%;
 }
 .login-screen::after {
@@ -220,83 +220,83 @@ button{cursor:pointer}
     position:absolute;
     bottom:-30%;
     left:-10%;
-    width:500px;
-    height:500px;
-    background: radial-gradient(circle, rgba(98,136,168,0.06) 0%, transparent 70%);
+    width:450px;
+    height:450px;
+    background: radial-gradient(circle, rgba(98,136,168,0.07) 0%, transparent 70%);
     border-radius:50%;
 }
 .login-box {
-    width:min(440px,calc(100% - 30px));
+    width:min(420px,calc(100% - 30px));
     background:rgba(255,255,255,0.92);
-    backdrop-filter:blur(20px);
-    -webkit-backdrop-filter:blur(20px);
-    border:1px solid rgba(255,255,255,0.3);
+    backdrop-filter:blur(24px);
+    -webkit-backdrop-filter:blur(24px);
+    border:1px solid rgba(255,255,255,0.35);
     border-radius:28px;
-    padding:42px 38px;
-    box-shadow:0 25px 80px rgba(40,70,55,0.10), 0 8px 32px rgba(40,70,55,0.04);
+    padding:40px 36px;
+    box-shadow:0 30px 80px rgba(40,70,55,0.12), 0 10px 40px rgba(40,70,55,0.05);
     position:relative;
     z-index:2;
 }
 .login-box .logo-area {
     text-align:center;
-    margin-bottom:32px;
+    margin-bottom:28px;
 }
 .login-box .logo-area .logo-img {
-    width:72px;
-    height:72px;
+    width:76px;
+    height:76px;
     object-fit:contain;
-    border-radius:16px;
+    border-radius:18px;
     margin-bottom:12px;
-    box-shadow:0 4px 16px rgba(95,143,122,0.15);
+    box-shadow:0 6px 20px rgba(95,143,122,0.18);
 }
 .login-box .logo-area .brand-name {
-    font-size:22px;
+    font-size:24px;
     font-weight:800;
-    color:#2d3d36;
+    color:#1d332b;
     letter-spacing:-0.03em;
 }
 .login-box .logo-area .brand-sub {
     font-size:13px;
     color:#8a9e96;
     font-weight:400;
-    margin-top:4px;
+    margin-top:3px;
 }
 .login-box .login-sub {
     text-align:center;
     color:#8a9e96;
     font-size:14px;
     font-weight:400;
-    margin-bottom:28px;
+    margin-bottom:26px;
 }
 .login-box .field {
-    margin-bottom:18px;
+    margin-bottom:16px;
 }
 .login-box .field .label {
     display:block;
     font-size:12px;
     font-weight:600;
-    color:#5a7369;
-    margin-bottom:6px;
+    color:#4d6b5e;
+    margin-bottom:5px;
     letter-spacing:0.02em;
 }
 .login-box .field .input {
     width:100%;
     padding:12px 16px;
-    border:2px solid #e8eeeb;
+    border:2px solid #e4ece8;
     border-radius:12px;
     font-size:14px;
-    background:#fafcfb;
-    transition:all 0.2s;
+    background:#f8fbfa;
+    transition:all 0.25s;
     outline:none;
     color:#1a2e26;
 }
 .login-box .field .input:focus {
     border-color:var(--sage);
-    background:#fff;
+    background:#ffffff;
     box-shadow:0 0 0 4px rgba(95,143,122,0.08);
 }
 .login-box .field .input::placeholder {
-    color:#b0c0b9;
+    color:#b8c8c0;
 }
 .login-box .login-btn {
     width:100%;
@@ -305,22 +305,22 @@ button{cursor:pointer}
     border-radius:12px;
     font-size:15px;
     font-weight:600;
-    background:var(--sage);
+    background:linear-gradient(135deg, var(--sage) 0%, var(--sage-dark) 100%);
     color:white;
-    transition:all 0.2s;
+    transition:all 0.25s;
     display:flex;
     align-items:center;
     justify-content:center;
     gap:8px;
-    margin-top:6px;
+    margin-top:4px;
+    cursor:pointer;
 }
 .login-box .login-btn:hover {
-    background:var(--sage-dark);
-    transform:translateY(-1px);
-    box-shadow:0 8px 24px rgba(95,143,122,0.25);
+    transform:translateY(-2px);
+    box-shadow:0 8px 28px rgba(95,143,122,0.30);
 }
 .login-box .login-btn:active {
-    transform:scale(0.98);
+    transform:scale(0.97);
 }
 .login-box .login-footer {
     text-align:center;
@@ -328,14 +328,14 @@ button{cursor:pointer}
     font-size:11px;
     margin-top:20px;
     padding-top:16px;
-    border-top:1px solid #edf3f0;
+    border-top:1px solid #eef4f1;
 }
 .login-box .login-footer .demo-cred {
     display:inline-flex;
     align-items:center;
     gap:6px;
     background:#f4f8f6;
-    padding:4px 12px;
+    padding:4px 14px;
     border-radius:20px;
     font-size:10px;
     color:#7a988a;
@@ -401,6 +401,9 @@ button{cursor:pointer}
  .profile-avatar{width:75px;height:75px}
  .profile-name{font-size:18px}
  .month-grid{min-width:620px}
+ .login-box{padding:28px 20px}
+ .login-box .logo-area .logo-img{width:60px;height:60px}
+ .login-box .logo-area .brand-name{font-size:20px}
 }
 
 .help-box{display:flex;gap:10px;align-items:flex-start;background:#f4f8f6;border:1px solid #d9e6e0;border-radius:14px;padding:13px 16px;margin-bottom:18px;font-size:12px;line-height:1.6;color:#5a6b64}
@@ -532,7 +535,7 @@ button{cursor:pointer}
 
     <div class="login-footer">
       <span class="demo-cred">
-        <span>🔑</span> Demo: <code>professor@asas.com</code> / <code>123456</code>
+        <span style="opacity:0.5;">🔑</span> Demo: <code>professor@asas.com</code> / <code>123456</code>
       </span>
     </div>
   </div>
