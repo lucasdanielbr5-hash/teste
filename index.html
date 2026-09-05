@@ -426,6 +426,16 @@ button{cursor:pointer}
 .payment-method-badge.pix{background:#e8f0fe;color:#3a6cb8}
 .payment-method-badge.cartao{background:#fef3e8;color:#b8732a}
 .payment-method-badge.cartao_parcelado{background:#f5f0f8;color:#80678c}
+
+.master-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px}
+.master-stat{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px}
+.master-stat-label{font-size:11px;color:#89968f}.master-stat-value{font-size:24px;font-weight:800;color:#34413c;margin-top:7px}.master-stat-sub{font-size:10px;color:#9aa6a1;margin-top:3px}
+.master-toolbar{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:14px}
+.master-table-wrap{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:auto}
+.master-table{width:100%;border-collapse:collapse;min-width:880px}.master-table th{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#87938e;text-align:left;background:#fafcfb;padding:11px 13px;border-bottom:1px solid var(--line)}.master-table td{padding:12px 13px;border-bottom:1px solid #edf1ef;font-size:12px;color:#52605a}.master-table tr:last-child td{border-bottom:0}
+.master-status{display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:20px;font-size:10px;font-weight:700}.master-status.ok{background:#eaf5ee;color:#3e8060}.master-status.off{background:#fff0f0;color:#b55e5e}.master-status.warn{background:#fff6e7;color:#a87935}
+.master-modal-backdrop{position:fixed;inset:0;background:rgba(30,45,38,.34);display:none;align-items:center;justify-content:center;padding:20px;z-index:1000}.master-modal{width:min(560px,100%);background:#fff;border-radius:20px;box-shadow:0 25px 70px rgba(30,55,43,.18);padding:22px}.master-modal-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:18px}.master-modal-title{font-size:17px;font-weight:800}.master-modal-sub{font-size:11px;color:#8a9791;margin-top:3px}.license-banner{position:fixed;left:270px;right:18px;bottom:12px;background:#fff8e9;border:1px solid #f0d69d;color:#7b622f;border-radius:12px;padding:10px 14px;display:none;align-items:center;justify-content:space-between;gap:12px;z-index:900;box-shadow:0 8px 25px rgba(70,55,25,.08);font-size:11px}.license-banner strong{font-weight:800}.license-banner .pix{font-weight:800;letter-spacing:.02em}.license-banner .close{border:0;background:transparent;color:#92733a;cursor:pointer;font-size:16px}
+@media(max-width:900px){.master-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.license-banner{left:12px;right:12px}.master-table{min-width:780px}}
 </style>
 </head>
 
@@ -489,8 +499,11 @@ button{cursor:pointer}
     <button data-page="financeiro">
       <i data-lucide="wallet-cards"></i><span class="nav-label">Financeiro</span>
     </button>
-    <button data-page="perfil">
+    <button data-page="perfil" class="teacher-only-nav">
       <i data-lucide="user-round"></i><span class="nav-label">Meu Perfil</span>
+    </button>
+    <button data-page="master" id="masterNav" style="display:none">
+      <i data-lucide="shield-check"></i><span class="nav-label">Suporte</span>
     </button>
   </nav>
 
@@ -522,12 +535,14 @@ button{cursor:pointer}
 <section id="page-financeiro" class="view"></section>
 <section id="page-perfil" class="view"></section>
 <section id="page-prontuario" class="view"></section>
+<section id="page-master" class="view"></section>
 
 </div>
 </main>
 </div>
 
 <div id="toast" class="toast"></div>
+<div id="licenseBanner" class="license-banner"><div><strong>Sua licença irá expirar em <span id="licenseDays">0</span> dias.</strong> Realize o pagamento PIX: <span class="pix">118.327.049.63</span> — encaminhe o comprovante para: <span class="pix">43920036581</span>.</div><button class="close" onclick="document.getElementById('licenseBanner').style.display='none'">×</button></div>
 
 <script>
 // ============================================================
@@ -564,6 +579,8 @@ let currentUserId = null;
 let financePage = 1;
 let isSaving = false;
 let isDataLoaded = false;
+let isMaster = false;
+const MASTER_EMAIL = "contato@legadoqueensina.com.br";
 
 // Variáveis para avaliação passo a passo
 let avalStepMode = null;
@@ -1613,7 +1630,8 @@ function navigate(page) {
         agenda: ["calendar-days", "Agenda"],
         avaliacoes: ["clipboard-check", "Avaliações"],
         financeiro: ["wallet-cards", "Financeiro"],
-        perfil: ["user-round", "Meu Perfil"]
+        perfil: ["user-round", "Meu Perfil"],
+        master: ["shield-check", "Suporte"]
     };
 
     if (info[page]) {
@@ -1634,6 +1652,7 @@ function navigate(page) {
 }
 
 function renderPage() {
+    if (currentPage === "master" && !isMaster) { navigate("dashboard"); return; }
     if (!isDataLoaded || !data.session) {
         document.querySelectorAll(".view").forEach(view => {
             if (view.id !== "page-dashboard") {
@@ -1649,6 +1668,7 @@ function renderPage() {
     if (currentPage === "avaliacoes") renderAvaliacoes();
     if (currentPage === "financeiro") renderFinanceiro();
     if (currentPage === "perfil") renderPerfil();
+    if (currentPage === "master" && isMaster) renderMasterDashboard();
 }
 
 function updateUser() {
@@ -1668,6 +1688,103 @@ function updateUser() {
 // ============================================================
 // LOGIN/LOGOUT - SEM AUTO-LOGIN E COM DESIGN MELHORADO
 // ============================================================
+
+
+function isMasterEmail(email){ return String(email || '').trim().toLowerCase() === MASTER_EMAIL; }
+function daysUntil(dateValue){
+    if(!dateValue) return null;
+    const end = new Date(dateValue + 'T23:59:59');
+    const now = new Date();
+    return Math.ceil((end-now)/86400000);
+}
+function hideTeacherUI(){ document.querySelectorAll('.teacher-only-nav').forEach(el=>el.style.display='none'); }
+function showTeacherUI(){ document.querySelectorAll('.teacher-only-nav').forEach(el=>el.style.display=''); }
+function renderLicenseBanner(professor){
+    const banner=document.getElementById('licenseBanner'); if(!banner) return;
+    const days=daysUntil(professor?.licenca_expira_em);
+    if(days !== null && days >= 0 && days <= 5){
+        document.getElementById('licenseDays').textContent=days;
+        banner.style.display='flex';
+    } else banner.style.display='none';
+}
+async function checkTeacherLicense(professor){
+    if(!professor) return {ok:false, reason:'Cadastro do professor não encontrado.'};
+    if(professor.ativo === false) return {ok:false, reason:'Seu acesso foi bloqueado. Entre em contato com o suporte.'};
+    if(professor.licenca_expira_em){
+        const days=daysUntil(professor.licenca_expira_em);
+        if(days < 0) return {ok:false, reason:'Sua licença expirou. Realize o pagamento e encaminhe o comprovante ao suporte.'};
+    }
+    return {ok:true};
+}
+async function loadMasterData(){
+    const {data: professores, error} = await supabaseClient.from('professores').select('*').order('nome');
+    if(error) throw error;
+    const {data: pagamentos, error: payError} = await supabaseClient.from('licencas_pagamentos').select('*').order('created_at',{ascending:false});
+    if(payError) throw payError;
+    return {professores:professores||[], pagamentos:pagamentos||[]};
+}
+function masterMoney(v){ return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number(v)||0); }
+function renderMasterDashboard(){
+    const view=document.getElementById('page-master'); if(!view) return;
+    const professores=data.master?.professores||[], pagamentos=data.master?.pagamentos||[];
+    const ativos=professores.filter(p=>p.ativo!==false).length;
+    const bloqueados=professores.length-ativos;
+    const hoje=new Date();
+    const exp5=professores.filter(p=>{const d=daysUntil(p.licenca_expira_em);return d!==null&&d>=0&&d<=5}).length;
+    const mes=hoje.getMonth(), ano=hoje.getFullYear();
+    const recebido=pagamentos.filter(p=>{if(!p.pago_em)return false;const d=new Date(p.pago_em+'T12:00:00');return d.getMonth()===mes&&d.getFullYear()===ano}).reduce((a,p)=>a+Number(p.valor||0),0);
+    view.innerHTML=`
+      <div class="section-head"><div><div class="section-title">Central de Suporte</div><div class="section-sub">Administração exclusiva da conta MASTER · ${MASTER_EMAIL}</div></div><button class="btn btn-outline btn-sm" onclick="refreshMaster()"><i data-lucide="refresh-cw"></i>Atualizar</button></div>
+      <div class="master-summary">
+        <div class="master-stat"><div class="master-stat-label">Professores cadastrados</div><div class="master-stat-value">${professores.length}</div><div class="master-stat-sub">Contas no sistema</div></div>
+        <div class="master-stat"><div class="master-stat-label">Acessos ativos</div><div class="master-stat-value">${ativos}</div><div class="master-stat-sub">Professores liberados</div></div>
+        <div class="master-stat"><div class="master-stat-label">Licenças vencendo</div><div class="master-stat-value">${exp5}</div><div class="master-stat-sub">Próximos 5 dias</div></div>
+        <div class="master-stat"><div class="master-stat-label">Recebido no mês</div><div class="master-stat-value">${masterMoney(recebido)}</div><div class="master-stat-sub">Pagamentos registrados</div></div>
+      </div>
+      <div class="card"><div class="master-toolbar"><div><div class="section-title">Professores</div><div class="section-sub">Bloqueie, libere e defina o prazo de acesso.</div></div><input id="masterSearch" class="input" style="max-width:260px" placeholder="Buscar professor..." oninput="renderMasterTable()"></div><div id="masterTable"></div></div>
+      <div style="height:18px"></div>
+      <div class="card"><div class="section-title">Financeiro de licenças</div><div class="section-sub" style="margin-bottom:12px">Registre pagamentos recebidos dos professores.</div><div id="masterPayments"></div></div>`;
+    renderMasterTable(); renderMasterPayments(); lucide.createIcons();
+}
+function renderMasterTable(){
+    const box=document.getElementById('masterTable'); if(!box) return;
+    const q=(document.getElementById('masterSearch')?.value||'').toLowerCase();
+    const rows=(data.master?.professores||[]).filter(p=>`${p.nome||''} ${p.user_id||''}`.toLowerCase().includes(q));
+    box.innerHTML=`<div class="master-table-wrap"><table class="master-table"><thead><tr><th>Professor</th><th>Cargo</th><th>Status</th><th>Licença</th><th>Mensalidade</th><th>Ações</th></tr></thead><tbody>${rows.map(p=>{
+      const d=daysUntil(p.licenca_expira_em); const status=p.ativo===false?'<span class="master-status off">Bloqueado</span>':(d!==null&&d<0?'<span class="master-status off">Expirada</span>':(d!==null&&d<=5?`<span class="master-status warn">${d} dias</span>`:'<span class="master-status ok">Ativo</span>'));
+      return `<tr><td><strong>${esc(p.nome||'Professor')}</strong><div style="font-size:10px;color:#9aa6a1">${esc(p.user_id||'')}</div></td><td>${esc(p.cargo||'Professor')}</td><td>${status}</td><td>${p.licenca_expira_em?fmtDate(p.licenca_expira_em):'Não definida'}</td><td>${masterMoney(p.valor_mensalidade)}</td><td><div style="display:flex;gap:5px;flex-wrap:wrap"><button class="btn btn-outline btn-sm" onclick="openMasterProfessor('${p.id}')"><i data-lucide="settings-2"></i>Gerenciar</button>${p.ativo===false?`<button class="btn btn-primary btn-sm" onclick="setProfessorActive('${p.id}',true)">Liberar</button>`:`<button class="btn btn-danger btn-sm" onclick="setProfessorActive('${p.id}',false)">Bloquear</button>`}</div></td></tr>`;
+    }).join('')||'<tr><td colspan="6" style="text-align:center;padding:30px;color:#97a39e">Nenhum professor encontrado.</td></tr>'}</tbody></table></div>`;
+    lucide.createIcons();
+}
+function renderMasterPayments(){
+    const box=document.getElementById('masterPayments'); if(!box) return;
+    const ps=data.master?.pagamentos||[];
+    box.innerHTML=`<div class="master-table-wrap"><table class="master-table"><thead><tr><th>Professor</th><th>Valor</th><th>Vencimento</th><th>Pago em</th><th>Método</th></tr></thead><tbody>${ps.slice(0,30).map(p=>{const prof=(data.master.professores||[]).find(x=>x.id===p.professor_id);return `<tr><td>${esc(prof?.nome||'Professor removido')}</td><td>${masterMoney(p.valor)}</td><td>${p.vencimento?fmtDate(p.vencimento):'-'}</td><td>${p.pago_em?fmtDate(p.pago_em):'<span class="master-status warn">Pendente</span>'}</td><td>${esc((p.metodo||'pix').toUpperCase())}</td></tr>`}).join('')||'<tr><td colspan="5" style="text-align:center;padding:25px;color:#97a39e">Nenhum pagamento registrado.</td></tr>'}</tbody></table></div>`;
+}
+function openMasterProfessor(id){
+    const p=(data.master?.professores||[]).find(x=>x.id===id); if(!p)return;
+    let modal=document.getElementById('masterModalBackdrop');
+    if(!modal){modal=document.createElement('div');modal.id='masterModalBackdrop';modal.className='master-modal-backdrop';document.body.appendChild(modal)}
+    modal.style.display='flex';
+    modal.innerHTML=`<div class="master-modal"><div class="master-modal-head"><div><div class="master-modal-title">Gerenciar acesso</div><div class="master-modal-sub">${esc(p.nome||'Professor')}</div></div><button class="btn btn-outline btn-sm" onclick="closeMasterModal()">Fechar</button></div><div class="form-grid two"><div class="field"><label class="label">Cargo</label><input id="mCargo" class="input" value="${esc(p.cargo||'Professor')}"></div><div class="field"><label class="label">Mensalidade</label><input id="mValor" class="input" type="number" step="0.01" value="${Number(p.valor_mensalidade||0)}"></div><div class="field"><label class="label">Licença até</label><input id="mLicenca" class="input" type="date" value="${p.licenca_expira_em||''}"></div><div class="field"><label class="label">Status</label><select id="mAtivo" class="select"><option value="true" ${p.ativo!==false?'selected':''}>Ativo</option><option value="false" ${p.ativo===false?'selected':''}>Bloqueado</option></select></div><div class="field" style="grid-column:1/-1"><label class="label">Observação administrativa</label><textarea id="mObs" class="textarea" style="min-height:80px">${esc(p.observacao_admin||'')}</textarea></div></div><div class="form-actions"><button class="btn btn-primary" onclick="saveMasterProfessor('${p.id}')"><i data-lucide="save"></i>Salvar alterações</button><button class="btn btn-soft" onclick="extendLicense('${p.id}',30)">+30 dias</button><button class="btn btn-soft" onclick="extendLicense('${p.id}',365)">+1 ano</button></div></div>`;
+    lucide.createIcons();
+}
+function closeMasterModal(){const m=document.getElementById('masterModalBackdrop');if(m)m.style.display='none';}
+async function saveMasterProfessor(id){
+    const payload={cargo:document.getElementById('mCargo').value.trim()||'Professor',valor_mensalidade:Number(document.getElementById('mValor').value)||0,licenca_expira_em:document.getElementById('mLicenca').value||null,ativo:document.getElementById('mAtivo').value==='true',observacao_admin:document.getElementById('mObs').value.trim()};
+    const {error}=await supabaseClient.from('professores').update(payload).eq('id',id); if(error){notify('Não foi possível salvar: '+error.message);return;}
+    const p=data.master.professores.find(x=>x.id===id);Object.assign(p,payload);closeMasterModal();renderMasterDashboard();notify('Professor atualizado.');
+}
+async function setProfessorActive(id,active){
+    const {error}=await supabaseClient.from('professores').update({ativo:active}).eq('id',id); if(error){notify('Erro ao alterar acesso: '+error.message);return;}
+    const p=data.master.professores.find(x=>x.id===id);if(p)p.ativo=active;renderMasterDashboard();notify(active?'Acesso liberado.':'Acesso bloqueado.');
+}
+async function extendLicense(id,days){
+    const p=data.master.professores.find(x=>x.id===id);if(!p)return;
+    let base=p.licenca_expira_em?new Date(p.licenca_expira_em+'T12:00:00'):new Date(); if(base<new Date())base=new Date(); base.setDate(base.getDate()+days);
+    const iso=base.toISOString().slice(0,10); document.getElementById('mLicenca').value=iso; notify(`Licença ajustada para ${fmtDate(iso)}. Clique em Salvar alterações.`);
+}
+async function refreshMaster(){try{data.master=await loadMasterData();renderMasterDashboard();notify('Dados atualizados.')}catch(e){notify('Erro ao carregar dados administrativos.')}}
 
 async function login() {
     const user = document.getElementById("loginUser").value.trim();
@@ -1693,21 +1810,44 @@ async function login() {
 
     if (result) {
         try {
+            const loggedEmail = result.user?.email || user;
+            isMaster = isMasterEmail(loggedEmail);
+            if (isMaster) {
+                data = defaultData(); data.session = true; isDataLoaded = true; currentUserId = result.user.id;
+                data.master = await loadMasterData();
+                hideTeacherUI();
+                document.getElementById("masterNav").style.display = "";
+                document.getElementById("loginScreen").style.display = "none";
+                document.getElementById("app").style.display = "flex";
+                document.getElementById("topUserName").textContent = "Suporte";
+                document.getElementById("topAvatar").textContent = "S";
+                navigate("master");
+                notify("Acesso MASTER liberado.");
+                return;
+            }
+            showTeacherUI();
+            document.getElementById("masterNav").style.display = "none";
             const loadedData = await loadData();
             if (loadedData) {
                 data = loadedData;
                 data.session = true;
                 isDataLoaded = true;
+                const license = await checkTeacherLicense(data.professor);
+                if (!license.ok) { await supabaseClient.auth.signOut(); data=defaultData(); data.session=false; isDataLoaded=false; notify(license.reason); return; }
             } else {
+                await supabaseClient.auth.signOut();
                 data = defaultData();
-                data.session = true;
+                data.session = false;
                 isDataLoaded = false;
+                notify("Cadastro do professor não encontrado.");
+                return;
             }
 
             document.getElementById("loginScreen").style.display = "none";
             document.getElementById("app").style.display = "flex";
 
             updateUser();
+            renderLicenseBanner(data.professor);
             navigate("dashboard");
             notify(`Bem-vindo, ${data.professor?.nome || "Professor"}!`);
         } catch (error) {
@@ -1725,6 +1865,10 @@ async function logout() {
 
     data = defaultData();
     data.session = false;
+    isMaster = false;
+    document.getElementById("masterNav").style.display = "none";
+    showTeacherUI();
+    const licenseBanner = document.getElementById("licenseBanner"); if (licenseBanner) licenseBanner.style.display = "none";
     isDataLoaded = false;
     currentUserId = null;
     currentStudent = null;
@@ -4527,6 +4671,9 @@ async function init() {
 
     data = defaultData();
     data.session = false;
+    isMaster = false;
+    document.getElementById("masterNav").style.display = "none";
+    showTeacherUI();
     currentUserId = null;
     currentStudent = null;
     currentPage = "dashboard";
@@ -4558,6 +4705,13 @@ document.getElementById("logoutBtn").addEventListener("click", logout);
 // ============================================================
 
 window.navigate = navigate;
+window.refreshMaster = refreshMaster;
+window.renderMasterTable = renderMasterTable;
+window.openMasterProfessor = openMasterProfessor;
+window.closeMasterModal = closeMasterModal;
+window.saveMasterProfessor = saveMasterProfessor;
+window.setProfessorActive = setProfessorActive;
+window.extendLicense = extendLicense;
 window.openStudent = openStudent;
 window.toggleStudentForm = toggleStudentForm;
 window.saveStudent = saveStudent;
