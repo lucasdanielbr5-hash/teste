@@ -1,550 +1,3 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Legado Que Ensina · Gestão Psicopedagógica</title>
-
-<!-- ============================================================ -->
-<!-- FAVICONS -->
-<!-- ============================================================ -->
-<link rel="icon" type="image/png" href="https://i.imgur.com/AUoGLEq.png">
-<link rel="apple-touch-icon" href="https://i.imgur.com/AUoGLEq.png">
-
-<!-- ============================================================ -->
-<!-- TAILWIND -->
-<!-- ============================================================ -->
-<link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.1/dist/tailwind.min.css" rel="stylesheet">
-
-<script src="https://unpkg.com/lucide@latest"></script>
-<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-
-<style>
-*{box-sizing:border-box}
-html,body{margin:0;width:100%;height:100%;font-family:Inter,sans-serif;background:#f7f9f8;color:#263238}
-body{overflow:hidden}
-button,input,select,textarea{font-family:inherit}
-button{cursor:pointer}
-::-webkit-scrollbar{width:7px;height:7px}
-::-webkit-scrollbar-thumb{background:#cbd5d1;border-radius:20px}
-::-webkit-scrollbar-track{background:transparent}
-
-:root{
- --sage:#5f8f7a;
- --sage-dark:#477363;
- --sage-light:#eaf3ee;
- --blue:#6288a8;
- --blue-light:#edf4f8;
- --ink:#263238;
- --muted:#718096;
- --line:#e6ece9;
- --surface:#fff;
-}
-
-.app{height:100vh;display:flex}
-.sidebar{
- width:218px;
- background:#fff;
- border-right:1px solid var(--line);
- display:flex;
- flex-direction:column;
- padding:20px 14px;
- flex-shrink:0;
- z-index:20;
-}
-.brand{height:52px;display:flex;align-items:center;gap:12px;color:var(--sage-dark);font-weight:700;padding:0 10px;white-space:nowrap;overflow:hidden}
-.brand-mark{width:36px;height:36px;border-radius:12px;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center}
-.brand-mark img{width:100%;height:100%;object-fit:contain}
-.brand-text{display:flex;flex-direction:column;line-height:1.2}
-.brand-text .main{font-size:14px;font-weight:700;color:var(--sage-dark)}
-.brand-text .sub{font-size:8px;font-weight:500;color:#8a9892;letter-spacing:.03em}
-.nav{margin-top:22px;display:flex;flex-direction:column;gap:5px}
-.nav button{
- border:0;background:transparent;color:#718096;border-radius:12px;
- min-height:44px;padding:0 14px;display:flex;align-items:center;gap:13px;
- font-size:13px;font-weight:500;text-align:left;
-}
-.nav button:hover{background:#f3f6f5;color:var(--ink)}
-.nav button.active{background:var(--sage-light);color:var(--sage-dark);font-weight:600}
-.nav svg{width:20px;min-width:20px}
-.nav-label{opacity:1}
-.side-bottom{margin-top:auto}
-.main{min-width:0;flex:1;height:100vh;display:flex;flex-direction:column}
-.topbar{
- height:72px;background:#fff;border-bottom:1px solid var(--line);
- display:flex;align-items:center;justify-content:space-between;padding:0 30px;flex-shrink:0
-}
-.page-title{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:600}
-.page-title svg{color:var(--sage);width:20px}
-.user-mini{display:flex;align-items:center;gap:10px}
-.avatar{width:38px;height:38px;border-radius:50%;background:var(--sage-light);color:var(--sage-dark);display:grid;place-items:center;font-weight:700;overflow:hidden;background-size:cover;background-position:center}
-.content{padding:26px 30px 40px;overflow:auto;height:calc(100vh - 72px)}
-.view{display:none;animation:fade .2s ease}
-.view.active{display:block}
-@keyframes fade{from{opacity:.3;transform:translateY(5px)}to{opacity:1;transform:none}}
-
-.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 2px 8px rgba(30,50,40,.025)}
-.grid{display:grid;gap:16px}
-.stats{grid-template-columns:repeat(4,minmax(0,1fr))}
-.stat-label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#91a09a;font-weight:600}
-.stat-value{font-size:25px;font-weight:700;margin-top:8px;color:#263238}
-.stat-sub{font-size:11px;color:#8a9892;margin-top:5px}
-
-.btn{border:0;border-radius:11px;padding:9px 15px;font-size:13px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:7px;transition:.15s}
-.btn svg{width:16px}
-.btn-primary{background:var(--sage);color:white}
-.btn-primary:hover{background:var(--sage-dark)}
-.btn-soft{background:var(--sage-light);color:var(--sage-dark)}
-.btn-blue{background:var(--blue-light);color:#557994}
-.btn-danger{background:#fff0f0;color:#b85b5b}
-.btn-outline{background:#fff;border:1px solid var(--line);color:#53615c}
-.btn-outline:hover{background:#f7faf8}
-.btn-outline:disabled{opacity:.5;cursor:not-allowed}
-.btn-sm{padding:7px 10px;font-size:12px}
-
-.input,.select,.textarea{
- width:100%;border:1px solid #dfe7e3;background:#fbfcfc;border-radius:10px;
- padding:9px 11px;outline:0;font-size:13px;color:var(--ink);transition:.15s
-}
-.input:focus,.select:focus,.textarea:focus{border-color:#8eb2a3;box-shadow:0 0 0 3px rgba(95,143,122,.09)}
-.textarea{resize:vertical;min-height:100px}
-.label{display:block;font-size:11px;font-weight:600;color:#66756f;margin-bottom:5px}
-.field{margin-bottom:13px}
-.form-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
-.form-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
-.form-actions{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
-
-.section-head{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:16px}
-.section-title{font-size:15px;font-weight:700;color:#34413c}
-.section-sub{font-size:12px;color:#89968f;margin-top:3px}
-
-.student-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:14px}
-.student{
- background:#fff;border:1px solid var(--line);border-radius:17px;padding:17px;
- transition:.18s;cursor:pointer
-}
-.student:hover{border-color:#c8ddd3;transform:translateY(-2px);box-shadow:0 10px 24px rgba(50,90,70,.07)}
-.student-top{display:flex;gap:12px;align-items:center}
-.student-avatar{width:48px;height:48px;border-radius:15px;background:var(--sage-light);color:var(--sage-dark);display:grid;place-items:center;font-weight:700;font-size:17px;overflow:hidden;background-size:cover;background-position:center}
-.student-name{font-weight:700;font-size:14px}
-.student-meta{font-size:11px;color:#89968f;margin-top:3px}
-.tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:13px}
-.tag{font-size:10px;padding:4px 8px;border-radius:20px;background:#edf4f8;color:#597b96;font-weight:600}
-
-.profile-cover{height:112px;border-radius:18px 18px 0 0;background:linear-gradient(135deg,#eaf3ee,#edf4f8)}
-.profile-card{margin-top:-1px;border-radius:0 0 18px 18px}
-.profile-head{display:flex;gap:20px;align-items:flex-end;margin-top:-42px;padding:0 24px}
-.profile-avatar{width:92px;height:92px;border-radius:25px;background:#eaf3ee;border:5px solid white;display:grid;place-items:center;font-size:30px;font-weight:700;color:var(--sage-dark);overflow:hidden;background-size:cover;background-position:center;flex-shrink:0}
-.profile-name{font-size:22px;font-weight:700}
-.profile-meta{font-size:12px;color:#81908a;margin-top:4px}
-.profile-actions{margin-left:auto;display:flex;gap:7px}
-.profile-body{padding:20px 24px}
-.profile-layout{display:grid;grid-template-columns:2fr 1fr;gap:18px;margin-top:18px}
-
-.timeline{display:flex;flex-direction:column;gap:10px}
-.evolution{border:1px solid var(--line);border-radius:13px;padding:14px;background:#fbfcfc}
-.evolution-date{font-size:10px;color:#91a09a;font-weight:600}
-.evolution-title{font-size:13px;font-weight:700;margin:5px 0}
-.evolution-text{font-size:12px;line-height:1.65;color:#596761;white-space:pre-wrap}
-
-.agenda-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:15px}
-.toolbar-group{display:flex;gap:5px;align-items:center}
-.month-label{font-size:16px;font-weight:700;min-width:150px;text-align:center}
-.week-grid{display:grid;grid-template-columns:70px repeat(5,minmax(130px,1fr));min-width:700px}
-.week-head{background:#fafcfb;border-bottom:1px solid var(--line);padding:10px;text-align:center;font-size:11px;font-weight:700;color:#68766f}
-.time-cell{height:72px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:7px;font-size:10px;color:#97a39e;text-align:right}
-.slot{height:72px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:4px;background:#fff}
-.slot:hover{background:#fbfdfc}
-.event{padding:7px;border-radius:9px;font-size:10px;line-height:1.3;cursor:pointer;position:relative;min-height:58px}
-.event.psico{background:#edf4f8;color:#557792}
-.event.psicopeg{background:#f0f5ec;color:#5d806c}
-.event.aula{background:#f5f0f8;color:#80678c}
-.event strong{display:block;font-size:10px;margin-bottom:2px}
-.event-actions{display:flex;gap:3px;margin-top:5px}
-.event-actions button{border:0;background:rgba(255,255,255,.65);border-radius:5px;padding:2px 5px;font-size:9px}
-.empty-slot{height:100%;display:grid;place-items:center;color:#c1ccc7;font-size:11px}
-
-.month-grid{display:grid;grid-template-columns:repeat(7,1fr);border:1px solid var(--line);border-radius:15px;overflow:hidden;background:white}
-.month-week{display:contents}
-.month-day{
- min-height:105px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);
- padding:8px;cursor:pointer
-}
-.month-day:hover{background:#fafcfb}
-.month-day.other{background:#fafafa;color:#b9c2be}
-.day-number{font-size:11px;font-weight:700}
-.dot-row{display:flex;flex-wrap:wrap;gap:3px;margin-top:9px}
-.dot{width:7px;height:7px;border-radius:50%}
-.dot.psico{background:#8db0c8}.dot.psicopeg{background:#8eb29d}.dot.aula{background:#ad94b9}
-.day-events{margin-top:7px;display:flex;flex-direction:column;gap:3px}
-.day-event{font-size:9px;padding:3px 5px;border-radius:5px;background:#edf4f8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-
-.finance-table{width:100%;border-collapse:collapse}
-.finance-table th{text-align:left;font-size:10px;color:#87948e;text-transform:uppercase;padding:10px;border-bottom:1px solid var(--line)}
-.finance-table td{padding:12px 10px;border-bottom:1px solid #f0f3f2;font-size:12px}
-.paid{color:#5d8a70;font-weight:700}.pending{color:#a98058;font-weight:700}
-.alert{padding:12px;border-radius:12px;background:#fff8ef;border:1px solid #f3e5d2}
-.alert-title{font-size:12px;font-weight:700;color:#876f51}
-.alert-text{font-size:11px;color:#8d8171;margin-top:3px}
-.empty{padding:30px;text-align:center;color:#98a49f;font-size:13px}
-.kpi-bar{height:6px;border-radius:10px;background:#edf1ef;overflow:hidden;margin-top:10px}
-.kpi-fill{height:100%;background:var(--sage);border-radius:10px}
-
-/* ============================================================
-   TELA DE LOGIN
-   ============================================================ */
-.login-screen{
-    min-height:100vh;
-    display:grid;
-    place-items:center;
-    padding:28px;
-    background:
-        radial-gradient(circle at 15% 20%, rgba(95,143,122,.13), transparent 30%),
-        radial-gradient(circle at 85% 80%, rgba(98,136,168,.10), transparent 30%),
-        #f5f8f6;
-    position:relative;
-    overflow:auto;
-}
-.login-box{
-    width:min(430px,100%);
-    background:rgba(255,255,255,.97);
-    border:1px solid #e4ebe7;
-    border-radius:24px;
-    padding:42px;
-    box-shadow:0 24px 70px rgba(38,50,56,.10);
-    position:relative;
-    z-index:2;
-    animation:loginEnter .45s ease-out;
-}
-@keyframes loginEnter{
-    from{opacity:0;transform:translateY(14px)}
-    to{opacity:1;transform:none}
-}
-.login-box .logo-area{text-align:center;margin-bottom:30px}
-.login-box .logo-area .logo-img{
-    width:68px;height:68px;object-fit:contain;border-radius:18px;margin-bottom:16px
-}
-.login-box .logo-area .brand-name{
-    font-size:25px;font-weight:800;color:#20362d;letter-spacing:-.04em
-}
-.login-box .logo-area .brand-name span{color:var(--sage)}
-.login-box .logo-area .brand-sub{
-    font-size:12px;color:#82918a;margin-top:6px
-}
-.login-box .login-sub{
-    text-align:left;color:#66756f;font-size:13px;margin-bottom:24px
-}
-.login-box .field{margin-bottom:17px}
-.login-box .field .label{
-    display:block;font-size:12px;font-weight:700;color:#4c5f57;margin-bottom:7px
-}
-.login-box .field .input{
-    width:100%;min-height:48px;padding:12px 14px;border:1px solid #dce6e1;
-    border-radius:12px;font-size:14px;background:#fbfcfc;transition:.2s;
-    outline:none;color:#263832
-}
-.login-box .field .input:hover{border-color:#cbd9d3}
-.login-box .field .input:focus{
-    border-color:#76a18e;background:#fff;box-shadow:0 0 0 4px rgba(95,143,122,.10)
-}
-.login-box .field .input::placeholder{color:#aebbb5}
-.login-box .login-btn{
-    width:100%;min-height:50px;padding:13px 16px;border:0;border-radius:12px;
-    font-size:14px;font-weight:700;background:var(--sage);color:#fff;transition:.2s;
-    display:flex;align-items:center;justify-content:center;gap:8px;margin-top:7px;cursor:pointer
-}
-.login-box .login-btn:hover{
-    background:var(--sage-dark);transform:translateY(-1px);
-    box-shadow:0 8px 22px rgba(71,115,99,.20)
-}
-.login-box .login-btn:active{transform:none}
-.login-box .login-btn:disabled{opacity:.7;cursor:wait;transform:none}
-.login-box .login-note{
-    display:flex;align-items:flex-start;gap:9px;margin-top:22px;padding:12px 13px;
-    border:1px solid #e7eee9;border-radius:12px;background:#f8faf9;color:#788881;
-    font-size:11px;line-height:1.5
-}
-.login-box .login-note svg{width:15px;min-width:15px;margin-top:1px;color:var(--sage)}
-
-
-.toast{
- position:fixed;right:22px;bottom:22px;background:#263d35;color:#fff;padding:12px 16px;
- border-radius:12px;font-size:12px;z-index:100;opacity:0;transform:translateY(10px);pointer-events:none;transition:.25s
-}
-.toast.show{opacity:1;transform:none}
-
-.profile-timeline-item{
- padding:14px 0;
- border-bottom:1px solid #f0f3f2;
- display:flex;
- gap:14px;
- align-items:flex-start;
-}
-.profile-timeline-item:last-child{border-bottom:0}
-.profile-timeline-dot{
- width:10px;
- height:10px;
- border-radius:50%;
- margin-top:4px;
- flex-shrink:0;
-}
-.profile-timeline-dot.evolution{background:#8eb29d}
-.profile-timeline-dot.observation{background:#8db0c8}
-.profile-timeline-dot.alert{background:#c9a87c}
-.profile-timeline-content{flex:1;min-width:0}
-.profile-timeline-content .title{font-weight:700;font-size:13px}
-.profile-timeline-content .meta{font-size:10px;color:#8a9892;margin:2px 0 5px}
-.profile-timeline-content .text{font-size:12px;color:#596761;line-height:1.6;white-space:pre-wrap}
-.profile-timeline-content .actions{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
-
-@media(max-width:950px){
- .stats{grid-template-columns:repeat(2,1fr)}
- .profile-layout{grid-template-columns:1fr}
- .form-grid{grid-template-columns:repeat(2,1fr)}
-}
-@media(max-width:680px){
- .sidebar{width:58px;padding:15px 6px}
- .brand{padding:0 5px;justify-content:center}
- .brand-text .sub{display:none}
- .nav button{justify-content:center;padding:0 8px}
- .nav-label{display:none}
- .main{margin-left:0}
- .topbar{height:62px;padding:0 15px}
- .content{height:calc(100vh - 62px);padding:17px 13px}
- .form-grid,.form-grid.two{grid-template-columns:1fr}
- .stats{grid-template-columns:1fr 1fr}
- .profile-head{align-items:flex-start;flex-wrap:wrap;padding:0 14px}
- .profile-actions{width:100%;margin-left:0}
- .profile-body{padding:15px}
- .profile-avatar{width:75px;height:75px}
- .profile-name{font-size:18px}
- .month-grid{min-width:620px}
- .login-box{padding:28px 20px}
- .login-box .logo-area .logo-img{width:64px;height:64px}
- .login-box .logo-area .brand-name{font-size:22px}
-}
-
-.help-box{display:flex;gap:10px;align-items:flex-start;background:#f4f8f6;border:1px solid #d9e6e0;border-radius:14px;padding:13px 16px;margin-bottom:18px;font-size:12px;line-height:1.6;color:#5a6b64}
-.help-box i{flex-shrink:0}
-
-.finance-layout{display:grid;grid-template-columns:1fr 280px;gap:18px;align-items:start}
-.finance-side{position:sticky;top:10px}
-.mini-cal{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px}
-.mini-cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-.mini-cal-head .mc-title{font-size:12px;font-weight:700;text-transform:capitalize;color:#4a5852}
-.mini-cal-head button{border:0;background:#f4f8f6;border-radius:8px;width:24px;height:24px;cursor:pointer;font-size:13px;color:#6b7a73;display:flex;align-items:center;justify-content:center}
-.mini-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
-.mini-cal-dow{font-size:8px;color:#a3aea9;text-align:center;padding:2px 0}
-.mini-cal-day{aspect-ratio:1;font-size:10px;display:flex;align-items:center;justify-content:center;border-radius:6px;cursor:default;color:#6b7a73;position:relative}
-.mini-cal-day.other{color:#d0d8d4}
-.mini-cal-day.today{background:var(--sage);color:#fff;font-weight:700}
-.mini-cal-day.has-event::after{content:"";position:absolute;bottom:2px;width:4px;height:4px;border-radius:50%;background:#e8a23d}
-.mini-cal-day.has-event.paid::after{background:var(--sage)}
-.mini-cal-day.has-event.pending::after{background:#e8a23d}
-.mini-cal-day.sel{outline:2px solid var(--sage);outline-offset:-2px}
-.side-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:12px}
-.side-card .sc-title{font-size:12px;font-weight:700;margin-bottom:8px;color:#4a5852}
-.side-card .sc-row{display:flex;justify-content:space-between;font-size:11px;padding:5px 0;border-bottom:1px solid #f0f3f2}
-.side-card .sc-row:last-child{border:0}
-.side-card .sc-row .sc-val{font-weight:700}
-
-.aval-type-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;background:#eaf3ee;color:#3d8a6b}
-.aval-type-badge.survey{background:#eef0f8;color:#5b63b3}
-.aval-type-badge.screening{background:#fef3e8;color:#b8732a}
-.aval-type-badge.anamnese{background:#e8f0fe;color:#3a6cb8}
-.aval-list-item{padding:14px 0;border-top:1px solid var(--line)}
-.aval-applied-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f5f7f6}
-.aval-applied-row:last-child{border:0}
-@media(max-width:950px){
- .finance-layout{grid-template-columns:1fr}
- .finance-side{position:static}
-}
-
-.timeline-item{
- padding:16px 0;
- border-bottom:1px solid #f0f3f2;
- display:flex;
- gap:14px;
- align-items:flex-start;
-}
-.timeline-item:last-child{border-bottom:0}
-.timeline-dot{
- width:12px;
- height:12px;
- border-radius:50%;
- margin-top:3px;
- flex-shrink:0;
-}
-.timeline-dot.consulta{background:#8db0c8}
-.timeline-dot.evolucao{background:#8eb29d}
-.timeline-dot.avaliacao{background:#ad94b9}
-.timeline-dot.escola{background:#c9a87c}
-.timeline-dot.observacao{background:#b8b0a8}
-.timeline-content{flex:1;min-width:0}
-.timeline-content .tl-title{font-weight:700;font-size:13px}
-.timeline-content .tl-meta{font-size:10px;color:#8a9892;margin:2px 0 5px}
-.timeline-content .tl-text{font-size:12px;color:#596761;line-height:1.6;white-space:pre-wrap}
-
-.aval-pdf-btn{display:inline-flex;align-items:center;gap:5px;font-size:10px;padding:4px 10px;border-radius:8px;border:1px solid var(--line);background:#fff;color:#53615c;cursor:pointer;transition:.15s}
-.aval-pdf-btn:hover{background:#f7faf8}
-
-.two-col-layout{display:grid;grid-template-columns:1fr 280px;gap:18px;align-items:start}
-.right-sidebar{position:sticky;top:10px}
-@media(max-width:950px){
- .two-col-layout{grid-template-columns:1fr}
- .right-sidebar{position:static}
-}
-
-/* AVALIAÇÕES - PASSO A PASSO */
-.aval-step{max-width:650px;margin:0 auto}
-.aval-step .step-progress{display:flex;gap:6px;margin-bottom:20px;justify-content:center;flex-wrap:wrap}
-.aval-step .step-progress .dot{width:10px;height:10px;border-radius:50%;background:#dfe7e3;transition:.3s}
-.aval-step .step-progress .dot.active{background:var(--sage)}
-.aval-step .step-progress .dot.done{background:var(--sage-dark)}
-.aval-step .step-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px}
-.aval-step .step-card .step-number{font-size:11px;color:#8a9892;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
-.aval-step .step-card .step-question{font-size:16px;font-weight:700;margin:10px 0 16px;color:#263238;line-height:1.5}
-.aval-step .step-card .step-options{display:flex;flex-direction:column;gap:8px}
-.aval-step .step-card .step-options label{display:flex;align-items:center;gap:10px;padding:12px 14px;border:2px solid var(--line);border-radius:12px;cursor:pointer;transition:.15s;font-size:13px}
-.aval-step .step-card .step-options label:hover{border-color:#b8ccc2;background:#f8fbf9}
-.aval-step .step-card .step-options label.selected{border-color:var(--sage);background:var(--sage-light)}
-.aval-step .step-card .step-options label input[type="radio"]{accent-color:var(--sage);width:16px;height:16px}
-.aval-step .step-nav{display:flex;justify-content:space-between;margin-top:20px;gap:10px}
-.aval-step .step-nav button{padding:10px 20px;border:0;border-radius:10px;font-weight:600;font-size:12px;transition:.15s}
-.aval-step .step-nav .btn-prev{background:#f5f8f7;color:#5a6b64}
-.aval-step .step-nav .btn-prev:hover{background:#eaf0ed}
-.aval-step .step-nav .btn-next{background:var(--sage);color:#fff}
-.aval-step .step-nav .btn-next:hover{background:var(--sage-dark)}
-.aval-step .step-nav .btn-next:disabled{opacity:.4;cursor:not-allowed}
-
-.payment-method-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:2px 8px;border-radius:12px}
-.payment-method-badge.dinheiro{background:#eaf3ee;color:#3d8a6b}
-.payment-method-badge.pix{background:#e8f0fe;color:#3a6cb8}
-.payment-method-badge.cartao{background:#fef3e8;color:#b8732a}
-.payment-method-badge.cartao_parcelado{background:#f5f0f8;color:#80678c}
-
-.master-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px}
-.master-stat{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px}
-.master-stat-label{font-size:11px;color:#89968f}.master-stat-value{font-size:24px;font-weight:800;color:#34413c;margin-top:7px}.master-stat-sub{font-size:10px;color:#9aa6a1;margin-top:3px}
-.master-toolbar{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:14px}
-.master-table-wrap{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:auto}
-.master-table{width:100%;border-collapse:collapse;min-width:880px}.master-table th{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#87938e;text-align:left;background:#fafcfb;padding:11px 13px;border-bottom:1px solid var(--line)}.master-table td{padding:12px 13px;border-bottom:1px solid #edf1ef;font-size:12px;color:#52605a}.master-table tr:last-child td{border-bottom:0}
-.master-status{display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:20px;font-size:10px;font-weight:700}.master-status.ok{background:#eaf5ee;color:#3e8060}.master-status.off{background:#fff0f0;color:#b55e5e}.master-status.warn{background:#fff6e7;color:#a87935}
-.master-modal-backdrop{position:fixed;inset:0;background:rgba(30,45,38,.34);display:none;align-items:center;justify-content:center;padding:20px;z-index:1000}.master-modal{width:min(560px,100%);background:#fff;border-radius:20px;box-shadow:0 25px 70px rgba(30,55,43,.18);padding:22px}.master-modal-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:18px}.master-modal-title{font-size:17px;font-weight:800}.master-modal-sub{font-size:11px;color:#8a9791;margin-top:3px}.license-banner{position:fixed;left:270px;right:18px;bottom:12px;background:#fff8e9;border:1px solid #f0d69d;color:#7b622f;border-radius:12px;padding:10px 14px;display:none;align-items:center;justify-content:space-between;gap:12px;z-index:900;box-shadow:0 8px 25px rgba(70,55,25,.08);font-size:11px}.license-banner strong{font-weight:800}.license-banner .pix{font-weight:800;letter-spacing:.02em}.license-banner .close{border:0;background:transparent;color:#92733a;cursor:pointer;font-size:16px}
-@media(max-width:900px){.master-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.license-banner{left:12px;right:12px}.master-table{min-width:780px}}
-</style>
-</head>
-
-<body>
-
-<div id="loginScreen" class="login-screen">
-  <div class="login-box">
-    <div class="logo-area">
-      <img src="https://i.imgur.com/AUoGLEq.png" alt="Legado Que Ensina" class="logo-img">
-      <div class="brand-name">Legado Que <span>Ensina</span></div>
-      <div class="brand-sub">Gestão integrada para educação e cuidado</div>
-    </div>
-
-    <div class="login-sub">Acesse sua conta para continuar</div>
-
-    <div class="field">
-      <label class="label">E-mail</label>
-      <input id="loginUser" class="input" type="email" placeholder="seu@email.com" autocomplete="off">
-    </div>
-
-    <div class="field">
-      <label class="label">Senha</label>
-      <input id="loginPass" class="input" type="password" placeholder="••••••••" autocomplete="new-password">
-    </div>
-
-    <button id="loginBtn" class="login-btn">
-      <i data-lucide="log-in"></i> Entrar
-    </button>
-
-    <div class="login-note">
-      <i data-lucide="shield-check"></i>
-      <span>Entre com o e-mail e a senha da sua própria conta. Nenhuma conta de demonstração ou credencial é exibida nesta tela.</span>
-    </div>
-  </div>
-</div>
-
-<div id="app" class="app" style="display:none">
-
-<aside class="sidebar">
-  <div class="brand">
-    <div class="brand-mark"><img src="https://i.imgur.com/AUoGLEq.png" alt="Legado Que Ensina"></div>
-    <div class="brand-text">
-      <span class="main">Legado Que Ensina</span>
-      <span class="sub">Gestão Psicopedagógica</span>
-    </div>
-  </div>
-
-  <nav class="nav">
-    <button data-page="dashboard" class="active">
-      <i data-lucide="layout-dashboard"></i><span class="nav-label">Dashboard</span>
-    </button>
-    <button data-page="alunos">
-      <i data-lucide="users"></i><span class="nav-label">Alunos</span>
-    </button>
-    <button data-page="agenda">
-      <i data-lucide="calendar-days"></i><span class="nav-label">Agenda</span>
-    </button>
-    <button data-page="avaliacoes">
-      <i data-lucide="clipboard-check"></i><span class="nav-label">Avaliações</span>
-    </button>
-    <button data-page="financeiro">
-      <i data-lucide="wallet-cards"></i><span class="nav-label">Financeiro</span>
-    </button>
-    <button data-page="perfil" class="teacher-only-nav">
-      <i data-lucide="user-round"></i><span class="nav-label">Meu Perfil</span>
-    </button>
-    <button data-page="master" id="masterNav" style="display:none">
-      <i data-lucide="shield-check"></i><span class="nav-label">Suporte</span>
-    </button>
-  </nav>
-
-  <div class="side-bottom nav">
-    <button id="logoutBtn">
-      <i data-lucide="log-out"></i><span class="nav-label">Sair</span>
-    </button>
-  </div>
-</aside>
-
-<main class="main">
-
-<header class="topbar">
-  <div id="pageTitle" class="page-title">
-    <i data-lucide="layout-dashboard"></i> Dashboard
-  </div>
-  <div class="user-mini">
-    <span id="topUserName" style="font-size:12px;color:#68766f"></span>
-    <div id="topAvatar" class="avatar">P</div>
-  </div>
-</header>
-
-<div class="content">
-
-<section id="page-dashboard" class="view active"></section>
-<section id="page-alunos" class="view"></section>
-<section id="page-agenda" class="view"></section>
-<section id="page-avaliacoes" class="view"></section>
-<section id="page-financeiro" class="view"></section>
-<section id="page-perfil" class="view"></section>
-<section id="page-prontuario" class="view"></section>
-<section id="page-master" class="view"></section>
-
-</div>
-</main>
-</div>
-
-<div id="toast" class="toast"></div>
-<div id="licenseBanner" class="license-banner"><div><strong>Sua licença irá expirar em <span id="licenseDays">0</span> dias.</strong> Realize o pagamento PIX: <span class="pix">118.327.049.63</span> — encaminhe o comprovante para: <span class="pix">43920036581</span>.</div><button class="close" onclick="document.getElementById('licenseBanner').style.display='none'">×</button></div>
-
-<script>
 // ============================================================
 // CONFIGURAÇÃO DO SUPABASE
 // ============================================================
@@ -580,6 +33,7 @@ let financePage = 1;
 let isSaving = false;
 let isDataLoaded = false;
 let isMaster = false;
+let licenseCheckInterval = null;
 const MASTER_EMAIL = "contato@legadoqueensina.com.br";
 
 // Variáveis para avaliação passo a passo
@@ -646,9 +100,9 @@ function fmtDate(s) {
 
 function fmtDateTime(s) {
     if (!s) return "";
-    const d = parseDate(s);
+    const d = new Date(s);
     if (isNaN(d)) return String(s);
-    return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
+    return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
 }
 
 function monthName(d) {
@@ -673,7 +127,7 @@ function notify(message) {
     t.textContent = message;
     t.classList.add("show");
     clearTimeout(window.toastTimer);
-    window.toastTimer = setTimeout(() => t.classList.remove("show"), 2600);
+    window.toastTimer = setTimeout(() => t.classList.remove("show"), 4000);
 }
 
 function activeAppointments() {
@@ -800,6 +254,119 @@ function studentPager(items, page, size = 5, onclick = "") {
                 <button class="btn btn-outline btn-sm" ${page >= total ? "disabled" : ""} onclick="${onclick}(${page + 1})">Próxima<i data-lucide="chevron-right"></i></button>
             </div>` : ""
     };
+}
+
+// ============================================================
+// FUNÇÕES DE LICENÇA
+// ============================================================
+
+function daysUntil(dateValue) {
+    if (!dateValue) return null;
+    const end = new Date(dateValue);
+    const now = new Date();
+    return Math.ceil((end - now) / (1000 * 60 * 60 * 24));
+}
+
+function isLicenseValid(professor) {
+    if (!professor) return { ok: false, reason: 'Cadastro do professor não encontrado.' };
+    
+    // Verificar se está ativo
+    if (professor.ativo === false) {
+        return { ok: false, reason: 'Seu acesso foi bloqueado pela administração. Entre em contato com o suporte.' };
+    }
+    
+    // Verificar licença (usando licenca_fim)
+    if (professor.licenca_fim) {
+        const agora = new Date();
+        const fim = new Date(professor.licenca_fim);
+        
+        if (fim < agora) {
+            return { 
+                ok: false, 
+                reason: 'Sua licença expirou em ' + fmtDateTime(professor.licenca_fim) + '. Realize o pagamento e encaminhe o comprovante ao suporte.' 
+            };
+        }
+        
+        // Verificar se está perto de vencer (menos de 5 dias)
+        const diasRestantes = Math.ceil((fim - agora) / (1000 * 60 * 60 * 24));
+        if (diasRestantes <= 5) {
+            return { 
+                ok: true, 
+                warning: true, 
+                diasRestantes: diasRestantes,
+                reason: `Sua licença expira em ${diasRestantes} dia(s). Renove para continuar usando o sistema.`
+            };
+        }
+    }
+    
+    return { ok: true };
+}
+
+function renderLicenseBanner(professor) {
+    const banner = document.getElementById('licenseBanner');
+    if (!banner) return;
+    
+    if (!professor || !professor.licenca_fim) {
+        banner.style.display = 'none';
+        return;
+    }
+    
+    const agora = new Date();
+    const fim = new Date(professor.licenca_fim);
+    const diasRestantes = Math.ceil((fim - agora) / (1000 * 60 * 60 * 24));
+    
+    if (diasRestantes >= 0 && diasRestantes <= 5) {
+        document.getElementById('licenseDays').textContent = diasRestantes;
+        banner.style.display = 'flex';
+        
+        // Mudar cor se estiver muito perto (<= 2 dias)
+        if (diasRestantes <= 2) {
+            banner.style.background = '#fff0f0';
+            banner.style.borderColor = '#e8a0a0';
+            banner.style.color = '#b85b5b';
+        } else {
+            banner.style.background = '#fff8e9';
+            banner.style.borderColor = '#f0d69d';
+            banner.style.color = '#7b622f';
+        }
+    } else {
+        banner.style.display = 'none';
+    }
+}
+
+function startLicenseMonitoring() {
+    // Limpar intervalo anterior
+    if (licenseCheckInterval) {
+        clearInterval(licenseCheckInterval);
+    }
+    
+    // Verificar a cada 5 minutos (300000 ms)
+    licenseCheckInterval = setInterval(async () => {
+        if (!data || !data.session || !data.professor) return;
+        
+        const license = isLicenseValid(data.professor);
+        
+        if (!license.ok) {
+            // Bloquear acesso imediatamente
+            clearInterval(licenseCheckInterval);
+            notify('⚠️ ' + license.reason);
+            
+            // Forçar logout após 3 segundos
+            setTimeout(() => {
+                notify('Sessão encerrada por expiração de licença.');
+                logout();
+            }, 3000);
+            return;
+        }
+        
+        if (license.warning) {
+            // Mostrar aviso mas não bloquear
+            renderLicenseBanner(data.professor);
+            if (license.diasRestantes <= 2) {
+                notify('⚠️ ' + license.reason);
+            }
+        }
+    }, 300000); // 5 minutos
 }
 
 // ============================================================
@@ -952,6 +519,12 @@ function mapProfessorFromDB(row) {
         especialidade: row.especialidade || "",
         bio: row.bio || "",
         foto: row.foto || "",
+        cargo: row.cargo || "Professor",
+        ativo: row.ativo !== false,
+        licenca_inicio: row.licenca_inicio,
+        licenca_fim: row.licenca_fim,
+        valor_mensalidade: row.valor_mensalidade || 0,
+        observacao_admin: row.observacao_admin || "",
         observacoes: [],
         evolucoesPessoais: [],
         configuracoes: {
@@ -1135,6 +708,10 @@ async function loadDataFromSupabase() {
                 especialidade: "Psicopedagogia Clínica",
                 bio: "Profissional dedicado ao desenvolvimento acadêmico, emocional e cognitivo.",
                 foto: "",
+                cargo: "Professor",
+                ativo: true,
+                licenca_inicio: null,
+                licenca_fim: null,
                 observacoes: [],
                 evolucoesPessoais: [],
                 configuracoes: { notificacoes: true, tema: "claro", lembretes: true }
@@ -1168,7 +745,7 @@ const COLUMN_MAP = {
     'transacoes': ['id', 'user_id', 'agenda_id', 'aluno_id', 'data', 'descricao', 'valor', 'tipo', 'categoria', 'metodo_pagamento', 'parcelas'],
     'agenda': ['id', 'user_id', 'aluno_id', 'data', 'hora', 'tipo', 'status', 'presente', 'pago', 'updated_at'],
     'alunos': ['id', 'user_id', 'nome', 'idade', 'serie', 'responsavel', 'telefone', 'valor', 'foto', 'tags', 'observacoes', 'ativo', 'updated_at'],
-    'professores': ['id', 'user_id', 'nome', 'especialidade', 'bio', 'foto', 'config_notificacoes', 'config_lembretes', 'updated_at'],
+    'professores': ['id', 'user_id', 'nome', 'especialidade', 'bio', 'foto', 'cargo', 'ativo', 'licenca_inicio', 'licenca_fim', 'valor_mensalidade', 'observacao_admin', 'config_notificacoes', 'config_lembretes', 'updated_at'],
     'evolucoes': ['id', 'user_id', 'aluno_id', 'data', 'titulo', 'texto'],
     'consultas': ['id', 'user_id', 'aluno_id', 'data', 'observacoes', 'acoes', 'pais', 'solicitacoes', 'comportamentos'],
     'avaliacoes': ['id', 'user_id', 'aluno_id', 'data', 'titulo', 'tipo', 'objetivo', 'questoes', 'finalizada'],
@@ -1480,6 +1057,12 @@ async function saveProfessor(professor) {
             especialidade: professor.especialidade || '',
             bio: professor.bio || '',
             foto: professor.foto || '',
+            cargo: professor.cargo || 'Professor',
+            ativo: professor.ativo !== false,
+            licenca_inicio: professor.licenca_inicio || null,
+            licenca_fim: professor.licenca_fim || null,
+            valor_mensalidade: professor.valor_mensalidade || 0,
+            observacao_admin: professor.observacao_admin || '',
             config_notificacoes: professor.configuracoes?.notificacoes !== false,
             config_lembretes: professor.configuracoes?.lembretes !== false,
             updated_at: new Date().toISOString()
@@ -1686,105 +1269,384 @@ function updateUser() {
 }
 
 // ============================================================
-// LOGIN/LOGOUT - SEM AUTO-LOGIN E COM DESIGN MELHORADO
+// LOGIN/LOGOUT
 // ============================================================
 
+function isMasterEmail(email) { 
+    return String(email || '').trim().toLowerCase() === MASTER_EMAIL; 
+}
 
-function isMasterEmail(email){ return String(email || '').trim().toLowerCase() === MASTER_EMAIL; }
-function daysUntil(dateValue){
-    if(!dateValue) return null;
-    const end = new Date(dateValue + 'T23:59:59');
-    const now = new Date();
-    return Math.ceil((end-now)/86400000);
+function hideTeacherUI() { 
+    document.querySelectorAll('.teacher-only-nav').forEach(el => el.style.display = 'none'); 
 }
-function hideTeacherUI(){ document.querySelectorAll('.teacher-only-nav').forEach(el=>el.style.display='none'); }
-function showTeacherUI(){ document.querySelectorAll('.teacher-only-nav').forEach(el=>el.style.display=''); }
-function renderLicenseBanner(professor){
-    const banner=document.getElementById('licenseBanner'); if(!banner) return;
-    const days=daysUntil(professor?.licenca_expira_em);
-    if(days !== null && days >= 0 && days <= 5){
-        document.getElementById('licenseDays').textContent=days;
-        banner.style.display='flex';
-    } else banner.style.display='none';
+
+function showTeacherUI() { 
+    document.querySelectorAll('.teacher-only-nav').forEach(el => el.style.display = ''); 
 }
-async function checkTeacherLicense(professor){
-    if(!professor) return {ok:false, reason:'Cadastro do professor não encontrado.'};
-    if(professor.ativo === false) return {ok:false, reason:'Seu acesso foi bloqueado. Entre em contato com o suporte.'};
-    if(professor.licenca_expira_em){
-        const days=daysUntil(professor.licenca_expira_em);
-        if(days < 0) return {ok:false, reason:'Sua licença expirou. Realize o pagamento e encaminhe o comprovante ao suporte.'};
+
+// ============================================================
+// MASTER DASHBOARD
+// ============================================================
+
+async function loadMasterData() {
+    const { data: professores, error } = await supabaseClient.from('professores').select('*').order('nome');
+    if (error) throw error;
+    const { data: pagamentos, error: payError } = await supabaseClient.from('licencas_pagamentos').select('*').order('created_at', { ascending: false });
+    if (payError) throw payError;
+    return { professores: professores || [], pagamentos: pagamentos || [] };
+}
+
+function masterMoney(v) { 
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(v) || 0); 
+}
+
+function renderMasterDashboard() {
+    const view = document.getElementById('page-master');
+    if (!view) return;
+    
+    const professores = data.master?.professores || [];
+    const pagamentos = data.master?.pagamentos || [];
+    const ativos = professores.filter(p => p.ativo !== false).length;
+    const bloqueados = professores.length - ativos;
+    const hoje = new Date();
+    const exp5 = professores.filter(p => {
+        const d = daysUntil(p.licenca_fim);
+        return d !== null && d >= 0 && d <= 5;
+    }).length;
+    const mes = hoje.getMonth(), ano = hoje.getFullYear();
+    const recebido = pagamentos.filter(p => {
+        if (!p.pago_em) return false;
+        const d = new Date(p.pago_em);
+        return d.getMonth() === mes && d.getFullYear() === ano;
+    }).reduce((a, p) => a + Number(p.valor || 0), 0);
+    
+    view.innerHTML = `
+        <div class="section-head">
+            <div>
+                <div class="section-title">Central de Suporte</div>
+                <div class="section-sub">Administração exclusiva da conta MASTER · ${MASTER_EMAIL}</div>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="refreshMaster()"><i data-lucide="refresh-cw"></i>Atualizar</button>
+        </div>
+        <div class="master-summary">
+            <div class="master-stat">
+                <div class="master-stat-label">Professores cadastrados</div>
+                <div class="master-stat-value">${professores.length}</div>
+                <div class="master-stat-sub">Contas no sistema</div>
+            </div>
+            <div class="master-stat">
+                <div class="master-stat-label">Acessos ativos</div>
+                <div class="master-stat-value">${ativos}</div>
+                <div class="master-stat-sub">Professores liberados</div>
+            </div>
+            <div class="master-stat">
+                <div class="master-stat-label">Licenças vencendo</div>
+                <div class="master-stat-value">${exp5}</div>
+                <div class="master-stat-sub">Próximos 5 dias</div>
+            </div>
+            <div class="master-stat">
+                <div class="master-stat-label">Recebido no mês</div>
+                <div class="master-stat-value">${masterMoney(recebido)}</div>
+                <div class="master-stat-sub">Pagamentos registrados</div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="master-toolbar">
+                <div>
+                    <div class="section-title">Professores</div>
+                    <div class="section-sub">Bloqueie, libere e defina o prazo de acesso.</div>
+                </div>
+                <input id="masterSearch" class="input" style="max-width:260px" placeholder="Buscar professor..." oninput="renderMasterTable()">
+            </div>
+            <div id="masterTable"></div>
+        </div>
+        <div style="height:18px"></div>
+        <div class="card">
+            <div class="section-title">Financeiro de licenças</div>
+            <div class="section-sub" style="margin-bottom:12px">Registre pagamentos recebidos dos professores.</div>
+            <div id="masterPayments"></div>
+        </div>
+    `;
+    
+    renderMasterTable();
+    renderMasterPayments();
+    lucide.createIcons();
+}
+
+function renderMasterTable() {
+    const box = document.getElementById('masterTable');
+    if (!box) return;
+    
+    const q = (document.getElementById('masterSearch')?.value || '').toLowerCase();
+    const rows = (data.master?.professores || []).filter(p => 
+        `${p.nome || ''} ${p.user_id || ''}`.toLowerCase().includes(q)
+    );
+    
+    box.innerHTML = `
+        <div class="master-table-wrap">
+            <table class="master-table">
+                <thead>
+                    <tr>
+                        <th>Professor</th>
+                        <th>Cargo</th>
+                        <th>Status</th>
+                        <th>Licença</th>
+                        <th>Mensalidade</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rows.map(p => {
+                        const d = daysUntil(p.licenca_fim);
+                        const status = p.ativo === false ? 
+                            '<span class="master-status off">Bloqueado</span>' : 
+                            (d !== null && d < 0 ? 
+                                '<span class="master-status off">Expirada</span>' : 
+                                (d !== null && d <= 5 ? 
+                                    `<span class="master-status warn">${d} dias</span>` : 
+                                    '<span class="master-status ok">Ativo</span>'
+                                )
+                            );
+                        return `
+                            <tr>
+                                <td>
+                                    <strong>${esc(p.nome || 'Professor')}</strong>
+                                    <div style="font-size:10px;color:#9aa6a1">${esc(p.user_id || '')}</div>
+                                </td>
+                                <td>${esc(p.cargo || 'Professor')}</td>
+                                <td>${status}</td>
+                                <td>${p.licenca_fim ? fmtDateTime(p.licenca_fim) : 'Não definida'}</td>
+                                <td>${masterMoney(p.valor_mensalidade)}</td>
+                                <td>
+                                    <div style="display:flex;gap:5px;flex-wrap:wrap">
+                                        <button class="btn btn-outline btn-sm" onclick="openMasterProfessor('${p.id}')">
+                                            <i data-lucide="settings-2"></i>Gerenciar
+                                        </button>
+                                        ${p.ativo === false ? 
+                                            `<button class="btn btn-primary btn-sm" onclick="setProfessorActive('${p.id}',true)">Liberar</button>` :
+                                            `<button class="btn btn-danger btn-sm" onclick="setProfessorActive('${p.id}',false)">Bloquear</button>`
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('') || '<tr><td colspan="6" style="text-align:center;padding:30px;color:#97a39e">Nenhum professor encontrado.</td></tr>'}
+                </tbody>
+            </table>
+        </div>
+    `;
+    lucide.createIcons();
+}
+
+function renderMasterPayments() {
+    const box = document.getElementById('masterPayments');
+    if (!box) return;
+    
+    const ps = data.master?.pagamentos || [];
+    
+    box.innerHTML = `
+        <div class="master-table-wrap">
+            <table class="master-table">
+                <thead>
+                    <tr>
+                        <th>Professor</th>
+                        <th>Valor</th>
+                        <th>Vencimento</th>
+                        <th>Pago em</th>
+                        <th>Método</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${ps.slice(0, 30).map(p => {
+                        const prof = (data.master.professores || []).find(x => x.id === p.professor_id);
+                        return `
+                            <tr>
+                                <td>${esc(prof?.nome || 'Professor removido')}</td>
+                                <td>${masterMoney(p.valor)}</td>
+                                <td>${p.vencimento ? fmtDate(p.vencimento) : '-'}</td>
+                                <td>${p.pago_em ? fmtDateTime(p.pago_em) : '<span class="master-status warn">Pendente</span>'}</td>
+                                <td>${esc((p.metodo || 'pix').toUpperCase())}</td>
+                            </tr>
+                        `;
+                    }).join('') || '<tr><td colspan="5" style="text-align:center;padding:25px;color:#97a39e">Nenhum pagamento registrado.</td></tr>'}
+                </tbody>
+            </table>
+        </div>
+    `;
+}
+
+function openMasterProfessor(id) {
+    const p = (data.master?.professores || []).find(x => x.id === id);
+    if (!p) return;
+    
+    let modal = document.getElementById('masterModalBackdrop');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'masterModalBackdrop';
+        modal.className = 'master-modal-backdrop';
+        document.body.appendChild(modal);
     }
-    return {ok:true};
-}
-async function loadMasterData(){
-    const {data: professores, error} = await supabaseClient.from('professores').select('*').order('nome');
-    if(error) throw error;
-    const {data: pagamentos, error: payError} = await supabaseClient.from('licencas_pagamentos').select('*').order('created_at',{ascending:false});
-    if(payError) throw payError;
-    return {professores:professores||[], pagamentos:pagamentos||[]};
-}
-function masterMoney(v){ return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number(v)||0); }
-function renderMasterDashboard(){
-    const view=document.getElementById('page-master'); if(!view) return;
-    const professores=data.master?.professores||[], pagamentos=data.master?.pagamentos||[];
-    const ativos=professores.filter(p=>p.ativo!==false).length;
-    const bloqueados=professores.length-ativos;
-    const hoje=new Date();
-    const exp5=professores.filter(p=>{const d=daysUntil(p.licenca_expira_em);return d!==null&&d>=0&&d<=5}).length;
-    const mes=hoje.getMonth(), ano=hoje.getFullYear();
-    const recebido=pagamentos.filter(p=>{if(!p.pago_em)return false;const d=new Date(p.pago_em+'T12:00:00');return d.getMonth()===mes&&d.getFullYear()===ano}).reduce((a,p)=>a+Number(p.valor||0),0);
-    view.innerHTML=`
-      <div class="section-head"><div><div class="section-title">Central de Suporte</div><div class="section-sub">Administração exclusiva da conta MASTER · ${MASTER_EMAIL}</div></div><button class="btn btn-outline btn-sm" onclick="refreshMaster()"><i data-lucide="refresh-cw"></i>Atualizar</button></div>
-      <div class="master-summary">
-        <div class="master-stat"><div class="master-stat-label">Professores cadastrados</div><div class="master-stat-value">${professores.length}</div><div class="master-stat-sub">Contas no sistema</div></div>
-        <div class="master-stat"><div class="master-stat-label">Acessos ativos</div><div class="master-stat-value">${ativos}</div><div class="master-stat-sub">Professores liberados</div></div>
-        <div class="master-stat"><div class="master-stat-label">Licenças vencendo</div><div class="master-stat-value">${exp5}</div><div class="master-stat-sub">Próximos 5 dias</div></div>
-        <div class="master-stat"><div class="master-stat-label">Recebido no mês</div><div class="master-stat-value">${masterMoney(recebido)}</div><div class="master-stat-sub">Pagamentos registrados</div></div>
-      </div>
-      <div class="card"><div class="master-toolbar"><div><div class="section-title">Professores</div><div class="section-sub">Bloqueie, libere e defina o prazo de acesso.</div></div><input id="masterSearch" class="input" style="max-width:260px" placeholder="Buscar professor..." oninput="renderMasterTable()"></div><div id="masterTable"></div></div>
-      <div style="height:18px"></div>
-      <div class="card"><div class="section-title">Financeiro de licenças</div><div class="section-sub" style="margin-bottom:12px">Registre pagamentos recebidos dos professores.</div><div id="masterPayments"></div></div>`;
-    renderMasterTable(); renderMasterPayments(); lucide.createIcons();
-}
-function renderMasterTable(){
-    const box=document.getElementById('masterTable'); if(!box) return;
-    const q=(document.getElementById('masterSearch')?.value||'').toLowerCase();
-    const rows=(data.master?.professores||[]).filter(p=>`${p.nome||''} ${p.user_id||''}`.toLowerCase().includes(q));
-    box.innerHTML=`<div class="master-table-wrap"><table class="master-table"><thead><tr><th>Professor</th><th>Cargo</th><th>Status</th><th>Licença</th><th>Mensalidade</th><th>Ações</th></tr></thead><tbody>${rows.map(p=>{
-      const d=daysUntil(p.licenca_expira_em); const status=p.ativo===false?'<span class="master-status off">Bloqueado</span>':(d!==null&&d<0?'<span class="master-status off">Expirada</span>':(d!==null&&d<=5?`<span class="master-status warn">${d} dias</span>`:'<span class="master-status ok">Ativo</span>'));
-      return `<tr><td><strong>${esc(p.nome||'Professor')}</strong><div style="font-size:10px;color:#9aa6a1">${esc(p.user_id||'')}</div></td><td>${esc(p.cargo||'Professor')}</td><td>${status}</td><td>${p.licenca_expira_em?fmtDate(p.licenca_expira_em):'Não definida'}</td><td>${masterMoney(p.valor_mensalidade)}</td><td><div style="display:flex;gap:5px;flex-wrap:wrap"><button class="btn btn-outline btn-sm" onclick="openMasterProfessor('${p.id}')"><i data-lucide="settings-2"></i>Gerenciar</button>${p.ativo===false?`<button class="btn btn-primary btn-sm" onclick="setProfessorActive('${p.id}',true)">Liberar</button>`:`<button class="btn btn-danger btn-sm" onclick="setProfessorActive('${p.id}',false)">Bloquear</button>`}</div></td></tr>`;
-    }).join('')||'<tr><td colspan="6" style="text-align:center;padding:30px;color:#97a39e">Nenhum professor encontrado.</td></tr>'}</tbody></table></div>`;
+    
+    modal.style.display = 'flex';
+    modal.innerHTML = `
+        <div class="master-modal">
+            <div class="master-modal-head">
+                <div>
+                    <div class="master-modal-title">Gerenciar acesso</div>
+                    <div class="master-modal-sub">${esc(p.nome || 'Professor')}</div>
+                </div>
+                <button class="btn btn-outline btn-sm" onclick="closeMasterModal()">Fechar</button>
+            </div>
+            <div class="form-grid two">
+                <div class="field">
+                    <label class="label">Cargo</label>
+                    <input id="mCargo" class="input" value="${esc(p.cargo || 'Professor')}">
+                </div>
+                <div class="field">
+                    <label class="label">Mensalidade</label>
+                    <input id="mValor" class="input" type="number" step="0.01" value="${Number(p.valor_mensalidade || 0)}">
+                </div>
+                <div class="field">
+                    <label class="label">Licença até (data/hora)</label>
+                    <input id="mLicenca" class="input" type="datetime-local" value="${p.licenca_fim ? new Date(p.licenca_fim).toISOString().slice(0, 16) : ''}">
+                </div>
+                <div class="field">
+                    <label class="label">Status</label>
+                    <select id="mAtivo" class="select">
+                        <option value="true" ${p.ativo !== false ? 'selected' : ''}>Ativo</option>
+                        <option value="false" ${p.ativo === false ? 'selected' : ''}>Bloqueado</option>
+                    </select>
+                </div>
+                <div class="field" style="grid-column:1/-1">
+                    <label class="label">Observação administrativa</label>
+                    <textarea id="mObs" class="textarea" style="min-height:80px">${esc(p.observacao_admin || '')}</textarea>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-primary" onclick="saveMasterProfessor('${p.id}')">
+                    <i data-lucide="save"></i>Salvar alterações
+                </button>
+                <button class="btn btn-soft" onclick="extendLicense('${p.id}', 7)">+7 dias</button>
+                <button class="btn btn-soft" onclick="extendLicense('${p.id}', 30)">+30 dias</button>
+                <button class="btn btn-soft" onclick="extendLicense('${p.id}', 365)">+1 ano</button>
+            </div>
+        </div>
+    `;
     lucide.createIcons();
 }
-function renderMasterPayments(){
-    const box=document.getElementById('masterPayments'); if(!box) return;
-    const ps=data.master?.pagamentos||[];
-    box.innerHTML=`<div class="master-table-wrap"><table class="master-table"><thead><tr><th>Professor</th><th>Valor</th><th>Vencimento</th><th>Pago em</th><th>Método</th></tr></thead><tbody>${ps.slice(0,30).map(p=>{const prof=(data.master.professores||[]).find(x=>x.id===p.professor_id);return `<tr><td>${esc(prof?.nome||'Professor removido')}</td><td>${masterMoney(p.valor)}</td><td>${p.vencimento?fmtDate(p.vencimento):'-'}</td><td>${p.pago_em?fmtDate(p.pago_em):'<span class="master-status warn">Pendente</span>'}</td><td>${esc((p.metodo||'pix').toUpperCase())}</td></tr>`}).join('')||'<tr><td colspan="5" style="text-align:center;padding:25px;color:#97a39e">Nenhum pagamento registrado.</td></tr>'}</tbody></table></div>`;
+
+function closeMasterModal() {
+    const m = document.getElementById('masterModalBackdrop');
+    if (m) m.style.display = 'none';
 }
-function openMasterProfessor(id){
-    const p=(data.master?.professores||[]).find(x=>x.id===id); if(!p)return;
-    let modal=document.getElementById('masterModalBackdrop');
-    if(!modal){modal=document.createElement('div');modal.id='masterModalBackdrop';modal.className='master-modal-backdrop';document.body.appendChild(modal)}
-    modal.style.display='flex';
-    modal.innerHTML=`<div class="master-modal"><div class="master-modal-head"><div><div class="master-modal-title">Gerenciar acesso</div><div class="master-modal-sub">${esc(p.nome||'Professor')}</div></div><button class="btn btn-outline btn-sm" onclick="closeMasterModal()">Fechar</button></div><div class="form-grid two"><div class="field"><label class="label">Cargo</label><input id="mCargo" class="input" value="${esc(p.cargo||'Professor')}"></div><div class="field"><label class="label">Mensalidade</label><input id="mValor" class="input" type="number" step="0.01" value="${Number(p.valor_mensalidade||0)}"></div><div class="field"><label class="label">Licença até</label><input id="mLicenca" class="input" type="date" value="${p.licenca_expira_em||''}"></div><div class="field"><label class="label">Status</label><select id="mAtivo" class="select"><option value="true" ${p.ativo!==false?'selected':''}>Ativo</option><option value="false" ${p.ativo===false?'selected':''}>Bloqueado</option></select></div><div class="field" style="grid-column:1/-1"><label class="label">Observação administrativa</label><textarea id="mObs" class="textarea" style="min-height:80px">${esc(p.observacao_admin||'')}</textarea></div></div><div class="form-actions"><button class="btn btn-primary" onclick="saveMasterProfessor('${p.id}')"><i data-lucide="save"></i>Salvar alterações</button><button class="btn btn-soft" onclick="extendLicense('${p.id}',30)">+30 dias</button><button class="btn btn-soft" onclick="extendLicense('${p.id}',365)">+1 ano</button></div></div>`;
-    lucide.createIcons();
+
+async function saveMasterProfessor(id) {
+    const payload = {
+        cargo: document.getElementById('mCargo').value.trim() || 'Professor',
+        valor_mensalidade: Number(document.getElementById('mValor').value) || 0,
+        licenca_fim: document.getElementById('mLicenca').value || null,
+        ativo: document.getElementById('mAtivo').value === 'true',
+        observacao_admin: document.getElementById('mObs').value.trim()
+    };
+    
+    const { error } = await supabaseClient
+        .from('professores')
+        .update(payload)
+        .eq('id', id);
+    
+    if (error) {
+        notify('Não foi possível salvar: ' + error.message);
+        return;
+    }
+    
+    const p = data.master.professores.find(x => x.id === id);
+    Object.assign(p, payload);
+    closeMasterModal();
+    renderMasterDashboard();
+    notify('Professor atualizado.');
 }
-function closeMasterModal(){const m=document.getElementById('masterModalBackdrop');if(m)m.style.display='none';}
-async function saveMasterProfessor(id){
-    const payload={cargo:document.getElementById('mCargo').value.trim()||'Professor',valor_mensalidade:Number(document.getElementById('mValor').value)||0,licenca_expira_em:document.getElementById('mLicenca').value||null,ativo:document.getElementById('mAtivo').value==='true',observacao_admin:document.getElementById('mObs').value.trim()};
-    const {error}=await supabaseClient.from('professores').update(payload).eq('id',id); if(error){notify('Não foi possível salvar: '+error.message);return;}
-    const p=data.master.professores.find(x=>x.id===id);Object.assign(p,payload);closeMasterModal();renderMasterDashboard();notify('Professor atualizado.');
+
+async function setProfessorActive(id, active) {
+    const { error } = await supabaseClient
+        .from('professores')
+        .update({ 
+            ativo: active,
+            updated_at: new Date().toISOString()
+        })
+        .eq('id', id);
+    
+    if (error) {
+        notify('Erro ao alterar acesso: ' + error.message);
+        return;
+    }
+    
+    const p = data.master.professores.find(x => x.id === id);
+    if (p) {
+        p.ativo = active;
+        p.updated_at = new Date().toISOString();
+    }
+    
+    renderMasterDashboard();
+    notify(active ? '✅ Acesso liberado.' : '🔒 Acesso bloqueado.');
+    
+    // Se o professor bloqueado estiver logado, forçar logout
+    if (!active && currentUserId) {
+        const { data: profData } = await supabaseClient
+            .from('professores')
+            .select('user_id')
+            .eq('id', id)
+            .single();
+        
+        if (profData && profData.user_id === currentUserId) {
+            notify('⚠️ Seu acesso foi bloqueado pela administração.');
+            setTimeout(() => logout(), 2000);
+        }
+    }
 }
-async function setProfessorActive(id,active){
-    const {error}=await supabaseClient.from('professores').update({ativo:active}).eq('id',id); if(error){notify('Erro ao alterar acesso: '+error.message);return;}
-    const p=data.master.professores.find(x=>x.id===id);if(p)p.ativo=active;renderMasterDashboard();notify(active?'Acesso liberado.':'Acesso bloqueado.');
+
+async function extendLicense(id, days) {
+    const p = data.master.professores.find(x => x.id === id);
+    if (!p) return;
+    
+    let base = p.licenca_fim ? new Date(p.licenca_fim) : new Date();
+    if (base < new Date()) base = new Date();
+    base.setDate(base.getDate() + days);
+    
+    const iso = base.toISOString().slice(0, 16);
+    
+    // Atualizar no banco
+    const { error } = await supabaseClient
+        .from('professores')
+        .update({ 
+            licenca_fim: base.toISOString(),
+            updated_at: new Date().toISOString()
+        })
+        .eq('id', id);
+    
+    if (error) {
+        notify('Erro ao estender licença: ' + error.message);
+        return;
+    }
+    
+    // Atualizar local
+    p.licenca_fim = base.toISOString();
+    document.getElementById('mLicenca').value = iso;
+    notify(`✅ Licença estendida até ${fmtDateTime(base.toISOString())}. Clique em Salvar alterações.`);
 }
-async function extendLicense(id,days){
-    const p=data.master.professores.find(x=>x.id===id);if(!p)return;
-    let base=p.licenca_expira_em?new Date(p.licenca_expira_em+'T12:00:00'):new Date(); if(base<new Date())base=new Date(); base.setDate(base.getDate()+days);
-    const iso=base.toISOString().slice(0,10); document.getElementById('mLicenca').value=iso; notify(`Licença ajustada para ${fmtDate(iso)}. Clique em Salvar alterações.`);
+
+async function refreshMaster() {
+    try {
+        data.master = await loadMasterData();
+        renderMasterDashboard();
+        notify('Dados atualizados.');
+    } catch (e) {
+        notify('Erro ao carregar dados administrativos.');
+    }
 }
-async function refreshMaster(){try{data.master=await loadMasterData();renderMasterDashboard();notify('Dados atualizados.')}catch(e){notify('Erro ao carregar dados administrativos.')}}
+
+// ============================================================
+// LOGIN
+// ============================================================
 
 async function login() {
     const user = document.getElementById("loginUser").value.trim();
@@ -1795,7 +1657,6 @@ async function login() {
         return; 
     }
 
-    // Mostra loading no botão
     const btn = document.getElementById("loginBtn");
     const originalText = btn.innerHTML;
     btn.innerHTML = '<i data-lucide="loader-circle" class="animate-spin"></i> Entrando...';
@@ -1812,8 +1673,12 @@ async function login() {
         try {
             const loggedEmail = result.user?.email || user;
             isMaster = isMasterEmail(loggedEmail);
+            
             if (isMaster) {
-                data = defaultData(); data.session = true; isDataLoaded = true; currentUserId = result.user.id;
+                data = defaultData();
+                data.session = true;
+                isDataLoaded = true;
+                currentUserId = result.user.id;
                 data.master = await loadMasterData();
                 hideTeacherUI();
                 document.getElementById("masterNav").style.display = "";
@@ -1825,15 +1690,37 @@ async function login() {
                 notify("Acesso MASTER liberado.");
                 return;
             }
+            
             showTeacherUI();
             document.getElementById("masterNav").style.display = "none";
+            
             const loadedData = await loadData();
             if (loadedData) {
                 data = loadedData;
                 data.session = true;
                 isDataLoaded = true;
-                const license = await checkTeacherLicense(data.professor);
-                if (!license.ok) { await supabaseClient.auth.signOut(); data=defaultData(); data.session=false; isDataLoaded=false; notify(license.reason); return; }
+                
+                // Verificar licença
+                const license = isLicenseValid(data.professor);
+                if (!license.ok) {
+                    await supabaseClient.auth.signOut();
+                    data = defaultData();
+                    data.session = false;
+                    isDataLoaded = false;
+                    notify(license.reason);
+                    return;
+                }
+                
+                // Iniciar monitoramento periódico
+                startLicenseMonitoring();
+                
+                // Mostrar aviso se estiver perto de vencer
+                if (license.warning) {
+                    renderLicenseBanner(data.professor);
+                    if (license.diasRestantes <= 2) {
+                        notify('⚠️ ' + license.reason);
+                    }
+                }
             } else {
                 await supabaseClient.auth.signOut();
                 data = defaultData();
@@ -1847,7 +1734,6 @@ async function login() {
             document.getElementById("app").style.display = "flex";
 
             updateUser();
-            renderLicenseBanner(data.professor);
             navigate("dashboard");
             notify(`Bem-vindo, ${data.professor?.nome || "Professor"}!`);
         } catch (error) {
@@ -1856,7 +1742,17 @@ async function login() {
     }
 }
 
+// ============================================================
+// LOGOUT
+// ============================================================
+
 async function logout() {
+    // Parar monitoramento
+    if (licenseCheckInterval) {
+        clearInterval(licenseCheckInterval);
+        licenseCheckInterval = null;
+    }
+
     if (data && data.session) {
         try { await saveData(); } catch (error) {}
     }
@@ -1868,7 +1764,8 @@ async function logout() {
     isMaster = false;
     document.getElementById("masterNav").style.display = "none";
     showTeacherUI();
-    const licenseBanner = document.getElementById("licenseBanner"); if (licenseBanner) licenseBanner.style.display = "none";
+    const licenseBanner = document.getElementById("licenseBanner");
+    if (licenseBanner) licenseBanner.style.display = "none";
     isDataLoaded = false;
     currentUserId = null;
     currentStudent = null;
@@ -1907,7 +1804,7 @@ async function logout() {
 }
 
 // ============================================================
-// DASHBOARD
+// DASHBOARD - Versão resumida (mantida do código original)
 // ============================================================
 
 function renderDashboard() {
@@ -2016,7 +1913,7 @@ function getSaudacao() {
 }
 
 // ============================================================
-// ALUNOS
+// ALUNOS - Versão resumida (mantida do código original)
 // ============================================================
 
 function renderAlunos() {
@@ -2159,7 +2056,7 @@ function getMetodoPagamentoClass(metodo) {
 }
 
 // ============================================================
-// PRONTUÁRIO - LAYOUT PADRONIZADO
+// PRONTUÁRIO - LAYOUT PADRONIZADO (mantido do código original)
 // ============================================================
 
 function openStudent(id) {
@@ -2323,10 +2220,9 @@ function renderStudentProfile(mode = "overview") {
                 <div style="margin-top:20px"><div class="section-title">Histórico</div>${reg.slice.map(r => `<div class="evolution" style="margin-top:9px"><div style="display:flex;justify-content:space-between"><span class="evolution-date">${fmtDate(r.data)} · ${esc(r.tipo || "Contato")}</span><button style="border:0;background:none;color:#a3aea9" onclick="deleteSchoolRecord('${r.id}')">Excluir</button></div><div class="evolution-title">${esc(r.assunto || "Registro escolar")}</div><div class="evolution-text">${esc(r.relato)}</div></div>`).join("") || `<div class="empty">Nenhum contato registrado.</div>`}${reg.controls}</div>
             </div>`;
     } else {
-        // OVERVIEW - PADRONIZADO PARA TODOS OS ALUNOS
+        // OVERVIEW
         const p = studentPager(consultations, studentSectionPage.overview, 5, "setStudentSectionPage");
 
-        // Buscar histórico de pagamentos do aluno
         const pagamentos = (data.transacoes || []).filter(t => 
             t.alunoId === s.id && (t.tipo || "receita") === "receita"
         ).sort((a, b) => (b.data || '').localeCompare(a.data || ''));
@@ -2375,14 +2271,12 @@ function renderStudentProfile(mode = "overview") {
             `;
         }).join("");
 
-        // Cards de resumo do aluno - PADRONIZADO
         const totalConsultas = (s.consultas || []).length;
         const totalEvolucoes = (s.evolucoes || []).length;
         const totalAvaliacoes = (s.avaliacoes || []).length;
         const totalPagamentos = pagamentos.reduce((sum, t) => sum + Number(t.valor || 0), 0);
 
         content = `
-            <!-- Cards de resumo do aluno - PADRONIZADO -->
             <div class="grid stats" style="margin-bottom:18px">
                 <div class="card"><div class="stat-label">Consultas</div><div class="stat-value">${totalConsultas}</div><div class="stat-sub">Registros de atendimento</div></div>
                 <div class="card"><div class="stat-label">Evoluções</div><div class="stat-value">${totalEvolucoes}</div><div class="stat-sub">Registros de progresso</div></div>
@@ -2392,14 +2286,12 @@ function renderStudentProfile(mode = "overview") {
 
             <div class="two-col-layout">
                 <div>
-                    <!-- CONSULTAS -->
                     <div class="card">
                         <div class="section-head"><div><div class="section-title">Consultas</div><div class="section-sub">Cada atendimento é um documento próprio.</div></div><button class="btn btn-primary" onclick="newConsultationForm()"><i data-lucide="plus"></i>Registrar consulta</button></div>
                         ${p.slice.map(c => `<div style="display:flex;align-items:center;gap:14px;padding:14px 0;border-top:1px solid var(--line);cursor:pointer" onclick="openConsultation('${c.id}')"><div style="width:74px;text-align:center"><div style="font-size:11px;color:#8a9892">${new Date(c.data + "T12:00:00").toLocaleDateString("pt-BR", { weekday: "short" })}</div><strong style="font-size:17px">${new Date(c.data + "T12:00:00").getDate()}</strong><div style="font-size:10px">${new Date(c.data + "T12:00:00").toLocaleDateString("pt-BR", { month: "short" })}</div></div><div style="flex:1"><div style="font-weight:700;font-size:13px">Consulta registrada</div><div class="section-sub">${esc((c.observacoes || "Sem observações").slice(0, 110))}${(c.observacoes || "").length > 110 ? "…" : ""}</div></div><i data-lucide="chevron-right"></i></div>`).join("") || `<div class="empty">Nenhuma consulta registrada.</div>`}
                         ${p.controls}
                     </div>
 
-                    <!-- EVOLUÇÕES -->
                     <div class="card" style="margin-top:16px">
                         <div class="section-title">Evoluções</div>
                         <div class="section-sub">Registros de progresso do aluno.</div>
@@ -2417,20 +2309,17 @@ function renderStudentProfile(mode = "overview") {
                 </div>
 
                 <div class="right-sidebar">
-                    <!-- PRÓXIMOS ATENDIMENTOS -->
                     <div class="card">
                         <div class="section-title">Próximos atendimentos</div>
                         ${upcoming.map(a => `<div style="padding:10px 0;border-top:1px solid var(--line);font-size:12px">${fmtDate(a.data)} · ${a.hora} · ${esc(s.nome)}</div>`).join("") || `<div class="empty">Nenhum atendimento próximo.</div>`}
                     </div>
 
-                    <!-- HISTÓRICO RECENTE -->
                     <div class="card" style="margin-top:12px">
                         <div class="section-title">Histórico recente</div>
                         <div class="section-sub">Últimos registros do aluno</div>
                         ${timelineHTML || `<div class="empty">Nenhum registro recente.</div>`}
                     </div>
 
-                    <!-- HISTÓRICO DE PAGAMENTOS -->
                     <div class="card" style="margin-top:12px">
                         <div class="section-title">Histórico de pagamentos</div>
                         <div class="section-sub">Últimos recebimentos</div>
@@ -2957,7 +2846,6 @@ async function togglePayment(id) {
     if (!s) return;
 
     if (!a.pago) {
-        // Mostrar modal para escolher método de pagamento
         const metodo = prompt(
             "Selecione o método de pagamento:\n" +
             "1 - Dinheiro\n" +
@@ -3983,7 +3871,7 @@ function gerarPDFAvaliacao(alunoId, avalId) {
 }
 
 // ============================================================
-// FINANCEIRO - SEM DECLARAÇÃO
+// FINANCEIRO
 // ============================================================
 
 function renderFinanceiro() {
@@ -4400,7 +4288,7 @@ function gerarReciboSide() {
 }
 
 // ============================================================
-// PERFIL - APENAS EDIÇÃO DE NOME
+// PERFIL
 // ============================================================
 
 function renderPerfil() {
@@ -4423,6 +4311,7 @@ function renderPerfil() {
                 ${avatarHTML(p, "profile-avatar")}
                 <div style="font-size:18px;font-weight:700;margin-top:12px">${esc(p.nome)}</div>
                 <div style="font-size:11px;color:#8a9892;margin-top:4px">${esc(p.especialidade)}</div>
+                <div style="font-size:10px;color:#8a9892;margin-top:2px">${p.licenca_fim ? 'Licença até: ' + fmtDateTime(p.licenca_fim) : 'Licença não definida'}</div>
             </div>
 
             <div style="border-top:1px solid var(--line);padding-top:18px;margin-top:12px">
@@ -4665,8 +4554,6 @@ function generateFinancePDF() {
 // ============================================================
 
 async function init() {
-    // Sempre começa na tela de login.
-    // Nenhuma sessão anterior é reaproveitada automaticamente.
     lucide.createIcons();
 
     data = defaultData();
@@ -4777,6 +4664,3 @@ window.getMetodoPagamentoClass = getMetodoPagamentoClass;
 
 init();
 </script>
-
-</body>
-</html>
