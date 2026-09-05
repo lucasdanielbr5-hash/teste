@@ -740,6 +740,62 @@ body{letter-spacing:-.01em}
   .profile-stats-grid{grid-template-columns:1fr 1fr}
 }
 
+
+/* ============================================================
+   ASAS — REDESIGN UI 2.0
+   ============================================================ */
+:root{
+  --sage:#4f8f73;--sage-dark:#376c57;--sage-soft:#eaf5ef;
+  --ink:#1f2d27;--muted:#7c8984;--line:#e7ece9;--bg:#f5f8f6;
+  --blue:#668cab;--blue-soft:#eef4f8;--violet:#8b78a8;--violet-soft:#f2eff7;
+  --amber:#bb8b54;--amber-soft:#fbf5ec;--danger:#bb6565;--danger-soft:#fbeeee;
+}
+body{background:var(--bg);color:var(--ink)}
+.sidebar{width:236px;padding:22px 16px;background:#fbfcfb;border-right:1px solid #e2e9e5}
+.brand{height:48px;padding:0 12px;gap:11px;font-size:16px;letter-spacing:-.02em}
+.brand-mark{width:38px;height:38px;border-radius:13px;background:var(--sage-soft);box-shadow:inset 0 0 0 1px #dcebe3}
+.nav{margin-top:28px;gap:6px}.nav button{min-height:46px;border-radius:13px;padding:0 13px;color:#78857f}
+.nav button:hover{background:#f2f6f4;color:var(--ink)}.nav button.active{background:#e8f3ed;color:var(--sage-dark);box-shadow:inset 3px 0 0 var(--sage)}
+.nav svg{width:18px}
+.topbar{height:70px;padding:0 34px;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom:1px solid #e5ebe8}
+.page-title{font-size:17px;letter-spacing:-.01em}.page-title svg{width:18px;color:var(--sage)}
+.content{padding:28px 34px 44px;max-width:1500px;width:100%;margin:0 auto}
+.card{border-radius:20px;border-color:#e4ebe7;box-shadow:0 7px 28px rgba(31,52,42,.035);padding:20px}
+.section-title{font-size:14px;letter-spacing:-.01em}.section-sub{font-size:11px;color:#8b9792}
+.btn{border-radius:10px;font-size:12px;padding:9px 13px}.btn-primary{background:var(--sage)}.btn-primary:hover{background:var(--sage-dark)}
+.btn-soft{background:var(--sage-soft);color:var(--sage-dark)}.btn-outline{background:#fff;border-color:#e0e7e3}
+.input,.select,.textarea{border-color:#dfe7e3;background:#fcfdfc;border-radius:11px;padding:10px 12px}.input:focus,.select:focus,.textarea:focus{border-color:#87ae9c;box-shadow:0 0 0 4px rgba(79,143,115,.08)}
+.label{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#77847e}
+/* dashboard */
+.stats .card{position:relative;overflow:hidden}.stats .card:after{content:"";position:absolute;right:-20px;top:-20px;width:90px;height:90px;border-radius:50%;background:rgba(79,143,115,.035)}
+.stat-value{font-size:26px;letter-spacing:-.04em}.stat-label{font-size:10px}
+/* agenda */
+.agenda-shell{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:18px;align-items:start}
+.agenda-main{min-width:0}.agenda-side{position:sticky;top:12px;display:grid;gap:12px}
+.agenda-header-card{padding:16px 18px}.agenda-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.agenda-nav{display:flex;align-items:center;gap:7px}.agenda-range{min-width:200px;text-align:center;font-size:15px;font-weight:700;text-transform:capitalize}
+.agenda-mode{display:flex;gap:5px;background:#f1f5f3;padding:4px;border-radius:11px}.agenda-mode button{border:0;background:transparent;border-radius:8px;padding:7px 10px;font-size:11px;color:#75837d}.agenda-mode button.active{background:#fff;color:var(--sage-dark);box-shadow:0 2px 8px rgba(30,60,45,.06)}
+.agenda-days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:15px}
+.agenda-day-chip{border:1px solid #e4ebe7;background:#fff;border-radius:13px;padding:9px 7px;text-align:center;cursor:pointer;transition:.16s;min-width:0}
+.agenda-day-chip:hover{transform:translateY(-1px);border-color:#cfe1d8}.agenda-day-chip .dow{font-size:9px;text-transform:uppercase;color:#99a39f;letter-spacing:.06em}.agenda-day-chip .num{font-size:17px;font-weight:700;margin-top:4px}.agenda-day-chip .count{font-size:9px;color:#8a9791;margin-top:2px}.agenda-day-chip.active{background:var(--sage);border-color:var(--sage);color:#fff}.agenda-day-chip.active .dow,.agenda-day-chip.active .count{color:rgba(255,255,255,.78)}
+.agenda-today-line{display:flex;align-items:center;gap:8px;margin:18px 2px 10px;font-size:12px;color:#73817b}.agenda-today-line .line{height:1px;background:#e6ece9;flex:1}
+.day-list{display:grid;gap:8px}.day-appointment{display:grid;grid-template-columns:72px minmax(0,1fr) auto;gap:13px;align-items:center;border:1px solid #e5ebe8;background:#fff;border-radius:15px;padding:12px 13px;transition:.16s}.day-appointment:hover{box-shadow:0 7px 20px rgba(30,60,45,.045);transform:translateY(-1px)}
+.day-time{font-size:13px;font-weight:700;color:#41524a;border-right:1px solid #edf1ef;padding-right:12px}.day-person{display:flex;align-items:center;gap:10px;min-width:0}.day-person .name{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.day-person .meta{font-size:10px;color:#8a9791;margin-top:2px}.day-actions{display:flex;gap:5px;align-items:center}.day-actions .btn{padding:7px 8px;font-size:10px}
+.agenda-side .side-kpi{display:grid;grid-template-columns:1fr 1fr;gap:8px}.agenda-side .kpi{background:#f7faf8;border:1px solid #e8efeb;border-radius:13px;padding:12px}.agenda-side .kpi .v{font-size:20px;font-weight:700}.agenda-side .kpi .l{font-size:9px;color:#8a9791;margin-top:3px}.agenda-side .next-item{padding:10px 0;border-top:1px solid #eef2f0}.agenda-side .next-item:first-child{border-top:0}.agenda-side .next-time{font-size:10px;font-weight:700;color:var(--sage-dark)}
+.month-grid{border-radius:16px}.month-day{min-height:98px}.month-day .day-event{font-size:9px;border-radius:7px;padding:4px 5px}
+/* profile */
+.profile-hero{display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center;background:linear-gradient(135deg,#fbfdfc,#f5f9f7);border:1px solid #e3ebe6;border-radius:22px;padding:22px}
+.profile-identity{display:flex;align-items:center;gap:16px}.profile-identity .profile-avatar{width:80px;height:80px;border-radius:22px}.profile-identity .name{font-size:21px;font-weight:700;letter-spacing:-.03em}.profile-identity .role{font-size:11px;color:#7e8b85;margin-top:4px}
+.profile-graph-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:18px;margin-top:18px}.metric-stack{display:grid;gap:14px}.metric-row{display:grid;grid-template-columns:130px 1fr 46px;gap:10px;align-items:center}.metric-row .m-label{font-size:10px;color:#68766f}.metric-track{height:8px;border-radius:20px;background:#edf1ef;overflow:hidden}.metric-fill{height:100%;border-radius:20px;background:linear-gradient(90deg,#76a991,#4f8f73)}.metric-val{font-size:11px;font-weight:700;text-align:right;color:#4b5b54}
+.bar-chart{display:grid;grid-template-columns:repeat(6,1fr);align-items:end;gap:10px;height:155px;padding-top:10px}.bar-col{height:100%;display:flex;flex-direction:column;justify-content:end;gap:7px;text-align:center}.bar{width:100%;background:linear-gradient(180deg,#8eb9a5,#4f8f73);border-radius:8px 8px 3px 3px;min-height:7px}.bar-label{font-size:9px;color:#8b9792}.bar-num{font-size:9px;color:#66746e}
+.timeline-board{margin-top:18px}.timeline-list{position:relative;margin-top:10px;padding-left:18px}.timeline-list:before{content:"";position:absolute;left:5px;top:3px;bottom:3px;width:2px;background:#e4ebe7}.timeline-entry{position:relative;padding:0 0 18px 18px}.timeline-entry:last-child{padding-bottom:0}.timeline-entry .node{position:absolute;left:-1px;top:3px;width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--sage);z-index:1}.timeline-entry .node.blue{border-color:var(--blue)}.timeline-entry .node.violet{border-color:var(--violet)}.timeline-entry .node.amber{border-color:var(--amber)}.timeline-entry .date{font-size:9px;color:#9aa49f;text-transform:uppercase;letter-spacing:.06em}.timeline-entry .title{font-size:12px;font-weight:700;margin-top:3px}.timeline-entry .desc{font-size:10px;color:#77837e;line-height:1.55;margin-top:3px}
+/* assessments */
+.assessment-workspace{max-width:760px;margin:0 auto}.assessment-progress{display:flex;justify-content:space-between;align-items:center;margin-bottom:13px}.assessment-progress .text{font-size:11px;font-weight:600;color:#72807a}.assessment-progress .pct{font-size:11px;color:#99a29e}.assessment-track{height:5px;background:#e9efec;border-radius:10px;overflow:hidden;margin-bottom:17px}.assessment-fill{height:100%;background:var(--sage);border-radius:10px;transition:.25s}
+.assessment-page{background:#fff;border:1px solid #e3ebe7;border-radius:20px;box-shadow:0 12px 35px rgba(30,55,43,.05);padding:24px;min-height:290px}.assessment-page .eyebrow{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#97a39d}.assessment-page .question{font-size:18px;line-height:1.5;font-weight:700;margin:8px 0 18px;letter-spacing:-.015em}.assessment-page .answer-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.assessment-page .answer-grid label{padding:12px 13px;border:1px solid #dfe7e3;border-radius:12px;font-size:11px;cursor:pointer;transition:.15s}.assessment-page .answer-grid label:hover{background:#f7faf8}.assessment-page .answer-grid label.selected{border-color:var(--sage);background:var(--sage-soft)}
+.assessment-nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:12px}.assessment-nav .hint{font-size:9px;color:#98a39e}.assessment-summary{margin-top:14px;padding:12px 14px;background:#f7faf8;border:1px dashed #dce8e1;border-radius:12px}.assessment-summary .label{margin-bottom:6px}
+@media(max-width:1050px){.agenda-shell,.profile-graph-grid{grid-template-columns:1fr}.agenda-side{position:static}.profile-hero{grid-template-columns:1fr}.agenda-day-chip:nth-child(n+6){display:none}}
+@media(max-width:680px){.sidebar{width:62px}.topbar{padding:0 16px}.content{padding:18px 14px 32px}.agenda-days{grid-template-columns:repeat(5,1fr)}.agenda-day-chip:nth-child(n+6){display:none}.day-appointment{grid-template-columns:54px 1fr}.day-actions{grid-column:2;justify-content:flex-start}.assessment-page{padding:18px}.assessment-page .answer-grid{grid-template-columns:1fr}.profile-identity{align-items:flex-start}.metric-row{grid-template-columns:90px 1fr 38px}}
+
 </style>
 <script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
 </head>
@@ -857,7 +913,7 @@ let currentPage = "dashboard";
 let currentStudent = null;
 let currentAssessment = null;
 let calendarDate = new Date();
-let calendarMode = "week";
+let calendarMode = "day";
 let selectedDay = null;
 let studentSectionPage = { overview: 1, avaliacoes: 1, escola: 1 };
 let currentConsultation = null;
@@ -876,6 +932,7 @@ let avalStepResponses = [];
 let avalStepTemplateId = null;
 let avalStepAlunoId = null;
 let avalStepResumo = '';
+let avalStepExistingId = null;
 
 const TYPES = {
     psicologia: { label: "Psicologia", cls: "psico" },
@@ -2740,14 +2797,59 @@ async function createAssessment() {
     renderStudentProfile("avaliacoes");
 }
 
-function applyAssessment(id) {
+function startExistingAssessmentStep(id) {
     const s = getStudent(currentStudent);
     if (!s) return;
+    const a = (s.avaliacoes || []).find(x => x.id === id);
+    if (!a) { notify("Avaliação não encontrada."); return; }
     ensureStudentModules(s);
-    if (!s.avaliacoes.find(x => x.id === id)) return;
-    currentAssessment = id;
-    renderStudentProfile("aplicar");
+    avalStepExistingId = id;
+    avalStepTemplateId = null;
+    avalStepAlunoId = s.id;
+    avalStepCurrentIndex = 0;
+    avalStepResponses = [];
+    avalStepResumo = '';
+    avalStepQuestions = (a.questoes || []).map((q,i) => ({ index:i, texto:q.texto || String(q), escala:a.escala || [{valor:0,rotulo:'Resposta'}] }));
+    avalStepMode = 'answering';
+    // Armazena o título no template virtualmente para o cabeçalho.
+    renderExistingAvalStepAnswer();
 }
+
+function renderExistingAvalStepAnswer() {
+    const s = getStudent(avalStepAlunoId);
+    const a = s ? (s.avaliacoes || []).find(x=>x.id===avalStepExistingId) : null;
+    if (!s || !a) { cancelAvalStep(); return; }
+    const total=avalStepQuestions.length, idx=avalStepCurrentIndex, q=avalStepQuestions[idx];
+    if (!q || !total) { finalizeExistingAssessmentStep(); return; }
+    const pct=Math.round((idx/total)*100), escala=q.escala||[{valor:0,rotulo:'Resposta'}];
+    document.getElementById('page-avaliacoes').innerHTML=`
+      <div class="assessment-workspace">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><button class="btn btn-outline btn-sm" onclick="cancelAvalStep()"><i data-lucide="arrow-left"></i> Sair</button><span style="font-size:10px;color:#909b96">${esc(a.titulo)}</span></div>
+        <div class="assessment-progress"><span class="text">Questão ${idx+1} de ${total}</span><span class="pct">${pct}% concluído</span></div>
+        <div class="assessment-track"><div class="assessment-fill" style="width:${Math.max(4,pct)}%"></div></div>
+        <div class="assessment-page"><div class="eyebrow">Aplicação para ${esc(s.nome)}</div><div class="question">${esc(q.texto)}</div><div class="answer-grid">${escala.map(op=>`<label class="${avalStepResponses[idx]===op.valor?'selected':''}" onclick="selectExistingAvalStepOption(${idx},${op.valor})"><input type="radio" name="existingOpt" value="${op.valor}" ${avalStepResponses[idx]===op.valor?'checked':''} style="margin-right:7px;accent-color:var(--sage)">${esc(op.rotulo)}</label>`).join('')}</div></div>
+        <div class="assessment-nav"><button class="btn btn-outline" onclick="existingAvalStepPrev()" ${idx===0?'disabled':''}><i data-lucide="chevron-left"></i> Anterior</button><span class="hint">Uma questão por página.</span><button class="btn btn-primary" onclick="existingAvalStepNext()">${idx===total-1?'Concluir':'Próxima página'} <i data-lucide="chevron-right"></i></button></div>
+      </div>`;
+    lucide.createIcons();
+}
+
+function selectExistingAvalStepOption(idx,value){ avalStepResponses[idx]=value; renderExistingAvalStepAnswer(); }
+function existingAvalStepPrev(){ if(avalStepCurrentIndex>0){avalStepCurrentIndex--;renderExistingAvalStepAnswer();} }
+function existingAvalStepNext(){
+    const idx=avalStepCurrentIndex;
+    if(avalStepResponses[idx]===undefined){notify('Selecione uma resposta antes de continuar.');return;}
+    if(idx===avalStepQuestions.length-1){ finalizeExistingAssessmentStep(); } else { avalStepCurrentIndex++; renderExistingAvalStepAnswer(); }
+}
+async function finalizeExistingAssessmentStep(){
+    const s=getStudent(avalStepAlunoId); const a=s?(s.avaliacoes||[]).find(x=>x.id===avalStepExistingId):null;
+    if(!s||!a){cancelAvalStep();return;}
+    const escalaBase=a.escala||[];
+    const respostas=avalStepQuestions.map((q,i)=>{const op=escalaBase.find(e=>e.valor===avalStepResponses[i]);return {questao:q.texto,valor:avalStepResponses[i],rotulo:op?op.rotulo:'Sem resposta'};});
+    a.resultados=a.resultados||[]; a.resultados.push({id:uid(),data:today(),respostas,resumo:avalStepResumo||'Aplicação concluída.'}); a.finalizada=true;
+    await saveData(); notify(`Aplicação de "${a.titulo}" registrada.`); const avId=a.id; avalStepExistingId=null; avalStepMode=null; avalStepQuestions=[]; avalStepResponses=[]; currentStudent=s.id; renderStudentProfile('avaliacoes');
+}
+
+function applyAssessment(id) { startExistingAssessmentStep(id); }
 
 async function saveAssessmentApplication() {
     const s = getStudent(currentStudent);
@@ -2830,120 +2932,111 @@ async function deleteSchoolRecord(id) {
 
 function renderAgenda() {
     if (!isDataLoaded || !data || !data.agenda) {
-        document.getElementById("page-agenda").innerHTML = `
-            <div class="empty" style="padding:40px;text-align:center"><p>Carregando dados...</p></div>`;
+        document.getElementById("page-agenda").innerHTML = `<div class="empty" style="padding:40px;text-align:center"><p>Carregando dados...</p></div>`;
         return;
     }
 
-    const title = calendarMode === "week" ?
-        `${fmtDate(dateISO(weekDates(calendarDate)[0]))} — ${fmtDate(dateISO(weekDates(calendarDate)[4]))}` :
-        monthName(calendarDate);
+    const selected = selectedDay || dateISO(calendarDate);
+    const selectedDate = parseDate(selected);
+    const week = weekDates(selectedDate);
+    const active = activeAppointments().filter(a => a.data === selected).sort((a,b) => a.hora.localeCompare(b.hora));
+    const weekCount = activeAppointments().filter(a => week.map(dateISO).includes(a.data)).length;
+    const done = active.filter(a => a.presente).length;
+    const pending = active.filter(a => !a.pago).length;
+    const next = activeAppointments().filter(a => (a.data + a.hora) >= (today() + new Date().toTimeString().slice(0,5))).sort((a,b)=>(a.data+a.hora).localeCompare(b.data+b.hora)).slice(0,6);
+
+    const dayChips = week.map(d => {
+        const iso = dateISO(d);
+        const count = activeAppointments().filter(a => a.data === iso).length;
+        const cls = iso === selected ? 'active' : '';
+        return `<div class="agenda-day-chip ${cls}" onclick="selectAgendaDay('${iso}')">
+            <div class="dow">${d.toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','')}</div>
+            <div class="num">${d.getDate()}</div>
+            <div class="count">${count ? count + (count === 1 ? ' atendimento' : ' atendimentos') : 'Livre'}</div>
+        </div>`;
+    }).join('');
+
+    const selectedLabel = selectedDate.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'});
 
     document.getElementById("page-agenda").innerHTML = `
-        ${renderHelpBox("agenda")}
-
-        <div class="page-intro">
-            <div class="page-intro-copy">
-                <h1>Agenda</h1>
-                <p>Organize seus atendimentos e atualize presença e pagamento sem sair da rotina semanal.</p>
-            </div>
-            <div class="page-intro-actions">
-              <button class="btn btn-primary" onclick="toggleAgendaForm()"><i data-lucide="calendar-plus"></i>Novo agendamento</button>
-            </div>
+        <div class="section-head">
+            <div><div class="section-title">Agenda</div><div class="section-sub">Veja o seu dia, registre presença e acompanhe pagamentos sem perder o foco.</div></div>
+            <button class="btn btn-primary" onclick="toggleAgendaForm()"><i data-lucide="calendar-plus"></i>Novo atendimento</button>
         </div>
 
-        <div class="card">
-            <div class="agenda-toolbar">
-                <div class="toolbar-group">
-                    <button class="btn btn-outline btn-sm" onclick="calendarPrev()"><i data-lucide="chevron-left"></i></button>
-                    <div class="month-label">${esc(title)}</div>
-                    <button class="btn btn-outline btn-sm" onclick="calendarNext()"><i data-lucide="chevron-right"></i></button>
-                    <button class="btn btn-soft btn-sm" onclick="calendarToday()">Hoje</button>
-                </div>
-                <div class="toolbar-group">
-                    <button class="btn ${calendarMode === "week" ? "btn-soft" : "btn-outline"} btn-sm" onclick="setCalendarMode('week')">Visão semanal</button>
-                    <button class="btn ${calendarMode === "month" ? "btn-soft" : "btn-outline"} btn-sm" onclick="setCalendarMode('month')">Visão mensal</button>
-                </div>
+        <div id="agendaForm" class="card" style="display:none;margin-bottom:14px;background:#fbfdfc">
+            <div class="section-head"><div><div class="section-title">Novo atendimento</div><div class="section-sub">Cadastre o próximo compromisso em poucos campos.</div></div><button class="btn btn-outline btn-sm" onclick="toggleAgendaForm()">Fechar</button></div>
+            <div class="form-grid">
+                <div class="field"><label class="label">Aluno</label><select id="agAluno" class="select">${(data.alunos || []).filter(a=>a.ativo!==false).map(a => `<option value="${a.id}" ${a.id === currentStudent ? 'selected':''}>${esc(a.nome)}</option>`).join('')}</select></div>
+                <div class="field"><label class="label">Data</label><input id="agData" class="input" type="date" value="${selected}"></div>
+                <div class="field"><label class="label">Horário</label><input id="agHora" class="input" type="time" value="09:00"></div>
+                <div class="field"><label class="label">Tipo</label><select id="agTipo" class="select"><option value="psicopedagogia">Psicopedagogia</option><option value="psicologia">Psicologia</option><option value="aula">Aula Particular</option></select></div>
             </div>
-
-            <div id="agendaForm" style="display:none;background:#f8fbf9;border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:16px">
-                <div class="section-title" style="margin-bottom:14px">Novo atendimento</div>
-                <div class="form-grid">
-                    <div class="field"><label class="label">Aluno</label><select id="agAluno" class="select">${(data.alunos || []).map(a => `<option value="${a.id}" ${a.id === currentStudent ? "selected" : ""}>${esc(a.nome)}</option>`).join("")}</select></div>
-                    <div class="field"><label class="label">Data</label><input id="agData" class="input" type="date" value="${selectedDay || today()}"></div>
-                    <div class="field"><label class="label">Horário</label><input id="agHora" class="input" type="time" value="09:00"></div>
-                    <div class="field"><label class="label">Tipo</label><select id="agTipo" class="select"><option value="psicopedagogia">Psicopedagogia</option><option value="psicologia">Psicologia</option><option value="aula">Aula Particular</option></select></div>
-                </div>
-                <div class="form-actions"><button class="btn btn-primary" onclick="saveAppointment()"><i data-lucide="save"></i>Agendar</button><button class="btn btn-outline" onclick="toggleAgendaForm()">Cancelar</button></div>
-            </div>
-
-            ${calendarMode === "week" ? renderWeek() : renderMonth()}
+            <div class="form-actions"><button class="btn btn-primary" onclick="saveAppointment()"><i data-lucide="save"></i>Salvar atendimento</button><button class="btn btn-outline" onclick="toggleAgendaForm()">Cancelar</button></div>
         </div>
 
-        ${selectedDay && calendarMode === "month" ? renderDayPanel(selectedDay) : ""}
+        <div class="agenda-shell">
+          <div class="agenda-main">
+            <div class="card agenda-header-card">
+              <div class="agenda-top">
+                <div class="agenda-nav">
+                  <button class="btn btn-outline btn-sm" onclick="calendarPrev()"><i data-lucide="chevron-left"></i></button>
+                  <div class="agenda-range">${esc(selectedLabel)}</div>
+                  <button class="btn btn-outline btn-sm" onclick="calendarNext()"><i data-lucide="chevron-right"></i></button>
+                  <button class="btn btn-soft btn-sm" onclick="calendarToday()">Hoje</button>
+                </div>
+                <div class="agenda-mode">
+                  <button class="active">Dia</button>
+                  <button onclick="setCalendarMode('month')">Mês</button>
+                </div>
+              </div>
+              <div class="agenda-days">${dayChips}</div>
+            </div>
+
+            <div class="agenda-today-line"><span>${selected === today() ? 'Hoje' : selectedDate.toLocaleDateString('pt-BR',{weekday:'long'})}</span><span class="line"></span><span>${active.length} ${active.length===1?'atendimento':'atendimentos'}</span></div>
+
+            <div class="day-list">
+              ${active.length ? active.map(a => {
+                const st = getStudent(a.alunoId); const t = TYPES[a.tipo];
+                if (!st) return `<div class="day-appointment"><div class="day-time">${a.hora}</div><div class="day-person"><div><div class="name">Aluno removido</div><div class="meta">${t?.label || a.tipo}</div></div></div><div></div></div>`;
+                return `<div class="day-appointment">
+                    <div class="day-time">${a.hora}</div>
+                    <div class="day-person" onclick="openStudent('${st.id}')" style="cursor:pointer">${avatarHTML(st,'student-avatar')}<div><div class="name">${esc(st.nome)}</div><div class="meta">${t?.label || a.tipo} · ${a.pago ? 'Pagamento confirmado':'Pagamento pendente'}</div></div></div>
+                    <div class="day-actions">
+                      <button class="btn ${a.presente?'btn-soft':'btn-outline'}" onclick="togglePresence('${a.id}')"><i data-lucide="${a.presente?'check-circle':'circle-check'}"></i>${a.presente?'Presente':'Presença'}</button>
+                      <button class="btn ${a.pago?'btn-soft':'btn-outline'}" onclick="togglePayment('${a.id}')"><i data-lucide="${a.pago?'badge-check':'wallet'}"></i>${a.pago?'Pago':'Pagamento'}</button>
+                      <button class="btn btn-danger" onclick="cancelAppointment('${a.id}')"><i data-lucide="x"></i></button>
+                    </div>
+                </div>`;
+              }).join('') : `<div class="card empty" style="padding:45px 20px"><div style="font-size:28px;margin-bottom:10px">☀️</div><strong style="font-size:13px;color:#55655e">Agenda livre</strong><div style="font-size:11px;margin-top:5px">Nenhum atendimento foi marcado para este dia.</div><button class="btn btn-primary btn-sm" style="margin-top:13px" onclick="quickSchedule('${selected}','09:00')"><i data-lucide="plus"></i>Adicionar atendimento</button></div>`}
+            </div>
+          </div>
+
+          <aside class="agenda-side">
+            <div class="card">
+              <div class="section-title">Visão rápida</div><div class="section-sub">Situação do dia selecionado.</div>
+              <div class="side-kpi" style="margin-top:12px">
+                <div class="kpi"><div class="v">${active.length}</div><div class="l">Atendimentos</div></div>
+                <div class="kpi"><div class="v">${done}</div><div class="l">Realizados</div></div>
+                <div class="kpi"><div class="v">${pending}</div><div class="l">A receber</div></div>
+                <div class="kpi"><div class="v">${weekCount}</div><div class="l">Na semana</div></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="section-title">Próximos atendimentos</div><div class="section-sub">Seu fluxo imediato.</div>
+              ${next.map(a=>{const st=getStudent(a.alunoId);return `<div class="next-item"><div class="next-time">${fmtDate(a.data)} · ${a.hora}</div><div style="font-size:11px;font-weight:700;margin-top:3px">${esc(st?.nome||'Aluno')}</div><div style="font-size:9px;color:#8a9791;margin-top:2px">${TYPES[a.tipo]?.label||a.tipo}</div></div>`}).join('') || `<div class="empty" style="padding:18px 4px">Nenhum próximo atendimento.</div>`}
+            </div>
+          </aside>
+        </div>
     `;
     lucide.createIcons();
 }
 
-function toggleAgendaForm() {
-    const f = document.getElementById("agendaForm");
-    if (!f) return;
-    f.style.display = f.style.display === "none" ? "block" : "none";
-    if (f.style.display === "block") f.scrollIntoView({ behavior: "smooth", block: "center" });
-}
+function selectAgendaDay(day){ selectedDay = day; calendarDate = parseDate(day); renderAgenda(); }
 
-function renderWeek() {
+function renderWeek(){
     const dates = weekDates(calendarDate);
-    let html = `<div style="overflow:auto"><div class="week-grid"><div class="week-head"></div>`;
-
-    dates.forEach(d => {
-        html += `<div class="week-head">${d.toLocaleDateString("pt-BR", { weekday: "short" })}<br><span style="font-size:14px;color:#34413c">${d.getDate()}</span></div>`;
-    });
-
-    HOURS.forEach(hour => {
-        html += `<div class="time-cell">${hour}</div>`;
-        dates.forEach(d => {
-            const iso = dateISO(d);
-            const appointments = activeAppointments().filter(a => a.data === iso && a.hora === hour);
-
-            if (!appointments.length) {
-                html += `<div class="slot" onclick="quickSchedule('${iso}','${hour}')"><div class="empty-slot">+</div></div>`;
-            } else {
-                html += `<div class="slot">`;
-                appointments.forEach(a => {
-                    const s = getStudent(a.alunoId);
-                    if (!s) {
-                        html += `<div class="event" style="background:#f0f0f0;color:#999"><strong>Aluno removido</strong> - ${a.hora}</div>`;
-                        return;
-                    }
-                    const t = TYPES[a.tipo];
-                    html += `
-                        <div class="event ${t?.cls || ''}" onclick="openStudent('${s.id}')">
-                            <strong>${esc(s.nome)}</strong>
-                            ${t?.label || a.tipo}
-                            <div class="event-actions">
-                                <button onclick="event.stopPropagation();togglePresence('${a.id}')">${a.presente ? "Presente" : "Presença"}</button>
-                                <button onclick="event.stopPropagation();togglePayment('${a.id}')">${a.pago ? "Pago" : "Pagar"}</button>
-                                <button onclick="event.stopPropagation();cancelAppointment('${a.id}')">Cancelar</button>
-                            </div>
-                        </div>`;
-                });
-                html += `</div>`;
-            }
-        });
-    });
-
-    html += `</div></div>`;
-    return html;
-}
-
-function quickSchedule(date, hour) {
-    const f = document.getElementById("agendaForm");
-    if (!f) return;
-    f.style.display = "block";
-    document.getElementById("agData").value = date;
-    document.getElementById("agHora").value = hour;
-    f.scrollIntoView({ behavior: "smooth", block: "center" });
+    return `<div class="card" style="margin-top:14px"><div class="section-head"><div><div class="section-title">Semana</div><div class="section-sub">Selecione um dia para abrir sua agenda.</div></div></div><div class="agenda-days">${dates.map(d=>{const iso=dateISO(d),count=activeAppointments().filter(a=>a.data===iso).length;return `<div class="agenda-day-chip ${iso===(selectedDay||dateISO(calendarDate))?'active':''}" onclick="selectAgendaDay('${iso}')"><div class="dow">${d.toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','')}</div><div class="num">${d.getDate()}</div><div class="count">${count||0} atend.</div></div>`}).join('')}</div></div>`;
 }
 
 function renderMonth() {
@@ -3115,30 +3208,21 @@ async function togglePayment(id) {
 }
 
 function calendarPrev() {
-    if (calendarMode === "week") calendarDate.setDate(calendarDate.getDate() - 7);
-    else calendarDate.setMonth(calendarDate.getMonth() - 1);
-    selectedDay = null;
+    if (calendarMode === "day") { calendarDate.setDate(calendarDate.getDate() - 1); selectedDay = dateISO(calendarDate); }
+    else if (calendarMode === "week") { calendarDate.setDate(calendarDate.getDate() - 7); selectedDay = dateISO(calendarDate); }
+    else { calendarDate.setMonth(calendarDate.getMonth() - 1); selectedDay = null; }
     renderAgenda();
 }
 
 function calendarNext() {
-    if (calendarMode === "week") calendarDate.setDate(calendarDate.getDate() + 7);
-    else calendarDate.setMonth(calendarDate.getMonth() + 1);
-    selectedDay = null;
+    if (calendarMode === "day") { calendarDate.setDate(calendarDate.getDate() + 1); selectedDay = dateISO(calendarDate); }
+    else if (calendarMode === "week") { calendarDate.setDate(calendarDate.getDate() + 7); selectedDay = dateISO(calendarDate); }
+    else { calendarDate.setMonth(calendarDate.getMonth() + 1); selectedDay = null; }
     renderAgenda();
 }
 
-function calendarToday() {
-    calendarDate = new Date();
-    selectedDay = null;
-    renderAgenda();
-}
-
-function setCalendarMode(mode) {
-    calendarMode = mode;
-    selectedDay = null;
-    renderAgenda();
-}
+function calendarToday() { calendarDate = new Date(); selectedDay = today(); renderAgenda(); }
+function setCalendarMode(mode) { calendarMode = mode; if (mode !== 'month') selectedDay = selectedDay || today(); renderAgenda(); }
 
 // ============================================================
 // AVALIAÇÕES PSICOPEDAGÓGICAS - PÁGINA DEDICADA
@@ -3388,7 +3472,7 @@ function renderAvaliacoes() {
 
     // Verifica se está em modo passo a passo
     if (avalStepMode === 'select') return renderAvalStepSelect();
-    if (avalStepMode === 'answering') return renderAvalStepAnswer();
+    if (avalStepMode === 'answering') return avalStepExistingId ? renderExistingAvalStepAnswer() : renderAvalStepAnswer();
     if (avalStepMode === 'done') return renderAvalStepDone();
 
     if (currentAvalMode === "new") return renderAvaliacoesNew();
@@ -3441,7 +3525,7 @@ function renderAvaliacoesList() {
                         <div class="section-sub">${esc(t.descricao)}</div>
                         <div class="section-sub" style="margin-top:3px">${t.campos ? t.campos.reduce((s, c) => s + c.itens.length, 0) + " campos em " + t.campos.length + " seções" : (t.questoes || []).length + " questões"}</div>
                     </div>
-                    <button class="btn btn-primary btn-sm" onclick="startAvalStepWithTemplate('${t.id}')"><i data-lucide="play"></i>Aplicar (passo a passo)</button>
+                    <button class="btn btn-primary btn-sm" onclick="startAvalStepWithTemplate('${t.id}')"><i data-lucide="play"></i>Começar avaliação</button>
                 </div>
             `).join("")}
         </div>
@@ -3478,6 +3562,7 @@ function startAvalStep() {
     avalStepCurrentIndex = 0;
     avalStepResponses = [];
     avalStepResumo = '';
+    avalStepExistingId = null;
     renderAvaliacoes();
 }
 
@@ -3488,6 +3573,7 @@ function startAvalStepWithTemplate(tplId) {
     avalStepCurrentIndex = 0;
     avalStepResponses = [];
     avalStepResumo = '';
+    avalStepExistingId = null;
     renderAvaliacoes();
 }
 
@@ -3566,69 +3652,48 @@ function renderAvalStepAnswer() {
     const total = avalStepQuestions.length;
     const idx = avalStepCurrentIndex;
     const q = avalStepQuestions[idx];
-
-    if (!q || total === 0) {
-        avalStepMode = 'done';
-        renderAvaliacoes();
-        return;
-    }
+    if (!q || total === 0) { avalStepMode = 'done'; renderAvaliacoes(); return; }
 
     const isAnamnese = q.secao !== undefined;
-
+    const pct = Math.round(((idx) / total) * 100);
+    const currentValue = isAnamnese ? (avalStepResponses[idx] ?? '') : avalStepResponses[idx];
     let content = '';
 
     if (isAnamnese) {
         content = `
-            <div style="font-size:11px;color:#8a9892;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">${esc(q.secao)}</div>
-            <div class="step-question">${esc(q.rotulo)}</div>
-            ${q.tipo === 'textarea' ? `
-                <textarea id="stepAnswer" class="textarea" style="min-height:100px;font-size:13px" placeholder="Digite a resposta..."></textarea>
-            ` : `
-                <input id="stepAnswer" class="input" type="${q.tipo === 'date' ? 'date' : 'text'}" placeholder="Digite a resposta...">
-            `}
+          <div class="eyebrow">${esc(q.secao)}</div>
+          <div class="question">${esc(q.rotulo)}</div>
+          ${q.tipo === 'textarea' ? `<textarea id="stepAnswer" class="textarea" style="min-height:140px;font-size:13px" placeholder="Preencha esta informação..."></textarea>` : `<input id="stepAnswer" class="input" type="${q.tipo === 'date' ? 'date' : 'text'}" placeholder="Preencha esta informação...">`}
         `;
     } else {
-        const escala = q.escala || [{ valor: 0, rotulo: "Resposta" }];
+        const escala = q.escala || [{ valor: 0, rotulo: 'Resposta' }];
         content = `
-            <div style="font-size:11px;color:#8a9892;font-weight:600;text-transform:uppercase;letter-spacing:.05em">Questão ${idx + 1} de ${total}</div>
-            <div class="step-question">${esc(q.texto)}</div>
-            <div class="step-options">
-                ${escala.map(op => `
-                    <label class="${avalStepResponses[idx] === op.valor ? 'selected' : ''}" onclick="selectAvalStepOption(${idx}, ${op.valor})">
-                        <input type="radio" name="avalStepOpt" value="${op.valor}" ${avalStepResponses[idx] === op.valor ? 'checked' : ''}>
-                        ${esc(op.rotulo)}
-                    </label>
-                `).join("")}
-            </div>
+          <div class="eyebrow">Questão ${idx + 1} de ${total}</div>
+          <div class="question">${esc(q.texto)}</div>
+          <div class="answer-grid">${escala.map(op => `<label class="${avalStepResponses[idx] === op.valor ? 'selected' : ''}" onclick="selectAvalStepOption(${idx}, ${op.valor})"><input type="radio" name="avalStepOpt" value="${op.valor}" ${avalStepResponses[idx] === op.valor ? 'checked':''} style="margin-right:7px;accent-color:var(--sage)">${esc(op.rotulo)}</label>`).join('')}</div>
         `;
     }
 
     document.getElementById("page-avaliacoes").innerHTML = `
-        <button class="btn btn-outline btn-sm" onclick="cancelAvalStep()" style="margin-bottom:14px"><i data-lucide="arrow-left"></i>Cancelar</button>
-        <div class="aval-step">
-            <div class="step-progress">
-                ${Array.from({ length: Math.min(total, 10) }, (_, i) => `
-                    <div class="dot ${i < idx ? 'done' : i === idx ? 'active' : ''}"></div>
-                `).join("")}
-                ${total > 10 ? `<span style="font-size:10px;color:#8a9892">+${total - 10}</span>` : ""}
-            </div>
-            <div class="step-card">
-                <div style="font-size:10px;color:#8a9892;margin-bottom:8px">${Math.round((idx / total) * 100)}% concluído</div>
-                ${content}
-                <div class="step-nav">
-                    <button class="btn-prev" onclick="avalStepPrev()" ${idx === 0 ? 'disabled style="opacity:0.4;cursor:not-allowed"' : ''}><i data-lucide="chevron-left"></i> Anterior</button>
-                    <button class="btn-next" onclick="avalStepNext()">${idx === total - 1 ? 'Finalizar' : 'Próxima'} <i data-lucide="chevron-right"></i></button>
-                </div>
-            </div>
+      <div class="assessment-workspace">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <button class="btn btn-outline btn-sm" onclick="cancelAvalStep()"><i data-lucide="arrow-left"></i> Sair</button>
+          <span style="font-size:10px;color:#909b96">${esc(getTemplateById(avalStepTemplateId)?.nome || 'Avaliação')}</span>
         </div>
+        <div class="assessment-progress"><span class="text">Página ${idx+1} de ${total}</span><span class="pct">${pct}% concluído</span></div>
+        <div class="assessment-track"><div class="assessment-fill" style="width:${Math.max(4,pct)}%"></div></div>
+        <div class="assessment-page">
+          ${content}
+        </div>
+        <div class="assessment-nav">
+          <button class="btn btn-outline" onclick="avalStepPrev()" ${idx===0?'disabled':''}><i data-lucide="chevron-left"></i> Anterior</button>
+          <span class="hint">Preencha e avance para a próxima página.</span>
+          <button class="btn btn-primary" onclick="avalStepNext()">${idx===total-1?'Concluir avaliação':'Próxima página'} <i data-lucide="chevron-right"></i></button>
+        </div>
+      </div>
     `;
     lucide.createIcons();
-
-    // Preencher resposta anterior se existir
-    if (isAnamnese && avalStepResponses[idx] !== undefined) {
-        const el = document.getElementById("stepAnswer");
-        if (el) el.value = avalStepResponses[idx] || '';
-    }
+    if (isAnamnese) { const el=document.getElementById('stepAnswer'); if(el) el.value=currentValue || ''; }
 }
 
 function selectAvalStepOption(idx, value) {
@@ -3689,7 +3754,7 @@ function renderAvalStepDone() {
                 secao: q.secao,
                 rotulo: q.rotulo,
                 chave: q.chave,
-                valor: avalStepResponses[q.chave] || ''
+                valor: avalStepResponses[i] || ''
             });
         });
         questoes = tpl.campos.flatMap(sec => sec.itens.map(it => it.rotulo));
@@ -3755,6 +3820,7 @@ function cancelAvalStep() {
     avalStepTemplateId = null;
     avalStepAlunoId = null;
     avalStepResumo = '';
+    avalStepExistingId = null;
     currentAvalMode = "list";
     renderAvaliacoes();
 }
@@ -3818,11 +3884,7 @@ function cancelAvaliacao() {
     renderAvaliacoes();
 }
 
-function startApplyTemplate(tplId) {
-    currentAvalTemplate = getTemplateById(tplId);
-    currentAvalMode = "apply";
-    renderAvaliacoes();
-}
+function startApplyTemplate(tplId) { startAvalStepWithTemplate(tplId); }
 
 function renderAvaliacoesApply() {
     const tpl = currentAvalTemplate;
@@ -4095,7 +4157,7 @@ function gerarPDFAvaliacao(alunoId, avalId) {
 }
 
 // ============================================================
-// FINANCEIRO - SEM DECLARAÇÃO
+// FINANCEIRO
 // ============================================================
 
 function renderFinanceiro() {
@@ -4182,7 +4244,7 @@ function renderFinanceiro() {
             </div>
             <div class="page-intro-actions">
                 <button class="btn btn-blue btn-sm" onclick="generateFinancePDF()"><i data-lucide="file-down"></i>PDF do período</button>
-                <button class="btn btn-soft btn-sm" onclick="navigate('perfil')">Meu Perfil</button>
+                
             </div>
         </div>
 
@@ -4428,7 +4490,7 @@ function numeroPorExtenso(valor) {
 }
 
 // ============================================================
-// RECIBOS E DECLARAÇÕES
+// RECIBOS
 // ============================================================
 
 function gerarReciboSide() {
@@ -4502,144 +4564,58 @@ function gerarReciboSide() {
 // ============================================================
 
 function renderPerfil() {
-    if (!isDataLoaded || !data || !data.professor) {
-        document.getElementById("page-perfil").innerHTML = `
-            <div class="empty" style="padding:40px;text-align:center"><p>Carregando dados...</p></div>`;
-        return;
-    }
-
+    if (!isDataLoaded || !data || !data.professor) { document.getElementById("page-perfil").innerHTML = `<div class="empty" style="padding:40px;text-align:center"><p>Carregando dados...</p></div>`; return; }
     const p = data.professor;
-    if (!p) return;
+    const alunos = (data.alunos || []).filter(a => a.ativo !== false);
+    const totalAlunos = alunos.length;
+    const appts = activeAppointments();
+    const totalAtendimentos = appts.length;
+    const realizados = appts.filter(a=>a.presente).length;
+    const taxaPresenca = appts.filter(a=>a.presente||a.status==='falta').length ? Math.round(realizados / appts.filter(a=>a.presente||a.status==='falta').length * 100) : 0;
+    const totalAvaliacoes = alunos.reduce((n,a)=>n+(a.avaliacoes||[]).reduce((z,v)=>z+(v.resultados||[]).length,0),0);
+    const totalConsultas = alunos.reduce((n,a)=>n+(a.consultas||[]).length,0);
+    const totalEvolucoes = alunos.reduce((n,a)=>n+(a.evolucoes||[]).length,0);
+    const receivedMonth = monthPaid();
+    const pendingWeek = weekPending();
 
-    const totalAlunos = (data.alunos || []).length;
-    const totalAtendimentos = activeAppointments().length;
-    const totalAvaliacoesAplicadas = (data.alunos || []).reduce((acc, a) => acc + (a.avaliacoes || []).reduce((s2, av) => s2 + (av.resultados || []).length, 0), 0);
-    const totalConsultas = (data.alunos || []).reduce((acc, a) => acc + (a.consultas || []).length, 0);
-    const totalEvolucoes = (data.alunos || []).reduce((acc, a) => acc + (a.evolucoes || []).length, 0);
+    const monthBars = Array.from({length:6},(_,i)=>{ const d=new Date(); d.setMonth(d.getMonth()-(5-i)); const y=d.getFullYear(),m=d.getMonth(); const val=(data.transacoes||[]).filter(t=>{const x=parseDate(t.data);return x.getFullYear()===y&&x.getMonth()===m&&(t.tipo||'receita')==='receita'}).reduce((s,t)=>s+Number(t.valor||0),0); return {label:d.toLocaleDateString('pt-BR',{month:'short'}).replace('.',''),value:val}; });
+    const maxBar = Math.max(1,...monthBars.map(x=>x.value));
 
-    // Timeline do professor
-    const profTimeline = [];
-    if (p.observacoes) {
-        p.observacoes.forEach(o => profTimeline.push({ type: 'observacao', data: o.data, item: o, label: 'Observação' }));
-    }
-    if (p.evolucoesPessoais) {
-        p.evolucoesPessoais.forEach(e => profTimeline.push({ type: 'evolucao', data: e.data, item: e, label: 'Evolução pessoal' }));
-    }
-    profTimeline.sort((a, b) => (b.data || '').localeCompare(a.data || ''));
+    const timeline=[];
+    appts.slice().sort((a,b)=>(b.data+b.hora).localeCompare(a.data+a.hora)).slice(0,6).forEach(a=>timeline.push({date:a.data,title:`Atendimento · ${getStudent(a.alunoId)?.nome||'Aluno'}`,desc:`${a.hora} · ${TYPES[a.tipo]?.label||a.tipo}`,type:'blue'}));
+    alunos.flatMap(a=>(a.evolucoes||[]).map(e=>({date:e.data,title:e.titulo||'Evolução de aluno',desc:e.texto||'',type:'green'}))).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,4).forEach(e=>timeline.push(e));
+    alunos.flatMap(a=>(a.consultas||[]).map(c=>({date:c.data,title:`Consulta · ${a.nome}`,desc:c.observacoes||'Registro de atendimento',type:'violet'}))).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,4).forEach(e=>timeline.push(e));
+    timeline.sort((a,b)=>b.date.localeCompare(a.date));
 
-    const timelineHTML = profTimeline.slice(0, 10).map(t => {
-        const dotColor = t.type === 'observacao' ? 'observation' : 'evolution';
-        const title = t.type === 'observacao' ? t.item.titulo || 'Observação' : t.item.titulo || 'Evolução';
-        const desc = t.item.texto || '';
-        return `
-            <div class="tl-item">
-                <div class="tl-dot ${dotColor}"></div>
-                <div class="tl-content">
-                    <div class="tl-title">${esc(title)}</div>
-                    <div class="tl-date">${fmtDate(t.data)}</div>
-                    <div class="tl-desc">${esc(desc.slice(0, 60))}${desc.length > 60 ? '…' : ''}</div>
-                </div>
-            </div>
-        `;
-    }).join("");
+    const graphMetrics=[
+      ['Taxa de presença',taxaPresenca],['Alunos ativos',Math.min(100,totalAlunos?Math.round(totalAlunos/(Math.max(totalAlunos,10))*100):0)],
+      ['Avaliações aplicadas',Math.min(100,totalAlunos?Math.round(totalAvaliacoes/(Math.max(totalAlunos*2,1))*100):0)],
+      ['Registros clínicos',Math.min(100,(totalConsultas+totalEvolucoes)?Math.round((totalConsultas+totalEvolucoes)/Math.max((totalConsultas+totalEvolucoes),20)*100):0)]
+    ];
 
     document.getElementById("page-perfil").innerHTML = `
-        ${renderHelpBox("perfil")}
+      <div class="section-head"><div><div class="section-title">Meu Perfil</div><div class="section-sub">Uma visão técnica da sua atividade, volume de trabalho e evolução.</div></div><button class="btn btn-primary btn-sm" onclick="document.getElementById('perfilEditCard').scrollIntoView({behavior:'smooth'})">Editar perfil</button></div>
 
-        <div class="page-intro">
-            <div class="page-intro-copy">
-                <h1>Meu Perfil</h1>
-                <p>Atualize seus dados profissionais e acompanhe sua trajetória de trabalho dentro do ASAS.</p>
-            </div>
-        </div>
+      <div class="profile-hero">
+        <div class="profile-identity">${avatarHTML(p,'profile-avatar')}<div><div class="name">${esc(p.nome)}</div><div class="role">${esc(p.especialidade||'Profissional')}</div><div style="font-size:10px;color:#8b9791;margin-top:7px;max-width:640px">${esc(p.bio||'Adicione uma breve descrição profissional para completar seu perfil.')}</div></div></div>
+        <div style="display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end"><span class="tag">${totalAlunos} alunos ativos</span><span class="tag">${realizados} atendimentos realizados</span></div>
+      </div>
 
-        <div class="profile-stats-grid">
-            <div class="stat-card">
-                <div class="icon">👨‍🎓</div>
-                <div class="number">${totalAlunos}</div>
-                <div class="label">Alunos ativos</div>
-            </div>
-            <div class="stat-card">
-                <div class="icon">📅</div>
-                <div class="number">${totalAtendimentos}</div>
-                <div class="label">Atendimentos</div>
-            </div>
-            <div class="stat-card">
-                <div class="icon">📝</div>
-                <div class="number">${totalAvaliacoesAplicadas}</div>
-                <div class="label">Avaliações aplicadas</div>
-            </div>
-            <div class="stat-card">
-                <div class="icon">📊</div>
-                <div class="number">${totalConsultas + totalEvolucoes}</div>
-                <div class="label">Registros totais</div>
-            </div>
-        </div>
+      <div class="profile-stats-grid" style="margin-top:18px">
+        <div class="stat-card"><div class="icon">👥</div><div class="number">${totalAlunos}</div><div class="label">Alunos ativos</div></div>
+        <div class="stat-card"><div class="icon">📅</div><div class="number">${totalAtendimentos}</div><div class="label">Atendimentos</div></div>
+        <div class="stat-card"><div class="icon">🧠</div><div class="number">${totalAvaliacoes}</div><div class="label">Aplicações</div></div>
+        <div class="stat-card"><div class="icon">💰</div><div class="number" style="font-size:22px">${money(receivedMonth)}</div><div class="label">Recebido no mês</div></div>
+      </div>
 
-        <div class="grid" style="grid-template-columns:1fr 1.6fr;gap:18px">
-            <div class="card">
-                <div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding:15px">
-                    ${avatarHTML(p, "profile-avatar")}
-                    <div style="font-size:18px;font-weight:700;margin-top:12px">${esc(p.nome)}</div>
-                    <div style="font-size:11px;color:#8a9892;margin-top:4px">${esc(p.especialidade)}</div>
-                    <div style="font-size:11px;color:#8a9892;margin-top:4px">${p.bio ? esc(p.bio) : ""}</div>
-                    <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
-                        <span class="tag">${totalAlunos} alunos</span>
-                        <span class="tag">${totalAtendimentos} atendimentos</span>
-                        <span class="tag">${totalAvaliacoesAplicadas} avaliações</span>
-                    </div>
-                </div>
-            </div>
+      <div class="profile-graph-grid">
+        <div class="card"><div class="section-title">Indicadores operacionais</div><div class="section-sub">Leitura rápida da situação atual.</div><div class="metric-stack" style="margin-top:18px">${graphMetrics.map(m=>`<div class="metric-row"><div class="m-label">${m[0]}</div><div class="metric-track"><div class="metric-fill" style="width:${m[1]}%"></div></div><div class="metric-val">${m[1]}%</div></div>`).join('')}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:17px"><div style="padding:12px;border:1px solid #e7ece9;border-radius:12px"><div style="font-size:9px;color:#89958f">A receber nesta semana</div><strong style="font-size:18px">${money(pendingWeek)}</strong></div><div style="padding:12px;border:1px solid #e7ece9;border-radius:12px"><div style="font-size:9px;color:#89958f">Registros clínicos</div><strong style="font-size:18px">${totalConsultas+totalEvolucoes}</strong></div></div></div>
+        <div class="card"><div class="section-title">Recebimentos</div><div class="section-sub">Últimos 6 meses</div><div class="bar-chart">${monthBars.map(x=>`<div class="bar-col"><div class="bar-num">${x.value?money(x.value).replace('R$','').trim():'0'}</div><div class="bar" style="height:${Math.max(8,Math.round(x.value/maxBar*100))}%"></div><div class="bar-label">${x.label}</div></div>`).join('')}</div></div>
+      </div>
 
-            <div class="card">
-                <div class="section-title" style="margin-bottom:12px">Minha atividade recente</div>
-                ${timelineHTML ? `
-                    <div class="profile-timeline-compact">
-                        ${timelineHTML}
-                    </div>
-                ` : `<div class="empty" style="padding:15px">Nenhum registro recente.</div>`}
-                <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap">
-                    <button class="btn btn-soft btn-sm" onclick="document.getElementById('perfilObsForm').style.display='block'"><i data-lucide="plus"></i>Observação</button>
-                    <button class="btn btn-soft btn-sm" onclick="document.getElementById('perfilEvoForm').style.display='block'"><i data-lucide="trending-up"></i>Evolução</button>
-                </div>
-            </div>
-        </div>
+      <div class="card timeline-board"><div class="section-head"><div><div class="section-title">Linha do tempo da atividade</div><div class="section-sub">Acontecimentos recentes do seu trabalho.</div></div><span class="tag">Atualizado agora</span></div><div class="timeline-list">${timeline.length?timeline.slice(0,10).map(t=>`<div class="timeline-entry"><div class="node ${t.type==='blue'?'blue':t.type==='violet'?'violet':''}"></div><div class="date">${fmtDate(t.date)}</div><div class="title">${esc(t.title)}</div><div class="desc">${esc((t.desc||'').slice(0,180))}${(t.desc||'').length>180?'…':''}</div></div>`).join(''):`<div class="empty">Ainda não há atividade suficiente para montar a linha do tempo.</div>`}</div></div>
 
-        <div class="grid" style="grid-template-columns:1fr 1.6fr;gap:18px;margin-top:18px">
-            <div class="card" id="perfilObsForm" style="display:none">
-                <div class="section-title">Nova Observação</div>
-                <div class="field"><label class="label">Título</label><input id="profObsTitulo" class="input" placeholder="Título"></div>
-                <div class="field"><label class="label">Texto</label><textarea id="profObsTexto" class="textarea" placeholder="O que você observou..."></textarea></div>
-                <button class="btn btn-primary" onclick="saveProfObs()">Salvar</button>
-                <button class="btn btn-outline btn-sm" onclick="document.getElementById('perfilObsForm').style.display='none'">Cancelar</button>
-            </div>
-
-            <div class="card" id="perfilEvoForm" style="display:none">
-                <div class="section-title">Nova Evolução Pessoal</div>
-                <div class="field"><label class="label">Título</label><input id="profEvoTitulo" class="input" placeholder="Título"></div>
-                <div class="field"><label class="label">Texto</label><textarea id="profEvoTexto" class="textarea" placeholder="Sua evolução profissional..."></textarea></div>
-                <button class="btn btn-primary" onclick="saveProfEvo()">Salvar</button>
-                <button class="btn btn-outline btn-sm" onclick="document.getElementById('perfilEvoForm').style.display='none'">Cancelar</button>
-            </div>
-        </div>
-
-        <div class="card" style="margin-top:18px">
-            <div class="section-title">Editar perfil</div>
-            <div class="form-grid two">
-                <div class="field"><label class="label">Nome profissional</label><input id="profNome" class="input" value="${esc(p.nome)}"></div>
-                <div class="field"><label class="label">Especialidade</label><input id="profEspecialidade" class="input" value="${esc(p.especialidade)}"></div>
-                <div class="field" style="grid-column:1/-1"><label class="label">URL da foto</label><input id="profFoto" class="input" value="${esc(p.foto || "")}" placeholder="https://..."></div>
-                <div class="field" style="grid-column:1/-1"><label class="label">Bio profissional</label><textarea id="profBio" class="textarea">${esc(p.bio || "")}</textarea></div>
-                <div class="field" style="grid-column:1/-1">
-                    <label class="label">Configurações</label>
-                    <div style="display:flex;gap:15px;flex-wrap:wrap;padding-top:5px">
-                        <label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer"><input type="checkbox" id="cfgNotif" ${p.configuracoes?.notificacoes !== false ? "checked" : ""}> Notificações</label>
-                        <label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer"><input type="checkbox" id="cfgLembretes" ${p.configuracoes?.lembretes !== false ? "checked" : ""}> Lembretes</label>
-                    </div>
-                </div>
-            </div>
-            <button class="btn btn-primary" onclick="saveProfile()"><i data-lucide="save"></i>Salvar perfil</button>
-        </div>
+      <div class="card" id="perfilEditCard" style="margin-top:18px"><div class="section-head"><div><div class="section-title">Dados profissionais</div><div class="section-sub">Mantenha estas informações atualizadas.</div></div></div><div class="form-grid two"><div class="field"><label class="label">Nome profissional</label><input id="profNome" class="input" value="${esc(p.nome)}"></div><div class="field"><label class="label">Especialidade</label><input id="profEspecialidade" class="input" value="${esc(p.especialidade)}"></div><div class="field" style="grid-column:1/-1"><label class="label">URL da foto</label><input id="profFoto" class="input" value="${esc(p.foto||'')}" placeholder="https://..."></div><div class="field" style="grid-column:1/-1"><label class="label">Bio profissional</label><textarea id="profBio" class="textarea">${esc(p.bio||'')}</textarea></div><div class="field" style="grid-column:1/-1"><label class="label">Preferências</label><div style="display:flex;gap:18px;flex-wrap:wrap;padding-top:5px"><label style="font-size:11px;display:flex;gap:7px;align-items:center"><input type="checkbox" id="cfgNotif" ${p.configuracoes?.notificacoes!==false?'checked':''}> Notificações</label><label style="font-size:11px;display:flex;gap:7px;align-items:center"><input type="checkbox" id="cfgLembretes" ${p.configuracoes?.lembretes!==false?'checked':''}> Lembretes</label></div></div></div><div class="form-actions"><button class="btn btn-primary" onclick="saveProfile()"><i data-lucide="save"></i>Salvar alterações</button></div></div>
     `;
     lucide.createIcons();
 }
