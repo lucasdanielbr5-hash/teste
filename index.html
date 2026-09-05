@@ -1809,6 +1809,38 @@ function setStudentSectionPage(section, page) {
     renderStudentProfile("overview");
 }
 
+// ============================================================
+// FUNÇÃO PARA EDITAR ALUNO
+// ============================================================
+
+async function saveStudentEdit() {
+    const s = getStudent(currentStudent);
+    if (!s) return;
+
+    const nome = document.getElementById("eNome")?.value.trim();
+    if (!nome) {
+        notify("O nome do aluno é obrigatório.");
+        return;
+    }
+
+    s.nome = nome;
+    s.idade = Number(document.getElementById("eIdade")?.value) || 0;
+    s.serie = document.getElementById("eSerie")?.value.trim() || "";
+    s.responsavel = document.getElementById("eResponsavel")?.value.trim() || "";
+    s.telefone = document.getElementById("eTelefone")?.value.trim() || "";
+    s.valor = Number(document.getElementById("eValor")?.value) || 0;
+    s.foto = document.getElementById("eFoto")?.value.trim() || "";
+
+    const tagsInput = document.getElementById("eTags")?.value.trim() || "";
+    s.tags = tagsInput.split(",").map(x => x.trim()).filter(Boolean);
+
+    s.observacoes = document.getElementById("eObs")?.value.trim() || "";
+
+    await saveData();
+    notify("Dados do aluno atualizados.");
+    renderStudentProfile("overview");
+}
+
 function renderStudentProfile(mode = "overview") {
     const s = getStudent(currentStudent);
     if (!s) return;
@@ -3504,6 +3536,60 @@ function changeFinanceMonth(delta) {
 }
 
 // ============================================================
+// FUNÇÕES PARA NÚMEROS POR EXTENSO
+// ============================================================
+
+function numeroPorExtensoSimples(n) {
+    const unidades = ['', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove'];
+    const especiais = ['dez', 'onze', 'doze', 'treze', 'quatorze', 'quinze', 'dezesseis', 'dezessete', 'dezoito', 'dezenove'];
+    const dezenas = ['', '', 'vinte', 'trinta', 'quarenta', 'cinquenta', 'sessenta', 'setenta', 'oitenta', 'noventa'];
+    const centenas = ['', 'cento', 'duzentos', 'trezentos', 'quatrocentos', 'quinhentos', 'seiscentos', 'setecentos', 'oitocentos', 'novecentos'];
+
+    if (n === 0) return '';
+    if (n < 10) return unidades[n];
+    if (n < 20) return especiais[n - 10];
+    if (n < 100) {
+        const d = Math.floor(n / 10);
+        const u = n % 10;
+        return dezenas[d] + (u > 0 ? ` e ${numeroPorExtensoSimples(u)}` : '');
+    }
+    if (n === 100) return 'cem';
+    if (n < 1000) {
+        const c = Math.floor(n / 100);
+        const r = n % 100;
+        return centenas[c] + (r > 0 ? ` e ${numeroPorExtensoSimples(r)}` : '');
+    }
+    if (n < 1000000) {
+        const mil = Math.floor(n / 1000);
+        const r = n % 1000;
+        let txt = mil === 1 ? 'mil' : `${numeroPorExtensoSimples(mil)} mil`;
+        if (r > 0) txt += r < 100 ? ` e ${numeroPorExtensoSimples(r)}` : ` ${numeroPorExtensoSimples(r)}`;
+        return txt;
+    }
+    return String(n);
+}
+
+function numeroPorExtenso(valor) {
+    const inteiro = Math.floor(valor);
+    const centavos = Math.round((valor - inteiro) * 100);
+
+    if (inteiro === 0 && centavos === 0) return 'Zero reais';
+
+    let texto = '';
+    if (inteiro > 0) {
+        texto = numeroPorExtensoSimples(inteiro);
+        texto += inteiro === 1 ? ' real' : ' reais';
+    }
+    if (centavos > 0) {
+        if (inteiro > 0) texto += ' e ';
+        texto += numeroPorExtensoSimples(centavos);
+        texto += centavos === 1 ? ' centavo' : ' centavos';
+    }
+
+    return texto.charAt(0).toUpperCase() + texto.slice(1);
+}
+
+// ============================================================
 // RECIBOS E DECLARAÇÕES (via sidebar financeiro)
 // ============================================================
 
@@ -3635,56 +3721,6 @@ function gerarDeclaracaoSide() {
 
     doc.save(`declaracao-${aluno.nome}-${mesNome}-${ano}.pdf`);
     notify("Declaração gerada com sucesso!");
-}
-
-function numeroPorExtensoSimples(n) {
-    const unidades = ['', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove'];
-    const especiais = ['dez', 'onze', 'doze', 'treze', 'quatorze', 'quinze', 'dezesseis', 'dezessete', 'dezoito', 'dezenove'];
-    const dezenas = ['', '', 'vinte', 'trinta', 'quarenta', 'cinquenta', 'sessenta', 'setenta', 'oitenta', 'noventa'];
-    const centenas = ['', 'cento', 'duzentos', 'trezentos', 'quatrocentos', 'quinhentos', 'seiscentos', 'setecentos', 'oitocentos', 'novecentos'];
-
-    if (n === 0) return '';
-    if (n < 10) return unidades[n];
-    if (n < 20) return especiais[n - 10];
-    if (n < 100) {
-        const d = Math.floor(n / 10);
-        const u = n % 10;
-        return dezenas[d] + (u > 0 ? ` e ${numeroPorExtensoSimples(u)}` : '');
-    }
-    if (n === 100) return 'cem';
-    if (n < 1000) {
-        const c = Math.floor(n / 100);
-        const r = n % 100;
-        return centenas[c] + (r > 0 ? ` e ${numeroPorExtensoSimples(r)}` : '');
-    }
-    if (n < 1000000) {
-        const mil = Math.floor(n / 1000);
-        const r = n % 1000;
-        let txt = mil === 1 ? 'mil' : `${numeroPorExtensoSimples(mil)} mil`;
-        if (r > 0) txt += r < 100 ? ` e ${numeroPorExtensoSimples(r)}` : ` ${numeroPorExtensoSimples(r)}`;
-        return txt;
-    }
-    return String(n);
-}
-
-function numeroPorExtenso(valor) {
-    const inteiro = Math.floor(valor);
-    const centavos = Math.round((valor - inteiro) * 100);
-
-    if (inteiro === 0 && centavos === 0) return 'Zero reais';
-
-    let texto = '';
-    if (inteiro > 0) {
-        texto = numeroPorExtensoSimples(inteiro);
-        texto += inteiro === 1 ? ' real' : ' reais';
-    }
-    if (centavos > 0) {
-        if (inteiro > 0) texto += ' e ';
-        texto += numeroPorExtensoSimples(centavos);
-        texto += centavos === 1 ? ' centavo' : ' centavos';
-    }
-
-    return texto.charAt(0).toUpperCase() + texto.slice(1);
 }
 
 // ============================================================
