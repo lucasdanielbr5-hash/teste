@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>ASAS · Gestão Psicopedagógica</title>
+<title>LQS ERP · Gestão Psicopedagógica</title>
 
 <!-- ============================================================ -->
 <!-- TAILWIND - VERSÃO DE PRODUÇÃO (SEM AVISO) -->
@@ -339,6 +339,13 @@ button{cursor:pointer}
 .aval-step .step-nav .btn-next{background:var(--sage);color:#fff}
 .aval-step .step-nav .btn-next:hover{background:var(--sage-dark)}
 .aval-step .step-nav .btn-next:disabled{opacity:.4;cursor:not-allowed}
+
+/* Estilos para forma de pagamento */
+.payment-method-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:2px 8px;border-radius:12px}
+.payment-method-badge.dinheiro{background:#eaf3ee;color:#3d8a6b}
+.payment-method-badge.pix{background:#e8f0fe;color:#3a6cb8}
+.payment-method-badge.cartao{background:#fef3e8;color:#b8732a}
+.payment-method-badge.parcelado{background:#f5f0f8;color:#80678c}
 </style>
 <script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
 </head>
@@ -349,9 +356,9 @@ button{cursor:pointer}
   <div class="login-box">
     <div class="login-brand">
       <div class="brand-mark"><i data-lucide="heart-handshake"></i></div>
-      ASAS
+      LQS ERP
     </div>
-    <div class="login-sub">Gestão integrada para educação e cuidado</div>
+    <div class="login-sub">Legado Que Ensina · Gestão integrada para educação e cuidado</div>
 
     <div class="field">
       <label class="label">Usuário</label>
@@ -364,7 +371,7 @@ button{cursor:pointer}
     </div>
 
     <button id="loginBtn" class="btn btn-primary" style="width:100%;padding:12px">
-      <i data-lucide="log-in"></i> Entrar no ASAS
+      <i data-lucide="log-in"></i> Entrar no LQS ERP
     </button>
 
     <div style="text-align:center;color:#a0aaa6;font-size:10px;margin-top:14px">
@@ -378,7 +385,7 @@ button{cursor:pointer}
 <aside class="sidebar">
   <div class="brand">
     <div class="brand-mark"><i data-lucide="heart-handshake"></i></div>
-    <span>ASAS</span>
+    <span>LQS ERP</span>
   </div>
 
   <nav class="nav">
@@ -589,7 +596,7 @@ function defaultData() {
     return {
         session: false,
         professor: {
-            nome: "Professor ASAS",
+            nome: "Professor LQS",
             especialidade: "Psicopedagogia Clínica",
             bio: "Profissional dedicado ao desenvolvimento acadêmico, emocional e cognitivo.",
             foto: "",
@@ -804,7 +811,9 @@ function mapTransacaoFromDB(row) {
         descricao: row.descricao || '',
         valor: row.valor || 0,
         tipo: row.tipo || 'receita',
-        categoria: row.categoria || ''
+        categoria: row.categoria || '',
+        metodo_pagamento: row.metodo_pagamento || '',
+        parcelas: row.parcelas || 0
     };
 }
 
@@ -831,7 +840,7 @@ function mapProfessorFromDB(row) {
     return {
         id: row.id,
         user_id: row.user_id,
-        nome: row.nome || "Professor ASAS",
+        nome: row.nome || "Professor LQS",
         especialidade: row.especialidade || "",
         bio: row.bio || "",
         foto: row.foto || "",
@@ -1014,7 +1023,7 @@ async function loadDataFromSupabase() {
         const professorNormalizado = professorData
             ? mapProfessorFromDB(professorData)
             : {
-                nome: "Professor ASAS",
+                nome: "Professor LQS",
                 especialidade: "Psicopedagogia Clínica",
                 bio: "Profissional dedicado ao desenvolvimento acadêmico, emocional e cognitivo.",
                 foto: "",
@@ -1048,8 +1057,8 @@ async function loadDataFromSupabase() {
 // ============================================================
 
 const COLUMN_MAP = {
-    'transacoes': ['id', 'user_id', 'agenda_id', 'aluno_id', 'data', 'descricao', 'valor', 'tipo', 'categoria'],
-    'agenda': ['id', 'user_id', 'aluno_id', 'data', 'hora', 'tipo', 'status', 'presente', 'pago', 'updated_at'],
+    'transacoes': ['id', 'user_id', 'agenda_id', 'aluno_id', 'data', 'descricao', 'valor', 'tipo', 'categoria', 'metodo_pagamento', 'parcelas'],
+    'agenda': ['id', 'user_id', 'aluno_id', 'data', 'hora', 'tipo', 'status', 'presente', 'pago', 'metodo_pagamento', 'parcelas', 'updated_at'],
     'alunos': ['id', 'user_id', 'nome', 'idade', 'serie', 'responsavel', 'telefone', 'valor', 'foto', 'tags', 'observacoes', 'ativo', 'updated_at'],
     'professores': ['id', 'user_id', 'nome', 'especialidade', 'bio', 'foto', 'config_notificacoes', 'config_lembretes', 'updated_at'],
     'evolucoes': ['id', 'user_id', 'aluno_id', 'data', 'titulo', 'texto'],
@@ -1266,6 +1275,8 @@ async function saveAgendaItem(item) {
             status: item.status || 'agendado',
             presente: item.presente || false,
             pago: item.pago || false,
+            metodo_pagamento: item.metodo_pagamento || '',
+            parcelas: item.parcelas || 0,
             updated_at: new Date().toISOString()
         });
     } catch (error) {
@@ -1295,7 +1306,9 @@ async function saveTransacao(transacao) {
             data: transacao.data || today(),
             descricao: transacao.descricao || '',
             valor: Number(transacao.valor) || 0,
-            tipo: transacao.tipo || 'receita'
+            tipo: transacao.tipo || 'receita',
+            metodo_pagamento: transacao.metodo_pagamento || '',
+            parcelas: transacao.parcelas || 0
         };
 
         if (transacao.agendaId) payload.agenda_id = transacao.agendaId;
@@ -1475,7 +1488,7 @@ async function saveData() {
 // AJUDA CONTEXTUAL
 // ============================================================
 const HELP_TEXTS = {
-    dashboard: "Bem-vindo ao ASAS! Aqui você acompanha o resumo geral: total de alunos, atendimentos do mês, pendências financeiras.",
+    dashboard: "Bem-vindo ao LQS ERP! Aqui você acompanha o resumo geral: total de alunos, atendimentos do mês, pendências financeiras.",
     alunos: "Cadastre e gerencie seus alunos. Clique em um aluno para abrir o prontuário completo.",
     agenda: "Sua agenda de atendimentos. Clique em um horário vazio para agendar. Marque presença e pagamento nos botões.",
     avaliacoes: "Central de avaliações psicopedagógicas. Responda questão por questão de forma organizada.",
@@ -1628,7 +1641,7 @@ async function logout() {
         dashboardView.classList.add('active');
         dashboardView.innerHTML = `
             <div class="empty" style="padding:60px;text-align:center">
-                <p style="font-size:18px;color:#8a9892">👋 Logout realizado com sucesso!</p>
+                <p style="font-size:18px;color:#8a9892">Logout realizado com sucesso!</p>
                 <p style="font-size:13px;color:#a0aaa6;margin-top:8px">Faça login para visualizar seus dados.</p>
             </div>
         `;
@@ -1656,7 +1669,7 @@ function renderDashboard() {
     if (!data.session) {
         document.getElementById("page-dashboard").innerHTML = `
             <div class="empty" style="padding:60px;text-align:center">
-                <p style="font-size:18px;color:#8a9892">🔒 Faça login para visualizar o dashboard</p>
+                <p style="font-size:18px;color:#8a9892">Faça login para visualizar o dashboard</p>
             </div>`;
         return;
     }
@@ -1871,7 +1884,7 @@ async function saveStudent() {
 }
 
 // ============================================================
-// PRONTUÁRIO
+// PRONTUÁRIO - LAYOUT PADRONIZADO
 // ============================================================
 
 function openStudent(id) {
@@ -1916,6 +1929,26 @@ async function saveStudentEdit() {
     await saveData();
     notify("Dados do aluno atualizados.");
     renderStudentProfile("overview");
+}
+
+function getMetodoPagamentoLabel(metodo) {
+    const map = {
+        'dinheiro': 'Dinheiro',
+        'pix': 'PIX',
+        'cartao': 'Cartão',
+        'cartao_parcelado': 'Cartão Parcelado'
+    };
+    return map[metodo] || metodo || 'Não informado';
+}
+
+function getMetodoPagamentoClass(metodo) {
+    const map = {
+        'dinheiro': 'dinheiro',
+        'pix': 'pix',
+        'cartao': 'cartao',
+        'cartao_parcelado': 'parcelado'
+    };
+    return map[metodo] || '';
 }
 
 function renderStudentProfile(mode = "overview") {
@@ -2035,7 +2068,13 @@ function renderStudentProfile(mode = "overview") {
                 <div style="margin-top:20px"><div class="section-title">Histórico</div>${reg.slice.map(r => `<div class="evolution" style="margin-top:9px"><div style="display:flex;justify-content:space-between"><span class="evolution-date">${fmtDate(r.data)} · ${esc(r.tipo || "Contato")}</span><button style="border:0;background:none;color:#a3aea9" onclick="deleteSchoolRecord('${r.id}')">Excluir</button></div><div class="evolution-title">${esc(r.assunto || "Registro escolar")}</div><div class="evolution-text">${esc(r.relato)}</div></div>`).join("") || `<div class="empty">Nenhum contato registrado.</div>`}${reg.controls}</div>
             </div>`;
     } else {
+        // OVERVIEW - PADRONIZADO PARA TODOS OS ALUNOS
         const p = studentPager(consultations, studentSectionPage.overview, 5, "setStudentSectionPage");
+
+        // Buscar histórico de pagamentos do aluno
+        const pagamentos = (data.transacoes || []).filter(t => 
+            t.alunoId === s.id && (t.tipo || "receita") === "receita"
+        ).sort((a, b) => (b.data || '').localeCompare(a.data || ''));
 
         const timelineHTML = timeline.slice(0, 15).map(t => {
             let dotColor = '';
@@ -2081,7 +2120,21 @@ function renderStudentProfile(mode = "overview") {
             `;
         }).join("");
 
+        // Cards de resumo do aluno
+        const totalConsultas = (s.consultas || []).length;
+        const totalEvolucoes = (s.evolucoes || []).length;
+        const totalAvaliacoes = (s.avaliacoes || []).length;
+        const totalPagamentos = pagamentos.reduce((sum, t) => sum + Number(t.valor || 0), 0);
+
         content = `
+            <!-- Cards de resumo do aluno -->
+            <div class="grid stats" style="margin-bottom:18px">
+                <div class="card"><div class="stat-label">Consultas</div><div class="stat-value">${totalConsultas}</div><div class="stat-sub">Registros de atendimento</div></div>
+                <div class="card"><div class="stat-label">Evoluções</div><div class="stat-value">${totalEvolucoes}</div><div class="stat-sub">Registros de progresso</div></div>
+                <div class="card"><div class="stat-label">Avaliações</div><div class="stat-value">${totalAvaliacoes}</div><div class="stat-sub">Aplicações realizadas</div></div>
+                <div class="card"><div class="stat-label">Total pago</div><div class="stat-value">${money(totalPagamentos)}</div><div class="stat-sub">Histórico de pagamentos</div></div>
+            </div>
+
             <div class="two-col-layout">
                 <div>
                     <div class="card">
@@ -2116,6 +2169,26 @@ function renderStudentProfile(mode = "overview") {
                         <div class="section-title">Histórico recente</div>
                         <div class="section-sub">Últimos registros do aluno</div>
                         ${timelineHTML || `<div class="empty">Nenhum registro recente.</div>`}
+                    </div>
+
+                    <div class="card" style="margin-top:12px">
+                        <div class="section-title">Histórico de pagamentos</div>
+                        <div class="section-sub">Últimos recebimentos</div>
+                        ${pagamentos.slice(0, 5).map(p => `
+                            <div style="padding:8px 0;border-bottom:1px solid #f0f3f2;font-size:11px">
+                                <div style="display:flex;justify-content:space-between">
+                                    <span>${fmtDate(p.data)}</span>
+                                    <strong style="color:var(--sage)">${money(p.valor)}</strong>
+                                </div>
+                                <div style="display:flex;gap:4px;margin-top:3px;flex-wrap:wrap">
+                                    <span class="payment-method-badge ${getMetodoPagamentoClass(p.metodo_pagamento)}">
+                                        ${getMetodoPagamentoLabel(p.metodo_pagamento)}
+                                        ${p.parcelas > 0 ? ` · ${p.parcelas}x` : ''}
+                                    </span>
+                                    <span style="font-size:9px;color:#8a9892">${esc(p.descricao || 'Sessão')}</span>
+                                </div>
+                            </div>
+                        `).join("") || `<div class="empty" style="padding:10px">Nenhum pagamento registrado.</div>`}
                     </div>
                 </div>
             </div>`;
@@ -2581,7 +2654,9 @@ async function saveAppointment() {
         tipo: tipo,
         status: "agendado",
         presente: false,
-        pago: false
+        pago: false,
+        metodo_pagamento: '',
+        parcelas: 0
     };
 
     data.agenda.push(newAppointment);
@@ -2624,7 +2699,39 @@ async function togglePayment(id) {
     if (!s) return;
 
     if (!a.pago) {
+        // Mostrar modal para escolher método de pagamento
+        const metodo = prompt(
+            "Selecione o método de pagamento:\n" +
+            "1 - Dinheiro\n" +
+            "2 - PIX\n" +
+            "3 - Cartão (à vista)\n" +
+            "4 - Cartão parcelado\n\n" +
+            "Digite o número da opção:"
+        );
+        
+        let metodoSelecionado = '';
+        let parcelas = 0;
+        
+        if (metodo === '1') metodoSelecionado = 'dinheiro';
+        else if (metodo === '2') metodoSelecionado = 'pix';
+        else if (metodo === '3') metodoSelecionado = 'cartao';
+        else if (metodo === '4') {
+            metodoSelecionado = 'cartao_parcelado';
+            const parcelasInput = prompt("Quantas parcelas? (2 a 12)");
+            parcelas = parseInt(parcelasInput) || 0;
+            if (parcelas < 2 || parcelas > 12) {
+                notify("Número de parcelas inválido. Use de 2 a 12.");
+                return;
+            }
+        } else {
+            notify("Opção inválida. Pagamento não registrado.");
+            return;
+        }
+
         a.pago = true;
+        a.metodo_pagamento = metodoSelecionado;
+        a.parcelas = parcelas;
+
         const transacao = {
             id: uid(),
             data: a.data,
@@ -2633,13 +2740,17 @@ async function togglePayment(id) {
             descricao: `Sessão de ${s.nome}`,
             valor: Number(s.valor) || 0,
             tipo: "receita",
-            categoria: "Sessão"
+            categoria: "Sessão",
+            metodo_pagamento: metodoSelecionado,
+            parcelas: parcelas
         };
         data.transacoes.push(transacao);
         await saveData();
-        notify(`Pagamento de ${money(s.valor)} registrado.`);
+        notify(`Pagamento de ${money(s.valor)} registrado via ${getMetodoPagamentoLabel(metodoSelecionado)}${parcelas > 0 ? ` em ${parcelas}x` : ''}.`);
     } else {
         a.pago = false;
+        a.metodo_pagamento = '';
+        a.parcelas = 0;
         const transacoesRemovidas = data.transacoes.filter(t => t.agendaId === a.id);
         data.transacoes = data.transacoes.filter(t => t.agendaId !== a.id);
         for (const t of transacoesRemovidas) {
@@ -2678,7 +2789,7 @@ function setCalendarMode(mode) {
 }
 
 // ============================================================
-// AVALIAÇÕES PSICOPEDAGÓGICAS - PÁGINA DEDICADA COM PASSO A PASSO
+// AVALIAÇÕES PSICOPEDAGÓGICAS - PASSO A PASSO
 // ============================================================
 
 const ASSESSMENT_TEMPLATES = [
@@ -3548,7 +3659,7 @@ function gerarPDFAvaliacao(alunoId, avalId) {
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(18);
-    doc.text('ASAS - Avaliação Psicopedagógica', pageW / 2, y, { align: 'center' });
+    doc.text('LQS ERP - Avaliação Psicopedagógica', pageW / 2, y, { align: 'center' });
     y += 10;
 
     doc.setFont('helvetica', 'bold');
@@ -3611,7 +3722,7 @@ function gerarPDFAvaliacao(alunoId, avalId) {
     doc.text('Profissional Responsável', 40, y);
     y += 10;
     doc.setFontSize(8);
-    doc.text(`Documento gerado em ${fmtDate(today())} - ASAS Gestão Psicopedagógica`, 20, y);
+    doc.text(`Documento gerado em ${fmtDate(today())} - LQS ERP`, 20, y);
 
     doc.save(`avaliacao-${s.nome}-${av.titulo}.pdf`);
     notify("PDF da avaliação gerado com sucesso!");
@@ -3754,8 +3865,23 @@ function renderFinanceiro() {
                     </div>
                     ${rows.slice.length ? `
                         <div style="overflow:auto"><table class="finance-table">
-                            <thead><tr><th>Data</th><th>Aluno</th><th>Descrição</th><th>Valor</th><th>Status</th></tr></thead>
-                            <tbody>${rows.slice.map(t => { const s = getStudent(t.alunoId); return `<tr><td>${fmtDate(t.data)}</td><td><strong>${esc(s?.nome || "—")}</strong></td><td>${esc(t.descricao)}</td><td><strong style="color:var(--sage)">${money(t.valor)}</strong></td><td class="paid">Recebido</td></tr>`; }).join("")}</tbody>
+                            <thead><tr><th>Data</th><th>Aluno</th><th>Descrição</th><th>Valor</th><th>Status</th><th>Pagamento</th></tr></thead>
+                            <tbody>${rows.slice.map(t => { 
+                                const s = getStudent(t.alunoId); 
+                                return `<tr>
+                                    <td>${fmtDate(t.data)}</td>
+                                    <td><strong>${esc(s?.nome || "—")}</strong></td>
+                                    <td>${esc(t.descricao)}</td>
+                                    <td><strong style="color:var(--sage)">${money(t.valor)}</strong></td>
+                                    <td class="paid">Recebido</td>
+                                    <td>
+                                        <span class="payment-method-badge ${getMetodoPagamentoClass(t.metodo_pagamento)}">
+                                            ${getMetodoPagamentoLabel(t.metodo_pagamento)}
+                                            ${t.parcelas > 0 ? ` · ${t.parcelas}x` : ''}
+                                        </span>
+                                    </td>
+                                </tr>`;
+                            }).join("")}</tbody>
                         </table></div>${rows.controls}
                     ` : `<div class="empty">Nenhuma receita registrada em ${monthLabel}.</div>`}
                 </div>
@@ -3864,7 +3990,9 @@ async function saveDespesa() {
         descricao,
         valor,
         tipo: "despesa",
-        categoria
+        categoria,
+        metodo_pagamento: '',
+        parcelas: 0
     });
     await saveData();
     notify("Despesa registrada.");
@@ -3948,7 +4076,7 @@ function numeroPorExtenso(valor) {
 }
 
 // ============================================================
-// RECIBOS E DECLARAÇÕES
+// RECIBOS
 // ============================================================
 
 function gerarReciboSide() {
@@ -3979,7 +4107,7 @@ function gerarReciboSide() {
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(20);
-    doc.text('RECIBO DE PAGAMENTO', pageW / 2, y, { align: 'center' });
+    doc.text('LQS ERP - RECIBO DE PAGAMENTO', pageW / 2, y, { align: 'center' });
     y += 12;
 
     doc.setFont('helvetica', 'normal');
@@ -3990,7 +4118,7 @@ function gerarReciboSide() {
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(14);
-    doc.text('INSTITUIÇÃO ASAS', 20, y);
+    doc.text('LQS ERP - Legado Que Ensina', 20, y);
     y += 8;
 
     doc.setFont('helvetica', 'normal');
@@ -4068,7 +4196,7 @@ async function saveProfile() {
     const p = data.professor;
     if (!p) return;
 
-    p.nome = document.getElementById("profNome").value.trim() || "Professor ASAS";
+    p.nome = document.getElementById("profNome").value.trim() || "Professor LQS";
     p.especialidade = document.getElementById("profEspecialidade").value.trim();
     p.foto = document.getElementById("profFoto").value.trim();
     p.bio = document.getElementById("profBio").value.trim();
@@ -4126,7 +4254,7 @@ function generateStudentPDF(id) {
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
-    doc.text("ASAS", 15, y);
+    doc.text("LQS ERP", 15, y);
     y += 8;
     doc.setFontSize(14);
     doc.text("Relatório clínico e pedagógico", 15, y);
@@ -4223,7 +4351,7 @@ function generateFinancePDF() {
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
-    doc.text("ASAS", 15, cursor);
+    doc.text("LQS ERP", 15, cursor);
     cursor += 8;
     doc.setFontSize(14);
     doc.text(`Relatório financeiro — ${new Date(year, m, 1).toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}`, 15, cursor);
@@ -4245,7 +4373,9 @@ function generateFinancePDF() {
     if (!monthTx.length) cursor = pdfText(doc, "Nenhum recebimento confirmado neste mês.", 15, cursor, pageW - 30);
     monthTx.forEach(t => {
         const st = getStudent(t.alunoId);
-        cursor = pdfText(doc, `${fmtDate(t.data)} · ${st?.nome || "Aluno removido"} · ${t.descricao || "Recebimento"} · ${money(t.valor)} · Recebido`, 15, cursor, pageW - 30);
+        const metodo = getMetodoPagamentoLabel(t.metodo_pagamento);
+        const parcelasInfo = t.parcelas > 0 ? ` ${t.parcelas}x` : '';
+        cursor = pdfText(doc, `${fmtDate(t.data)} · ${st?.nome || "Aluno removido"} · ${t.descricao || "Recebimento"} · ${money(t.valor)} · Recebido · ${metodo}${parcelasInfo}`, 15, cursor, pageW - 30);
     });
     if (cursor > 260) { doc.addPage(); cursor = 18; }
     cursor += 5;
@@ -4267,7 +4397,9 @@ function generateFinancePDF() {
     doc.setFont("helvetica", "normal");
     monthAppts.forEach(a => {
         const st = getStudent(a.alunoId);
-        cursor = pdfText(doc, `${fmtDate(a.data)} ${a.hora} · ${st?.nome || "Aluno removido"} · ${money(st?.valor || 0)} · ${a.pago ? "Pago" : "Pendente"}`, 15, cursor, pageW - 30);
+        const metodo = getMetodoPagamentoLabel(a.metodo_pagamento);
+        const parcelasInfo = a.parcelas > 0 ? ` ${a.parcelas}x` : '';
+        cursor = pdfText(doc, `${fmtDate(a.data)} ${a.hora} · ${st?.nome || "Aluno removido"} · ${money(st?.valor || 0)} · ${a.pago ? "Pago" : "Pendente"}${a.pago ? ` · ${metodo}${parcelasInfo}` : ''}`, 15, cursor, pageW - 30);
     });
 
     doc.save(`relatorio-financeiro-${year}-${String(m + 1).padStart(2, "0")}.pdf`);
@@ -4380,6 +4512,8 @@ window.avalStepNext = avalStepNext;
 window.selectAvalStepOption = selectAvalStepOption;
 window.cancelAvalStep = cancelAvalStep;
 window.abrirFormRecibo = abrirFormRecibo;
+window.getMetodoPagamentoLabel = getMetodoPagamentoLabel;
+window.getMetodoPagamentoClass = getMetodoPagamentoClass;
 
 // ============================================================
 // INICIAR
