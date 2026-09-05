@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -139,7 +138,6 @@ button{cursor:pointer}
 .profile-meta{font-size:12px;color:#81908a;margin-top:4px}
 .profile-actions{margin-left:auto;display:flex;gap:7px}
 .profile-body{padding:20px 24px}
-.profile-layout{display:grid;grid-template-columns:2fr 1fr;gap:18px;margin-top:18px}
 
 .timeline{display:flex;flex-direction:column;gap:10px}
 .evolution{border:1px solid var(--line);border-radius:13px;padding:14px;background:#fbfcfc}
@@ -147,88 +145,82 @@ button{cursor:pointer}
 .evolution-title{font-size:13px;font-weight:700;margin:5px 0}
 .evolution-text{font-size:12px;line-height:1.65;color:#596761;white-space:pre-wrap}
 
-.agenda-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:15px}
-.toolbar-group{display:flex;gap:5px;align-items:center}
-.month-label{font-size:16px;font-weight:700;min-width:150px;text-align:center}
-.week-grid{display:grid;grid-template-columns:70px repeat(5,minmax(130px,1fr));min-width:700px}
-.week-head{background:#fafcfb;border-bottom:1px solid var(--line);padding:10px;text-align:center;font-size:11px;font-weight:700;color:#68766f}
-.time-cell{height:72px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:7px;font-size:10px;color:#97a39e;text-align:right}
-.slot{height:72px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:4px;background:#fff}
-.slot:hover{background:#fbfdfc}
-.event{padding:7px;border-radius:9px;font-size:10px;line-height:1.3;cursor:pointer;position:relative;min-height:58px}
-.event.psico{background:#edf4f8;color:#557792}
-.event.psicopeg{background:#f0f5ec;color:#5d806c}
-.event.aula{background:#f5f0f8;color:#80678c}
-.event strong{display:block;font-size:10px;margin-bottom:2px}
-.event-actions{display:flex;gap:3px;margin-top:5px}
-.event-actions button{border:0;background:rgba(255,255,255,.65);border-radius:5px;padding:2px 5px;font-size:9px}
-.empty-slot{height:100%;display:grid;place-items:center;color:#c1ccc7;font-size:11px}
+/* AGENDA REFORMULADA - MAIS LIMPA E PRÁTICA */
+.agenda-slim .agenda-header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.agenda-slim .agenda-nav{display:flex;align-items:center;gap:6px}
+.agenda-slim .agenda-nav button{background:#f5f8f7;border:0;border-radius:10px;padding:6px 12px;font-size:12px;font-weight:600;color:#5a6b64;transition:.15s}
+.agenda-slim .agenda-nav button:hover{background:#eaf0ed}
+.agenda-slim .agenda-nav .month-label{font-size:16px;font-weight:700;min-width:140px;text-align:center;color:#263238}
+.agenda-slim .agenda-grid{display:grid;grid-template-columns:60px repeat(5,1fr);gap:0;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff}
+.agenda-slim .agenda-grid .header-cell{background:#fafcfb;padding:10px 6px;text-align:center;font-size:10px;font-weight:600;color:#68766f;border-bottom:1px solid var(--line);border-right:1px solid var(--line)}
+.agenda-slim .agenda-grid .header-cell:last-child{border-right:0}
+.agenda-slim .agenda-grid .hour-cell{padding:6px;font-size:10px;color:#97a39e;text-align:right;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:#fafcfb}
+.agenda-slim .agenda-grid .slot-cell{padding:3px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);min-height:56px;background:#fff;transition:.1s}
+.agenda-slim .agenda-grid .slot-cell:hover{background:#f8fbf9}
+.agenda-slim .agenda-grid .slot-cell:last-child{border-right:0}
+.agenda-slim .agenda-event{background:var(--sage-light);border-radius:8px;padding:4px 6px;font-size:10px;cursor:pointer;display:flex;flex-direction:column;gap:2px;min-height:44px;border-left:3px solid var(--sage)}
+.agenda-slim .agenda-event .ev-name{font-weight:700;font-size:10px;color:#34413c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.agenda-slim .agenda-event .ev-time{font-size:8px;color:#8a9892}
+.agenda-slim .agenda-event .ev-actions{display:flex;gap:3px;margin-top:2px;flex-wrap:wrap}
+.agenda-slim .agenda-event .ev-actions button{border:0;background:rgba(255,255,255,.7);border-radius:4px;padding:1px 5px;font-size:8px;font-weight:600}
+.agenda-slim .agenda-event .ev-actions .act-presence{color:var(--sage)}
+.agenda-slim .agenda-event .ev-actions .act-payment{color:#6288a8}
+.agenda-slim .agenda-event .ev-actions .act-cancel{color:#b85b5b}
+.agenda-slim .empty-slot{height:100%;display:flex;align-items:center;justify-content:center;color:#c1ccc7;font-size:10px;cursor:pointer}
+.agenda-slim .empty-slot:hover{color:var(--sage)}
 
-.month-grid{display:grid;grid-template-columns:repeat(7,1fr);border:1px solid var(--line);border-radius:15px;overflow:hidden;background:white}
-.month-week{display:contents}
-.month-day{
- min-height:105px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);
- padding:8px;cursor:pointer
-}
-.month-day:hover{background:#fafcfb}
-.month-day.other{background:#fafafa;color:#b9c2be}
-.day-number{font-size:11px;font-weight:700}
-.dot-row{display:flex;flex-wrap:wrap;gap:3px;margin-top:9px}
-.dot{width:7px;height:7px;border-radius:50%}
-.dot.psico{background:#8db0c8}.dot.psicopeg{background:#8eb29d}.dot.aula{background:#ad94b9}
-.day-events{margin-top:7px;display:flex;flex-direction:column;gap:3px}
-.day-event{font-size:9px;padding:3px 5px;border-radius:5px;background:#edf4f8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* AVALIAÇÕES - INTERFACE PASSO A PASSO */
+.aval-step{max-width:700px;margin:0 auto}
+.aval-step .step-progress{display:flex;gap:6px;margin-bottom:20px;justify-content:center}
+.aval-step .step-progress .dot{width:10px;height:10px;border-radius:50%;background:#dfe7e3;transition:.3s}
+.aval-step .step-progress .dot.active{background:var(--sage)}
+.aval-step .step-progress .dot.done{background:var(--sage-dark)}
+.aval-step .step-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px;box-shadow:0 4px 16px rgba(0,0,0,.04)}
+.aval-step .step-card .step-number{font-size:11px;color:#8a9892;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.aval-step .step-card .step-question{font-size:16px;font-weight:700;margin:10px 0 16px;color:#263238;line-height:1.5}
+.aval-step .step-card .step-options{display:flex;flex-direction:column;gap:8px}
+.aval-step .step-card .step-options label{display:flex;align-items:center;gap:10px;padding:12px 14px;border:2px solid var(--line);border-radius:12px;cursor:pointer;transition:.15s;font-size:13px}
+.aval-step .step-card .step-options label:hover{border-color:#b8ccc2;background:#f8fbf9}
+.aval-step .step-card .step-options label.selected{border-color:var(--sage);background:var(--sage-light)}
+.aval-step .step-card .step-options label input[type="radio"]{accent-color:var(--sage);width:16px;height:16px}
+.aval-step .step-nav{display:flex;justify-content:space-between;margin-top:20px;gap:10px}
+.aval-step .step-nav button{padding:10px 20px;border:0;border-radius:10px;font-weight:600;font-size:12px;transition:.15s}
+.aval-step .step-nav .btn-prev{background:#f5f8f7;color:#5a6b64}
+.aval-step .step-nav .btn-prev:hover{background:#eaf0ed}
+.aval-step .step-nav .btn-next{background:var(--sage);color:#fff}
+.aval-step .step-nav .btn-next:hover{background:var(--sage-dark)}
+.aval-step .step-nav .btn-next:disabled{opacity:.4;cursor:not-allowed}
 
-.finance-table{width:100%;border-collapse:collapse}
-.finance-table th{text-align:left;font-size:10px;color:#87948e;text-transform:uppercase;padding:10px;border-bottom:1px solid var(--line)}
-.finance-table td{padding:12px 10px;border-bottom:1px solid #f0f3f2;font-size:12px}
-.paid{color:#5d8a70;font-weight:700}.pending{color:#a98058;font-weight:700}
-.alert{padding:12px;border-radius:12px;background:#fff8ef;border:1px solid #f3e5d2}
-.alert-title{font-size:12px;font-weight:700;color:#876f51}
-.alert-text{font-size:11px;color:#8d8171;margin-top:3px}
-.empty{padding:30px;text-align:center;color:#98a49f;font-size:13px}
-.kpi-bar{height:6px;border-radius:10px;background:#edf1ef;overflow:hidden;margin-top:10px}
-.kpi-fill{height:100%;background:var(--sage);border-radius:10px}
+/* PERFIL - COM ELEMENTOS GRÁFICOS */
+.profile-stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.profile-stats-grid .stat-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;text-align:center}
+.profile-stats-grid .stat-card .number{font-size:28px;font-weight:700;color:#263238}
+.profile-stats-grid .stat-card .label{font-size:10px;color:#8a9892;text-transform:uppercase;letter-spacing:.05em;margin-top:4px}
+.profile-stats-grid .stat-card .icon{font-size:24px;margin-bottom:4px}
+.profile-timeline-compact{max-height:300px;overflow-y:auto;padding-right:6px}
+.profile-timeline-compact .tl-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid #f0f3f2}
+.profile-timeline-compact .tl-item:last-child{border:0}
+.profile-timeline-compact .tl-dot{width:10px;height:10px;border-radius:50%;margin-top:4px;flex-shrink:0}
+.profile-timeline-compact .tl-dot.consulta{background:#8db0c8}
+.profile-timeline-compact .tl-dot.evolucao{background:#8eb29d}
+.profile-timeline-compact .tl-dot.avaliacao{background:#ad94b9}
+.profile-timeline-compact .tl-dot.escola{background:#c9a87c}
+.profile-timeline-compact .tl-content{flex:1;min-width:0}
+.profile-timeline-compact .tl-content .tl-title{font-weight:600;font-size:12px}
+.profile-timeline-compact .tl-content .tl-date{font-size:10px;color:#8a9892}
+.profile-timeline-compact .tl-content .tl-desc{font-size:11px;color:#596761;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-.login-screen{height:100vh;display:grid;place-items:center;background:linear-gradient(135deg,#f4f8f6,#f1f5f8)}
-.login-box{width:min(420px,calc(100% - 30px));background:#fff;border:1px solid var(--line);border-radius:24px;padding:34px;box-shadow:0 20px 60px rgba(40,70,55,.08)}
-.login-brand{display:flex;justify-content:center;align-items:center;gap:10px;color:var(--sage-dark);font-weight:700;font-size:22px}
-.login-sub{text-align:center;color:#87948e;font-size:12px;margin:8px 0 28px}
+/* FINANCEIRO - SEM DECLARAÇÃO */
+.finance-side .side-card .sc-row{display:flex;justify-content:space-between;font-size:11px;padding:5px 0;border-bottom:1px solid #f0f3f2}
+.finance-side .side-card .sc-row:last-child{border:0}
+.finance-side .side-card .sc-row .sc-val{font-weight:700}
 
-.toast{
- position:fixed;right:22px;bottom:22px;background:#263d35;color:#fff;padding:12px 16px;
- border-radius:12px;font-size:12px;z-index:100;opacity:0;transform:translateY(10px);pointer-events:none;transition:.25s
-}
-.toast.show{opacity:1;transform:none}
-
-.profile-timeline-item{
- padding:14px 0;
- border-bottom:1px solid #f0f3f2;
- display:flex;
- gap:14px;
- align-items:flex-start;
-}
-.profile-timeline-item:last-child{border-bottom:0}
-.profile-timeline-dot{
- width:10px;
- height:10px;
- border-radius:50%;
- margin-top:4px;
- flex-shrink:0;
-}
-.profile-timeline-dot.evolution{background:#8eb29d}
-.profile-timeline-dot.observation{background:#8db0c8}
-.profile-timeline-dot.alert{background:#c9a87c}
-.profile-timeline-content{flex:1;min-width:0}
-.profile-timeline-content .title{font-weight:700;font-size:13px}
-.profile-timeline-content .meta{font-size:10px;color:#8a9892;margin:2px 0 5px}
-.profile-timeline-content .text{font-size:12px;color:#596761;line-height:1.6;white-space:pre-wrap}
-.profile-timeline-content .actions{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
-
+/* RESPONSIVO */
 @media(max-width:950px){
  .stats{grid-template-columns:repeat(2,1fr)}
- .profile-layout{grid-template-columns:1fr}
+ .profile-stats-grid{grid-template-columns:repeat(2,1fr)}
  .form-grid{grid-template-columns:repeat(2,1fr)}
+ .agenda-slim .agenda-grid{grid-template-columns:50px repeat(5,1fr);font-size:9px}
 }
 @media(max-width:680px){
  .sidebar{width:58px;padding:15px 6px}
@@ -245,80 +237,9 @@ button{cursor:pointer}
  .profile-body{padding:15px}
  .profile-avatar{width:75px;height:75px}
  .profile-name{font-size:18px}
- .month-grid{min-width:620px}
+ .profile-stats-grid{grid-template-columns:1fr 1fr}
+ .agenda-slim .agenda-grid{grid-template-columns:40px repeat(5,1fr);font-size:8px;overflow-x:auto;min-width:500px}
 }
-
-.help-box{display:flex;gap:10px;align-items:flex-start;background:#f4f8f6;border:1px solid #d9e6e0;border-radius:14px;padding:13px 16px;margin-bottom:18px;font-size:12px;line-height:1.6;color:#5a6b64}
-.help-box i{flex-shrink:0}
-
-.finance-layout{display:grid;grid-template-columns:1fr 280px;gap:18px;align-items:start}
-.finance-side{position:sticky;top:10px}
-.mini-cal{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px}
-.mini-cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-.mini-cal-head .mc-title{font-size:12px;font-weight:700;text-transform:capitalize;color:#4a5852}
-.mini-cal-head button{border:0;background:#f4f8f6;border-radius:8px;width:24px;height:24px;cursor:pointer;font-size:13px;color:#6b7a73;display:flex;align-items:center;justify-content:center}
-.mini-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
-.mini-cal-dow{font-size:8px;color:#a3aea9;text-align:center;padding:2px 0}
-.mini-cal-day{aspect-ratio:1;font-size:10px;display:flex;align-items:center;justify-content:center;border-radius:6px;cursor:default;color:#6b7a73;position:relative}
-.mini-cal-day.other{color:#d0d8d4}
-.mini-cal-day.today{background:var(--sage);color:#fff;font-weight:700}
-.mini-cal-day.has-event::after{content:"";position:absolute;bottom:2px;width:4px;height:4px;border-radius:50%;background:#e8a23d}
-.mini-cal-day.has-event.paid::after{background:var(--sage)}
-.mini-cal-day.has-event.pending::after{background:#e8a23d}
-.mini-cal-day.sel{outline:2px solid var(--sage);outline-offset:-2px}
-.side-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:12px}
-.side-card .sc-title{font-size:12px;font-weight:700;margin-bottom:8px;color:#4a5852}
-.side-card .sc-row{display:flex;justify-content:space-between;font-size:11px;padding:5px 0;border-bottom:1px solid #f0f3f2}
-.side-card .sc-row:last-child{border:0}
-.side-card .sc-row .sc-val{font-weight:700}
-
-.aval-type-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;background:#eaf3ee;color:#3d8a6b}
-.aval-type-badge.survey{background:#eef0f8;color:#5b63b3}
-.aval-type-badge.screening{background:#fef3e8;color:#b8732a}
-.aval-type-badge.anamnese{background:#e8f0fe;color:#3a6cb8}
-.aval-list-item{padding:14px 0;border-top:1px solid var(--line)}
-.aval-applied-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f5f7f6}
-.aval-applied-row:last-child{border:0}
-@media(max-width:950px){
- .finance-layout{grid-template-columns:1fr}
- .finance-side{position:static}
-}
-
-.timeline-item{
- padding:16px 0;
- border-bottom:1px solid #f0f3f2;
- display:flex;
- gap:14px;
- align-items:flex-start;
-}
-.timeline-item:last-child{border-bottom:0}
-.timeline-dot{
- width:12px;
- height:12px;
- border-radius:50%;
- margin-top:3px;
- flex-shrink:0;
-}
-.timeline-dot.consulta{background:#8db0c8}
-.timeline-dot.evolucao{background:#8eb29d}
-.timeline-dot.avaliacao{background:#ad94b9}
-.timeline-dot.escola{background:#c9a87c}
-.timeline-dot.observacao{background:#b8b0a8}
-.timeline-content{flex:1;min-width:0}
-.timeline-content .tl-title{font-weight:700;font-size:13px}
-.timeline-content .tl-meta{font-size:10px;color:#8a9892;margin:2px 0 5px}
-.timeline-content .tl-text{font-size:12px;color:#596761;line-height:1.6;white-space:pre-wrap}
-
-.aval-pdf-btn{display:inline-flex;align-items:center;gap:5px;font-size:10px;padding:4px 10px;border-radius:8px;border:1px solid var(--line);background:#fff;color:#53615c;cursor:pointer;transition:.15s}
-.aval-pdf-btn:hover{background:#f7faf8}
-
-.two-col-layout{display:grid;grid-template-columns:1fr 280px;gap:18px;align-items:start}
-.right-sidebar{position:sticky;top:10px}
-@media(max-width:950px){
- .two-col-layout{grid-template-columns:1fr}
- .right-sidebar{position:static}
-}
-
 </style>
 <script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
 </head>
@@ -436,7 +357,6 @@ let currentPage = "dashboard";
 let currentStudent = null;
 let currentAssessment = null;
 let calendarDate = new Date();
-let calendarMode = "week";
 let selectedDay = null;
 let studentSectionPage = { overview: 1, avaliacoes: 1, escola: 1 };
 let currentConsultation = null;
@@ -447,6 +367,14 @@ let financePage = 1;
 let isSaving = false;
 let isDataLoaded = false;
 
+// Variáveis para avaliação passo a passo
+let avalStepData = null;
+let avalStepIndex = 0;
+let avalStepAnswers = [];
+let avalStepAlunoId = null;
+let avalStepTemplate = null;
+let avalStepResumo = "";
+
 const TYPES = {
     psicologia: { label: "Psicologia", cls: "psico" },
     psicopedagogia: { label: "Psicopedagogia", cls: "psicopeg" },
@@ -456,18 +384,6 @@ const TYPES = {
 const WEEK = ["Seg", "Ter", "Qua", "Qui", "Sex"];
 const HOURS = [];
 for (let h = 8; h <= 18; h++) HOURS.push(String(h).padStart(2, "0") + ":00");
-
-// ============================================================
-// FUNÇÃO DE SAUDAÇÃO POR HORÁRIO
-// ============================================================
-
-function getSaudacao() {
-    const hora = new Date().getHours();
-    if (hora >= 6 && hora < 12) return "Bom dia";
-    if (hora >= 12 && hora < 18) return "Boa tarde";
-    if (hora >= 18 && hora < 24) return "Boa noite";
-    return "Boa noite";
-}
 
 // ============================================================
 // FUNÇÕES AUXILIARES
@@ -891,13 +807,8 @@ async function getUserId() {
 }
 
 // ============================================================
-// FUNÇÕES SUPABASE - LOAD (simplificadas)
+// FUNÇÕES SUPABASE - LOAD
 // ============================================================
-
-function isMissingColumnError(err) {
-    if (!err) return false;
-    return err.code === '42703' || err.code === 'PGRST116' || /column/i.test(err.message || '');
-}
 
 async function loadDataFromSupabase() {
     try {
@@ -969,7 +880,6 @@ async function loadDataFromSupabase() {
             .eq('user_id', userId)
             .order('data', { ascending: false });
 
-        // Normaliza
         const alunosNormalizados = (alunosData || []).map(mapAlunoFromDB);
         const evolucoesNorm = (evolucoesData || []).map(mapEvolucaoFromDB);
         const consultasNorm = (consultasData || []).map(mapConsultaFromDB);
@@ -1033,10 +943,9 @@ async function loadDataFromSupabase() {
 }
 
 // ============================================================
-// FUNÇÕES SUPABASE - SAVE (CORRIGIDAS)
+// FUNÇÕES SUPABASE - SAVE
 // ============================================================
 
-// Mapeamento de colunas conhecidas por tabela
 const COLUMN_MAP = {
     'transacoes': ['id', 'user_id', 'agenda_id', 'aluno_id', 'data', 'descricao', 'valor', 'tipo', 'categoria'],
     'agenda': ['id', 'user_id', 'aluno_id', 'data', 'hora', 'tipo', 'status', 'presente', 'pago', 'updated_at'],
@@ -1055,7 +964,6 @@ const COLUMN_MAP = {
 async function upsertSafe(tableName, payload, selectSingle = true) {
     let attempt = { ...payload };
     
-    // Filtrar apenas colunas conhecidas para a tabela
     const knownColumns = COLUMN_MAP[tableName] || [];
     if (knownColumns.length > 0) {
         const filteredAttempt = {};
@@ -1075,7 +983,6 @@ async function upsertSafe(tableName, payload, selectSingle = true) {
             const { data, error } = await query;
             if (!error) return data;
             
-            // Se for erro de coluna, tenta remover a coluna problemática
             if (error && (error.code === '42703' || /could not find the column/i.test(error.message || ''))) {
                 const m = (error.message || '').match(/column "([^"]+)"/i) || (error.message || '').match(/([^"]+).*does not exist/i);
                 const col = m ? m[1] : null;
@@ -1087,7 +994,6 @@ async function upsertSafe(tableName, payload, selectSingle = true) {
             throw error;
         } catch (err) {
             if (i === 3) throw err;
-            // Se for erro de coluna, tenta novamente
             if (err.code === '42703' || /could not find the column/i.test(err.message || '')) {
                 continue;
             }
@@ -1291,7 +1197,6 @@ async function saveTransacao(transacao) {
             tipo: transacao.tipo || 'receita'
         };
 
-        // Adicionar campos opcionais apenas se existirem
         if (transacao.agendaId) payload.agenda_id = transacao.agendaId;
         if (transacao.alunoId) payload.aluno_id = transacao.alunoId;
         if (transacao.categoria) payload.categoria = transacao.categoria;
@@ -1466,15 +1371,15 @@ async function saveData() {
 }
 
 // ============================================================
-// AJUDA CONTEXTUAL (agora no TOPO)
+// AJUDA CONTEXTUAL
 // ============================================================
 const HELP_TEXTS = {
-    dashboard: "Bem-vindo ao ASAS! Aqui você acompanha o resumo geral: total de alunos, atendimentos do mês, pendências financeiras. Use o menu lateral para navegar entre os módulos. Cada aluno possui um prontuário completo com consultas, avaliações e contato com a escola.",
-    alunos: "Cadastre e gerencie seus alunos. Clique em um aluno para abrir o prontuário completo, onde você registra consultas, aplica avaliações e mantém contato com a escola. Use o botão Novo Aluno para adicionar. O campo valor define quanto cada sessão custa para o financeiro.",
-    agenda: "Sua agenda de atendimentos. Clique em um horário vazio ou use Adicionar para agendar uma nova sessão. Marque presença e pagamento diretamente nos botões de cada atendimento. Navegue entre meses com as setas. Atendimentos cancelados não aparecem na agenda ativa.",
-    avaliacoes: "Central de avaliações psicopedagógicas. Crie modelos de avaliação (Anamnese, SNAP, M-CHAT-R, ASRS e outros) e aplique a qualquer aluno. No histórico de cada avaliação você vê todos os alunos que aplicou, com data e resultados. As avaliações ficam também vinculadas ao prontuário do aluno.",
-    financeiro: "Controle financeiro completo: entradas (recebimentos de sessões) e saídas (despesas). O dashboard mostra o saldo do mês, total recebido e total gasto. O calendário à direita exibe os atendimentos do mês. Adicione despesas com o botão Nova despesa. Use as setas para navegar entre meses.",
-    perfil: "Suas informações profissionais: nome, especialidade, foto e bio. Configure notificações e lembretes. Os dados aparecem nos recibos e declarações gerados pelo sistema."
+    dashboard: "Bem-vindo ao ASAS! Aqui você acompanha o resumo geral: total de alunos, atendimentos do mês, pendências financeiras.",
+    alunos: "Cadastre e gerencie seus alunos. Clique em um aluno para abrir o prontuário completo.",
+    agenda: "Sua agenda de atendimentos. Clique em um horário vazio para agendar. Marque presença e pagamento nos botões.",
+    avaliacoes: "Central de avaliações psicopedagógicas. Responda questão por questão de forma organizada.",
+    financeiro: "Controle financeiro completo: receitas e despesas. Navegue entre meses com as setas.",
+    perfil: "Suas informações profissionais e linha do tempo da sua atividade."
 };
 
 function renderHelpBox(page) {
@@ -1510,6 +1415,15 @@ function navigate(page) {
 
     if (info[page]) {
         document.getElementById("pageTitle").innerHTML = `<i data-lucide="${info[page][0]}"></i>${info[page][1]}`;
+    }
+
+    // Reset avaliação passo a passo ao sair da página
+    if (page !== "avaliacoes") {
+        avalStepData = null;
+        avalStepIndex = 0;
+        avalStepAnswers = [];
+        avalStepAlunoId = null;
+        avalStepTemplate = null;
     }
 
     renderPage();
@@ -1867,10 +1781,6 @@ function setStudentSectionPage(section, page) {
     renderStudentProfile("overview");
 }
 
-// ============================================================
-// FUNÇÃO PARA EDITAR ALUNO
-// ============================================================
-
 async function saveStudentEdit() {
     const s = getStudent(currentStudent);
     if (!s) return;
@@ -1909,7 +1819,6 @@ function renderStudentProfile(mode = "overview") {
         .sort((a, b) => (a.data + a.hora).localeCompare(b.data + b.hora)).slice(0, 3);
     const evolucoes = (s.evolucoes || []).slice().sort((a, b) => b.data.localeCompare(a.data));
 
-    // Montar timeline unificada
     const timeline = [];
     consultations.forEach(c => timeline.push({ type: 'consulta', data: c.data, item: c, label: 'Consulta' }));
     evolucoes.forEach(e => timeline.push({ type: 'evolucao', data: e.data, item: e, label: 'Evolução' }));
@@ -1917,7 +1826,6 @@ function renderStudentProfile(mode = "overview") {
     (s.escola?.registros || []).forEach(r => timeline.push({ type: 'escola', data: r.data, item: r, label: 'Contato escola' }));
     timeline.sort((a, b) => b.data.localeCompare(a.data));
 
-    // ===== MODO: visualização de consulta específica =====
     if (mode === "consulta") {
         const c = (s.consultas || []).find(x => x.id === currentConsultation);
         if (!c) { renderStudentProfile("overview"); return; }
@@ -1941,7 +1849,6 @@ function renderStudentProfile(mode = "overview") {
         return;
     }
 
-    // ===== MODO: aplicar avaliação =====
     if (mode === "aplicar") {
         const a = s.avaliacoes.find(x => x.id === currentAssessment);
         if (!a) { renderStudentProfile("avaliacoes"); return; }
@@ -1971,7 +1878,6 @@ function renderStudentProfile(mode = "overview") {
         return;
     }
 
-    // ===== CONTEÚDO DAS ABAS =====
     let content = "";
     if (mode === "edit") {
         content = `
@@ -2020,10 +1926,8 @@ function renderStudentProfile(mode = "overview") {
                 <div style="margin-top:20px"><div class="section-title">Histórico</div>${reg.slice.map(r => `<div class="evolution" style="margin-top:9px"><div style="display:flex;justify-content:space-between"><span class="evolution-date">${fmtDate(r.data)} · ${esc(r.tipo || "Contato")}</span><button style="border:0;background:none;color:#a3aea9" onclick="deleteSchoolRecord('${r.id}')">Excluir</button></div><div class="evolution-title">${esc(r.assunto || "Registro escolar")}</div><div class="evolution-text">${esc(r.relato)}</div></div>`).join("") || `<div class="empty">Nenhum contato registrado.</div>`}${reg.controls}</div>
             </div>`;
     } else {
-        // overview - com timeline enriquecida
         const p = studentPager(consultations, studentSectionPage.overview, 5, "setStudentSectionPage");
 
-        // Timeline com todos os registros
         const timelineHTML = timeline.slice(0, 15).map(t => {
             let dotColor = '';
             let contentHTML = '';
@@ -2354,7 +2258,7 @@ async function deleteSchoolRecord(id) {
 }
 
 // ============================================================
-// AGENDA
+// AGENDA - REFORMULADA MAIS LIMPA E PRÁTICA
 // ============================================================
 
 function renderAgenda() {
@@ -2364,91 +2268,81 @@ function renderAgenda() {
         return;
     }
 
-    const title = calendarMode === "week" ?
-        `${fmtDate(dateISO(weekDates(calendarDate)[0]))} — ${fmtDate(dateISO(weekDates(calendarDate)[4]))}` :
-        monthName(calendarDate);
+    const title = monthName(calendarDate);
 
     document.getElementById("page-agenda").innerHTML = `
         ${renderHelpBox("agenda")}
 
         <div class="section-head">
-            <div><div class="section-title">Agenda</div><div class="section-sub">Organize sessões, aulas e acompanhamentos.</div></div>
+            <div><div class="section-title">Agenda</div><div class="section-sub">Visualização semanal - clique em um horário vazio para agendar.</div></div>
             <button class="btn btn-primary" onclick="toggleAgendaForm()"><i data-lucide="calendar-plus"></i>Novo agendamento</button>
         </div>
 
-        <div class="card">
-            <div class="agenda-toolbar">
-                <div class="toolbar-group">
-                    <button class="btn btn-outline btn-sm" onclick="calendarPrev()"><i data-lucide="chevron-left"></i></button>
-                    <div class="month-label">${esc(title)}</div>
-                    <button class="btn btn-outline btn-sm" onclick="calendarNext()"><i data-lucide="chevron-right"></i></button>
-                    <button class="btn btn-soft btn-sm" onclick="calendarToday()">Hoje</button>
-                </div>
-                <div class="toolbar-group">
-                    <button class="btn ${calendarMode === "week" ? "btn-soft" : "btn-outline"} btn-sm" onclick="setCalendarMode('week')">Visão semanal</button>
-                    <button class="btn ${calendarMode === "month" ? "btn-soft" : "btn-outline"} btn-sm" onclick="setCalendarMode('month')">Visão mensal</button>
-                </div>
+        <div id="agendaForm" style="display:none;background:#f8fbf9;border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:16px">
+            <div class="section-title" style="margin-bottom:14px">Novo atendimento</div>
+            <div class="form-grid">
+                <div class="field"><label class="label">Aluno</label><select id="agAluno" class="select">${(data.alunos || []).map(a => `<option value="${a.id}" ${a.id === currentStudent ? "selected" : ""}>${esc(a.nome)}</option>`).join("")}</select></div>
+                <div class="field"><label class="label">Data</label><input id="agData" class="input" type="date" value="${selectedDay || today()}"></div>
+                <div class="field"><label class="label">Horário</label><input id="agHora" class="input" type="time" value="09:00"></div>
+                <div class="field"><label class="label">Tipo</label><select id="agTipo" class="select"><option value="psicopedagogia">Psicopedagogia</option><option value="psicologia">Psicologia</option><option value="aula">Aula Particular</option></select></div>
             </div>
-
-            <div id="agendaForm" style="display:none;background:#f8fbf9;border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:16px">
-                <div class="section-title" style="margin-bottom:14px">Novo atendimento</div>
-                <div class="form-grid">
-                    <div class="field"><label class="label">Aluno</label><select id="agAluno" class="select">${(data.alunos || []).map(a => `<option value="${a.id}" ${a.id === currentStudent ? "selected" : ""}>${esc(a.nome)}</option>`).join("")}</select></div>
-                    <div class="field"><label class="label">Data</label><input id="agData" class="input" type="date" value="${selectedDay || today()}"></div>
-                    <div class="field"><label class="label">Horário</label><input id="agHora" class="input" type="time" value="09:00"></div>
-                    <div class="field"><label class="label">Tipo</label><select id="agTipo" class="select"><option value="psicopedagogia">Psicopedagogia</option><option value="psicologia">Psicologia</option><option value="aula">Aula Particular</option></select></div>
-                </div>
-                <div class="form-actions"><button class="btn btn-primary" onclick="saveAppointment()"><i data-lucide="save"></i>Agendar</button><button class="btn btn-outline" onclick="toggleAgendaForm()">Cancelar</button></div>
-            </div>
-
-            ${calendarMode === "week" ? renderWeek() : renderMonth()}
+            <div class="form-actions"><button class="btn btn-primary" onclick="saveAppointment()"><i data-lucide="save"></i>Agendar</button><button class="btn btn-outline" onclick="toggleAgendaForm()">Cancelar</button></div>
         </div>
 
-        ${selectedDay && calendarMode === "month" ? renderDayPanel(selectedDay) : ""}
+        <div class="agenda-slim">
+            <div class="agenda-header">
+                <div class="agenda-nav">
+                    <button onclick="calendarPrev()"><i data-lucide="chevron-left"></i></button>
+                    <div class="month-label">${esc(title)}</div>
+                    <button onclick="calendarNext()"><i data-lucide="chevron-right"></i></button>
+                    <button class="btn btn-soft btn-sm" onclick="calendarToday()">Hoje</button>
+                </div>
+                <div style="display:flex;gap:6px">
+                    <button class="btn ${calendarMode === "week" ? "btn-soft" : "btn-outline"} btn-sm" onclick="setCalendarMode('week')">Semana</button>
+                    <button class="btn ${calendarMode === "month" ? "btn-soft" : "btn-outline"} btn-sm" onclick="setCalendarMode('month')">Mês</button>
+                </div>
+            </div>
+
+            ${calendarMode === "week" ? renderAgendaWeek() : renderAgendaMonth()}
+        </div>
     `;
     lucide.createIcons();
 }
 
-function toggleAgendaForm() {
-    const f = document.getElementById("agendaForm");
-    if (!f) return;
-    f.style.display = f.style.display === "none" ? "block" : "none";
-    if (f.style.display === "block") f.scrollIntoView({ behavior: "smooth", block: "center" });
-}
-
-function renderWeek() {
+function renderAgendaWeek() {
     const dates = weekDates(calendarDate);
-    let html = `<div style="overflow:auto"><div class="week-grid"><div class="week-head"></div>`;
+    let html = `<div style="overflow:auto"><div class="agenda-grid">`;
 
+    html += `<div class="header-cell"></div>`;
     dates.forEach(d => {
-        html += `<div class="week-head">${d.toLocaleDateString("pt-BR", { weekday: "short" })}<br><span style="font-size:14px;color:#34413c">${d.getDate()}</span></div>`;
+        html += `<div class="header-cell">${d.toLocaleDateString("pt-BR", { weekday: "short" })} ${d.getDate()}</div>`;
     });
 
     HOURS.forEach(hour => {
-        html += `<div class="time-cell">${hour}</div>`;
+        html += `<div class="hour-cell">${hour}</div>`;
         dates.forEach(d => {
             const iso = dateISO(d);
             const appointments = activeAppointments().filter(a => a.data === iso && a.hora === hour);
 
             if (!appointments.length) {
-                html += `<div class="slot" onclick="quickSchedule('${iso}','${hour}')"><div class="empty-slot">+</div></div>`;
+                html += `<div class="slot-cell" onclick="quickSchedule('${iso}','${hour}')"><div class="empty-slot">+</div></div>`;
             } else {
-                html += `<div class="slot">`;
+                html += `<div class="slot-cell">`;
                 appointments.forEach(a => {
                     const s = getStudent(a.alunoId);
                     if (!s) {
-                        html += `<div class="event" style="background:#f0f0f0;color:#999"><strong>Aluno removido</strong> - ${a.hora}</div>`;
+                        html += `<div class="agenda-event" style="background:#f0f0f0;border-left-color:#999"><div class="ev-name">Aluno removido</div></div>`;
                         return;
                     }
                     const t = TYPES[a.tipo];
                     html += `
-                        <div class="event ${t?.cls || ''}" onclick="openStudent('${s.id}')">
-                            <strong>${esc(s.nome)}</strong>
-                            ${t?.label || a.tipo}
-                            <div class="event-actions">
-                                <button onclick="event.stopPropagation();togglePresence('${a.id}')">${a.presente ? "Presente" : "Presença"}</button>
-                                <button onclick="event.stopPropagation();togglePayment('${a.id}')">${a.pago ? "Pago" : "Pagar"}</button>
-                                <button onclick="event.stopPropagation();cancelAppointment('${a.id}')">Cancelar</button>
+                        <div class="agenda-event" onclick="openStudent('${s.id}')" style="${a.presente ? 'border-left-color:var(--sage)' : ''}">
+                            <div class="ev-name">${esc(s.nome)}</div>
+                            <div class="ev-time">${t?.label || a.tipo} · ${a.hora}</div>
+                            <div class="ev-actions">
+                                <button class="act-presence" onclick="event.stopPropagation();togglePresence('${a.id}')">${a.presente ? "✓" : "Presença"}</button>
+                                <button class="act-payment" onclick="event.stopPropagation();togglePayment('${a.id}')">${a.pago ? "💰" : "Pagar"}</button>
+                                <button class="act-cancel" onclick="event.stopPropagation();cancelAppointment('${a.id}')">✕</button>
                             </div>
                         </div>`;
                 });
@@ -2461,16 +2355,7 @@ function renderWeek() {
     return html;
 }
 
-function quickSchedule(date, hour) {
-    const f = document.getElementById("agendaForm");
-    if (!f) return;
-    f.style.display = "block";
-    document.getElementById("agData").value = date;
-    document.getElementById("agHora").value = hour;
-    f.scrollIntoView({ behavior: "smooth", block: "center" });
-}
-
-function renderMonth() {
+function renderAgendaMonth() {
     const y = calendarDate.getFullYear();
     const m = calendarDate.getMonth();
     const first = new Date(y, m, 1);
@@ -2497,44 +2382,57 @@ function renderMonth() {
                 <div class="dot-row">${events.slice(0, 7).map(a => `<span class="dot ${TYPES[a.tipo]?.cls || ''}"></span>`).join("")}</div>
                 <div class="day-events">
                     ${events.slice(0, 3).map(a => { const s = getStudent(a.alunoId); return `<div class="day-event">${a.hora} · ${esc(s?.nome || "Aluno")}</div>`; }).join("")}
-                    ${events.length > 3 ? `<div style="font-size:9px;color:#8a9892">+${events.length - 3} atendimentos</div>` : ""}
+                    ${events.length > 3 ? `<div style="font-size:9px;color:#8a9892">+${events.length - 3}</div>` : ""}
                 </div>
             </div>`;
     }
 
     html += `</div></div>`;
+
+    if (selectedDay) {
+        const events = activeAppointments().filter(a => a.data === selectedDay).sort((a, b) => a.hora.localeCompare(b.hora));
+        html += `
+            <div class="card" style="margin-top:16px">
+                <div class="section-head">
+                    <div><div class="section-title">${fmtDate(selectedDay)}</div><div class="section-sub">${events.length} atendimento(s)</div></div>
+                    <button class="btn btn-primary btn-sm" onclick="quickSchedule('${selectedDay}','09:00')"><i data-lucide="plus"></i>Adicionar</button>
+                </div>
+                ${events.length ? events.map(a => {
+                    const s = getStudent(a.alunoId);
+                    if (!s) return `<div style="padding:6px 0;border-bottom:1px solid #f0f3f2;color:#999">Aluno removido - ${a.hora}</div>`;
+                    return `<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid #f0f3f2;font-size:12px">
+                        <strong style="width:40px">${a.hora}</strong>
+                        <div style="flex:1;cursor:pointer" onclick="openStudent('${s.id}')">${esc(s.nome)}</div>
+                        <button class="btn btn-sm ${a.presente ? "btn-soft" : "btn-outline"}" onclick="togglePresence('${a.id}')">${a.presente ? "Presente" : "Presença"}</button>
+                        <button class="btn btn-sm ${a.pago ? "btn-soft" : "btn-outline"}" onclick="togglePayment('${a.id}')">${a.pago ? "Pago" : "Pagar"}</button>
+                        <button class="btn btn-danger btn-sm" onclick="cancelAppointment('${a.id}')">✕</button>
+                    </div>`;
+                }).join("") : `<div class="empty">Nenhuma sessão.</div>`}
+            </div>`;
+    }
+
     return html;
+}
+
+function toggleAgendaForm() {
+    const f = document.getElementById("agendaForm");
+    if (!f) return;
+    f.style.display = f.style.display === "none" ? "block" : "none";
+    if (f.style.display === "block") f.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+function quickSchedule(date, hour) {
+    const f = document.getElementById("agendaForm");
+    if (!f) return;
+    f.style.display = "block";
+    document.getElementById("agData").value = date;
+    document.getElementById("agHora").value = hour;
+    f.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
 function selectMonthDay(day) {
     selectedDay = day;
     renderAgenda();
-}
-
-function renderDayPanel(day) {
-    const events = activeAppointments().filter(a => a.data === day).sort((a, b) => a.hora.localeCompare(b.hora));
-
-    return `
-        <div class="card" style="margin-top:16px">
-            <div class="section-head">
-                <div><div class="section-title">Sessões de ${fmtDate(day)}</div><div class="section-sub">${events.length} atendimento(s)</div></div>
-                <button class="btn btn-primary btn-sm" onclick="quickSchedule('${day}','09:00')"><i data-lucide="plus"></i>Adicionar</button>
-            </div>
-            ${events.length ? events.map(a => {
-                const s = getStudent(a.alunoId);
-                if (!s) return `<div style="padding:10px 0;border-bottom:1px solid #f0f3f2;color:#999">Aluno removido - ${a.hora}</div>`;
-                const t = TYPES[a.tipo];
-                return `
-                    <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f0f3f2">
-                        <strong style="width:45px;font-size:12px">${a.hora}</strong>
-                        ${avatarHTML(s, "student-avatar")}
-                        <div style="flex:1"><div style="font-size:12px;font-weight:700;cursor:pointer" onclick="openStudent('${s.id}')">${esc(s.nome)}</div><div style="font-size:10px;color:#8a9892">${t?.label || a.tipo}</div></div>
-                        <button class="btn btn-sm ${a.presente ? "btn-soft" : "btn-outline"}" onclick="togglePresence('${a.id}')">${a.presente ? "Presente" : "Presença"}</button>
-                        <button class="btn btn-sm ${a.pago ? "btn-soft" : "btn-outline"}" onclick="togglePayment('${a.id}')">${a.pago ? "Pago" : "Pagamento"}</button>
-                        <button class="btn btn-danger btn-sm" onclick="cancelAppointment('${a.id}')">Cancelar</button>
-                    </div>`;
-            }).join("") : `<div class="empty">Nenhuma sessão neste dia.</div>`}
-        </div>`;
 }
 
 async function saveAppointment() {
@@ -2665,7 +2563,7 @@ function setCalendarMode(mode) {
 }
 
 // ============================================================
-// AVALIAÇÕES PSICOPEDAGÓGICAS (página dedicada)
+// AVALIAÇÕES - INTERFACE PASSO A PASSO
 // ============================================================
 
 const ASSESSMENT_TEMPLATES = [
@@ -2776,26 +2674,26 @@ const ASSESSMENT_TEMPLATES = [
     id: "tpl_snap",
     nome: "SNAP-IV (Rastreio TDAH)",
     tipo: "screening",
-    descricao: "Swanson, Nolan e Pelham — escala de rastreio para TDAH (versão simplificada, 18 itens).",
+    descricao: "Swanson, Nolan e Pelham — escala de rastreio para TDAH (18 itens).",
     questoes: [
-      "Não presta atenção suficiente a detalhes ou comete erros por descuido nos trabalhos escolares.",
+      "Não presta atenção suficiente a detalhes ou comete erros por descuido.",
       "Tem dificuldade em manter a atenção em tarefas ou atividades lúdicas.",
       "Parece não escutar quando lhe falam diretamente.",
-      "Não segue instruções até o fim e não termina trabalhos escolares.",
+      "Não segue instruções até o fim e não termina trabalhos.",
       "Tem dificuldade em organizar tarefas e atividades.",
-      "Evita, não gosta ou se envolve contra a vontade em tarefas que exigem esforço mental prolongado.",
-      "Perde coisas necessárias para tarefas ou atividades (brinquedos, tarefas, lápis, livros).",
+      "Evita tarefas que exigem esforço mental prolongado.",
+      "Perde coisas necessárias para tarefas ou atividades.",
       "Distrai-se facilmente com estímulos externos.",
       "Esquece-se de atividades diárias.",
       "Move as mãos ou os pés ou se remexe na cadeira.",
-      "Sai do lugar na sala de aula ou em outras situações em que se espera que fique sentado.",
-      "Corre ou sobe em coisas excessivamente em situações inadequadas.",
-      "Tem dificuldade em brincar ou envolver-se silenciosamente em atividades de lazer.",
+      "Sai do lugar na sala de aula ou em outras situações.",
+      "Corre ou sobe em coisas excessivamente.",
+      "Tem dificuldade em brincar silenciosamente.",
       "Está a mil por hora ou age como se fosse movido por um motor.",
       "Fala em excesso.",
-      "Responde precipitadamente antes de as perguntas terem sido concluídas.",
+      "Responde precipitadamente antes das perguntas serem concluídas.",
       "Tem dificuldade em aguardar sua vez.",
-      "Interrompe os outros ou se intromete em conversas ou jogos."
+      "Interrompe os outros ou se intromete."
     ],
     escala: [
       { valor: 0, rotulo: "Nenhuma" },
@@ -2808,27 +2706,27 @@ const ASSESSMENT_TEMPLATES = [
     id: "tpl_mchat",
     nome: "M-CHAT-R (Rastreio Autismo)",
     tipo: "screening",
-    descricao: "Modified Checklist for Autism in Toddlers — rastreio para sinais do espectro autista (20 itens Sim/Não).",
+    descricao: "Modified Checklist for Autism in Toddlers — 20 itens Sim/Não.",
     questoes: [
-      "A criança gosta de ser balançada, pular no seu colo ou nos seus joelhos?",
+      "A criança gosta de ser balançada?",
       "A criança tem interesse em outras crianças?",
-      "A criança gosta de usar objetos como ponto de apoio (andar pelos móveis) ou para alcançar algo?",
-      "A criança tem prazer em brincar de esconde-esconde ou de cabra-cega?",
-      "A criança faz de conta (por exemplo, falar ao telefone, cuidar de bonecas ou outras brincadeiras de faz de conta)?",
-      "A criança aponta com o dedo para pedir algo (apontar para um lanche distante)?",
-      "A criança aponta com o dedo para compartilhar interesse em algo (apontar para um avião no céu)?",
-      "A criança é capaz de brincar apropriadamente com pequenos brinquedos (carros, blocos) sem apenas colocar na boca, bater ou jogá-los?",
+      "A criança gosta de usar objetos como ponto de apoio?",
+      "A criança tem prazer em brincar de esconde-esconde?",
+      "A criança faz de conta?",
+      "A criança aponta com o dedo para pedir algo?",
+      "A criança aponta para compartilhar interesse?",
+      "A criança brinca apropriadamente com pequenos brinquedos?",
       "A criança já trouxe algum objeto para lhe mostrar?",
-      "A criança olha para você por 2-3 segundos, estabelecendo contato visual?",
+      "A criança olha para você por 2-3 segundos?",
       "A criança parece ser muito sensível ao barulho?",
-      "A criança sorri em resposta ao seu rosto ou ao seu sorriso?",
-      "A criança imita você (por exemplo, se você fizer uma careta, ela copia)?",
-      "A criança responde ao nome quando é chamada?",
-      "Se você aponta para um brinquedo distante, a criança olha para ele?",
+      "A criança sorri em resposta ao seu sorriso?",
+      "A criança imita você?",
+      "A criança responde ao nome?",
+      "Se você aponta para um brinquedo, a criança olha?",
       "A criança consegue andar?",
       "A criança olha para as coisas que você está olhando?",
-      "A criança faz movimentos incomuns com os dedos perto do rosto?",
-      "A criança tenta atrair sua atenção para sua própria atividade?",
+      "A criança faz movimentos incomuns com os dedos?",
+      "A criança tenta atrair sua atenção?",
       "Você já questionou se a criança é surda?"
     ],
     escala: [
@@ -2840,26 +2738,26 @@ const ASSESSMENT_TEMPLATES = [
     id: "tpl_asrs",
     nome: "ASRS (Rastreio TDAH Adulto)",
     tipo: "screening",
-    descricao: "Adult ADHD Self-Report Scale — rastreio de TDAH em adultos (18 itens).",
+    descricao: "Adult ADHD Self-Report Scale — 18 itens.",
     questoes: [
-      "Com que frequência você comete erros por descuido quando trabalha em algo chato ou difícil?",
-      "Com que frequência você tem dificuldade de concentração no que faz?",
-      "Com que frequência você tem dificuldade em lembrar de compromissos ou obrigações?",
-      "Com que frequência você pula de uma tarefa para outra ou tem dificuldade em fazer uma coisa de cada vez?",
-      "Com que frequência você procrastina ou adia o que precisa ser feito?",
-      "Com que frequência você se impacienta com pessoas que demoram a concluir o que têm a dizer?",
-      "Com que frequência você perde a paciência quando está em uma fila ou no trânsito?",
-      "Com que frequência você tem dificuldade de relaxar em momentos de lazer?",
-      "Com que frequência você sente inquietação ou agitação, mesmo em situações tranquilas?",
-      "Com que frequência você se sente com muita energia como se fosse movido por um motor?",
-      "Com que frequência você fala em excesso em situações sociais?",
-      "Com que frequência você termina as frases dos outros antes que eles terminem?",
-      "Com que frequência você se sente sobrecarregado pelas coisas que tem que fazer?",
-      "Com que frequência você tem dificuldade em manter a atenção em conversas ou leituras?",
+      "Com que frequência você comete erros por descuido?",
+      "Com que frequência você tem dificuldade de concentração?",
+      "Com que frequência você tem dificuldade em lembrar compromissos?",
+      "Com que frequência você pula de uma tarefa para outra?",
+      "Com que frequência você procrastina?",
+      "Com que frequência você se impacienta com pessoas?",
+      "Com que frequência você perde a paciência em filas?",
+      "Com que frequência você tem dificuldade de relaxar?",
+      "Com que frequência você sente inquietação?",
+      "Com que frequência você se sente com muita energia?",
+      "Com que frequência você fala em excesso?",
+      "Com que frequência você termina as frases dos outros?",
+      "Com que frequência você se sente sobrecarregado?",
+      "Com que frequência você tem dificuldade em manter atenção?",
       "Com que frequência você perde ou esquece coisas importantes?",
-      "Com que frequência você se distrai com atividades ou ruídos ao seu redor?",
-      "Com que frequência você inicia vários projetos ao mesmo tempo e tem dificuldade em concluí-los?",
-      "Com que frequência você age impulsivamente antes de pensar nas consequências?"
+      "Com que frequência você se distrai?",
+      "Com que frequência você inicia vários projetos?",
+      "Com que frequência você age impulsivamente?"
     ],
     escala: [
       { valor: 0, rotulo: "Nunca" },
@@ -2873,7 +2771,7 @@ const ASSESSMENT_TEMPLATES = [
     id: "tpl_custom",
     nome: "Avaliação Personalizada",
     tipo: "custom",
-    descricao: "Crie sua própria avaliação com questões personalizadas (uma por linha).",
+    descricao: "Crie sua própria avaliação com questões personalizadas.",
     campos: null,
     questoes: []
   }
@@ -2884,6 +2782,15 @@ let currentAvalMode = "list";
 let currentAvalTemplate = null;
 let currentAvalId = null;
 let window_avalHistTitulo = null;
+
+// Estado da avaliação passo a passo
+let avalStepMode = null; // 'select', 'answering', 'done'
+let avalStepQuestions = [];
+let avalStepCurrentIndex = 0;
+let avalStepResponses = [];
+let avalStepTemplateId = null;
+let avalStepAlunoId = null;
+let avalStepResumo = '';
 
 function getAvaliacoesGlobais() {
     const todas = [];
@@ -2910,6 +2817,10 @@ function renderAvaliacoes() {
         return;
     }
 
+    if (avalStepMode === 'select') return renderAvalStepSelect();
+    if (avalStepMode === 'answering') return renderAvalStepAnswer();
+    if (avalStepMode === 'done') return renderAvalStepDone();
+
     if (currentAvalMode === "new") return renderAvaliacoesNew();
     if (currentAvalMode === "apply") return renderAvaliacoesApply();
     if (currentAvalMode === "history") return renderAvaliacoesHistory();
@@ -2932,15 +2843,15 @@ function renderAvaliacoesList() {
         ${renderHelpBox("avaliacoes")}
 
         <div class="section-head">
-            <div><div class="section-title">Avaliações Psicopedagógicas</div><div class="section-sub">Crie e aplique instrumentos de avaliação. Veja o histórico de aplicações por aluno.</div></div>
-            <button class="btn btn-primary" onclick="startNewAvaliacao()"><i data-lucide="plus"></i>Nova avaliação</button>
+            <div><div class="section-title">Avaliações Psicopedagógicas</div><div class="section-sub">Responda questão por questão de forma organizada.</div></div>
+            <button class="btn btn-primary" onclick="startAvalStep()"><i data-lucide="play"></i>Aplicar avaliação</button>
         </div>
 
         <div class="grid stats" style="grid-template-columns:repeat(4,minmax(0,1fr))">
-            <div class="card"><div class="stat-label">Modelos disponíveis</div><div class="stat-value">${ASSESSMENT_TEMPLATES.length}</div><div class="stat-sub">Instrumentos prontos</div></div>
-            <div class="card"><div class="stat-label">Avaliações criadas</div><div class="stat-value">${grupos.length}</div><div class="stat-sub">Tipos distintos</div></div>
-            <div class="card"><div class="stat-label">Total de aplicações</div><div class="stat-value">${grupos.reduce((s, g) => s + g.aplicacoes, 0)}</div><div class="stat-sub">Respostas registradas</div></div>
-            <div class="card"><div class="stat-label">Alunos avaliados</div><div class="stat-value">${[...new Set(todas.map(a => a.alunoId))].length}</div><div class="stat-sub">Com pelo menos 1 avaliação</div></div>
+            <div class="card"><div class="stat-label">Modelos</div><div class="stat-value">${ASSESSMENT_TEMPLATES.length}</div></div>
+            <div class="card"><div class="stat-label">Avaliações criadas</div><div class="stat-value">${grupos.length}</div></div>
+            <div class="card"><div class="stat-label">Total de aplicações</div><div class="stat-value">${grupos.reduce((s, g) => s + g.aplicacoes, 0)}</div></div>
+            <div class="card"><div class="stat-label">Alunos avaliados</div><div class="stat-value">${[...new Set(todas.map(a => a.alunoId))].length}</div></div>
         </div>
 
         <div class="card" style="margin-top:18px">
@@ -2955,14 +2866,14 @@ function renderAvaliacoesList() {
                         <div class="section-sub">${esc(t.descricao)}</div>
                         <div class="section-sub" style="margin-top:3px">${t.campos ? t.campos.reduce((s, c) => s + c.itens.length, 0) + " campos em " + t.campos.length + " seções" : (t.questoes || []).length + " questões"}</div>
                     </div>
-                    <button class="btn btn-primary btn-sm" onclick="startApplyTemplate('${t.id}')"><i data-lucide="play"></i>Aplicar</button>
+                    <button class="btn btn-primary btn-sm" onclick="startAvalStepWithTemplate('${t.id}')"><i data-lucide="play"></i>Aplicar</button>
                 </div>
             `).join("")}
         </div>
 
         <div class="card" style="margin-top:16px">
-            <div class="section-head"><div><div class="section-title">Avaliações já aplicadas</div><div class="section-sub">Clique para ver o histórico de alunos que receberam cada avaliação.</div></div></div>
-            ${grupos.length === 0 ? `<div class="empty">Nenhuma avaliação aplicada ainda. Use um modelo acima para começar.</div>` :
+            <div class="section-head"><div><div class="section-title">Avaliações já aplicadas</div><div class="section-sub">Clique para ver o histórico de alunos.</div></div></div>
+            ${grupos.length === 0 ? `<div class="empty">Nenhuma avaliação aplicada ainda.</div>` :
                 grupos.map(g => `
                     <div class="aval-list-item" style="display:flex;justify-content:space-between;align-items:center;gap:14px;cursor:pointer" onclick="viewAvaliacaoHistory('${esc(g.titulo).replace(/'/g, "\\'")}')">
                         <div style="flex:1">
@@ -2970,7 +2881,7 @@ function renderAvaliacoesList() {
                                 <strong style="font-size:13px">${esc(g.titulo)}</strong>
                                 <span class="aval-type-badge ${getAvalTypeBadge(g.tipo)}">${g.tipo}</span>
                             </div>
-                            <div class="section-sub">${g.count} instância(s) · ${g.aplicacoes} aplicação(ões) registrada(s)</div>
+                            <div class="section-sub">${g.count} instância(s) · ${g.aplicacoes} aplicação(ões)</div>
                         </div>
                         <button class="btn btn-outline btn-sm"><i data-lucide="history"></i>Histórico</button>
                     </div>
@@ -2979,6 +2890,295 @@ function renderAvaliacoesList() {
         </div>
     `;
     lucide.createIcons();
+}
+
+function startAvalStep() {
+    avalStepMode = 'select';
+    avalStepTemplateId = null;
+    avalStepAlunoId = null;
+    avalStepCurrentIndex = 0;
+    avalStepResponses = [];
+    avalStepResumo = '';
+    renderAvaliacoes();
+}
+
+function startAvalStepWithTemplate(tplId) {
+    avalStepMode = 'select';
+    avalStepTemplateId = tplId;
+    avalStepAlunoId = null;
+    avalStepCurrentIndex = 0;
+    avalStepResponses = [];
+    avalStepResumo = '';
+    renderAvaliacoes();
+}
+
+function renderAvalStepSelect() {
+    const tplId = avalStepTemplateId;
+    const tpl = tplId ? getTemplateById(tplId) : null;
+
+    document.getElementById("page-avaliacoes").innerHTML = `
+        <button class="btn btn-outline btn-sm" onclick="cancelAvalStep()" style="margin-bottom:14px"><i data-lucide="arrow-left"></i>Voltar</button>
+        <div class="section-head"><div><div class="section-title">Aplicar avaliação</div><div class="section-sub">Selecione o aluno e o instrumento.</div></div></div>
+
+        <div class="card" style="max-width:600px;margin:0 auto">
+            <div class="field"><label class="label">Aluno</label>
+                <select id="stepAluno" class="select"><option value="">— Selecionar aluno —</option>${(data.alunos || []).map(a => `<option value="${a.id}">${esc(a.nome)}</option>`).join("")}</select>
+            </div>
+            <div class="field"><label class="label">Instrumento</label>
+                <select id="stepTemplate" class="select">
+                    ${ASSESSMENT_TEMPLATES.map(t => `<option value="${t.id}" ${t.id === tplId ? 'selected' : ''}>${esc(t.nome)}</option>`).join("")}
+                </select>
+            </div>
+            <button class="btn btn-primary" onclick="startAvalStepAnswer()"><i data-lucide="play"></i>Iniciar avaliação</button>
+        </div>
+    `;
+    lucide.createIcons();
+}
+
+function startAvalStepAnswer() {
+    const alunoId = document.getElementById("stepAluno")?.value;
+    const tplId = document.getElementById("stepTemplate")?.value;
+
+    if (!alunoId) { notify("Selecione um aluno."); return; }
+    if (!tplId) { notify("Selecione um instrumento."); return; }
+
+    const aluno = getStudent(alunoId);
+    if (!aluno) { notify("Aluno não encontrado."); return; }
+
+    const tpl = getTemplateById(tplId);
+    if (!tpl) { notify("Modelo não encontrado."); return; }
+
+    avalStepAlunoId = alunoId;
+    avalStepTemplateId = tplId;
+    avalStepCurrentIndex = 0;
+    avalStepResponses = [];
+
+    // Preparar questões
+    if (tpl.tipo === "anamnese" && tpl.campos) {
+        const allItems = [];
+        tpl.campos.forEach(secao => {
+            secao.itens.forEach(item => {
+                allItems.push({
+                    secao: secao.secao,
+                    rotulo: item.rotulo,
+                    chave: item.chave,
+                    tipo: item.tipo,
+                    valor: ''
+                });
+            });
+        });
+        avalStepQuestions = allItems;
+    } else if (tpl.questoes) {
+        avalStepQuestions = tpl.questoes.map((q, i) => ({
+            index: i,
+            texto: q,
+            escala: tpl.escala || [{ valor: 0, rotulo: "Resposta" }]
+        }));
+    } else {
+        avalStepQuestions = [];
+    }
+
+    avalStepMode = 'answering';
+    avalStepResumo = '';
+    renderAvaliacoes();
+}
+
+function renderAvalStepAnswer() {
+    const total = avalStepQuestions.length;
+    const idx = avalStepCurrentIndex;
+    const q = avalStepQuestions[idx];
+
+    if (!q || total === 0) {
+        avalStepMode = 'done';
+        renderAvaliacoes();
+        return;
+    }
+
+    const progress = Math.round(((idx) / total) * 100);
+    const isAnamnese = q.secao !== undefined;
+
+    let content = '';
+
+    if (isAnamnese) {
+        content = `
+            <div style="font-size:11px;color:#8a9892;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">${esc(q.secao)}</div>
+            <div class="step-question">${esc(q.rotulo)}</div>
+            ${q.tipo === 'textarea' ? `
+                <textarea id="stepAnswer" class="textarea" style="min-height:100px;font-size:13px" placeholder="Digite a resposta..."></textarea>
+            ` : `
+                <input id="stepAnswer" class="input" type="${q.tipo === 'date' ? 'date' : 'text'}" placeholder="Digite a resposta...">
+            `}
+        `;
+    } else {
+        const escala = q.escala || [{ valor: 0, rotulo: "Resposta" }];
+        content = `
+            <div style="font-size:11px;color:#8a9892;font-weight:600;text-transform:uppercase;letter-spacing:.05em">Questão ${idx + 1} de ${total}</div>
+            <div class="step-question">${esc(q.texto)}</div>
+            <div class="step-options">
+                ${escala.map(op => `
+                    <label class="${avalStepResponses[idx] === op.valor ? 'selected' : ''}" onclick="selectAvalStepOption(${idx}, ${op.valor})">
+                        <input type="radio" name="avalStepOpt" value="${op.valor}" ${avalStepResponses[idx] === op.valor ? 'checked' : ''}>
+                        ${esc(op.rotulo)}
+                    </label>
+                `).join("")}
+            </div>
+        `;
+    }
+
+    document.getElementById("page-avaliacoes").innerHTML = `
+        <button class="btn btn-outline btn-sm" onclick="cancelAvalStep()" style="margin-bottom:14px"><i data-lucide="arrow-left"></i>Cancelar</button>
+        <div class="aval-step">
+            <div class="step-progress">
+                ${Array.from({ length: Math.min(total, 10) }, (_, i) => `
+                    <div class="dot ${i < idx ? 'done' : i === idx ? 'active' : ''}"></div>
+                `).join("")}
+                ${total > 10 ? `<span style="font-size:10px;color:#8a9892">+${total - 10}</span>` : ""}
+            </div>
+            <div class="step-card">
+                <div style="font-size:10px;color:#8a9892;margin-bottom:8px">${Math.round((idx / total) * 100)}% concluído</div>
+                ${content}
+                <div class="step-nav">
+                    <button class="btn-prev" onclick="avalStepPrev()" ${idx === 0 ? 'disabled style="opacity:0.4;cursor:not-allowed"' : ''}><i data-lucide="chevron-left"></i> Anterior</button>
+                    <button class="btn-next" onclick="avalStepNext()">${idx === total - 1 ? 'Finalizar' : 'Próxima'} <i data-lucide="chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+    `;
+    lucide.createIcons();
+
+    // Preencher resposta anterior se existir
+    if (isAnamnese && avalStepResponses[idx] !== undefined) {
+        const el = document.getElementById("stepAnswer");
+        if (el) el.value = avalStepResponses[idx] || '';
+    }
+}
+
+function selectAvalStepOption(idx, value) {
+    avalStepResponses[idx] = value;
+    renderAvalStepAnswer();
+}
+
+function avalStepPrev() {
+    if (avalStepCurrentIndex > 0) {
+        avalStepCurrentIndex--;
+        renderAvalStepAnswer();
+    }
+}
+
+function avalStepNext() {
+    const idx = avalStepCurrentIndex;
+    const q = avalStepQuestions[idx];
+    const isAnamnese = q.secao !== undefined;
+
+    if (isAnamnese) {
+        const el = document.getElementById("stepAnswer");
+        if (el) {
+            avalStepResponses[idx] = el.value || '';
+        }
+    } else {
+        if (avalStepResponses[idx] === undefined || avalStepResponses[idx] === null) {
+            notify("Selecione uma opção antes de continuar.");
+            return;
+        }
+    }
+
+    if (idx === avalStepQuestions.length - 1) {
+        // Finalizar
+        avalStepMode = 'done';
+        renderAvaliacoes();
+    } else {
+        avalStepCurrentIndex++;
+        renderAvalStepAnswer();
+    }
+}
+
+function renderAvalStepDone() {
+    const tpl = getTemplateById(avalStepTemplateId);
+    const aluno = getStudent(avalStepAlunoId);
+
+    if (!tpl || !aluno) {
+        cancelAvalStep();
+        return;
+    }
+
+    // Salvar respostas
+    let respostas = [];
+    let questoes = [];
+
+    if (tpl.tipo === "anamnese" && tpl.campos) {
+        avalStepQuestions.forEach(q => {
+            respostas.push({
+                secao: q.secao,
+                rotulo: q.rotulo,
+                chave: q.chave,
+                valor: avalStepResponses[q.chave] || ''
+            });
+        });
+        questoes = tpl.campos.flatMap(sec => sec.itens.map(it => it.rotulo));
+    } else if (tpl.questoes) {
+        avalStepQuestions.forEach((q, i) => {
+            const val = avalStepResponses[i];
+            const escala = q.escala || [];
+            const op = escala.find(e => e.valor === val);
+            respostas.push({
+                questao: q.texto,
+                valor: val !== undefined ? val : null,
+                rotulo: op ? op.rotulo : "Sem resposta"
+            });
+        });
+        questoes = tpl.questoes.map((q, i) => ({ id: uid(), numero: i + 1, texto: q }));
+    }
+
+    const avId = uid();
+    const novaAval = {
+        id: avId,
+        data: today(),
+        titulo: tpl.nome,
+        tipo: tpl.tipo,
+        objetivo: tpl.descricao,
+        questoes: questoes,
+        resultados: [{
+            id: uid(),
+            data: today(),
+            respostas: respostas,
+            resumo: avalStepResumo || "Avaliação concluída."
+        }],
+        finalizada: true
+    };
+
+    if (aluno) {
+        ensureStudentModules(aluno);
+        aluno.avaliacoes.push(novaAval);
+        saveData().then(() => {
+            notify(`Avaliação "${tpl.nome}" aplicada a ${aluno.nome} com sucesso!`);
+        });
+    }
+
+    document.getElementById("page-avaliacoes").innerHTML = `
+        <div class="card" style="max-width:600px;margin:40px auto;text-align:center;padding:40px">
+            <div style="font-size:48px;margin-bottom:16px">✅</div>
+            <div class="section-title" style="font-size:20px">Avaliação concluída!</div>
+            <div class="section-sub" style="font-size:14px;margin-top:8px">${esc(tpl.nome)} aplicada a ${esc(aluno.nome)}</div>
+            <div style="margin-top:20px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+                <button class="btn btn-primary" onclick="cancelAvalStep()"><i data-lucide="check"></i>Ver avaliações</button>
+                <button class="btn btn-outline" onclick="gerarPDFAvaliacao('${aluno.id}','${avId}')"><i data-lucide="file-text"></i>PDF</button>
+                <button class="btn btn-soft" onclick="openStudent('${aluno.id}')">Ver prontuário</button>
+            </div>
+        </div>
+    `;
+    lucide.createIcons();
+}
+
+function cancelAvalStep() {
+    avalStepMode = null;
+    avalStepQuestions = [];
+    avalStepCurrentIndex = 0;
+    avalStepResponses = [];
+    avalStepTemplateId = null;
+    avalStepAlunoId = null;
+    avalStepResumo = '';
+    currentAvalMode = "list";
+    renderAvaliacoes();
 }
 
 function startNewAvaliacao() {
@@ -2991,15 +3191,15 @@ function renderAvaliacoesNew() {
     document.getElementById("page-avaliacoes").innerHTML = `
         <button class="btn btn-outline btn-sm" onclick="cancelAvaliacao()" style="margin-bottom:14px"><i data-lucide="arrow-left"></i>Voltar</button>
         <div class="section-head"><div><div class="section-title">Nova Avaliação Personalizada</div><div class="section-sub">Crie um instrumento com suas próprias questões.</div></div></div>
-        <div class="card">
+        <div class="card" style="max-width:700px;margin:0 auto">
             <div class="form-grid two">
-                <div class="field"><label class="label">Título da avaliação</label><input id="newAvalTitulo" class="input" placeholder="Ex.: Avaliação de leitura e escrita"></div>
-                <div class="field"><label class="label">Aluno (opcional — deixe vazio para aplicar depois)</label>
+                <div class="field"><label class="label">Título da avaliação</label><input id="newAvalTitulo" class="input" placeholder="Ex.: Avaliação de leitura"></div>
+                <div class="field"><label class="label">Aluno</label>
                     <select id="newAvalAluno" class="select"><option value="">— Selecionar aluno —</option>${(data.alunos || []).map(a => `<option value="${a.id}">${esc(a.nome)}</option>`).join("")}</select>
                 </div>
             </div>
-            <div class="field" style="margin-top:10px"><label class="label">Objetivo</label><input id="newAvalObjetivo" class="input" placeholder="Descreva o objetivo da avaliação"></div>
-            <div class="field" style="margin-top:10px"><label class="label">Questões (uma por linha)</label><textarea id="newAvalQuestoes" class="textarea" style="min-height:200px" placeholder="Escreva uma questão por linha.&#10;Ex.: A criança reconhece as letras do próprio nome?&#10;Ex.: Consegue associar letra e som?"></textarea></div>
+            <div class="field"><label class="label">Objetivo</label><input id="newAvalObjetivo" class="input" placeholder="Descreva o objetivo da avaliação"></div>
+            <div class="field"><label class="label">Questões (uma por linha)</label><textarea id="newAvalQuestoes" class="textarea" style="min-height:200px" placeholder="Escreva uma questão por linha."></textarea></div>
             <button class="btn btn-primary" onclick="saveNewAvaliacao()"><i data-lucide="check"></i>Criar avaliação</button>
         </div>
         ${renderHelpBox("avaliacoes")}
@@ -3032,6 +3232,14 @@ async function saveNewAvaliacao() {
     cancelAvaliacao();
 }
 
+function cancelAvaliacao() {
+    currentAvalMode = "list";
+    currentAvalTemplate = null;
+    currentAvalId = null;
+    window_avalHistTitulo = null;
+    renderAvaliacoes();
+}
+
 function startApplyTemplate(tplId) {
     currentAvalTemplate = getTemplateById(tplId);
     currentAvalMode = "apply";
@@ -3045,7 +3253,7 @@ function renderAvaliacoesApply() {
     let formHtml = "";
 
     formHtml += `
-        <div class="card" style="margin-bottom:16px">
+        <div class="card" style="margin-bottom:16px;max-width:700px;margin-left:auto;margin-right:auto">
             <div class="section-head"><div><div class="section-title">Aplicar: ${esc(tpl.nome)}</div><div class="section-sub">${esc(tpl.descricao)}</div></div>
                 <span class="aval-type-badge ${getAvalTypeBadge(tpl.tipo)}">${tpl.tipo}</span>
             </div>
@@ -3057,7 +3265,7 @@ function renderAvaliacoesApply() {
 
     if (tpl.tipo === "anamnese" && tpl.campos) {
         tpl.campos.forEach(secao => {
-            formHtml += `<div class="card" style="margin-bottom:14px"><div class="section-title" style="margin-bottom:12px">${esc(secao.secao)}</div><div class="form-grid two">`;
+            formHtml += `<div class="card" style="margin-bottom:14px;max-width:700px;margin-left:auto;margin-right:auto"><div class="section-title" style="margin-bottom:12px">${esc(secao.secao)}</div><div class="form-grid two">`;
             secao.itens.forEach(item => {
                 const fieldId = "anam_" + item.chave;
                 if (item.tipo === "textarea") {
@@ -3068,10 +3276,10 @@ function renderAvaliacoesApply() {
             });
             formHtml += `</div></div>`;
         });
-        formHtml += `<div class="card" style="margin-bottom:14px"><div class="field"><label class="label">Resumo / Observações da anamnese</label><textarea id="applyAvalResumo" class="textarea" placeholder="Síntese dos dados colhidos, impressões e próximos passos..."></textarea></div></div>`;
+        formHtml += `<div class="card" style="margin-bottom:14px;max-width:700px;margin-left:auto;margin-right:auto"><div class="field"><label class="label">Resumo / Observações</label><textarea id="applyAvalResumo" class="textarea" placeholder="Síntese dos dados colhidos..."></textarea></div></div>`;
     } else if (tpl.questoes && tpl.questoes.length) {
         const escala = tpl.escala || [{ valor: 0, rotulo: "Resposta" }];
-        formHtml += `<div class="card" style="margin-bottom:14px"><div class="section-title" style="margin-bottom:10px">Questões</div>`;
+        formHtml += `<div class="card" style="margin-bottom:14px;max-width:700px;margin-left:auto;margin-right:auto"><div class="section-title" style="margin-bottom:10px">Questões</div>`;
         tpl.questoes.forEach((q, i) => {
             formHtml += `
                 <div style="padding:10px 0;border-top:${i > 0 ? '1px solid var(--line)' : '0'}">
@@ -3082,13 +3290,15 @@ function renderAvaliacoesApply() {
                 </div>`;
         });
         formHtml += `</div>`;
-        formHtml += `<div class="card" style="margin-bottom:14px"><div class="field"><label class="label">Resumo / Observações</label><textarea id="applyAvalResumo" class="textarea" placeholder="Análise dos resultados, pontuação e impressões..."></textarea></div></div>`;
+        formHtml += `<div class="card" style="margin-bottom:14px;max-width:700px;margin-left:auto;margin-right:auto"><div class="field"><label class="label">Resumo / Observações</label><textarea id="applyAvalResumo" class="textarea" placeholder="Análise dos resultados..."></textarea></div></div>`;
     }
 
     document.getElementById("page-avaliacoes").innerHTML = `
         <button class="btn btn-outline btn-sm" onclick="cancelAvaliacao()" style="margin-bottom:14px"><i data-lucide="arrow-left"></i>Voltar</button>
         ${formHtml}
-        <button class="btn btn-primary" onclick="saveAvaliacaoAplicacao('${tpl.id}')"><i data-lucide="check"></i>Registrar aplicação</button>
+        <div style="max-width:700px;margin:0 auto">
+            <button class="btn btn-primary" onclick="saveAvaliacaoAplicacao('${tpl.id}')"><i data-lucide="check"></i>Registrar aplicação</button>
+        </div>
         ${renderHelpBox("avaliacoes")}
     `;
     lucide.createIcons();
@@ -3180,9 +3390,9 @@ function renderAvaliacoesHistory() {
     }).sort((a, b) => (b.ultimaAplicacao || '').localeCompare(a.ultimaAplicacao || ''));
 
     document.getElementById("page-avaliacoes").innerHTML = `
-        <button class="btn btn-outline btn-sm" onclick="cancelAvaliacao()" style="margin-bottom:14px"><i data-lucide="arrow-left"></i>Voltar para avaliações</button>
+        <button class="btn btn-outline btn-sm" onclick="cancelAvaliacao()" style="margin-bottom:14px"><i data-lucide="arrow-left"></i>Voltar</button>
         <div class="section-head">
-            <div><div class="section-title">Histórico: ${esc(titulo)}</div><div class="section-sub">Alunos que receberam esta avaliação e suas aplicações.</div></div>
+            <div><div class="section-title">Histórico: ${esc(titulo)}</div><div class="section-sub">Alunos que receberam esta avaliação.</div></div>
         </div>
         <div class="grid stats" style="grid-template-columns:repeat(3,minmax(0,1fr))">
             <div class="card"><div class="stat-label">Alunos avaliados</div><div class="stat-value">${alunosAvaliados.length}</div></div>
@@ -3197,10 +3407,10 @@ function renderAvaliacoesHistory() {
                         ${avatarHTML(a.alunoObj || { nome: a.alunoNome, foto: "" }, "student-avatar")}
                         <div style="flex:1;cursor:pointer" onclick="openStudent('${a.alunoId}')">
                             <strong style="font-size:13px">${esc(a.alunoNome)}</strong>
-                            <div class="section-sub">Criada em ${fmtDate(a.data)} · ${a.aplicacoes} aplicação(ões) · Última: ${fmtDate(a.ultimaAplicacao)}</div>
+                            <div class="section-sub">Criada em ${fmtDate(a.data)} · ${a.aplicacoes} aplicação(ões)</div>
                         </div>
                         <span class="aval-type-badge ${getAvalTypeBadge(a.tipo)}">${a.tipo || "custom"}</span>
-                        <button class="btn btn-outline btn-sm" onclick="viewAvaliacaoResultado('${a.alunoId}','${a.avalId}')"><i data-lucide="eye"></i>Ver resultado</button>
+                        <button class="btn btn-outline btn-sm" onclick="viewAvaliacaoResultado('${a.alunoId}','${a.avalId}')"><i data-lucide="eye"></i>Ver</button>
                     </div>
                 `).join("")
             }
@@ -3219,14 +3429,6 @@ function viewAvaliacaoResultado(alunoId, avalId) {
         currentAssessment = avalId;
         renderStudentProfile("aplicar");
     }, 100);
-}
-
-function cancelAvaliacao() {
-    currentAvalMode = "list";
-    currentAvalTemplate = null;
-    currentAvalId = null;
-    window_avalHistTitulo = null;
-    renderAvaliacoes();
 }
 
 // ============================================================
@@ -3315,7 +3517,7 @@ function gerarPDFAvaliacao(alunoId, avalId) {
 }
 
 // ============================================================
-// FINANCEIRO
+// FINANCEIRO - SEM DECLARAÇÃO
 // ============================================================
 
 function renderFinanceiro() {
@@ -3396,7 +3598,7 @@ function renderFinanceiro() {
         ${renderHelpBox("financeiro")}
 
         <div class="section-head">
-            <div><div class="section-title">Financeiro</div><div class="section-sub">Controle completo de receitas e despesas. Navegue entre meses com as setas.</div></div>
+            <div><div class="section-title">Financeiro</div><div class="section-sub">Controle completo de receitas e despesas.</div></div>
             <div style="display:flex;gap:7px;flex-wrap:wrap">
                 <button class="btn btn-blue btn-sm" onclick="generateFinancePDF()"><i data-lucide="file-down"></i>PDF do período</button>
                 <button class="btn btn-soft btn-sm" onclick="navigate('perfil')">Meu Perfil</button>
@@ -3513,10 +3715,7 @@ function renderFinanceiro() {
                             `<option value="${a.id}">${esc(a.nome)}</option>`
                         ).join("")}
                     </select></div>
-                    <div style="display:flex;gap:5px;flex-wrap:wrap">
-                        <button class="btn btn-primary btn-sm" onclick="gerarReciboSide()"><i data-lucide="file-down"></i>Recibo</button>
-                        <button class="btn btn-blue btn-sm" onclick="gerarDeclaracaoSide()"><i data-lucide="file-text"></i>Declaração</button>
-                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="gerarReciboSide()"><i data-lucide="file-down"></i>Recibo</button>
                 </div>
 
                 ${Object.keys(despesasPorCategoria).length ? `
@@ -3648,7 +3847,7 @@ function numeroPorExtenso(valor) {
 }
 
 // ============================================================
-// RECIBOS E DECLARAÇÕES (via sidebar financeiro)
+// RECIBOS E DECLARAÇÕES
 // ============================================================
 
 function gerarReciboSide() {
@@ -3717,72 +3916,8 @@ function gerarReciboSide() {
     notify("Recibo gerado com sucesso!");
 }
 
-function gerarDeclaracaoSide() {
-    const alunoId = document.getElementById("reciboAlunoSide")?.value;
-    if (!alunoId) { notify("Selecione um aluno."); return; }
-    const aluno = getStudent(alunoId);
-    if (!aluno) { notify("Aluno não encontrado."); return; }
-
-    const mes = new Date().getMonth() + 1;
-    const ano = new Date().getFullYear();
-    const mesNome = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'][mes - 1];
-
-    const doc = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4' });
-    const pageW = doc.internal.pageSize.getWidth();
-    let y = 30;
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(22);
-    doc.text('DECLARAÇÃO DE ACOMPANHAMENTO', pageW / 2, y, { align: 'center' });
-    y += 15;
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(11);
-    doc.text(`Declaro para os devidos fins que o(a) aluno(a) ${esc(aluno.nome)}`, 20, y);
-    y += 8;
-    doc.text(`realizou acompanhamento psicopedagógico no período de ${mesNome}/${ano}.`, 20, y);
-    y += 10;
-
-    doc.setFont('helvetica', 'bold');
-    doc.text('Informações do Aluno:', 20, y);
-    y += 7;
-
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Nome: ${esc(aluno.nome)}`, 25, y);
-    y += 6;
-    doc.text(`Idade: ${aluno.idade || 'Não informada'} anos`, 25, y);
-    y += 6;
-    doc.text(`Série/Ano: ${esc(aluno.serie || 'Não informado')}`, 25, y);
-    y += 6;
-    doc.text(`Responsável: ${esc(aluno.responsavel || 'Não informado')}`, 25, y);
-    y += 10;
-
-    doc.setFont('helvetica', 'bold');
-    doc.text('Informações do Profissional:', 20, y);
-    y += 7;
-
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Nome: ${esc(data.professor?.nome || 'Professor')}`, 25, y);
-    y += 6;
-    doc.text(`Especialidade: ${esc(data.professor?.especialidade || 'Psicopedagogia')}`, 25, y);
-    y += 15;
-
-    doc.text('________________________________________', 40, y);
-    y += 5;
-    doc.text(esc(data.professor?.nome || 'Professor'), 40, y);
-    y += 5;
-    doc.text('Profissional Responsável', 40, y);
-    y += 15;
-
-    doc.setFontSize(8);
-    doc.text(`Documento emitido em ${fmtDate(today())} - ASAS Gestão Psicopedagógica`, 20, y);
-
-    doc.save(`declaracao-${aluno.nome}-${mesNome}-${ano}.pdf`);
-    notify("Declaração gerada com sucesso!");
-}
-
 // ============================================================
-// PERFIL
+// PERFIL - COM ELEMENTOS GRÁFICOS E TIMELINE
 // ============================================================
 
 function renderPerfil() {
@@ -3798,20 +3933,64 @@ function renderPerfil() {
     const totalAlunos = (data.alunos || []).length;
     const totalAtendimentos = activeAppointments().length;
     const totalAvaliacoesAplicadas = (data.alunos || []).reduce((acc, a) => acc + (a.avaliacoes || []).reduce((s2, av) => s2 + (av.resultados || []).length, 0), 0);
+    const totalConsultas = (data.alunos || []).reduce((acc, a) => acc + (a.consultas || []).length, 0);
+    const totalEvolucoes = (data.alunos || []).reduce((acc, a) => acc + (a.evolucoes || []).length, 0);
+
+    // Timeline do professor
+    const profTimeline = [];
+    if (p.observacoes) {
+        p.observacoes.forEach(o => profTimeline.push({ type: 'observacao', data: o.data, item: o, label: 'Observação' }));
+    }
+    if (p.evolucoesPessoais) {
+        p.evolucoesPessoais.forEach(e => profTimeline.push({ type: 'evolucao', data: e.data, item: e, label: 'Evolução pessoal' }));
+    }
+    profTimeline.sort((a, b) => (b.data || '').localeCompare(a.data || ''));
+
+    const timelineHTML = profTimeline.slice(0, 10).map(t => {
+        const dotColor = t.type === 'observacao' ? 'consulta' : 'evolucao';
+        const title = t.type === 'observacao' ? t.item.titulo || 'Observação' : t.item.titulo || 'Evolução';
+        const desc = t.item.texto || '';
+        return `
+            <div class="tl-item">
+                <div class="tl-dot ${dotColor}"></div>
+                <div class="tl-content">
+                    <div class="tl-title">${esc(title)}</div>
+                    <div class="tl-date">${fmtDate(t.data)}</div>
+                    <div class="tl-desc">${esc(desc.slice(0, 60))}${desc.length > 60 ? '…' : ''}</div>
+                </div>
+            </div>
+        `;
+    }).join("");
 
     document.getElementById("page-perfil").innerHTML = `
         ${renderHelpBox("perfil")}
 
-        <div class="section-head"><div><div class="section-title">Meu Perfil</div><div class="section-sub">Gerencie suas informações pessoais e acompanhe sua trajetória profissional.</div></div></div>
+        <div class="section-head"><div><div class="section-title">Meu Perfil</div><div class="section-sub">Acompanhe sua trajetória profissional.</div></div></div>
 
-        <div class="grid stats">
-            <div class="card"><div class="stat-label">Alunos</div><div class="stat-value">${totalAlunos}</div><div class="stat-sub">Ativos na base</div></div>
-            <div class="card"><div class="stat-label">Atendimentos</div><div class="stat-value">${totalAtendimentos}</div><div class="stat-sub">Agendamentos totais</div></div>
-            <div class="card"><div class="stat-label">Avaliações aplicadas</div><div class="stat-value">${totalAvaliacoesAplicadas}</div><div class="stat-sub">Aplicações registradas</div></div>
-            <div class="card"><div class="stat-label">Especialidade</div><div class="stat-value" style="font-size:14px">${esc(p.especialidade || "Psicopedagogia")}</div><div class="stat-sub">Área de atuação</div></div>
+        <div class="profile-stats-grid">
+            <div class="stat-card">
+                <div class="icon">👨‍🎓</div>
+                <div class="number">${totalAlunos}</div>
+                <div class="label">Alunos ativos</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon">📅</div>
+                <div class="number">${totalAtendimentos}</div>
+                <div class="label">Atendimentos</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon">📝</div>
+                <div class="number">${totalAvaliacoesAplicadas}</div>
+                <div class="label">Avaliações aplicadas</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon">📊</div>
+                <div class="number">${totalConsultas + totalEvolucoes}</div>
+                <div class="label">Registros totais</div>
+            </div>
         </div>
 
-        <div class="grid" style="grid-template-columns:1fr 1.6fr;margin-top:18px">
+        <div class="grid" style="grid-template-columns:1fr 1.6fr;gap:18px">
             <div class="card">
                 <div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding:15px">
                     ${avatarHTML(p, "profile-avatar")}
@@ -3821,29 +4000,102 @@ function renderPerfil() {
                     <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
                         <span class="tag">${totalAlunos} alunos</span>
                         <span class="tag">${totalAtendimentos} atendimentos</span>
+                        <span class="tag">${totalAvaliacoesAplicadas} avaliações</span>
                     </div>
                 </div>
             </div>
 
             <div class="card">
-                <div class="form-grid two">
-                    <div class="field"><label class="label">Nome profissional</label><input id="profNome" class="input" value="${esc(p.nome)}"></div>
-                    <div class="field"><label class="label">Especialidade</label><input id="profEspecialidade" class="input" value="${esc(p.especialidade)}"></div>
-                    <div class="field" style="grid-column:1/-1"><label class="label">URL da foto</label><input id="profFoto" class="input" value="${esc(p.foto || "")}" placeholder="https://..."></div>
-                    <div class="field" style="grid-column:1/-1"><label class="label">Bio profissional</label><textarea id="profBio" class="textarea">${esc(p.bio || "")}</textarea></div>
-                    <div class="field" style="grid-column:1/-1">
-                        <label class="label">Configurações</label>
-                        <div style="display:flex;gap:15px;flex-wrap:wrap;padding-top:5px">
-                            <label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer"><input type="checkbox" id="cfgNotif" ${p.configuracoes?.notificacoes !== false ? "checked" : ""}> Notificações</label>
-                            <label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer"><input type="checkbox" id="cfgLembretes" ${p.configuracoes?.lembretes !== false ? "checked" : ""}> Lembretes</label>
-                        </div>
+                <div class="section-title" style="margin-bottom:12px">Minha atividade recente</div>
+                ${timelineHTML ? `
+                    <div class="profile-timeline-compact">
+                        ${timelineHTML}
+                    </div>
+                ` : `<div class="empty" style="padding:15px">Nenhum registro recente.</div>`}
+                <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap">
+                    <button class="btn btn-soft btn-sm" onclick="document.getElementById('perfilObsForm').style.display='block'"><i data-lucide="plus"></i>Observação</button>
+                    <button class="btn btn-soft btn-sm" onclick="document.getElementById('perfilEvoForm').style.display='block'"><i data-lucide="trending-up"></i>Evolução</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid" style="grid-template-columns:1fr 1.6fr;gap:18px;margin-top:18px">
+            <div class="card" id="perfilObsForm" style="display:none">
+                <div class="section-title">Nova Observação</div>
+                <div class="field"><label class="label">Título</label><input id="profObsTitulo" class="input" placeholder="Título"></div>
+                <div class="field"><label class="label">Texto</label><textarea id="profObsTexto" class="textarea" placeholder="O que você observou..."></textarea></div>
+                <button class="btn btn-primary" onclick="saveProfObs()">Salvar</button>
+                <button class="btn btn-outline btn-sm" onclick="document.getElementById('perfilObsForm').style.display='none'">Cancelar</button>
+            </div>
+
+            <div class="card" id="perfilEvoForm" style="display:none">
+                <div class="section-title">Nova Evolução Pessoal</div>
+                <div class="field"><label class="label">Título</label><input id="profEvoTitulo" class="input" placeholder="Título"></div>
+                <div class="field"><label class="label">Texto</label><textarea id="profEvoTexto" class="textarea" placeholder="Sua evolução profissional..."></textarea></div>
+                <button class="btn btn-primary" onclick="saveProfEvo()">Salvar</button>
+                <button class="btn btn-outline btn-sm" onclick="document.getElementById('perfilEvoForm').style.display='none'">Cancelar</button>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top:18px">
+            <div class="section-title">Editar perfil</div>
+            <div class="form-grid two">
+                <div class="field"><label class="label">Nome profissional</label><input id="profNome" class="input" value="${esc(p.nome)}"></div>
+                <div class="field"><label class="label">Especialidade</label><input id="profEspecialidade" class="input" value="${esc(p.especialidade)}"></div>
+                <div class="field" style="grid-column:1/-1"><label class="label">URL da foto</label><input id="profFoto" class="input" value="${esc(p.foto || "")}" placeholder="https://..."></div>
+                <div class="field" style="grid-column:1/-1"><label class="label">Bio profissional</label><textarea id="profBio" class="textarea">${esc(p.bio || "")}</textarea></div>
+                <div class="field" style="grid-column:1/-1">
+                    <label class="label">Configurações</label>
+                    <div style="display:flex;gap:15px;flex-wrap:wrap;padding-top:5px">
+                        <label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer"><input type="checkbox" id="cfgNotif" ${p.configuracoes?.notificacoes !== false ? "checked" : ""}> Notificações</label>
+                        <label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer"><input type="checkbox" id="cfgLembretes" ${p.configuracoes?.lembretes !== false ? "checked" : ""}> Lembretes</label>
                     </div>
                 </div>
-                <button class="btn btn-primary" onclick="saveProfile()"><i data-lucide="save"></i>Salvar perfil</button>
             </div>
+            <button class="btn btn-primary" onclick="saveProfile()"><i data-lucide="save"></i>Salvar perfil</button>
         </div>
     `;
     lucide.createIcons();
+}
+
+async function saveProfObs() {
+    const titulo = document.getElementById("profObsTitulo").value.trim() || "Observação";
+    const texto = document.getElementById("profObsTexto").value.trim();
+    if (!texto) { notify("Escreva a observação."); return; }
+
+    if (!data.professor.observacoes) data.professor.observacoes = [];
+    data.professor.observacoes.push({
+        id: uid(),
+        data: today(),
+        titulo: titulo,
+        texto: texto
+    });
+
+    await saveData();
+    document.getElementById("perfilObsForm").style.display = "none";
+    document.getElementById("profObsTexto").value = "";
+    notify("Observação registrada.");
+    renderPerfil();
+}
+
+async function saveProfEvo() {
+    const titulo = document.getElementById("profEvoTitulo").value.trim() || "Evolução pessoal";
+    const texto = document.getElementById("profEvoTexto").value.trim();
+    if (!texto) { notify("Escreva a evolução."); return; }
+
+    if (!data.professor.evolucoesPessoais) data.professor.evolucoesPessoais = [];
+    data.professor.evolucoesPessoais.push({
+        id: uid(),
+        data: today(),
+        titulo: titulo,
+        texto: texto
+    });
+
+    await saveData();
+    document.getElementById("perfilEvoForm").style.display = "none";
+    document.getElementById("profEvoTexto").value = "";
+    notify("Evolução registrada.");
+    renderPerfil();
 }
 
 async function saveProfile() {
@@ -4130,11 +4382,11 @@ window.setStudentSectionPage = setStudentSectionPage;
 window.setFinancePage = setFinancePage;
 window.changeFinanceMonth = changeFinanceMonth;
 window.saveProfile = saveProfile;
+window.saveProfObs = saveProfObs;
+window.saveProfEvo = saveProfEvo;
 window.generateStudentPDF = generateStudentPDF;
 window.generateFinancePDF = generateFinancePDF;
 window.gerarReciboSide = gerarReciboSide;
-window.gerarDeclaracaoSide = gerarDeclaracaoSide;
-window.abrirFormRecibo = abrirFormRecibo;
 window.showDespesaForm = showDespesaForm;
 window.saveDespesa = saveDespesa;
 window.deleteDespesa = deleteDespesa;
@@ -4157,6 +4409,14 @@ window.gerarPDFAvaliacao = gerarPDFAvaliacao;
 window.newEvolucaoForm = newEvolucaoForm;
 window.saveEvolucaoHandler = saveEvolucaoHandler;
 window.deleteStudent = deleteStudent;
+window.startAvalStep = startAvalStep;
+window.startAvalStepWithTemplate = startAvalStepWithTemplate;
+window.avalStepPrev = avalStepPrev;
+window.avalStepNext = avalStepNext;
+window.selectAvalStepOption = selectAvalStepOption;
+window.cancelAvalStep = cancelAvalStep;
+window.abrirFormRecibo = abrirFormRecibo;
+window.renderPerfil = renderPerfil;
 
 // ============================================================
 // INICIAR
@@ -4167,4 +4427,3 @@ init();
 
 </body>
 </html>
-```
