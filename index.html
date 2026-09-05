@@ -21,7 +21,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
 *{box-sizing:border-box}
@@ -194,13 +194,160 @@ button{cursor:pointer}
 .kpi-bar{height:6px;border-radius:10px;background:#edf1ef;overflow:hidden;margin-top:10px}
 .kpi-fill{height:100%;background:var(--sage);border-radius:10px}
 
-.login-screen{height:100vh;display:grid;place-items:center;background:linear-gradient(135deg,#f4f8f6,#f1f5f8)}
-.login-box{width:min(420px,calc(100% - 30px));background:#fff;border:1px solid var(--line);border-radius:24px;padding:34px;box-shadow:0 20px 60px rgba(40,70,55,.08)}
-.login-brand{display:flex;flex-direction:column;align-items:center;gap:12px;color:var(--sage-dark);font-weight:700}
-.login-brand .logo-img{width:80px;height:80px;object-fit:contain;border-radius:16px}
-.login-brand .brand-name{font-size:22px;font-weight:700;color:var(--sage-dark)}
-.login-brand .brand-sub{font-size:11px;font-weight:400;color:#8a9892;letter-spacing:.05em;margin-top:-4px}
-.login-sub{text-align:center;color:#87948e;font-size:12px;margin:8px 0 28px}
+/* ============================================================
+   TELA DE LOGIN - DESIGN BONITO E PROFISSIONAL
+   ============================================================ */
+.login-screen {
+    height:100vh;
+    display:grid;
+    place-items:center;
+    background: linear-gradient(135deg, #f0f5f2 0%, #e8eee9 100%);
+    position:relative;
+    overflow:hidden;
+}
+.login-screen::before {
+    content:'';
+    position:absolute;
+    top:-50%;
+    right:-20%;
+    width:600px;
+    height:600px;
+    background: radial-gradient(circle, rgba(95,143,122,0.08) 0%, transparent 70%);
+    border-radius:50%;
+}
+.login-screen::after {
+    content:'';
+    position:absolute;
+    bottom:-30%;
+    left:-10%;
+    width:500px;
+    height:500px;
+    background: radial-gradient(circle, rgba(98,136,168,0.06) 0%, transparent 70%);
+    border-radius:50%;
+}
+.login-box {
+    width:min(440px,calc(100% - 30px));
+    background:rgba(255,255,255,0.92);
+    backdrop-filter:blur(20px);
+    -webkit-backdrop-filter:blur(20px);
+    border:1px solid rgba(255,255,255,0.3);
+    border-radius:28px;
+    padding:42px 38px;
+    box-shadow:0 25px 80px rgba(40,70,55,0.10), 0 8px 32px rgba(40,70,55,0.04);
+    position:relative;
+    z-index:2;
+}
+.login-box .logo-area {
+    text-align:center;
+    margin-bottom:32px;
+}
+.login-box .logo-area .logo-img {
+    width:72px;
+    height:72px;
+    object-fit:contain;
+    border-radius:16px;
+    margin-bottom:12px;
+    box-shadow:0 4px 16px rgba(95,143,122,0.15);
+}
+.login-box .logo-area .brand-name {
+    font-size:22px;
+    font-weight:800;
+    color:#2d3d36;
+    letter-spacing:-0.03em;
+}
+.login-box .logo-area .brand-sub {
+    font-size:13px;
+    color:#8a9e96;
+    font-weight:400;
+    margin-top:4px;
+}
+.login-box .login-sub {
+    text-align:center;
+    color:#8a9e96;
+    font-size:14px;
+    font-weight:400;
+    margin-bottom:28px;
+}
+.login-box .field {
+    margin-bottom:18px;
+}
+.login-box .field .label {
+    display:block;
+    font-size:12px;
+    font-weight:600;
+    color:#5a7369;
+    margin-bottom:6px;
+    letter-spacing:0.02em;
+}
+.login-box .field .input {
+    width:100%;
+    padding:12px 16px;
+    border:2px solid #e8eeeb;
+    border-radius:12px;
+    font-size:14px;
+    background:#fafcfb;
+    transition:all 0.2s;
+    outline:none;
+    color:#1a2e26;
+}
+.login-box .field .input:focus {
+    border-color:var(--sage);
+    background:#fff;
+    box-shadow:0 0 0 4px rgba(95,143,122,0.08);
+}
+.login-box .field .input::placeholder {
+    color:#b0c0b9;
+}
+.login-box .login-btn {
+    width:100%;
+    padding:14px;
+    border:0;
+    border-radius:12px;
+    font-size:15px;
+    font-weight:600;
+    background:var(--sage);
+    color:white;
+    transition:all 0.2s;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    margin-top:6px;
+}
+.login-box .login-btn:hover {
+    background:var(--sage-dark);
+    transform:translateY(-1px);
+    box-shadow:0 8px 24px rgba(95,143,122,0.25);
+}
+.login-box .login-btn:active {
+    transform:scale(0.98);
+}
+.login-box .login-footer {
+    text-align:center;
+    color:#b0c0b9;
+    font-size:11px;
+    margin-top:20px;
+    padding-top:16px;
+    border-top:1px solid #edf3f0;
+}
+.login-box .login-footer .demo-cred {
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    background:#f4f8f6;
+    padding:4px 12px;
+    border-radius:20px;
+    font-size:10px;
+    color:#7a988a;
+}
+.login-box .login-footer .demo-cred code {
+    background:#e8eee9;
+    padding:2px 8px;
+    border-radius:4px;
+    font-size:10px;
+    color:#4d6b5e;
+    font-family:monospace;
+}
 
 .toast{
  position:fixed;right:22px;bottom:22px;background:#263d35;color:#fff;padding:12px 16px;
@@ -361,29 +508,32 @@ button{cursor:pointer}
 
 <div id="loginScreen" class="login-screen">
   <div class="login-box">
-    <div class="login-brand">
+    <div class="logo-area">
       <img src="https://i.imgur.com/AUoGLEq.png" alt="Legado Que Ensina" class="logo-img">
       <div class="brand-name">Legado Que Ensina</div>
       <div class="brand-sub">Gestão integrada para educação e cuidado</div>
     </div>
+
     <div class="login-sub">Acesse sua conta para continuar</div>
 
     <div class="field">
-      <label class="label">Usuário</label>
-      <input id="loginUser" class="input" value="professor@asas.com" autocomplete="username">
+      <label class="label">E-mail</label>
+      <input id="loginUser" class="input" type="email" placeholder="seu@email.com" autocomplete="username">
     </div>
 
     <div class="field">
       <label class="label">Senha</label>
-      <input id="loginPass" class="input" type="password" value="123456" autocomplete="current-password">
+      <input id="loginPass" class="input" type="password" placeholder="••••••••" autocomplete="current-password">
     </div>
 
-    <button id="loginBtn" class="btn btn-primary" style="width:100%;padding:12px">
+    <button id="loginBtn" class="login-btn">
       <i data-lucide="log-in"></i> Entrar
     </button>
 
-    <div style="text-align:center;color:#a0aaa6;font-size:10px;margin-top:14px">
-      Acesso: professor@asas.com / 123456
+    <div class="login-footer">
+      <span class="demo-cred">
+        <span>🔑</span> Demo: <code>professor@asas.com</code> / <code>123456</code>
+      </span>
     </div>
   </div>
 </div>
@@ -1593,7 +1743,7 @@ async function login() {
     const user = document.getElementById("loginUser").value.trim();
     const pass = document.getElementById("loginPass").value;
 
-    if (!user || !pass) { notify("Preencha usuário e senha."); return; }
+    if (!user || !pass) { notify("Preencha e-mail e senha."); return; }
 
     const result = await loginSupabase(user, pass);
 
