@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -1032,26 +1033,66 @@ async function loadDataFromSupabase() {
 }
 
 // ============================================================
-// FUNÇÕES SUPABASE - SAVE (simplificadas)
+// FUNÇÕES SUPABASE - SAVE (CORRIGIDAS)
 // ============================================================
+
+// Mapeamento de colunas conhecidas por tabela
+const COLUMN_MAP = {
+    'transacoes': ['id', 'user_id', 'agenda_id', 'aluno_id', 'data', 'descricao', 'valor', 'tipo', 'categoria'],
+    'agenda': ['id', 'user_id', 'aluno_id', 'data', 'hora', 'tipo', 'status', 'presente', 'pago', 'updated_at'],
+    'alunos': ['id', 'user_id', 'nome', 'idade', 'serie', 'responsavel', 'telefone', 'valor', 'foto', 'tags', 'observacoes', 'ativo', 'updated_at'],
+    'professores': ['id', 'user_id', 'nome', 'especialidade', 'bio', 'foto', 'config_notificacoes', 'config_lembretes', 'updated_at'],
+    'evolucoes': ['id', 'user_id', 'aluno_id', 'data', 'titulo', 'texto'],
+    'consultas': ['id', 'user_id', 'aluno_id', 'data', 'observacoes', 'acoes', 'pais', 'solicitacoes', 'comportamentos'],
+    'avaliacoes': ['id', 'user_id', 'aluno_id', 'data', 'titulo', 'tipo', 'objetivo', 'questoes', 'finalizada'],
+    'resultados_avaliacoes': ['id', 'user_id', 'avaliacao_id', 'data', 'respostas', 'resumo'],
+    'escola': ['id', 'user_id', 'aluno_id', 'nome', 'professores', 'updated_at'],
+    'registros_escola': ['id', 'user_id', 'escola_id', 'data', 'contato', 'tipo', 'assunto', 'relato'],
+    'observacoes_professor': ['id', 'user_id', 'data', 'titulo', 'texto'],
+    'evolucoes_professor': ['id', 'user_id', 'data', 'titulo', 'texto']
+};
 
 async function upsertSafe(tableName, payload, selectSingle = true) {
     let attempt = { ...payload };
+    
+    // Filtrar apenas colunas conhecidas para a tabela
+    const knownColumns = COLUMN_MAP[tableName] || [];
+    if (knownColumns.length > 0) {
+        const filteredAttempt = {};
+        knownColumns.forEach(col => {
+            if (attempt[col] !== undefined) {
+                filteredAttempt[col] = attempt[col];
+            }
+        });
+        attempt = filteredAttempt;
+    }
+
     for (let i = 0; i < 4; i++) {
-        let query = supabaseClient.from(tableName).upsert(attempt);
-        if (selectSingle) query = query.select().single();
-        else query = query.select();
-        const { data, error } = await query;
-        if (!error) return data;
-        if (error && (error.code === '42703' || /could not find the column/i.test(error.message || ''))) {
-            const m = (error.message || '').match(/column "([^"]+)"/i) || (error.message || '').match(/([^"]+).*does not exist/i);
-            const col = m ? m[1] : null;
-            if (col && col in attempt) {
-                delete attempt[col];
+        try {
+            let query = supabaseClient.from(tableName).upsert(attempt);
+            if (selectSingle) query = query.select().single();
+            else query = query.select();
+            const { data, error } = await query;
+            if (!error) return data;
+            
+            // Se for erro de coluna, tenta remover a coluna problemática
+            if (error && (error.code === '42703' || /could not find the column/i.test(error.message || ''))) {
+                const m = (error.message || '').match(/column "([^"]+)"/i) || (error.message || '').match(/([^"]+).*does not exist/i);
+                const col = m ? m[1] : null;
+                if (col && col in attempt) {
+                    delete attempt[col];
+                    continue;
+                }
+            }
+            throw error;
+        } catch (err) {
+            if (i === 3) throw err;
+            // Se for erro de coluna, tenta novamente
+            if (err.code === '42703' || /could not find the column/i.test(err.message || '')) {
                 continue;
             }
+            throw err;
         }
-        throw error;
     }
     return null;
 }
@@ -1076,6 +1117,7 @@ async function saveAluno(aluno) {
             updated_at: new Date().toISOString()
         });
     } catch (error) {
+        console.error('Erro ao salvar aluno:', error);
         return null;
     }
 }
@@ -1092,6 +1134,7 @@ async function saveEvolucao(evolucao) {
             data: evolucao.data || today()
         });
     } catch (error) {
+        console.error('Erro ao salvar evolução:', error);
         return null;
     }
 }
@@ -1111,6 +1154,7 @@ async function saveConsulta(consulta) {
             comportamentos: consulta.comportamentos || {}
         });
     } catch (error) {
+        console.error('Erro ao salvar consulta:', error);
         return null;
     }
 }
@@ -1130,6 +1174,7 @@ async function saveAvaliacao(avaliacao) {
             finalizada: avaliacao.finalizada || false
         });
     } catch (error) {
+        console.error('Erro ao salvar avaliação:', error);
         return null;
     }
 }
@@ -1146,6 +1191,7 @@ async function saveResultadoAvaliacao(resultado) {
             resumo: resultado.resumo || ''
         });
     } catch (error) {
+        console.error('Erro ao salvar resultado:', error);
         return null;
     }
 }
@@ -1162,6 +1208,7 @@ async function saveEscola(escola) {
             updated_at: new Date().toISOString()
         });
     } catch (error) {
+        console.error('Erro ao salvar escola:', error);
         return null;
     }
 }
@@ -1180,6 +1227,7 @@ async function saveRegistroEscola(registro) {
             relato: registro.relato
         });
     } catch (error) {
+        console.error('Erro ao salvar registro escolar:', error);
         return null;
     }
 }
@@ -1189,6 +1237,7 @@ async function deleteRegistroEscolaDB(id) {
         await supabaseClient.from('registros_escola').delete().eq('id', id);
         return true;
     } catch (error) {
+        console.error('Erro ao deletar registro escolar:', error);
         return false;
     }
 }
@@ -1213,6 +1262,7 @@ async function saveAgendaItem(item) {
             updated_at: new Date().toISOString()
         });
     } catch (error) {
+        console.error('Erro ao salvar agenda:', error);
         return null;
     }
 }
@@ -1222,29 +1272,33 @@ async function deleteAgendaItemDB(id) {
         await supabaseClient.from('agenda').delete().eq('id', id);
         return true;
     } catch (error) {
+        console.error('Erro ao deletar agenda:', error);
         return false;
     }
 }
 
 async function saveTransacao(transacao) {
     try {
-        const tipo = transacao.tipo || 'receita';
         if (!transacao) return null;
-        if (tipo === 'receita' && !transacao.alunoId) return null;
-
         const userId = await getUserId();
-        return await upsertSafe('transacoes', {
+        
+        const payload = {
             id: transacao.id || uid(),
             user_id: userId,
-            agenda_id: transacao.agendaId || null,
-            aluno_id: transacao.alunoId || null,
             data: transacao.data || today(),
             descricao: transacao.descricao || '',
             valor: Number(transacao.valor) || 0,
-            tipo: tipo,
-            categoria: transacao.categoria || ''
-        });
+            tipo: transacao.tipo || 'receita'
+        };
+
+        // Adicionar campos opcionais apenas se existirem
+        if (transacao.agendaId) payload.agenda_id = transacao.agendaId;
+        if (transacao.alunoId) payload.aluno_id = transacao.alunoId;
+        if (transacao.categoria) payload.categoria = transacao.categoria;
+
+        return await upsertSafe('transacoes', payload);
     } catch (error) {
+        console.error('Erro ao salvar transação:', error);
         return null;
     }
 }
@@ -1254,6 +1308,7 @@ async function deleteTransacaoDB(id) {
         await supabaseClient.from('transacoes').delete().eq('id', id);
         return true;
     } catch (error) {
+        console.error('Erro ao deletar transação:', error);
         return false;
     }
 }
@@ -1269,6 +1324,7 @@ async function saveObservacaoProfessor(obs) {
             data: obs.data || today()
         });
     } catch (error) {
+        console.error('Erro ao salvar observação do professor:', error);
         return null;
     }
 }
@@ -1284,6 +1340,7 @@ async function saveEvolucaoProfessor(evo) {
             data: evo.data || today()
         });
     } catch (error) {
+        console.error('Erro ao salvar evolução do professor:', error);
         return null;
     }
 }
@@ -1303,6 +1360,7 @@ async function saveProfessor(professor) {
             updated_at: new Date().toISOString()
         });
     } catch (error) {
+        console.error('Erro ao salvar professor:', error);
         return null;
     }
 }
@@ -4109,3 +4167,4 @@ init();
 
 </body>
 </html>
+```
