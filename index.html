@@ -3,17 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>LQS ERP · Gestão Psicopedagógica</title>
+<title>Legado Que Ensina · Gestão Psicopedagógica</title>
+
+<!-- ============================================================ -->
+<!-- FAVICONS -->
+<!-- ============================================================ -->
+<link rel="icon" type="image/png" href="https://i.imgur.com/AUoGLEq.png">
+<link rel="apple-touch-icon" href="https://i.imgur.com/AUoGLEq.png">
 
 <!-- ============================================================ -->
 <!-- TAILWIND - VERSÃO DE PRODUÇÃO (SEM AVISO) -->
 <!-- ============================================================ -->
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.1/dist/tailwind.min.css" rel="stylesheet">
-
-<!-- ============================================================ -->
-<!-- FAVICON - ELIMINA O ERRO 404 -->
-<!-- ============================================================ -->
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📚%3C/text%3E%3C/svg%3E">
 
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -56,7 +57,11 @@ button{cursor:pointer}
  z-index:20;
 }
 .brand{height:52px;display:flex;align-items:center;gap:12px;color:var(--sage-dark);font-weight:700;padding:0 10px;white-space:nowrap;overflow:hidden}
-.brand-mark{width:36px;height:36px;border-radius:12px;background:var(--sage-light);display:grid;place-items:center;flex-shrink:0}
+.brand-mark{width:36px;height:36px;border-radius:12px;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.brand-mark img{width:100%;height:100%;object-fit:contain}
+.brand-text{display:flex;flex-direction:column;line-height:1.2}
+.brand-text .main{font-size:14px;font-weight:700;color:var(--sage-dark)}
+.brand-text .sub{font-size:8px;font-weight:500;color:#8a9892;letter-spacing:.03em}
 .nav{margin-top:22px;display:flex;flex-direction:column;gap:5px}
 .nav button{
  border:0;background:transparent;color:#718096;border-radius:12px;
@@ -191,7 +196,10 @@ button{cursor:pointer}
 
 .login-screen{height:100vh;display:grid;place-items:center;background:linear-gradient(135deg,#f4f8f6,#f1f5f8)}
 .login-box{width:min(420px,calc(100% - 30px));background:#fff;border:1px solid var(--line);border-radius:24px;padding:34px;box-shadow:0 20px 60px rgba(40,70,55,.08)}
-.login-brand{display:flex;justify-content:center;align-items:center;gap:10px;color:var(--sage-dark);font-weight:700;font-size:22px}
+.login-brand{display:flex;flex-direction:column;align-items:center;gap:12px;color:var(--sage-dark);font-weight:700}
+.login-brand .logo-img{width:80px;height:80px;object-fit:contain;border-radius:16px}
+.login-brand .brand-name{font-size:22px;font-weight:700;color:var(--sage-dark)}
+.login-brand .brand-sub{font-size:11px;font-weight:400;color:#8a9892;letter-spacing:.05em;margin-top:-4px}
 .login-sub{text-align:center;color:#87948e;font-size:12px;margin:8px 0 28px}
 
 .toast{
@@ -232,6 +240,7 @@ button{cursor:pointer}
 @media(max-width:680px){
  .sidebar{width:58px;padding:15px 6px}
  .brand{padding:0 5px;justify-content:center}
+ .brand-text .sub{display:none}
  .nav button{justify-content:center;padding:0 8px}
  .nav-label{display:none}
  .main{margin-left:0}
@@ -346,7 +355,6 @@ button{cursor:pointer}
 .payment-method-badge.cartao{background:#fef3e8;color:#b8732a}
 .payment-method-badge.cartao_parcelado{background:#f5f0f8;color:#80678c}
 </style>
-<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
 </head>
 
 <body>
@@ -354,10 +362,11 @@ button{cursor:pointer}
 <div id="loginScreen" class="login-screen">
   <div class="login-box">
     <div class="login-brand">
-      <div class="brand-mark"><i data-lucide="heart-handshake"></i></div>
-      LQS ERP
+      <img src="https://i.imgur.com/AUoGLEq.png" alt="Legado Que Ensina" class="logo-img">
+      <div class="brand-name">Legado Que Ensina</div>
+      <div class="brand-sub">Gestão integrada para educação e cuidado</div>
     </div>
-    <div class="login-sub">Legado Que Ensina · Gestão integrada para educação e cuidado</div>
+    <div class="login-sub">Acesse sua conta para continuar</div>
 
     <div class="field">
       <label class="label">Usuário</label>
@@ -370,7 +379,7 @@ button{cursor:pointer}
     </div>
 
     <button id="loginBtn" class="btn btn-primary" style="width:100%;padding:12px">
-      <i data-lucide="log-in"></i> Entrar no LQS ERP
+      <i data-lucide="log-in"></i> Entrar
     </button>
 
     <div style="text-align:center;color:#a0aaa6;font-size:10px;margin-top:14px">
@@ -383,8 +392,11 @@ button{cursor:pointer}
 
 <aside class="sidebar">
   <div class="brand">
-    <div class="brand-mark"><i data-lucide="heart-handshake"></i></div>
-    <span>LQS ERP</span>
+    <div class="brand-mark"><img src="https://i.imgur.com/AUoGLEq.png" alt="Legado Que Ensina"></div>
+    <div class="brand-text">
+      <span class="main">Legado Que Ensina</span>
+      <span class="sub">Gestão Psicopedagógica</span>
+    </div>
   </div>
 
   <nav class="nav">
@@ -595,7 +607,7 @@ function defaultData() {
     return {
         session: false,
         professor: {
-            nome: "Professor LQS",
+            nome: "Professor",
             especialidade: "Psicopedagogia Clínica",
             bio: "Profissional dedicado ao desenvolvimento acadêmico, emocional e cognitivo.",
             foto: "",
@@ -839,7 +851,7 @@ function mapProfessorFromDB(row) {
     return {
         id: row.id,
         user_id: row.user_id,
-        nome: row.nome || "Professor LQS",
+        nome: row.nome || "Professor",
         especialidade: row.especialidade || "",
         bio: row.bio || "",
         foto: row.foto || "",
@@ -1022,7 +1034,7 @@ async function loadDataFromSupabase() {
         const professorNormalizado = professorData
             ? mapProfessorFromDB(professorData)
             : {
-                nome: "Professor LQS",
+                nome: "Professor",
                 especialidade: "Psicopedagogia Clínica",
                 bio: "Profissional dedicado ao desenvolvimento acadêmico, emocional e cognitivo.",
                 foto: "",
@@ -1052,7 +1064,7 @@ async function loadDataFromSupabase() {
 }
 
 // ============================================================
-// FUNÇÕES SUPABASE - SAVE (CORRIGIDAS)
+// FUNÇÕES SUPABASE - SAVE
 // ============================================================
 
 const COLUMN_MAP = {
@@ -1306,7 +1318,6 @@ async function saveTransacao(transacao) {
             tipo: transacao.tipo || 'receita'
         };
 
-        // Só adiciona metodo_pagamento e parcelas se existirem
         if (transacao.metodo_pagamento) payload.metodo_pagamento = transacao.metodo_pagamento;
         if (transacao.parcelas) payload.parcelas = transacao.parcelas;
         if (transacao.agendaId) payload.agenda_id = transacao.agendaId;
@@ -1486,7 +1497,7 @@ async function saveData() {
 // AJUDA CONTEXTUAL
 // ============================================================
 const HELP_TEXTS = {
-    dashboard: "Bem-vindo ao LQS ERP! Aqui você acompanha o resumo geral: total de alunos, atendimentos do mês, pendências financeiras.",
+    dashboard: "Bem-vindo ao Legado Que Ensina! Aqui você acompanha o resumo geral: total de alunos, atendimentos do mês, pendências financeiras.",
     alunos: "Cadastre e gerencie seus alunos. Clique em um aluno para abrir o prontuário completo.",
     agenda: "Sua agenda de atendimentos. Clique em um horário vazio para agendar. Marque presença e pagamento nos botões.",
     avaliacoes: "Central de avaliações psicopedagógicas. Responda questão por questão de forma organizada.",
@@ -3660,7 +3671,7 @@ function gerarPDFAvaliacao(alunoId, avalId) {
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(18);
-    doc.text('LQS ERP - Avaliação Psicopedagógica', pageW / 2, y, { align: 'center' });
+    doc.text('Legado Que Ensina - Avaliação Psicopedagógica', pageW / 2, y, { align: 'center' });
     y += 10;
 
     doc.setFont('helvetica', 'bold');
@@ -3723,7 +3734,7 @@ function gerarPDFAvaliacao(alunoId, avalId) {
     doc.text('Profissional Responsável', 40, y);
     y += 10;
     doc.setFontSize(8);
-    doc.text(`Documento gerado em ${fmtDate(today())} - LQS ERP`, 20, y);
+    doc.text(`Documento gerado em ${fmtDate(today())} - Legado Que Ensina`, 20, y);
 
     doc.save(`avaliacao-${s.nome}-${av.titulo}.pdf`);
     notify("PDF da avaliação gerado com sucesso!");
@@ -4108,7 +4119,7 @@ function gerarReciboSide() {
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(20);
-    doc.text('LQS ERP - RECIBO DE PAGAMENTO', pageW / 2, y, { align: 'center' });
+    doc.text('Legado Que Ensina - RECIBO DE PAGAMENTO', pageW / 2, y, { align: 'center' });
     y += 12;
 
     doc.setFont('helvetica', 'normal');
@@ -4119,7 +4130,7 @@ function gerarReciboSide() {
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(14);
-    doc.text('LQS ERP - Legado Que Ensina', 20, y);
+    doc.text('Legado Que Ensina', 20, y);
     y += 8;
 
     doc.setFont('helvetica', 'normal');
@@ -4197,7 +4208,7 @@ async function saveProfile() {
     const p = data.professor;
     if (!p) return;
 
-    p.nome = document.getElementById("profNome").value.trim() || "Professor LQS";
+    p.nome = document.getElementById("profNome").value.trim() || "Professor";
     p.especialidade = document.getElementById("profEspecialidade").value.trim();
     p.foto = document.getElementById("profFoto").value.trim();
     p.bio = document.getElementById("profBio").value.trim();
@@ -4255,7 +4266,7 @@ function generateStudentPDF(id) {
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
-    doc.text("LQS ERP", 15, y);
+    doc.text("Legado Que Ensina", 15, y);
     y += 8;
     doc.setFontSize(14);
     doc.text("Relatório clínico e pedagógico", 15, y);
@@ -4352,7 +4363,7 @@ function generateFinancePDF() {
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
-    doc.text("LQS ERP", 15, cursor);
+    doc.text("Legado Que Ensina", 15, cursor);
     cursor += 8;
     doc.setFontSize(14);
     doc.text(`Relatório financeiro — ${new Date(year, m, 1).toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}`, 15, cursor);
