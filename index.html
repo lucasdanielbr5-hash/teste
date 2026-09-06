@@ -435,35 +435,67 @@ button{cursor:pointer}
 .master-table{width:100%;border-collapse:collapse;min-width:880px}.master-table th{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#87938e;text-align:left;background:#fafcfb;padding:11px 13px;border-bottom:1px solid var(--line)}.master-table td{padding:12px 13px;border-bottom:1px solid #edf1ef;font-size:12px;color:#52605a}.master-table tr:last-child td{border-bottom:0}
 .master-status{display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:20px;font-size:10px;font-weight:700}.master-status.ok{background:#eaf5ee;color:#3e8060}.master-status.off{background:#fff0f0;color:#b55e5e}.master-status.warn{background:#fff6e7;color:#a87935}
 .master-modal-backdrop{position:fixed;inset:0;background:rgba(30,45,38,.34);display:none;align-items:center;justify-content:center;padding:20px;z-index:1000}.master-modal{width:min(560px,100%);background:#fff;border-radius:20px;box-shadow:0 25px 70px rgba(30,55,43,.18);padding:22px}.master-modal-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:18px}.master-modal-title{font-size:17px;font-weight:800}.master-modal-sub{font-size:11px;color:#8a9791;margin-top:3px}
-.license-banner{position:fixed;left:270px;right:18px;bottom:12px;background:#fff8e9;border:1px solid #f0d69d;color:#7b622f;border-radius:12px;padding:10px 14px;display:none;align-items:center;justify-content:space-between;gap:12px;z-index:900;box-shadow:0 8px 25px rgba(70,55,25,.08);font-size:11px}.license-banner strong{font-weight:800}.license-banner .pix{font-weight:800;letter-spacing:.02em}.license-banner .close{border:0;background:transparent;color:#92733a;cursor:pointer;font-size:16px}
 
-/* CRONÔMETRO DE LICENÇA */
+/* ============================================================
+   BANNER DE LICENÇA COM TIMER
+   ============================================================ */
+.license-banner {
+    position:fixed;
+    left:270px;
+    right:18px;
+    bottom:12px;
+    background:#fff8e9;
+    border:1px solid #f0d69d;
+    color:#7b622f;
+    border-radius:12px;
+    padding:10px 14px;
+    display:none;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    z-index:900;
+    box-shadow:0 8px 25px rgba(70,55,25,.08);
+    font-size:11px;
+    flex-wrap:wrap;
+}
+.license-banner strong{font-weight:800}
+.license-banner .pix{font-weight:800;letter-spacing:.02em}
+.license-banner .close{
+    border:0;
+    background:transparent;
+    color:#92733a;
+    cursor:pointer;
+    font-size:16px;
+    padding:0 4px;
+}
+.license-banner .close:hover{color:#5a3d1a}
+
 .license-timer {
     display:inline-flex;
     align-items:center;
-    gap:12px;
+    gap:8px;
     background:#f8faf9;
-    padding:8px 16px;
-    border-radius:12px;
+    padding:6px 12px;
+    border-radius:10px;
     border:1px solid #e6ece9;
-    font-size:13px;
+    font-size:12px;
     font-weight:600;
     color:#4a5852;
 }
 .license-timer .time-block {
     display:flex;
     align-items:center;
-    gap:4px;
+    gap:3px;
 }
 .license-timer .time-block .number {
-    font-size:18px;
+    font-size:16px;
     font-weight:800;
     color:#263238;
-    min-width:28px;
+    min-width:22px;
     text-align:center;
 }
 .license-timer .time-block .label {
-    font-size:9px;
+    font-size:8px;
     font-weight:500;
     color:#8a9892;
     text-transform:uppercase;
@@ -472,14 +504,198 @@ button{cursor:pointer}
     color:#cbd5d1;
     font-weight:300;
 }
-.license-timer .warning {
+.license-timer.warning .number {
     color:#b85b5b;
 }
-.license-timer .warning .number {
-    color:#b85b5b;
+.license-banner .whatsapp-btn {
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    background:#25D366;
+    color:#fff;
+    border:0;
+    border-radius:8px;
+    padding:6px 12px;
+    font-size:11px;
+    font-weight:700;
+    cursor:pointer;
+    transition:.2s;
+    text-decoration:none;
+}
+.license-banner .whatsapp-btn:hover {
+    background:#1da85c;
+    transform:scale(1.02);
+}
+.license-banner .whatsapp-btn svg {
+    width:16px;
+    height:16px;
 }
 
-@media(max-width:900px){.master-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.license-banner{left:12px;right:12px}.master-table{min-width:780px}}
+/* ============================================================
+   TELA DE PLANO EXPIRADO
+   ============================================================ */
+.expired-screen {
+    min-height:100vh;
+    display:grid;
+    place-items:center;
+    padding:28px;
+    background:
+        radial-gradient(circle at 15% 20%, rgba(95,143,122,.13), transparent 30%),
+        radial-gradient(circle at 85% 80%, rgba(98,136,168,.10), transparent 30%),
+        #f5f8f6;
+    position:relative;
+    overflow:auto;
+}
+.expired-box {
+    width:min(500px,100%);
+    background:rgba(255,255,255,.97);
+    border:1px solid #e4ebe7;
+    border-radius:24px;
+    padding:42px;
+    box-shadow:0 24px 70px rgba(38,50,56,.10);
+    text-align:center;
+    animation:loginEnter .45s ease-out;
+}
+.expired-box .icon-big {
+    font-size:64px;
+    margin-bottom:16px;
+    color:#c0504d;
+}
+.expired-box .title {
+    font-size:24px;
+    font-weight:800;
+    color:#c0504d;
+    margin-bottom:10px;
+}
+.expired-box .subtitle {
+    font-size:14px;
+    color:#8a6b6b;
+    margin-bottom:20px;
+    line-height:1.6;
+}
+.expired-box .plans {
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+    margin:20px 0;
+}
+.expired-box .plan-card {
+    background:#f8faf9;
+    border:1px solid #e6ece9;
+    border-radius:12px;
+    padding:14px 10px;
+    text-align:center;
+    transition:.2s;
+}
+.expired-box .plan-card:hover {
+    border-color:#8eb29d;
+}
+.expired-box .plan-card .plan-name {
+    font-size:11px;
+    font-weight:700;
+    color:#4a5852;
+    text-transform:uppercase;
+}
+.expired-box .plan-card .plan-price {
+    font-size:20px;
+    font-weight:800;
+    color:#263238;
+    margin:4px 0;
+}
+.expired-box .plan-card .plan-price small {
+    font-size:12px;
+    font-weight:400;
+    color:#8a9892;
+}
+.expired-box .plan-card .plan-desc {
+    font-size:10px;
+    color:#8a9892;
+}
+.expired-box .plan-card.recommended {
+    border-color:var(--sage);
+    background:var(--sage-light);
+}
+.expired-box .plan-card.recommended .plan-name {
+    color:var(--sage-dark);
+}
+.expired-box .btn-whatsapp {
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    background:#25D366;
+    color:#fff;
+    border:0;
+    border-radius:12px;
+    padding:14px 28px;
+    font-size:16px;
+    font-weight:700;
+    cursor:pointer;
+    transition:.2s;
+    text-decoration:none;
+    margin-top:10px;
+}
+.expired-box .btn-whatsapp:hover {
+    background:#1da85c;
+    transform:scale(1.02);
+}
+.expired-box .btn-whatsapp svg {
+    width:22px;
+    height:22px;
+}
+.expired-box .try-again {
+    display:inline-block;
+    margin-top:16px;
+    color:#718096;
+    font-size:12px;
+    cursor:pointer;
+    text-decoration:underline;
+    background:transparent;
+    border:0;
+}
+.expired-box .try-again:hover {
+    color:#263238;
+}
+.expired-box .support-info {
+    margin-top:18px;
+    padding-top:16px;
+    border-top:1px solid #e6ece9;
+    font-size:11px;
+    color:#8a9892;
+}
+.expired-box .support-info strong {
+    color:#4a5852;
+}
+
+.license-plan-badge {
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    background:#eaf3ee;
+    color:var(--sage-dark);
+    padding:4px 12px;
+    border-radius:20px;
+    font-size:11px;
+    font-weight:600;
+}
+.license-plan-badge svg {
+    width:14px;
+    height:14px;
+}
+
+@media(max-width:680px){
+    .expired-box .plans {
+        grid-template-columns:1fr;
+    }
+    .license-banner {
+        left:12px;
+        right:12px;
+        flex-direction:column;
+        align-items:stretch;
+    }
+    .license-timer {
+        justify-content:center;
+    }
+}
 </style>
 </head>
 
@@ -512,6 +728,51 @@ button{cursor:pointer}
     <div class="login-note">
       <i data-lucide="shield-check"></i>
       <span>Entre com o e-mail e a senha da sua própria conta. Nenhuma conta de demonstração ou credencial é exibida nesta tela.</span>
+    </div>
+  </div>
+</div>
+
+<!-- TELA DE PLANO EXPIRADO -->
+<div id="expiredScreen" class="expired-screen" style="display:none">
+  <div class="expired-box">
+    <div class="icon-big">⏰</div>
+    <div class="title">Ah.. o seu plano excedeu!</div>
+    <div class="subtitle">
+      Seu período de acesso ao <strong>Legado Que Ensina</strong> expirou.<br>
+      Regularize o pagamento para continuar utilizando o sistema.
+    </div>
+
+    <div class="plans">
+      <div class="plan-card">
+        <div class="plan-name">Mensal</div>
+        <div class="plan-price">R$ 29,90 <small>/mês</small></div>
+        <div class="plan-desc">Renovação mensal</div>
+      </div>
+      <div class="plan-card recommended">
+        <div class="plan-name">Trimestral</div>
+        <div class="plan-price">R$ 79,90 <small>/3 meses</small></div>
+        <div class="plan-desc">Economize 11%</div>
+      </div>
+      <div class="plan-card">
+        <div class="plan-name">Semestral</div>
+        <div class="plan-price">R$ 149,90 <small>/6 meses</small></div>
+        <div class="plan-desc">Economize 17%</div>
+      </div>
+    </div>
+
+    <a href="https://wa.me/5543920036581?text=Olá!%20Gostaria%20de%20regularizar%20meu%20pagamento%20do%20Legado%20Que%20Ensina." 
+       target="_blank" class="btn-whatsapp">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12c0 2.09.67 4.04 1.8 5.64L2 22l4.44-1.8C8.03 21.33 9.96 22 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm0 18c-1.76 0-3.38-.57-4.71-1.54l-.3-.22-3.14 1.27 1.27-3.14-.22-.3C5.57 15.38 5 13.76 5 12c0-3.86 3.14-7 7-7s7 3.14 7 7-3.14 7-7 7zM8 9v2h8V9H8zm0 4h8v2H8z"/></svg>
+      Falar com o Suporte
+    </a>
+
+    <button class="try-again" onclick="location.reload()">
+      <i data-lucide="refresh-cw"></i> Tentar novamente
+    </button>
+
+    <div class="support-info">
+      <strong>Suporte:</strong> contato@legadoqueensina.com.br<br>
+      <strong>WhatsApp:</strong> (43) 9200-36581
     </div>
   </div>
 </div>
@@ -586,24 +847,38 @@ button{cursor:pointer}
 </div>
 
 <div id="toast" class="toast"></div>
+
+<!-- BANNER DE LICENÇA COM TIMER -->
 <div id="licenseBanner" class="license-banner">
-    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-        <strong style="display:flex;align-items:center;gap:6px">
-            <i data-lucide="clock" style="width:16px;height:16px"></i>
-            Sua licença expira em:
-        </strong>
-        <div id="licenseTimer" class="license-timer">
-            <span class="time-block"><span class="number" id="timerDays">0</span><span class="label">d</span></span>
-            <span class="separator">:</span>
-            <span class="time-block"><span class="number" id="timerHours">0</span><span class="label">h</span></span>
-            <span class="separator">:</span>
-            <span class="time-block"><span class="number" id="timerMinutes">0</span><span class="label">m</span></span>
-            <span class="separator">:</span>
-            <span class="time-block"><span class="number" id="timerSeconds">0</span><span class="label">s</span></span>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex:1">
+        <div style="display:flex;align-items:center;gap:6px">
+            <i data-lucide="clock" style="width:16px;height:16px;color:#b85b5b"></i>
+            <strong style="font-size:11px">Plano expira em:</strong>
         </div>
-        <span style="font-size:10px;color:#8a9892;margin-left:4px">Realize o pagamento PIX: <strong>118.327.049.63</strong> — encaminhe comprovante para: <strong>43920036581</strong></span>
+        <div id="licenseTimer" class="license-timer">
+            <span class="time-block"><span class="number" id="timerDays">00</span><span class="label">d</span></span>
+            <span class="separator">:</span>
+            <span class="time-block"><span class="number" id="timerHours">00</span><span class="label">h</span></span>
+            <span class="separator">:</span>
+            <span class="time-block"><span class="number" id="timerMinutes">00</span><span class="label">m</span></span>
+            <span class="separator">:</span>
+            <span class="time-block"><span class="number" id="timerSeconds">00</span><span class="label">s</span></span>
+        </div>
+        <span id="planInfo" style="font-size:10px;color:#8a9892;display:flex;align-items:center;gap:4px">
+            <span class="license-plan-badge">
+                <i data-lucide="crown" style="width:12px;height:12px"></i>
+                Plano <span id="planName">Mensal</span>
+            </span>
+        </span>
     </div>
-    <button class="close" onclick="document.getElementById('licenseBanner').style.display='none'">×</button>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <a href="https://wa.me/5543920036581?text=Olá!%20Gostaria%20de%20regularizar%20meu%20pagamento%20do%20Legado%20Que%20Ensina." 
+           target="_blank" class="whatsapp-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12c0 2.09.67 4.04 1.8 5.64L2 22l4.44-1.8C8.03 21.33 9.96 22 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm0 18c-1.76 0-3.38-.57-4.71-1.54l-.3-.22-3.14 1.27 1.27-3.14-.22-.3C5.57 15.38 5 13.76 5 12c0-3.86 3.14-7 7-7s7 3.14 7 7-3.14 7-7 7zM8 9v2h8V9H8zm0 4h8v2H8z"/></svg>
+            Regularizar
+        </a>
+        <button class="close" onclick="dismissLicenseBanner()">×</button>
+    </div>
 </div>
 
 <script>
@@ -644,7 +919,15 @@ let isDataLoaded = false;
 let isMaster = false;
 let licenseCheckInterval = null;
 let licenseTimerInterval = null;
+let bannerDismissed = false;
 const MASTER_EMAIL = "contato@legadoqueensina.com.br";
+
+// Planos
+const PLANS = {
+    'mensal': { name: 'Mensal', price: 29.90, days: 30 },
+    'trimestral': { name: 'Trimestral', price: 79.90, days: 90 },
+    'semestral': { name: 'Semestral', price: 149.90, days: 180 }
+};
 
 // Variáveis para avaliação passo a passo
 let avalStepMode = null;
@@ -776,6 +1059,7 @@ function defaultData() {
             ativo: true,
             licenca_inicio: null,
             licenca_fim: null,
+            plano: 'mensal',
             observacoes: [],
             evolucoesPessoais: [],
             configuracoes: { notificacoes: true, tema: "claro", lembretes: true }
@@ -871,7 +1155,7 @@ function studentPager(items, page, size = 5, onclick = "") {
 }
 
 // ============================================================
-// FUNÇÕES DE LICENÇA COM CRONÔMETRO
+// FUNÇÕES DE LICENÇA COM TIMER
 // ============================================================
 
 function daysUntil(dateValue) {
@@ -897,8 +1181,17 @@ function getTimeRemaining(dateValue) {
     return { days, hours, minutes, seconds, total: diff };
 }
 
+function getPlanLabel(plano) {
+    const map = {
+        'mensal': 'Mensal',
+        'trimestral': 'Trimestral',
+        'semestral': 'Semestral'
+    };
+    return map[plano] || 'Mensal';
+}
+
 function isLicenseValid(professor) {
-    if (!professor) return { ok: false, reason: 'Cadastro do professor não encontrado.', blocked: true };
+    if (!professor) return { ok: false, reason: 'Cadastro do professor não encontrado.', expired: true };
     
     if (professor.ativo === false) {
         return { ok: false, reason: 'Seu acesso foi bloqueado pela administração.', blocked: true };
@@ -911,9 +1204,8 @@ function isLicenseValid(professor) {
         if (fim < agora) {
             return { 
                 ok: false, 
-                reason: 'Sua licença expirou em ' + fmtDateTime(professor.licenca_fim) + '.',
-                expired: true,
-                blocked: true
+                reason: 'Seu plano expirou em ' + fmtDateTime(professor.licenca_fim) + '.',
+                expired: true
             };
         }
         
@@ -926,12 +1218,28 @@ function isLicenseValid(professor) {
                 warning: true, 
                 diasRestantes: diasRestantes,
                 timeRemaining: timeRemaining,
-                reason: `Sua licença expira em ${diasRestantes} dia(s).`
+                reason: `Seu plano expira em ${diasRestantes} dia(s).`
             };
         }
     }
     
     return { ok: true };
+}
+
+function dismissLicenseBanner() {
+    bannerDismissed = true;
+    document.getElementById('licenseBanner').style.display = 'none';
+    // Salvar no localStorage para lembrar
+    try {
+        localStorage.setItem('licenseBannerDismissed_' + (data.professor?.id || ''), 'true');
+    } catch(e) {}
+}
+
+function showExpiredScreen(reason) {
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('expiredScreen').style.display = 'grid';
+    lucide.createIcons();
 }
 
 function startLicenseTimer(professor) {
@@ -945,39 +1253,48 @@ function startLicenseTimer(professor) {
         return;
     }
     
+    // Verificar se o banner foi descartado
+    try {
+        const dismissed = localStorage.getItem('licenseBannerDismissed_' + (professor.id || ''));
+        if (dismissed === 'true') {
+            bannerDismissed = true;
+        }
+    } catch(e) {}
+    
     const banner = document.getElementById('licenseBanner');
     const timerEl = document.getElementById('licenseTimer');
+    const planNameEl = document.getElementById('planName');
+    
+    // Mostrar plano
+    planNameEl.textContent = getPlanLabel(professor.plano || 'mensal');
     
     function updateTimer() {
         const timeRemaining = getTimeRemaining(professor.licenca_fim);
         
         if (!timeRemaining || timeRemaining.total <= 0) {
-            // Licença expirou - mostrar tela de bloqueio
             clearInterval(licenseTimerInterval);
             licenseTimerInterval = null;
             banner.style.display = 'none';
-            showLicenseExpiredScreen('Sua licença expirou em ' + fmtDateTime(professor.licenca_fim), true);
+            showExpiredScreen('Seu plano expirou em ' + fmtDateTime(professor.licenca_fim));
             logoutSilent();
             return;
         }
         
         const { days, hours, minutes, seconds } = timeRemaining;
         
-        // Atualizar timer
         document.getElementById('timerDays').textContent = String(days).padStart(2, '0');
         document.getElementById('timerHours').textContent = String(hours).padStart(2, '0');
         document.getElementById('timerMinutes').textContent = String(minutes).padStart(2, '0');
         document.getElementById('timerSeconds').textContent = String(seconds).padStart(2, '0');
         
-        // Se menos de 2 dias, mostrar em vermelho
         if (days <= 2) {
             timerEl.classList.add('warning');
         } else {
             timerEl.classList.remove('warning');
         }
         
-        // Mostrar banner apenas se menos de 5 dias
-        if (days <= 5) {
+        // Mostrar banner apenas se menos de 5 dias e não foi descartado
+        if (days <= 5 && !bannerDismissed) {
             banner.style.display = 'flex';
             lucide.createIcons();
         } else {
@@ -985,10 +1302,7 @@ function startLicenseTimer(professor) {
         }
     }
     
-    // Atualizar imediatamente
     updateTimer();
-    
-    // Atualizar a cada segundo
     licenseTimerInterval = setInterval(updateTimer, 1000);
 }
 
@@ -1011,50 +1325,6 @@ function renderLicenseBanner(professor) {
     }
 }
 
-function showLicenseExpiredScreen(reason, isBlocked = true) {
-    const loginScreen = document.getElementById("loginScreen");
-    const app = document.getElementById("app");
-    
-    app.style.display = "none";
-    loginScreen.style.display = "grid";
-    
-    const loginBox = loginScreen.querySelector('.login-box');
-    if (loginBox) {
-        loginBox.innerHTML = `
-            <div class="logo-area">
-                <img src="https://i.imgur.com/AUoGLEq.png" alt="Legado Que Ensina" class="logo-img">
-                <div class="brand-name">Legado Que <span>Ensina</span></div>
-                <div class="brand-sub">Gestão integrada para educação e cuidado</div>
-            </div>
-            
-            <div style="text-align:center;padding:25px 20px;background:#fff5f5;border-radius:12px;border:2px solid #f0c0c0;margin-bottom:20px">
-                <div style="font-size:40px;margin-bottom:10px"><i data-lucide="${isBlocked ? 'lock' : 'alert-circle'}" style="width:48px;height:48px;color:#b85b5b"></i></div>
-                <div style="font-size:20px;font-weight:800;color:#b85b5b">${isBlocked ? 'ACESSO BLOQUEADO' : 'LICENÇA EXPIRADA'}</div>
-                <div style="font-size:13px;color:#8a6b6b;margin-top:10px;max-width:350px;margin-left:auto;margin-right:auto">${esc(reason)}</div>
-                <div style="font-size:11px;color:#999;margin-top:15px;border-top:1px solid #f0d0d0;padding-top:12px">
-                    Entre em contato com o suporte para regularizar seu acesso.<br>
-                    <strong>Suporte:</strong> contato@legadoqueensina.com.br
-                </div>
-            </div>
-            
-            <button id="tryLoginAgain" class="login-btn" style="background:#718096">
-                <i data-lucide="refresh-cw"></i> Tentar novamente
-            </button>
-            
-            <div class="login-note" style="margin-top:15px">
-                <i data-lucide="info"></i>
-                <span>Se você já regularizou sua situação, clique em "Tentar novamente" para acessar o sistema.</span>
-            </div>
-        `;
-        
-        document.getElementById("tryLoginAgain").addEventListener("click", function() {
-            location.reload();
-        });
-        
-        lucide.createIcons();
-    }
-}
-
 function startLicenseMonitoring() {
     if (licenseCheckInterval) {
         clearInterval(licenseCheckInterval);
@@ -1071,12 +1341,17 @@ function startLicenseMonitoring() {
                 clearInterval(licenseTimerInterval);
                 licenseTimerInterval = null;
             }
-            notify('⚠️ ' + license.reason);
             
-            setTimeout(() => {
-                showLicenseExpiredScreen(license.reason, license.blocked || false);
+            if (license.expired) {
+                showExpiredScreen(license.reason);
                 logoutSilent();
-            }, 2000);
+            } else {
+                notify('⚠️ ' + license.reason);
+                setTimeout(() => {
+                    showExpiredScreen(license.reason);
+                    logoutSilent();
+                }, 2000);
+            }
             return;
         }
         
@@ -1106,26 +1381,10 @@ async function logoutSilent() {
     isMaster = false;
     document.getElementById("masterNav").style.display = "none";
     showTeacherUI();
-    const licenseBanner = document.getElementById("licenseBanner");
-    if (licenseBanner) licenseBanner.style.display = "none";
     isDataLoaded = false;
     currentUserId = null;
     currentStudent = null;
     currentPage = "dashboard";
-
-    document.getElementById("app").style.display = "none";
-    document.getElementById("loginScreen").style.display = "grid";
-    document.getElementById("loginPass").value = "";
-
-    document.querySelectorAll(".view").forEach(view => {
-        view.innerHTML = '';
-        view.classList.remove('active');
-    });
-
-    document.getElementById("topUserName").textContent = "";
-    const avatarEl = document.getElementById("topAvatar");
-    avatarEl.style.backgroundImage = "";
-    avatarEl.textContent = "?";
 }
 
 // ============================================================
@@ -1282,6 +1541,7 @@ function mapProfessorFromDB(row) {
         ativo: row.ativo !== false,
         licenca_inicio: row.licenca_inicio,
         licenca_fim: row.licenca_fim,
+        plano: row.plano || 'mensal',
         valor_mensalidade: row.valor_mensalidade || 0,
         observacao_admin: row.observacao_admin || "",
         observacoes: [],
@@ -1471,6 +1731,7 @@ async function loadDataFromSupabase() {
                 ativo: true,
                 licenca_inicio: null,
                 licenca_fim: null,
+                plano: 'mensal',
                 observacoes: [],
                 evolucoesPessoais: [],
                 configuracoes: { notificacoes: true, tema: "claro", lembretes: true }
@@ -1504,7 +1765,7 @@ const COLUMN_MAP = {
     'transacoes': ['id', 'user_id', 'agenda_id', 'aluno_id', 'data', 'descricao', 'valor', 'tipo', 'categoria', 'parcelas'],
     'agenda': ['id', 'user_id', 'aluno_id', 'data', 'hora', 'tipo', 'status', 'presente', 'pago', 'updated_at'],
     'alunos': ['id', 'user_id', 'nome', 'idade', 'serie', 'responsavel', 'telefone', 'valor', 'foto', 'tags', 'observacoes', 'ativo', 'updated_at'],
-    'professores': ['id', 'user_id', 'nome', 'especialidade', 'bio', 'foto', 'cargo', 'ativo', 'licenca_inicio', 'licenca_fim', 'valor_mensalidade', 'observacao_admin', 'config_notificacoes', 'config_lembretes', 'updated_at'],
+    'professores': ['id', 'user_id', 'nome', 'especialidade', 'bio', 'foto', 'cargo', 'ativo', 'licenca_inicio', 'licenca_fim', 'plano', 'valor_mensalidade', 'observacao_admin', 'config_notificacoes', 'config_lembretes', 'updated_at'],
     'evolucoes': ['id', 'user_id', 'aluno_id', 'data', 'titulo', 'texto'],
     'consultas': ['id', 'user_id', 'aluno_id', 'data', 'observacoes', 'acoes', 'pais', 'solicitacoes', 'comportamentos'],
     'avaliacoes': ['id', 'user_id', 'aluno_id', 'data', 'titulo', 'tipo', 'objetivo', 'questoes', 'finalizada'],
@@ -1737,7 +1998,6 @@ async function deleteAgendaItemDB(id) {
     }
 }
 
-// CORRIGIDO: Removido campo metodo_pagamento
 async function saveTransacao(transacao) {
     try {
         if (!transacao) return null;
@@ -1820,6 +2080,7 @@ async function saveProfessor(professor) {
             ativo: professor.ativo !== false,
             licenca_inicio: professor.licenca_inicio || null,
             licenca_fim: professor.licenca_fim || null,
+            plano: professor.plano || 'mensal',
             valor_mensalidade: professor.valor_mensalidade || 0,
             observacao_admin: professor.observacao_admin || '',
             config_notificacoes: professor.configuracoes?.notificacoes !== false,
@@ -2147,6 +2408,7 @@ function renderMasterTable() {
                     <tr>
                         <th>Professor</th>
                         <th>Cargo</th>
+                        <th>Plano</th>
                         <th>Status</th>
                         <th>Licença</th>
                         <th>Mensalidade</th>
@@ -2159,7 +2421,7 @@ function renderMasterTable() {
                         const status = p.ativo === false ? 
                             '<span class="master-status off">Bloqueado</span>' : 
                             (d !== null && d < 0 ? 
-                                '<span class="master-status off">Expirada</span>' : 
+                                '<span class="master-status off">Expirado</span>' : 
                                 (d !== null && d <= 5 ? 
                                     `<span class="master-status warn">${d} dias</span>` : 
                                     '<span class="master-status ok">Ativo</span>'
@@ -2172,6 +2434,7 @@ function renderMasterTable() {
                                     <div style="font-size:10px;color:#9aa6a1">${esc(p.user_id || '')}</div>
                                 </td>
                                 <td>${esc(p.cargo || 'Professor')}</td>
+                                <td><span class="license-plan-badge">${getPlanLabel(p.plano || 'mensal')}</span></td>
                                 <td>${status}</td>
                                 <td>${p.licenca_fim ? fmtDateTime(p.licenca_fim) : 'Não definida'}</td>
                                 <td>${masterMoney(p.valor_mensalidade)}</td>
@@ -2188,7 +2451,7 @@ function renderMasterTable() {
                                 </td>
                             </tr>
                         `;
-                    }).join('') || '<tr><td colspan="6" style="text-align:center;padding:30px;color:#97a39e">Nenhum professor encontrado.</td></tr>'}
+                    }).join('') || '<tr><td colspan="7" style="text-align:center;padding:30px;color:#97a39e">Nenhum professor encontrado.</td></tr>'}
                 </tbody>
             </table>
         </div>
@@ -2261,6 +2524,14 @@ function openMasterProfessor(id) {
                     <input id="mCargo" class="input" value="${esc(p.cargo || 'Professor')}">
                 </div>
                 <div class="field">
+                    <label class="label">Plano</label>
+                    <select id="mPlano" class="select">
+                        <option value="mensal" ${p.plano === 'mensal' ? 'selected' : ''}>Mensal - R$ 29,90</option>
+                        <option value="trimestral" ${p.plano === 'trimestral' ? 'selected' : ''}>Trimestral - R$ 79,90</option>
+                        <option value="semestral" ${p.plano === 'semestral' ? 'selected' : ''}>Semestral - R$ 149,90</option>
+                    </select>
+                </div>
+                <div class="field">
                     <label class="label">Mensalidade</label>
                     <input id="mValor" class="input" type="number" step="0.01" value="${Number(p.valor_mensalidade || 0)}">
                 </div>
@@ -2286,7 +2557,7 @@ function openMasterProfessor(id) {
                 </button>
                 <button class="btn btn-soft" onclick="extendLicense('${p.id}', 7)">+7 dias</button>
                 <button class="btn btn-soft" onclick="extendLicense('${p.id}', 30)">+30 dias</button>
-                <button class="btn btn-soft" onclick="extendLicense('${p.id}', 365)">+1 ano</button>
+                <button class="btn btn-soft" onclick="extendLicense('${p.id}', 90)">+90 dias</button>
             </div>
         </div>
     `;
@@ -2301,6 +2572,7 @@ function closeMasterModal() {
 async function saveMasterProfessor(id) {
     const payload = {
         cargo: document.getElementById('mCargo').value.trim() || 'Professor',
+        plano: document.getElementById('mPlano').value || 'mensal',
         valor_mensalidade: Number(document.getElementById('mValor').value) || 0,
         licenca_fim: document.getElementById('mLicenca').value || null,
         ativo: document.getElementById('mAtivo').value === 'true',
@@ -2356,7 +2628,7 @@ async function setProfessorActive(id, active) {
         
         if (profData && profData.user_id === currentUserId) {
             setTimeout(() => {
-                showLicenseExpiredScreen('Seu acesso foi bloqueado pela administração.', true);
+                showExpiredScreen('Seu acesso foi bloqueado pela administração.');
                 logoutSilent();
             }, 2000);
         }
@@ -2440,6 +2712,7 @@ async function login() {
                 hideTeacherUI();
                 document.getElementById("masterNav").style.display = "";
                 document.getElementById("loginScreen").style.display = "none";
+                document.getElementById("expiredScreen").style.display = "none";
                 document.getElementById("app").style.display = "flex";
                 document.getElementById("topUserName").textContent = "Suporte";
                 document.getElementById("topAvatar").textContent = "S";
@@ -2463,9 +2736,19 @@ async function login() {
                     data = defaultData();
                     data.session = false;
                     isDataLoaded = false;
-                    showLicenseExpiredScreen(license.reason, license.blocked || false);
+                    if (license.expired) {
+                        showExpiredScreen(license.reason);
+                    } else {
+                        showExpiredScreen(license.reason);
+                    }
                     return;
                 }
+                
+                // Resetar banner dismiss ao fazer login
+                bannerDismissed = false;
+                try {
+                    localStorage.removeItem('licenseBannerDismissed_' + (data.professor?.id || ''));
+                } catch(e) {}
                 
                 startLicenseMonitoring();
                 renderLicenseBanner(data.professor);
@@ -2483,6 +2766,7 @@ async function login() {
             }
 
             document.getElementById("loginScreen").style.display = "none";
+            document.getElementById("expiredScreen").style.display = "none";
             document.getElementById("app").style.display = "flex";
 
             updateUser();
@@ -2519,8 +2803,7 @@ async function logout() {
     isMaster = false;
     document.getElementById("masterNav").style.display = "none";
     showTeacherUI();
-    const licenseBanner = document.getElementById("licenseBanner");
-    if (licenseBanner) licenseBanner.style.display = "none";
+    document.getElementById("licenseBanner").style.display = "none";
     isDataLoaded = false;
     currentUserId = null;
     currentStudent = null;
@@ -2528,6 +2811,7 @@ async function logout() {
 
     document.getElementById("app").style.display = "none";
     document.getElementById("loginScreen").style.display = "grid";
+    document.getElementById("expiredScreen").style.display = "none";
     document.getElementById("loginPass").value = "";
 
     document.querySelectorAll(".view").forEach(view => {
@@ -2559,7 +2843,7 @@ async function logout() {
 }
 
 // ============================================================
-// DASHBOARD
+// DASHBOARD - VERSÃO RESUMIDA (MANTIDA)
 // ============================================================
 
 function renderDashboard() {
@@ -2597,6 +2881,18 @@ function renderDashboard() {
             <div>
                 <div class="section-title">${saudacao}, ${esc(data.professor?.nome?.split(" ")[0] || "Professor")}</div>
                 <div class="section-sub">Visão geral do seu trabalho clínico e pedagógico.</div>
+                <div style="margin-top:6px;display:flex;gap:10px;flex-wrap:wrap">
+                    <span class="license-plan-badge">
+                        <i data-lucide="crown" style="width:14px;height:14px"></i>
+                        Plano ${getPlanLabel(data.professor?.plano || 'mensal')}
+                    </span>
+                    ${data.professor?.licenca_fim ? `
+                        <span style="font-size:10px;color:#8a9892">
+                            <i data-lucide="calendar" style="width:12px;height:12px"></i>
+                            Válido até: ${fmtDateTime(data.professor.licenca_fim)}
+                        </span>
+                    ` : ''}
+                </div>
             </div>
             <button class="btn btn-primary" onclick="navigate('alunos');setTimeout(()=>{toggleStudentForm(true);},100)">
                 <i data-lucide="user-plus"></i>Novo aluno
@@ -3686,7 +3982,7 @@ function setCalendarMode(mode) {
 }
 
 // ============================================================
-// AVALIAÇÕES PSICOPEDAGÓGICAS - PASSO A PASSO (COMPLETO)
+// AVALIAÇÕES PSICOPEDAGÓGICAS - MODELOS
 // ============================================================
 
 const ASSESSMENT_TEMPLATES = [
@@ -5066,7 +5362,13 @@ function renderPerfil() {
                 ${avatarHTML(p, "profile-avatar")}
                 <div style="font-size:18px;font-weight:700;margin-top:12px">${esc(p.nome)}</div>
                 <div style="font-size:11px;color:#8a9892;margin-top:4px">${esc(p.especialidade)}</div>
-                <div style="font-size:10px;color:#8a9892;margin-top:2px">${p.licenca_fim ? 'Licença até: ' + fmtDateTime(p.licenca_fim) : 'Licença não definida'}</div>
+                <div style="font-size:10px;color:#8a9892;margin-top:2px">
+                    <span class="license-plan-badge">
+                        <i data-lucide="crown" style="width:12px;height:12px"></i>
+                        Plano ${getPlanLabel(p.plano || 'mensal')}
+                    </span>
+                    ${p.licenca_fim ? ' · Válido até: ' + fmtDateTime(p.licenca_fim) : ' · Licença não definida'}
+                </div>
             </div>
 
             <div style="border-top:1px solid var(--line);padding-top:18px;margin-top:12px">
@@ -5322,6 +5624,7 @@ async function init() {
     isDataLoaded = false;
 
     document.getElementById("loginScreen").style.display = "grid";
+    document.getElementById("expiredScreen").style.display = "none";
     document.getElementById("app").style.display = "none";
 
     const userInput = document.getElementById("loginUser");
@@ -5412,9 +5715,10 @@ window.cancelAvalStep = cancelAvalStep;
 window.abrirFormRecibo = abrirFormRecibo;
 window.getMetodoPagamentoLabel = getMetodoPagamentoLabel;
 window.getMetodoPagamentoClass = getMetodoPagamentoClass;
-window.showLicenseExpiredScreen = showLicenseExpiredScreen;
+window.showExpiredScreen = showExpiredScreen;
 window.logoutSilent = logoutSilent;
-window.startLicenseTimer = startLicenseTimer;
+window.dismissLicenseBanner = dismissLicenseBanner;
+window.getPlanLabel = getPlanLabel;
 
 // ============================================================
 // INICIAR
