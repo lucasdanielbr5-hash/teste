@@ -492,6 +492,59 @@ button{cursor:pointer}
   .response-value{text-align:left;grid-column:2}
 }
 
+/* ============================================================
+   V3 — OPERAÇÃO PROFISSIONAL
+   ============================================================ */
+.page-hero{background:linear-gradient(135deg,#fff 0%,#f3f8f5 100%);border:1px solid var(--line);border-radius:20px;padding:24px;margin-bottom:18px}
+.page-hero .eyebrow{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--sage);font-weight:800}
+.page-hero h2{margin:7px 0 0;font-size:23px;letter-spacing:-.03em;color:#263832}
+.page-hero p{margin:7px 0 0;max-width:760px;color:#75827d;font-size:12px;line-height:1.7}
+.check-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.check-option{display:flex;align-items:center;gap:8px;padding:10px 11px;border:1px solid var(--line);border-radius:11px;background:#fff;cursor:pointer;font-size:12px;color:#53615c;transition:.2s}
+.check-option:hover{border-color:#b8cec2;background:#f8fbf9}
+.check-option input{accent-color:var(--sage);width:16px;height:16px}
+.schedule-preview{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:14px}
+.schedule-day{border:1px solid var(--line);border-radius:12px;padding:11px;background:#fbfcfc;text-align:center}
+.schedule-day.active{background:#f0f7f3;border-color:#c6ded2}
+.schedule-day .day{font-size:10px;font-weight:800;text-transform:uppercase;color:#84918b}
+.schedule-day .hours{font-size:12px;font-weight:700;color:#34443c;margin-top:5px}
+.schedule-day .break{font-size:9px;color:#9aa6a1;margin-top:3px}
+.admin-panel{border:1px solid #dfe9e4;background:#fbfdfc;border-radius:18px;padding:18px;margin-top:18px}
+.admin-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.admin-stat{padding:12px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.admin-stat .label{font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:#8b9892}
+.admin-stat .value{font-size:19px;font-weight:800;color:#34443c;margin-top:5px}
+.waitlist-shell{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px;align-items:start}
+.waitlist-list{display:flex;flex-direction:column;gap:9px}
+.waitlist-row{display:grid;grid-template-columns:10px 1fr auto;gap:14px;align-items:center;padding:15px;border:1px solid var(--line);border-radius:15px;background:#fff;transition:.2s}
+.waitlist-row:hover{border-color:#c4d9ce;box-shadow:0 7px 22px rgba(30,50,40,.06)}
+.waitlist-main{min-width:0}
+.waitlist-name{font-size:14px;font-weight:800;color:#33413b}
+.waitlist-meta{font-size:10px;color:#87948e;margin-top:4px;line-height:1.6}
+.waitlist-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.waitlist-side{position:sticky;top:8px}
+.permission-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.permission-option{display:flex;gap:9px;align-items:flex-start;border:1px solid var(--line);padding:10px;border-radius:10px;background:#fff;cursor:pointer}
+.permission-option input{accent-color:var(--sage);margin-top:2px}
+.permission-option strong{font-size:11px;color:#45534d;display:block}
+.permission-option span{font-size:9px;color:#89968f;display:block;margin-top:2px;line-height:1.45}
+.host-credentials-note{font-size:10px;color:#8b6f52;background:#fff8ef;border:1px solid #f1dfc8;padding:10px 12px;border-radius:10px;line-height:1.55;margin-top:10px}
+.onboarding-detail{max-width:900px;margin:0 auto}
+.onboarding-detail-nav{display:flex;justify-content:space-between;gap:10px;margin-bottom:14px}
+.onboarding-detail-body{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}
+.onboarding-feature{padding:18px;border:1px solid var(--line);border-radius:15px;background:#fff}
+.onboarding-feature h3{margin:0;font-size:15px;color:#34443c}
+.onboarding-feature p,.onboarding-feature li{font-size:12px;line-height:1.7;color:#68766f}
+.onboarding-feature ul{padding-left:18px}
+.onboarding-action{background:#f4f8f6;border:1px solid #d8e6df;border-radius:15px;padding:18px}
+.onboarding-action .big-icon{width:44px;height:44px;border-radius:12px;background:#eaf3ee;color:var(--sage-dark);display:grid;place-items:center;margin-bottom:12px}
+.onboarding-action h4{margin:0;font-size:13px;color:#34443c}
+.onboarding-action p{font-size:11px;color:#7d8a84;line-height:1.6}
+.finance-calculators{margin-top:18px;border-top:1px solid var(--line);padding-top:18px}
+.finance-calculators-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+@media(max-width:950px){.waitlist-shell,.onboarding-detail-body{grid-template-columns:1fr}.waitlist-side{position:static}.admin-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:680px){.check-grid,.schedule-preview,.finance-calculators-grid{grid-template-columns:1fr 1fr}.permission-grid{grid-template-columns:1fr}.waitlist-row{grid-template-columns:8px 1fr}.waitlist-actions{grid-column:2;justify-content:flex-start}.admin-grid{grid-template-columns:1fr 1fr}}
+
 /* Calculadoras */
 .calc-result{background:linear-gradient(135deg,#eaf3ee,#edf4f8);border-radius:16px;padding:24px;text-align:center;margin-top:20px;animation:fadeIn 0.5s ease}
 .calc-result .result-label{font-size:12px;color:#5a6b64;text-transform:uppercase;letter-spacing:.05em;font-weight:600}
@@ -648,7 +701,6 @@ button{cursor:pointer}
     <button data-page="agenda"><i data-lucide="calendar-days"></i><span class="nav-label">Agenda</span></button>
     <button data-page="avaliacoes"><i data-lucide="clipboard-check"></i><span class="nav-label">Avaliações</span></button>
     <button data-page="financeiro"><i data-lucide="wallet-cards"></i><span class="nav-label">Financeiro</span></button>
-    <button data-page="calculadoras"><i data-lucide="calculator"></i><span class="nav-label">Calculadoras</span></button>
     <button data-page="lista-espera"><i data-lucide="list-ordered"></i><span class="nav-label">Lista de Espera</span></button>
     <button data-page="equipe"><i data-lucide="users-round"></i><span class="nav-label">Equipe</span></button>
     <button data-page="recados"><i data-lucide="mail"></i><span class="nav-label">Recados</span><span id="recadosBadge" class="nav-badge">0</span></button>
@@ -682,6 +734,7 @@ button{cursor:pointer}
 <section id="page-recados" class="view"></section>
 <section id="page-perfil" class="view"></section>
 <section id="page-onboarding" class="view"></section>
+<section id="page-onboarding-detalhe" class="view"></section>
 <section id="page-prontuario" class="view"></section>
 <section id="page-substituicao" class="view"></section>
 <section id="page-carga-trabalho" class="view"></section>
@@ -811,6 +864,7 @@ let avalStepAlunoId = null;
 let avalStepResumo = '';
 let avalPage = 1;
 let currentAvalMode = "list";
+let currentOnboardingDetail = null;
 let currentAvalTemplate = null;
 let currentAvalId = null;
 let window_avalHistTitulo = null;
@@ -952,7 +1006,7 @@ function defaultData() {
             foto: "", cargo: "Professor", ativo: true,
             licenca_inicio: null, licenca_fim: null, plano: 'mensal',
             observacoes: [], evolucoesPessoais: [],
-            configuracoes: { notificacoes: true, tema: "claro", lembretes: true }
+            configuracoes: { notificacoes: true, tema: "claro", lembretes: true, horarioTrabalho: { dias: [1,2,3,4,5], inicio: "08:00", fim: "18:00", pausaInicio: "12:00", pausaFim: "13:00" }, valorSessaoPadrao: 0, formasPagamento: ["pix","cartao"] }
         },
         alunos: [],
         agenda: [],
@@ -1424,7 +1478,7 @@ function mapProfessorFromDB(row) {
         licenca_inicio: row.licenca_inicio, licenca_fim: row.licenca_fim,
         plano: row.plano || 'mensal', valor_mensalidade: row.valor_mensalidade || 0,
         observacao_admin: row.observacao_admin || "", observacoes: [], evolucoesPessoais: [],
-        configuracoes: { notificacoes: row.config_notificacoes !== false, tema: "claro", lembretes: row.config_lembretes !== false }
+        configuracoes: { notificacoes: row.config_notificacoes !== false, tema: "claro", lembretes: row.config_lembretes !== false, horarioTrabalho: row.config_horario_trabalho || { dias: [1,2,3,4,5], inicio: "08:00", fim: "18:00", pausaInicio: "12:00", pausaFim: "13:00" }, valorSessaoPadrao: Number(row.valor_sessao_padrao || 0), formasPagamento: row.formas_pagamento || ["pix","cartao"] }
     };
 }
 
@@ -1511,17 +1565,21 @@ async function loadDataFromSupabase() {
             bio: "Profissional dedicado ao desenvolvimento acadêmico, emocional e cognitivo.",
             foto: "", cargo: "Professor", ativo: true, licenca_inicio: null, licenca_fim: null,
             plano: 'mensal', observacoes: [], evolucoesPessoais: [],
-            configuracoes: { notificacoes: true, tema: "claro", lembretes: true }
+            configuracoes: { notificacoes: true, tema: "claro", lembretes: true, horarioTrabalho: { dias: [1,2,3,4,5], inicio: "08:00", fim: "18:00", pausaInicio: "12:00", pausaFim: "13:00" }, valorSessaoPadrao: 0, formasPagamento: ["pix","cartao"] }
         };
         if (obsProfData && !obsProfData.error) professorNormalizado.observacoes = obsProfData.map(mapObsProfFromDB);
         if (evoProfData && !evoProfData.error) professorNormalizado.evolucoesPessoais = evoProfData.map(mapEvoProfFromDB);
 
         isDataLoaded = true;
+        let localWait=[], localEquipe=[], localOnboarding={};
+        try{ localWait=JSON.parse(localStorage.getItem('waitlist_'+userId)||'[]')||[]; }catch(e){}
+        try{ localEquipe=JSON.parse(localStorage.getItem('equipe_'+userId)||'[]')||[]; }catch(e){}
+        try{ localOnboarding=JSON.parse(localStorage.getItem('onboarding_'+userId)||'{}')||{}; }catch(e){}
         return {
             session: true, professor: professorNormalizado, alunos: alunosNormalizados,
             agenda: (agendaData || []).map(mapAgendaFromDB),
             transacoes: (transacoesData || []).map(mapTransacaoFromDB),
-            listaEspera: [], equipe: [], onboarding: {}, confirmacoes: {}
+            listaEspera: localWait, equipe: localEquipe, onboarding: localOnboarding, confirmacoes: {}
         };
     } catch (error) { console.error('Erro ao carregar dados:', error); notify('Erro ao carregar dados do servidor.'); return null; }
 }
@@ -1533,7 +1591,7 @@ const COLUMN_MAP = {
     'transacoes': ['id', 'user_id', 'agenda_id', 'aluno_id', 'data', 'descricao', 'valor', 'tipo', 'categoria', 'parcelas'],
     'agenda': ['id', 'user_id', 'aluno_id', 'data', 'hora', 'tipo', 'status', 'presente', 'pago', 'updated_at'],
     'alunos': ['id', 'user_id', 'nome', 'idade', 'serie', 'responsavel', 'telefone', 'valor', 'foto', 'tags', 'observacoes', 'ativo', 'updated_at'],
-    'professores': ['id', 'user_id', 'nome', 'especialidade', 'bio', 'foto', 'cargo', 'ativo', 'licenca_inicio', 'licenca_fim', 'plano', 'valor_mensalidade', 'observacao_admin', 'config_notificacoes', 'config_lembretes', 'updated_at'],
+    'professores': ['id', 'user_id', 'nome', 'especialidade', 'bio', 'foto', 'cargo', 'ativo', 'licenca_inicio', 'licenca_fim', 'plano', 'valor_mensalidade', 'valor_sessao_padrao', 'formas_pagamento', 'config_horario_trabalho', 'observacao_admin', 'config_notificacoes', 'config_lembretes', 'updated_at'],
     'evolucoes': ['id', 'user_id', 'aluno_id', 'data', 'titulo', 'texto'],
     'consultas': ['id', 'user_id', 'aluno_id', 'data', 'observacoes', 'acoes', 'pais', 'solicitacoes', 'comportamentos'],
     'avaliacoes': ['id', 'user_id', 'aluno_id', 'data', 'titulo', 'tipo', 'objetivo', 'questoes', 'finalizada'],
@@ -1691,6 +1749,9 @@ async function saveProfessor(professor) {
             observacao_admin: professor.observacao_admin || '',
             config_notificacoes: professor.configuracoes?.notificacoes !== false,
             config_lembretes: professor.configuracoes?.lembretes !== false,
+            valor_sessao_padrao: Number(professor.configuracoes?.valorSessaoPadrao || 0),
+            formas_pagamento: professor.configuracoes?.formasPagamento || [],
+            config_horario_trabalho: professor.configuracoes?.horarioTrabalho || null,
             updated_at: new Date().toISOString()
         });
     } catch (error) { return null; }
@@ -1793,6 +1854,7 @@ function navigate(page) {
         recados: ["mail", "Recados"],
         perfil: ["user-round", "Meu Perfil"],
         onboarding: ["rocket", "Comece sua prática"],
+        "onboarding-detalhe": ["book-open", "Orientação"],
         master: ["shield-check", "Suporte"],
         substituicao: ["repeat", "Substituição"],
         "carga-trabalho": ["bar-chart-3", "Carga de Trabalho"],
@@ -1829,6 +1891,7 @@ function renderPage() {
     if (currentPage === "recados") renderRecados();
     if (currentPage === "perfil") renderPerfil();
     if (currentPage === "onboarding") renderOnboarding();
+    if (currentPage === "onboarding-detalhe") renderOnboardingDetail();
     if (currentPage === "master" && isMaster) renderMasterDashboard();
 }
 
@@ -2082,7 +2145,7 @@ async function login() {
             document.getElementById("masterNav").style.display = "none";
             const loadedData = await loadData();
             if (loadedData) {
-                data = loadedData; data.session = true; isDataLoaded = true;
+                data = loadedData; data.session = true; isDataLoaded = true; loadWorkScheduleLocal();
                 const license = isLicenseValid(data.professor);
                 if (!license.ok) {
                     await supabaseClient.auth.signOut();
@@ -2156,6 +2219,18 @@ function getSaudacao() {
     return "Boa noite";
 }
 
+function getWorkSchedule() {
+    const p = data.professor || {};
+    const c = p.configuracoes || {};
+    return c.horarioTrabalho || { dias:[1,2,3,4,5], inicio:'08:00', fim:'18:00', pausaInicio:'12:00', pausaFim:'13:00' };
+}
+function timeToMinutes(v){ const [h,m]=String(v||'00:00').split(':').map(Number); return (h||0)*60+(m||0); }
+function scheduleDayHours(day){ const w=getWorkSchedule(); if(!(w.dias||[]).includes(day)) return 0; const gross=Math.max(0,timeToMinutes(w.fim)-timeToMinutes(w.inicio)); const br=Math.max(0,timeToMinutes(w.pausaFim)-timeToMinutes(w.pausaInicio)); return Math.max(0,gross-br)/60; }
+function weeklyAvailableHours(){ return (getWorkSchedule().dias||[]).reduce((sum,d)=>sum+scheduleDayHours(d),0); }
+function weeklyOccupiedHours(){ const keys=weekDates(new Date()).map(dateISO); return activeAppointments().filter(a=>keys.includes(a.data)).reduce((sum,a)=>sum+1,0); }
+function saveWorkScheduleLocal(){ try{ localStorage.setItem('workSchedule_'+currentUserId, JSON.stringify(getWorkSchedule())); }catch(e){} }
+function loadWorkScheduleLocal(){ try{ const raw=localStorage.getItem('workSchedule_'+currentUserId); if(raw){ data.professor.configuracoes=data.professor.configuracoes||{}; data.professor.configuracoes.horarioTrabalho=JSON.parse(raw); } }catch(e){} }
+
 function renderDashboard() {
     if (!data || !data.alunos) {
         document.getElementById("page-dashboard").innerHTML = `<div class="empty" style="padding:40px;text-align:center"><p>Carregando dados...</p></div>`;
@@ -2175,9 +2250,9 @@ function renderDashboard() {
 
     // Calcular workload
     const weekAppts = activeAppointments().filter(a => weekDates(new Date()).map(dateISO).includes(a.data));
-    const totalHoras = weekAppts.reduce((s, a) => s + 1, 0);
-    const horasDisponiveis = 40;
-    const percentOcupacao = Math.round((totalHoras / horasDisponiveis) * 100);
+    const totalHoras = weeklyOccupiedHours();
+    const horasDisponiveis = weeklyAvailableHours() || 40;
+    const percentOcupacao = Math.min(100, Math.round((totalHoras / horasDisponiveis) * 100));
 
     document.getElementById("page-dashboard").innerHTML = `
         ${renderHelpBox("dashboard")}
@@ -2276,7 +2351,7 @@ function renderAlunos() {
                 <div class="field"><label class="label">Série / Ano</label><input id="fSerie" class="input" placeholder="5º ano"></div>
                 <div class="field"><label class="label">Responsável</label><input id="fResponsavel" class="input" placeholder="Nome do responsável"></div>
                 <div class="field"><label class="label">Telefone / WhatsApp</label><input id="fTelefone" class="input" placeholder="(11) 99999-9999"></div>
-                <div class="field"><label class="label">Valor por sessão (R$) *</label><input id="fValor" class="input" type="number" min="0" step="0.01" value="150"></div>
+                <div class="field"><label class="label">Valor por sessão (R$) *</label><input id="fValor" class="input" type="number" min="0" step="0.01" value="${Number(data.professor?.configuracoes?.valorSessaoPadrao||150)}"></div>
                 <div class="field"><label class="label">Foto (URL)</label><input id="fFoto" class="input" placeholder="https://..."></div>
                 <div class="field"><label class="label">Tags clínicas</label><input id="fTags" class="input" placeholder="TDAH, Dislexia, Ansiedade"></div>
                 <div class="field"><label class="label">Observações iniciais</label><input id="fObs" class="input" placeholder="Informações relevantes"></div>
@@ -3616,7 +3691,7 @@ function gerarPDFAvaliacao(alunoId, avalId) {
     y += 10;
     doc.setFont('helvetica', 'bold');
     doc.text('________________________________________', 40, y); y += 6;
-    doc.text(esc(data.professor?.nome || 'Professor'), 40, y); y += 5;
+    doc.text(String(data.professor?.nome || 'Professor'), 40, y); y += 5;
     doc.text('Profissional Responsável', 40, y); y += 10;
     doc.setFontSize(8);
     doc.text(`Gerado em ${fmtDate(today())} - Legado Que Ensina`, 20, y);
@@ -3670,9 +3745,25 @@ function renderFinanceiro() {
         <div class="card card-animated" style="margin-top:16px">
             <div class="section-head"><div><div class="section-title">Pendências</div></div></div>
             ${monthAppts.filter(a => !a.pago).slice(0, 10).map(a => { const s = getStudent(a.alunoId); return `<div style="display:flex;align-items:center;gap:10px;padding:11px 0;border-top:1px solid var(--line)"><div style="flex:1;cursor:pointer" onclick="openStudent('${s?.id}')"><strong>${esc(s?.nome || "Aluno")}</strong><div class="section-sub">${fmtDate(a.data)} · ${a.hora}</div></div><strong>${money(s?.valor || 0)}</strong><button class="btn btn-primary btn-sm btn-hover" onclick="togglePayment('${a.id}')">Registrar</button></div>`; }).join("") || `<div class="empty">Nenhuma pendência.</div>`}
+        </div>
+        <div class="finance-calculators">
+            <div class="section-head"><div><div class="section-title">Ferramentas financeiras</div><div class="section-sub">Precificação e planejamento agora fazem parte do Financeiro.</div></div></div>
+            <div class="finance-calculators-grid">
+                <div class="card"><div class="section-title">Preço da sessão</div><div class="section-sub">Calcule o valor necessário para preservar sua margem.</div>
+                    <div class="form-grid two" style="margin-top:12px"><div class="field"><label class="label">Valor líquido desejado</label><input id="finCalcDesejado" class="input" type="number" step="0.01" oninput="calcularFinanceiroRapido()"></div><div class="field"><label class="label">Taxas (%)</label><input id="finCalcTaxa" class="input" type="number" step="0.01" value="3.5" oninput="calcularFinanceiroRapido()"></div></div>
+                    <div id="finCalcResultado" class="calc-result" style="margin-top:4px"><div class="result-label">Informe um valor</div><div class="result-value" style="font-size:24px;color:#8a9892">R$ 0,00</div></div>
+                </div>
+                <div class="card"><div class="section-title">Meta mensal</div><div class="section-sub">Relacione sua renda desejada com a capacidade semanal.</div>
+                    <div class="form-grid two" style="margin-top:12px"><div class="field"><label class="label">Meta mensal</label><input id="finCalcMeta" class="input" type="number" step="0.01" oninput="calcularFinanceiroMeta()"></div><div class="field"><label class="label">Valor médio/sessão</label><input id="finCalcSessao" class="input" type="number" step="0.01" value="150" oninput="calcularFinanceiroMeta()"></div></div>
+                    <div id="finCalcMetaResultado" class="calc-result" style="margin-top:4px"><div class="result-label">Informe sua meta</div><div class="result-value" style="font-size:24px;color:#8a9892">0 sessões</div></div>
+                </div>
+            </div>
         </div>`;
     lucide.createIcons();
+    calcularFinanceiroRapido(); calcularFinanceiroMeta();
 }
+function calcularFinanceiroRapido(){ const d=Number(document.getElementById('finCalcDesejado')?.value||0), t=Number(document.getElementById('finCalcTaxa')?.value||0); const el=document.getElementById('finCalcResultado'); if(!el)return; if(d<=0){el.innerHTML='<div class="result-label">Informe um valor</div><div class="result-value" style="font-size:24px;color:#8a9892">R$ 0,00</div>';return;} const bruto=d/(1-Math.min(t/100,.99)); el.innerHTML=`<div class="result-label">Preço sugerido</div><div class="result-value">${money(bruto)}</div><div class="result-detail">Líquido estimado após ${t}% de taxa: <strong>${money(d)}</strong></div>`; }
+function calcularFinanceiroMeta(){ const meta=Number(document.getElementById('finCalcMeta')?.value||0), sess=Number(document.getElementById('finCalcSessao')?.value||0); const el=document.getElementById('finCalcMetaResultado'); if(!el)return; if(meta<=0||sess<=0){el.innerHTML='<div class="result-label">Informe sua meta</div><div class="result-value" style="font-size:24px;color:#8a9892">0 sessões</div>';return;} const q=Math.ceil(meta/sess); el.innerHTML=`<div class="result-label">Sessões necessárias</div><div class="result-value">${q}</div><div class="result-detail">Aproximadamente <strong>${(q/4).toFixed(1)}</strong> sessões por semana.</div>`; }
 
 function showDespesaForm() {
     const descricao = prompt("Descrição:");
@@ -3840,333 +3931,94 @@ function calcularSessao() {
 // LISTA DE ESPERA
 // ============================================================
 function renderListaEspera() {
-    if (!isDataLoaded || !data.session) {
-        document.getElementById("page-lista-espera").innerHTML = `<div class="empty" style="padding:40px;text-align:center"><p>Faça login.</p></div>`;
-        return;
-    }
+    if (!isDataLoaded || !data.session) { document.getElementById("page-lista-espera").innerHTML = `<div class="empty" style="padding:40px;text-align:center"><p>Faça login.</p></div>`; return; }
     const lista = data.listaEspera || [];
     document.getElementById("page-lista-espera").innerHTML = `
-        ${renderHelpBox("lista-espera")}
-        <div class="section-head">
-            <div><div class="section-title">Lista de Espera Inteligente</div><div class="section-sub">Cadastre interessados e receba sugestões quando abrir vaga.</div></div>
-            <button class="btn btn-primary btn-hover" onclick="showWaitlistForm()"><i data-lucide="user-plus"></i>Novo interessado</button>
-        </div>
-        <div id="waitlistForm" class="card" style="display:none;margin-bottom:16px;animation:fadeIn 0.3s ease">
-            <div class="section-title">Cadastrar interessado</div>
-            <div class="form-grid two" style="margin-top:14px">
-                <div class="field"><label class="label">Nome</label><input id="wlNome" class="input"></div>
-                <div class="field"><label class="label">Telefone</label><input id="wlTelefone" class="input"></div>
-                <div class="field"><label class="label">Idade</label><input id="wlIdade" class="input" type="number"></div>
-                <div class="field"><label class="label">Área de interesse</label>
-                    <select id="wlArea" class="select"><option>Psicopedagogia</option><option>Psicologia</option><option>Aula Particular</option></select>
-                </div>
-                <div class="field"><label class="label">Preferência de horário</label><input id="wlHorario" class="input" placeholder="Ex: manhã, tarde"></div>
-                <div class="field"><label class="label">Modalidade</label>
-                    <select id="wlModalidade" class="select"><option>Presencial</option><option>Online</option><option>Híbrido</option></select>
-                </div>
-                <div class="field"><label class="label">Prioridade</label>
-                    <select id="wlPrioridade" class="select"><option value="baixa">Baixa</option><option value="media" selected>Média</option><option value="alta">Alta</option></select>
-                </div>
-                <div class="field"><label class="label">Observações</label><input id="wlObs" class="input"></div>
-            </div>
-            <div class="form-actions">
-                <button class="btn btn-primary btn-hover" onclick="saveWaitlist()"><i data-lucide="save"></i>Salvar</button>
-                <button class="btn btn-outline btn-hover" onclick="showWaitlistForm()">Cancelar</button>
-            </div>
-        </div>
-        <div class="card card-animated">
-            ${lista.length === 0 ? `<div class="empty">Nenhum interessado cadastrado.</div>` : lista.map((w, i) => `
-                <div class="waitlist-item">
-                    <div class="waitlist-priority ${w.prioridade || 'media'}"></div>
-                    <div style="flex:1">
-                        <div style="font-weight:700;font-size:13px">${esc(w.nome)}</div>
-                        <div class="section-sub">${w.idade ? w.idade + ' anos · ' : ''}${esc(w.area || '')} · ${esc(w.modalidade || '')} · ${esc(w.horario || '')}</div>
-                        ${w.observacoes ? `<div class="section-sub" style="margin-top:3px;font-style:italic">${esc(w.observacoes)}</div>` : ''}
+        <div class="page-hero"><div class="eyebrow">Gestão de demanda</div><h2>Lista de espera</h2><p>Cadastre interessados, edite os dados e, quando surgir uma vaga, transforme o cadastro em aluno e já abra o fluxo de agendamento.</p></div>
+        <div class="waitlist-shell">
+            <div>
+                <div class="section-head"><div><div class="section-title">Interessados</div><div class="section-sub">${lista.length} pessoa(s) aguardando atendimento.</div></div><button class="btn btn-primary btn-hover" onclick="showWaitlistForm()"><i data-lucide="user-plus"></i>Novo interessado</button></div>
+                <div id="waitlistForm" class="card" style="display:none;margin-bottom:16px">
+                    <div class="section-head"><div><div class="section-title" id="wlFormTitle">Cadastrar interessado</div><div class="section-sub">Os dados podem ser ajustados antes da entrada na sua carteira.</div></div></div>
+                    <input type="hidden" id="wlEditId">
+                    <div class="form-grid two">
+                        <div class="field"><label class="label">Nome *</label><input id="wlNome" class="input"></div><div class="field"><label class="label">Telefone</label><input id="wlTelefone" class="input"></div>
+                        <div class="field"><label class="label">Idade</label><input id="wlIdade" class="input" type="number"></div><div class="field"><label class="label">Área</label><select id="wlArea" class="select"><option>Psicopedagogia</option><option>Psicologia</option><option>Aula Particular</option></select></div>
+                        <div class="field"><label class="label">Horário desejado</label><input id="wlHorario" class="input" placeholder="Ex.: terça à tarde"></div><div class="field"><label class="label">Modalidade</label><select id="wlModalidade" class="select"><option>Presencial</option><option>Online</option><option>Híbrido</option></select></div>
+                        <div class="field"><label class="label">Prioridade</label><select id="wlPrioridade" class="select"><option value="baixa">Baixa</option><option value="media">Média</option><option value="alta">Alta</option></select></div><div class="field"><label class="label">Valor por sessão</label><input id="wlValor" class="input" type="number" step="0.01" placeholder="Ex.: 150"></div>
+                        <div class="field" style="grid-column:1/-1"><label class="label">Observações</label><textarea id="wlObs" class="textarea" style="min-height:80px"></textarea></div>
                     </div>
-                    <div style="display:flex;gap:5px">
-                        <span class="tag" style="background:${w.prioridade === 'alta' ? '#fff0f0' : w.prioridade === 'media' ? '#fff8ef' : '#eaf5ee'};color:${w.prioridade === 'alta' ? '#b55e5e' : w.prioridade === 'media' ? '#a87935' : '#3e8060'}">${w.prioridade || 'média'}</span>
-                        <button class="btn btn-danger btn-sm btn-hover" onclick="removeWaitlist(${i})"><i data-lucide="trash-2"></i></button>
-                    </div>
-                </div>`).join("")}
-        </div>
-        <div class="card card-animated" style="margin-top:16px;background:#f8fbf9;border-color:#c5e0d0">
-            <div class="section-title">Sugestões inteligentes</div>
-            <div class="section-sub">Quando uma vaga abrir, o sistema indicará automaticamente os candidatos compatíveis.</div>
-            <div style="margin-top:12px">
-                ${lista.filter(w => w.prioridade === 'alta').length > 0 ? `<div style="font-size:12px;color:#3e8060"><strong>${lista.filter(w => w.prioridade === 'alta').length} candidato(s) com prioridade ALTA</strong> aguardando vaga.</div>` : `<div style="font-size:12px;color:#8a9892">Nenhum candidato de alta prioridade no momento.</div>`}
+                    <div class="form-actions"><button class="btn btn-primary" onclick="saveWaitlist()"><i data-lucide="save"></i>Salvar</button><button class="btn btn-outline" onclick="closeWaitlistForm()">Cancelar</button></div>
+                </div>
+                <div class="waitlist-list">
+                    ${lista.length ? lista.map((w,i)=>`<div class="waitlist-row"><div class="waitlist-priority ${w.prioridade||'media'}"></div><div class="waitlist-main"><div class="waitlist-name">${esc(w.nome)}</div><div class="waitlist-meta">${w.idade?w.idade+' anos · ':''}${esc(w.area||'')} · ${esc(w.modalidade||'')} · ${esc(w.horario||'')} · ${w.valor?money(w.valor):'valor não definido'}</div>${w.observacoes?`<div class="waitlist-meta">${esc(w.observacoes)}</div>`:''}</div><div class="waitlist-actions"><button class="btn btn-primary btn-sm" onclick="promoteWaitlist(${i})"><i data-lucide="calendar-plus"></i>Agendar vaga</button><button class="btn btn-outline btn-sm" onclick="editWaitlist(${i})"><i data-lucide="pencil"></i>Editar</button><button class="btn btn-danger btn-sm" onclick="removeWaitlist(${i})"><i data-lucide="trash-2"></i></button></div></div>`).join('') : `<div class="card empty">Nenhum interessado na fila.</div>`}
+                </div>
             </div>
+            <aside class="waitlist-side"><div class="card"><div class="section-title">Critérios da fila</div><div class="section-sub" style="margin-bottom:12px">Prioridade e compatibilidade ajudam na organização, mas a decisão da vaga continua sendo sua.</div>${['alta','media','baixa'].map(k=>`<div style="display:flex;justify-content:space-between;padding:9px 0;border-top:1px solid var(--line);font-size:11px"><span style="text-transform:capitalize">${k}</span><strong>${lista.filter(x=>(x.prioridade||'media')===k).length}</strong></div>`).join('')}</div><div class="card" style="margin-top:12px;background:#f8fbf9"><div class="section-title">Ao abrir uma vaga</div><div class="section-sub">Use “Agendar vaga”. O cadastro vira aluno, recebe o valor definido e o sistema abre a agenda para escolher data e horário.</div></div></aside>
         </div>`;
     lucide.createIcons();
 }
-
-function showWaitlistForm() {
-    const f = document.getElementById("waitlistForm");
-    if (!f) return;
-    f.style.display = f.style.display === "none" ? "block" : "none";
-    if (f.style.display === "block") f.scrollIntoView({ behavior: "smooth", block: "start" });
-}
-
-async function saveWaitlist() {
-    const nome = document.getElementById("wlNome").value.trim();
-    if (!nome) { notify("Informe o nome."); return; }
-    if (!data.listaEspera) data.listaEspera = [];
-    data.listaEspera.push({
-        id: uid(), nome,
-        telefone: document.getElementById("wlTelefone").value.trim(),
-        idade: Number(document.getElementById("wlIdade").value) || 0,
-        area: document.getElementById("wlArea").value,
-        horario: document.getElementById("wlHorario").value.trim(),
-        modalidade: document.getElementById("wlModalidade").value,
-        prioridade: document.getElementById("wlPrioridade").value,
-        observacoes: document.getElementById("wlObs").value.trim(),
-        criadoEm: today()
-    });
-    try { localStorage.setItem('waitlist_' + currentUserId, JSON.stringify(data.listaEspera)); } catch(e) {}
-    notify("Interessado cadastrado.");
-    showWaitlistForm();
-    renderListaEspera();
-}
-
-function removeWaitlist(index) {
-    if (!confirm("Remover da lista?")) return;
-    data.listaEspera.splice(index, 1);
-    try { localStorage.setItem('waitlist_' + currentUserId, JSON.stringify(data.listaEspera)); } catch(e) {}
-    renderListaEspera();
-    notify("Removido.");
-}
+function showWaitlistForm(editIndex=null){ const f=document.getElementById('waitlistForm'); if(!f)return; f.style.display='block'; if(editIndex===null){ document.getElementById('wlEditId').value=''; document.getElementById('wlFormTitle').textContent='Cadastrar interessado'; ['wlNome','wlTelefone','wlIdade','wlHorario','wlValor','wlObs'].forEach(id=>document.getElementById(id).value=''); document.getElementById('wlArea').value='Psicopedagogia'; document.getElementById('wlModalidade').value='Presencial'; document.getElementById('wlPrioridade').value='media'; } f.scrollIntoView({behavior:'smooth',block:'start'}); }
+function closeWaitlistForm(){ const f=document.getElementById('waitlistForm'); if(f)f.style.display='none'; }
+function editWaitlist(i){ const w=(data.listaEspera||[])[i]; if(!w)return; showWaitlistForm(i); document.getElementById('wlEditId').value=String(i); document.getElementById('wlFormTitle').textContent='Editar interessado'; document.getElementById('wlNome').value=w.nome||''; document.getElementById('wlTelefone').value=w.telefone||''; document.getElementById('wlIdade').value=w.idade||''; document.getElementById('wlArea').value=w.area||'Psicopedagogia'; document.getElementById('wlHorario').value=w.horario||''; document.getElementById('wlModalidade').value=w.modalidade||'Presencial'; document.getElementById('wlPrioridade').value=w.prioridade||'media'; document.getElementById('wlValor').value=w.valor||''; document.getElementById('wlObs').value=w.observacoes||''; }
+async function saveWaitlist(){ const nome=document.getElementById('wlNome').value.trim(); if(!nome){notify('Informe o nome.');return;} if(!data.listaEspera)data.listaEspera=[]; const item={id:document.getElementById('wlEditId').value?data.listaEspera[Number(document.getElementById('wlEditId').value)]?.id:uid(),nome,telefone:document.getElementById('wlTelefone').value.trim(),idade:Number(document.getElementById('wlIdade').value)||0,area:document.getElementById('wlArea').value,horario:document.getElementById('wlHorario').value.trim(),modalidade:document.getElementById('wlModalidade').value,prioridade:document.getElementById('wlPrioridade').value,valor:Number(document.getElementById('wlValor').value)||0,observacoes:document.getElementById('wlObs').value.trim(),criadoEm:today()}; const idx=document.getElementById('wlEditId').value; if(idx!=='')data.listaEspera[Number(idx)]=item; else data.listaEspera.push(item); try{localStorage.setItem('waitlist_'+currentUserId,JSON.stringify(data.listaEspera));}catch(e){} closeWaitlistForm(); renderListaEspera(); notify(idx!==''?'Cadastro atualizado.':'Interessado cadastrado.'); }
+function promoteWaitlist(i){ const w=(data.listaEspera||[])[i]; if(!w)return; if(!confirm(`Mover ${w.nome} para Alunos e abrir a agenda?`))return; const student={id:uid(),nome:w.nome,idade:w.idade||0,serie:'',responsavel:'',telefone:w.telefone||'',valor:Number(w.valor)||Number(data.professor?.configuracoes?.valorSessaoPadrao)||0,foto:'',tags:[],observacoes:w.observacoes||'',ativo:true}; data.alunos.push(student); ensureStudentModules(student); data.listaEspera.splice(i,1); try{localStorage.setItem('waitlist_'+currentUserId,JSON.stringify(data.listaEspera));}catch(e){} saveData().then(()=>{currentStudent=student.id;navigate('agenda');setTimeout(()=>{toggleAgendaForm();const sel=document.getElementById('agAluno');if(sel)sel.value=student.id;},120);notify(`${student.nome} agora está em Alunos.`);}); }
+function removeWaitlist(i){ if(!confirm('Remover este interessado da lista?'))return; data.listaEspera.splice(i,1); try{localStorage.setItem('waitlist_'+currentUserId,JSON.stringify(data.listaEspera));}catch(e){} renderListaEspera(); notify('Removido da lista.'); }
 
 // ============================================================
 // EQUIPE / ANFITRIÕES
 // ============================================================
-function renderEquipe() {
-    if (!isDataLoaded || !data.session) {
-        document.getElementById("page-equipe").innerHTML = `<div class="empty" style="padding:40px;text-align:center"><p>Faça login.</p></div>`;
-        return;
-    }
-    const plano = data.professor?.plano || 'mensal';
-    const maxHosts = plano === 'semestral' ? 5 : plano === 'trimestral' ? 2 : 1;
-    const equipe = data.equipe || [];
-    document.getElementById("page-equipe").innerHTML = `
-        ${renderHelpBox("equipe")}
-        <div class="section-head">
-            <div><div class="section-title">Equipe / Anfitriões</div><div class="section-sub">Convide profissionais para compartilhar sua carteira.</div></div>
-            <button class="btn btn-primary btn-hover" onclick="showHostForm()" ${equipe.length >= maxHosts ? 'disabled' : ''}><i data-lucide="user-plus"></i>Convidar anfitrião</button>
-        </div>
-        <div class="card card-animated" style="background:#f8fbf9;border-color:#c5e0d0;margin-bottom:16px">
-            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-                <i data-lucide="crown" style="width:20px;color:var(--sage-dark)"></i>
-                <div style="flex:1">
-                    <div style="font-weight:700;font-size:13px">Plano ${getPlanLabel(plano)}</div>
-                    <div class="section-sub">Permite até <strong>${maxHosts}</strong> anfitrião(ões). Você já possui <strong>${equipe.length}</strong>.</div>
-                </div>
-                <div style="font-size:24px;font-weight:800;color:var(--sage)">${equipe.length}/${maxHosts}</div>
-            </div>
-        </div>
-        <div id="hostForm" class="card" style="display:none;margin-bottom:16px;animation:fadeIn 0.3s ease">
-            <div class="section-title">Convidar novo anfitrião</div>
-            <div class="form-grid two" style="margin-top:14px">
-                <div class="field"><label class="label">Nome</label><input id="hostNome" class="input"></div>
-                <div class="field"><label class="label">E-mail</label><input id="hostEmail" class="input" type="email"></div>
-                <div class="field"><label class="label">Especialidade</label><input id="hostEspec" class="input"></div>
-                <div class="field"><label class="label">Permissões</label>
-                    <select id="hostPerm" class="select">
-                        <option value="total">Acesso total aos alunos distribuídos</option>
-                        <option value="limitado">Apenas leitura</option>
-                    </select>
-                </div>
-            </div>
-            <div class="form-actions">
-                <button class="btn btn-primary btn-hover" onclick="saveHost()"><i data-lucide="send"></i>Enviar convite</button>
-                <button class="btn btn-outline btn-hover" onclick="showHostForm()">Cancelar</button>
-            </div>
-        </div>
-        <div class="card card-animated">
-            <div class="section-title">Anfitriões ativos</div>
-            ${equipe.length === 0 ? `<div class="empty">Nenhum anfitrião convidado ainda.</div>` : equipe.map((h, i) => `
-                <div class="host-card ${h.ativo === false ? 'inactive' : ''}">
-                    <div class="avatar" style="width:44px;height:44px;font-size:16px">${esc(initials(h.nome))}</div>
-                    <div style="flex:1">
-                        <div style="font-weight:700;font-size:13px">${esc(h.nome)}</div>
-                        <div class="section-sub">${esc(h.email || '')} · ${esc(h.especialidade || '')}</div>
-                        <div class="section-sub" style="margin-top:3px">
-                            <span class="tag">${h.permissoes === 'total' ? 'Acesso total' : 'Leitura'}</span>
-                            <span class="tag" style="background:${h.ativo !== false ? '#eaf5ee' : '#fff0f0'};color:${h.ativo !== false ? '#3e8060' : '#b55e5e'}">${h.ativo !== false ? 'Ativo' : 'Inativo'}</span>
-                        </div>
-                    </div>
-                    <div style="display:flex;gap:5px;flex-wrap:wrap">
-                        <button class="btn btn-soft btn-sm btn-hover" onclick="toggleHostActive(${i})">${h.ativo !== false ? 'Desativar' : 'Ativar'}</button>
-                        <button class="btn btn-danger btn-sm btn-hover" onclick="removeHost(${i})"><i data-lucide="trash-2"></i></button>
-                    </div>
-                </div>`).join("")}
-        </div>
-        <div class="card card-animated" style="margin-top:16px">
-            <div class="section-title">Permissões do anfitrião</div>
-            <div class="section-sub">O que o anfitrião pode fazer:</div>
-            <ul style="font-size:12px;color:#596761;line-height:1.8;margin-top:10px;padding-left:20px">
-                <li> Ver apenas alunos distribuídos a ele</li>
-                <li> Registrar atendimentos</li>
-                <li> Fazer avaliações</li>
-                <li> Registrar evoluções</li>
-                <li> Criar atividades/planos</li>
-                <li> Consultar histórico dos seus alunos</li>
-                <li>❌ Administrar a equipe</li>
-                <li>❌ Ver carteira de outros anfitriões</li>
-            </ul>
-        </div>`;
-    lucide.createIcons();
+function renderEquipe(){
+    if(!isDataLoaded||!data.session){document.getElementById('page-equipe').innerHTML='<div class="empty">Faça login.</div>';return;}
+    const equipe=data.equipe||[]; const plano=data.professor?.plano||'mensal'; const maxHosts=plano==='semestral'?5:plano==='trimestral'?2:1;
+    document.getElementById('page-equipe').innerHTML=`<div class="page-hero"><div class="eyebrow">Administração da equipe</div><h2>Equipe e anfitriões</h2><p>Você define quem participa, quais recursos cada profissional pode acessar e acompanha a operação de cada anfitrião.</p></div>
+    <div class="section-head"><div><div class="section-title">Profissionais vinculados</div><div class="section-sub">${equipe.length}/${maxHosts} vagas utilizadas.</div></div><button class="btn btn-primary" onclick="showHostForm()" ${equipe.length>=maxHosts?'disabled':''}><i data-lucide="user-plus"></i>Novo anfitrião</button></div>
+    <div id="hostForm" class="card" style="display:none;margin-bottom:16px"><input type="hidden" id="hostEditIndex" value=""><div class="section-title" id="hostFormTitle">Cadastrar anfitrião</div><div class="form-grid two" style="margin-top:14px"><div class="field"><label class="label">Nome</label><input id="hostNome" class="input"></div><div class="field"><label class="label">E-mail de acesso</label><input id="hostEmail" class="input" type="email"></div><div class="field"><label class="label">Especialidade</label><input id="hostEspec" class="input"></div><div class="field"><label class="label">Senha inicial</label><input id="hostSenha" class="input" type="password" autocomplete="new-password" placeholder="Defina uma senha inicial"></div></div><div class="host-credentials-note"><strong>Importante:</strong> a senha não será armazenada no HTML/localStorage. A criação real da credencial de login precisa passar pelo Supabase Auth/Edge Function com privilégio administrativo. Aqui a interface registra que a senha inicial foi definida, sem expor a credencial.</div><div style="margin-top:16px"><div class="section-title">Permissões</div><div class="section-sub" style="margin-bottom:9px">Marque exatamente o que este anfitrião poderá fazer.</div><div class="permission-grid">${[['alunos_ver','Ver alunos','Consultar a carteira autorizada'],['alunos_editar','Editar alunos','Atualizar dados cadastrais'],['agenda','Agenda','Criar e editar agendamentos'],['consultas','Consultas','Registrar atendimentos'],['avaliacoes','Avaliações','Aplicar e consultar avaliações'],['evolucoes','Evoluções','Registrar evoluções e observações'],['financeiro','Financeiro','Ver informações financeiras autorizadas'],['relatorios','Relatórios','Gerar relatórios dos alunos']].map(([id,t,d])=>`<label class="permission-option"><input type="checkbox" id="perm_${id}" value="${id}"><span><strong>${t}</strong><span>${d}</span></span></label>`).join('')}</div></div><div class="form-actions"><button class="btn btn-primary" onclick="saveHost()"><i data-lucide="save"></i>Salvar anfitrião</button><button class="btn btn-outline" onclick="closeHostForm()">Cancelar</button></div></div>
+    <div class="card">${equipe.length?equipe.map((h,i)=>{const p=h.permissoes||[];const q=Array.isArray(p)?p.length:(p==='total'?8:1);return `<div class="host-card ${h.ativo===false?'inactive':''}"><div class="avatar" style="width:48px;height:48px;font-size:16px">${esc(initials(h.nome))}</div><div style="flex:1"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><strong style="font-size:14px">${esc(h.nome)}</strong><span class="tag">${h.ativo===false?'Inativo':'Ativo'}</span></div><div class="section-sub">${esc(h.email||'')} · ${esc(h.especialidade||'')}</div><div class="section-sub" style="margin-top:6px">${q} permissões habilitadas${h.senhaDefinida?' · senha inicial definida':''}</div></div><div class="waitlist-actions"><button class="btn btn-outline btn-sm" onclick="editHost(${i})"><i data-lucide="settings-2"></i>Administrar</button><button class="btn btn-soft btn-sm" onclick="toggleHostActive(${i})">${h.ativo===false?'Ativar':'Desativar'}</button><button class="btn btn-danger btn-sm" onclick="removeHost(${i})"><i data-lucide="trash-2"></i></button></div></div>`}).join(''):'<div class="empty">Nenhum anfitrião cadastrado.</div>'}</div>
+    <div class="admin-panel"><div class="section-head"><div><div class="section-title">Visão administrativa dos anfitriões</div><div class="section-sub">Resumo operacional por profissional.</div></div></div><div class="admin-grid">${equipe.map(h=>{const hs=(data.agenda||[]).filter(a=>a.profissional_id===h.id||a.anfitriao_id===h.id);const alunos=(data.alunos||[]).filter(a=>a.profissional_id===h.id||a.anfitriao_id===h.id);return `<div class="admin-stat"><div class="label">${esc(h.nome)}</div><div class="value">${alunos.length} alunos</div><div class="section-sub">${hs.length} agendamentos · ${h.ativo===false?'inativo':'ativo'}</div></div>`}).join('')||'<div class="empty">Cadastre um anfitrião para acompanhar a operação.</div>'}</div></div>`; lucide.createIcons();
 }
-
-function showHostForm() {
-    const f = document.getElementById("hostForm");
-    if (!f) return;
-    f.style.display = f.style.display === "none" ? "block" : "none";
-}
-
-async function saveHost() {
-    const nome = document.getElementById("hostNome").value.trim();
-    const email = document.getElementById("hostEmail").value.trim();
-    if (!nome || !email) { notify("Preencha nome e e-mail."); return; }
-    if (!data.equipe) data.equipe = [];
-    data.equipe.push({
-        id: uid(), nome, email,
-        especialidade: document.getElementById("hostEspec").value.trim(),
-        permissoes: document.getElementById("hostPerm").value,
-        ativo: true, criadoEm: today()
-    });
-    try { localStorage.setItem('equipe_' + currentUserId, JSON.stringify(data.equipe)); } catch(e) {}
-    notify(`Convite enviado para ${email}.`);
-    showHostForm();
-    renderEquipe();
-}
-
-function toggleHostActive(i) {
-    if (!data.equipe) return;
-    data.equipe[i].ativo = data.equipe[i].ativo === false;
-    try { localStorage.setItem('equipe_' + currentUserId, JSON.stringify(data.equipe)); } catch(e) {}
-    renderEquipe();
-}
-
-function removeHost(i) {
-    if (!confirm("Remover este anfitrião?")) return;
-    data.equipe.splice(i, 1);
-    try { localStorage.setItem('equipe_' + currentUserId, JSON.stringify(data.equipe)); } catch(e) {}
-    renderEquipe();
-    notify("Anfitrião removido.");
-}
+function showHostForm(editIndex=null){const f=document.getElementById('hostForm');if(!f)return;f.style.display='block';document.getElementById('hostEditIndex').value=editIndex===null?'':String(editIndex);document.getElementById('hostFormTitle').textContent=editIndex===null?'Cadastrar anfitrião':'Administrar anfitrião'; if(editIndex===null){['hostNome','hostEmail','hostEspec','hostSenha'].forEach(id=>{document.getElementById(id).value='';});document.querySelectorAll('#hostForm input[type=checkbox]').forEach(x=>x.checked=false);}f.scrollIntoView({behavior:'smooth',block:'start'});}
+function closeHostForm(){const f=document.getElementById('hostForm');if(f)f.style.display='none';}
+function editHost(i){const h=(data.equipe||[])[i];if(!h)return;showHostForm(i);document.getElementById('hostNome').value=h.nome||'';document.getElementById('hostEmail').value=h.email||'';document.getElementById('hostEspec').value=h.especialidade||'';document.getElementById('hostSenha').value='';const perms=Array.isArray(h.permissoes)?h.permissoes:[];document.querySelectorAll('#hostForm input[type=checkbox]').forEach(x=>x.checked=perms.includes(x.value)||(h.permissoes==='total'));}
+function saveHost(){const nome=document.getElementById('hostNome').value.trim(),email=document.getElementById('hostEmail').value.trim(),senha=document.getElementById('hostSenha').value; if(!nome||!email){notify('Preencha nome e e-mail.');return;} if(senha&&senha.length<6){notify('A senha inicial deve ter pelo menos 6 caracteres.');return;} const permissoes=[...document.querySelectorAll('#hostForm input[type=checkbox]:checked')].map(x=>x.value); if(!data.equipe)data.equipe=[];const idx=document.getElementById('hostEditIndex').value;const base=idx!==''?data.equipe[Number(idx)]:{id:uid(),ativo:true,criadoEm:today()};Object.assign(base,{nome,email,especialidade:document.getElementById('hostEspec').value.trim(),permissoes,senhaDefinida:senha.length>0||base.senhaDefinida===true});if(idx!=='')data.equipe[Number(idx)]=base;else data.equipe.push(base);try{localStorage.setItem('equipe_'+currentUserId,JSON.stringify(data.equipe));}catch(e){}closeHostForm();renderEquipe();notify(idx!==''?'Anfitrião atualizado.':'Anfitrião cadastrado.');}
+function toggleHostActive(i){if(!data.equipe?.[i])return;data.equipe[i].ativo=data.equipe[i].ativo===false;try{localStorage.setItem('equipe_'+currentUserId,JSON.stringify(data.equipe));}catch(e){}renderEquipe();}
+function removeHost(i){if(!confirm('Remover este anfitrião?'))return;data.equipe.splice(i,1);try{localStorage.setItem('equipe_'+currentUserId,JSON.stringify(data.equipe));}catch(e){}renderEquipe();notify('Anfitrião removido.');}
 
 // ============================================================
 // ONBOARDING - COMECE SUA PRÁTICA
 // ============================================================
 const ONBOARDING_STEPS = [
-    { id: 'perfil', icon: '', title: 'Configurar perfil', desc: 'Adicione seu nome, foto, especialidade e bio profissional.', action: 'navigate("perfil")' },
-    { id: 'aluno', icon: '', title: 'Cadastrar primeiro aluno', desc: 'Adicione seu primeiro aluno com dados básicos.', action: 'navigate("alunos");setTimeout(()=>toggleStudentForm(true),100)' },
-    { id: 'valores', icon: 'wallet', title: 'Configurar valores', desc: 'Defina o valor por sessão e as formas de pagamento.', action: 'navigate("alunos")' },
-    { id: 'contrato', icon: '', title: 'Criar contrato', desc: 'Elabore um contrato de prestação de serviços.', action: 'navigate("onboarding")' },
-    { id: 'recebimentos', icon: '', title: 'Configurar recebimentos', desc: 'Conecte suas formas de recebimento (PIX, cartão).', action: 'navigate("financeiro")' },
-    { id: 'coworking', icon: '', title: 'Conhecer opções de coworking', desc: 'Encontre espaços para atender presencialmente.', action: 'navigate("onboarding")' },
-    { id: 'documentos', icon: '✍️', title: 'Aprender a assinar documentos', desc: 'Use assinatura digital para documentos.', action: 'navigate("onboarding")' },
-    { id: 'comunicacao', icon: '', title: 'Configurar comunicação', desc: 'Ative lembretes e mensagens para responsáveis.', action: 'navigate("recados")' },
-    { id: 'google', icon: '', title: 'Criar presença no Google', desc: 'Apareça em buscas como profissional.', action: 'navigate("onboarding")' }
+ {id:'perfil',icon:'user-round',title:'Configurar perfil',desc:'Defina identidade profissional, valor padrão e formas de recebimento.',action:'navigate("perfil")'},
+ {id:'aluno',icon:'user-plus',title:'Cadastrar primeiro aluno',desc:'Cadastre o primeiro estudante e configure seu valor.',action:'navigate("onboarding-detalhe");openOnboardingDetail("aluno")'},
+ {id:'valores',icon:'wallet-cards',title:'Configurar valores',desc:'Defina preço padrão, formas de pagamento e regras financeiras.',action:'navigate("onboarding-detalhe");openOnboardingDetail("valores")'},
+ {id:'horarios',icon:'clock-3',title:'Definir dias e horários',desc:'Configure sua jornada semanal e pausa. Isso alimenta a carga de trabalho.',action:'navigate("onboarding-detalhe");openOnboardingDetail("horarios")'},
+ {id:'contrato',icon:'file-signature',title:'Criar contrato',desc:'Entenda os pontos essenciais de um contrato profissional.',action:'navigate("onboarding-detalhe");openOnboardingDetail("contrato")'},
+ {id:'recebimentos',icon:'credit-card',title:'Configurar recebimentos',desc:'Organize PIX, cartão e demais formas de recebimento.',action:'navigate("financeiro")'},
+ {id:'documentos',icon:'file-check-2',title:'Documentos e assinatura',desc:'Conheça o fluxo para organizar documentos do atendimento.',action:'navigate("onboarding-detalhe");openOnboardingDetail("documentos")'},
+ {id:'comunicacao',icon:'message-square',title:'Configurar comunicação',desc:'Organize recados e comunicação com responsáveis.',action:'navigate("recados")'},
+ {id:'google',icon:'globe-2',title:'Presença profissional no Google',desc:'Entenda como estruturar sua presença para ser encontrado.',action:'navigate("onboarding-detalhe");openOnboardingDetail("google")'}
 ];
-
-function renderOnboarding() {
-    if (!isDataLoaded || !data.session) {
-        document.getElementById("page-onboarding").innerHTML = `<div class="empty" style="padding:40px;text-align:center"><p>Faça login.</p></div>`;
-        return;
-    }
-    const completed = data.onboarding || {};
-    const total = ONBOARDING_STEPS.length;
-    const done = ONBOARDING_STEPS.filter(s => completed[s.id]).length;
-    const percent = Math.round((done / total) * 100);
-    document.getElementById("page-onboarding").innerHTML = `
-        ${renderHelpBox("onboarding")}
-        <div class="section-head">
-            <div><div class="section-title">Comece sua prática</div><div class="section-sub">Vamos preparar seu espaço profissional?</div></div>
-            <button class="btn btn-outline btn-sm btn-hover" onclick="resetOnboarding()"><i data-lucide="rotate-ccw"></i>Reiniciar</button>
-        </div>
-        <div class="card card-animated" style="margin-bottom:16px">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-                <span style="font-size:12px;color:#5a6b64;font-weight:600">Progresso</span>
-                <span style="font-size:20px;font-weight:800;color:var(--sage)">${percent}%</span>
-            </div>
-            <div class="onboarding-progress"><div class="fill" style="width:${percent}%"></div></div>
-            <div style="font-size:11px;color:#8a9892;margin-top:6px">${done} de ${total} passos concluídos</div>
-        </div>
-        ${ONBOARDING_STEPS.map(s => `
-            <div class="onboarding-step ${completed[s.id] ? 'completed' : ''}" onclick="toggleOnboardingStep('${s.id}')">
-                <div class="onboarding-icon">${completed[s.id] ? '✓' : s.icon}</div>
-                <div class="onboarding-content">
-                    <div class="title">${esc(s.title)}</div>
-                    <div class="desc">${esc(s.desc)}</div>
-                </div>
-                <button class="btn ${completed[s.id] ? 'btn-soft' : 'btn-outline'} btn-sm btn-hover" onclick="event.stopPropagation();${s.action}">
-                    ${completed[s.id] ? 'Concluído' : 'Iniciar'}
-                </button>
-            </div>`).join("")}`;
-    lucide.createIcons();
-}
-
-function toggleOnboardingStep(id) {
-    if (!data.onboarding) data.onboarding = {};
-    data.onboarding[id] = !data.onboarding[id];
-    try { localStorage.setItem('onboarding_' + currentUserId, JSON.stringify(data.onboarding)); } catch(e) {}
-    renderOnboarding();
-}
-
-function resetOnboarding() {
-    if (!confirm("Reiniciar todos os passos?")) return;
-    data.onboarding = {};
-    try { localStorage.setItem('onboarding_' + currentUserId, JSON.stringify(data.onboarding)); } catch(e) {}
-    renderOnboarding();
-}
+const ONBOARDING_DETAILS={
+ aluno:{title:'Cadastrar primeiro aluno',eyebrow:'Primeiro cadastro',text:'O cadastro do aluno reúne dados essenciais para prontuário, agenda e financeiro. Depois de salvo, ele passa a fazer parte da sua carteira.',items:['Nome e responsável','Contato','Valor por sessão','Observações iniciais'],cta:'Abrir cadastro de aluno',action:()=>{navigate('alunos');setTimeout(()=>toggleStudentForm(true),100)}},
+ valores:{title:'Configurar valores',eyebrow:'Financeiro',text:'Defina um valor padrão para novos alunos. O valor individual continua podendo ser alterado no cadastro de cada estudante.',items:['Valor padrão por sessão','Formas de pagamento aceitas','Calculadora de preço dentro do Financeiro'],cta:'Configurar no perfil',action:()=>navigate('perfil')},
+ horarios:{title:'Definir dias e horários',eyebrow:'Carga de trabalho',text:'Sua disponibilidade semanal será usada para calcular horas disponíveis e percentual de ocupação no Dashboard.',items:['Dias de trabalho','Horário inicial e final','Pausa para almoço','Reflexo automático na carga semanal'],cta:'Configurar jornada',action:()=>navigate('perfil')},
+ contrato:{title:'Contrato profissional',eyebrow:'Organização',text:'Use este espaço para entender os pontos que um contrato deve contemplar antes de formalizar seu atendimento.',items:['Identificação das partes','Serviços e valores','Cancelamento e faltas','Proteção e confidencialidade'],cta:'Continuar leitura',action:()=>notify('Você pode estruturar o contrato nesta etapa de orientação.')},
+ documentos:{title:'Documentos e assinatura',eyebrow:'Documentação',text:'Organize documentos, registros e assinaturas de forma separada do prontuário clínico.',items:['Termos e contratos','Autorizações','Registros assinados','Organização documental'],cta:'Continuar leitura',action:()=>notify('Fluxo documental disponível para organização.')},
+ google:{title:'Presença profissional no Google',eyebrow:'Visibilidade',text:'Uma presença profissional bem estruturada ajuda famílias e instituições a encontrarem seu trabalho.',items:['Perfil profissional completo','Categoria adequada','Fotos e informações','Atualizações periódicas'],cta:'Continuar leitura',action:()=>notify('Use seu perfil profissional e mantenha as informações atualizadas.')}
+};
+function openOnboardingDetail(id){ const d=ONBOARDING_DETAILS[id]; if(!d)return; currentPage='onboarding-detalhe'; currentOnboardingDetail=id; document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));document.getElementById('page-onboarding-detalhe').classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));document.getElementById('pageTitle').innerHTML='<i data-lucide="book-open"></i>'+d.title;renderOnboardingDetail();lucide.createIcons(); }
+function renderOnboardingDetail(){const d=ONBOARDING_DETAILS[currentOnboardingDetail];if(!d){navigate('onboarding');return;}document.getElementById('page-onboarding-detalhe').innerHTML=`<div class="onboarding-detail"><div class="onboarding-detail-nav"><button class="btn btn-outline btn-sm" onclick="navigate('onboarding')"><i data-lucide="arrow-left"></i>Voltar</button><span class="section-sub">Etapa de configuração</span></div><div class="page-hero"><div class="eyebrow">${d.eyebrow}</div><h2>${esc(d.title)}</h2><p>${esc(d.text)}</p></div><div class="onboarding-detail-body"><div class="onboarding-feature"><h3>O que você vai configurar</h3><ul>${d.items.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div><div class="onboarding-action"><div class="big-icon"><i data-lucide="arrow-right-circle"></i></div><h4>Próximo passo</h4><p>Ao avançar, você irá para a tela correta para realizar esta configuração ou continuar a orientação.</p><button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="${d.action===undefined?'': 'runOnboardingDetailAction()'}">${esc(d.cta)}</button></div></div></div>`;lucide.createIcons();}
+function runOnboardingDetailAction(){const d=ONBOARDING_DETAILS[currentOnboardingDetail];if(d?.action)d.action();}
+function renderOnboarding(){if(!isDataLoaded||!data.session){document.getElementById('page-onboarding').innerHTML='<div class="empty">Faça login.</div>';return;}const completed=data.onboarding||{};const total=ONBOARDING_STEPS.length;const done=ONBOARDING_STEPS.filter(s=>completed[s.id]).length;const percent=Math.round(done/total*100);document.getElementById('page-onboarding').innerHTML=`<div class="page-hero"><div class="eyebrow">Primeiros passos</div><h2>Comece sua prática</h2><p>Não é apenas uma checklist. Cada etapa abre uma página de orientação e, quando aplicável, leva você diretamente à configuração correspondente.</p></div><div class="card" style="margin-bottom:16px"><div style="display:flex;justify-content:space-between"><span style="font-size:12px;font-weight:700;color:#5a6b64">Progresso da configuração</span><strong style="font-size:20px;color:var(--sage)">${percent}%</strong></div><div class="onboarding-progress"><div class="fill" style="width:${percent}%"></div></div><div class="section-sub">${done} de ${total} etapas concluídas</div></div>${ONBOARDING_STEPS.map(s=>`<div class="onboarding-step ${completed[s.id]?'completed':''}" onclick="openOnboardingDetail('${s.id}')"><div class="onboarding-icon"><i data-lucide="${s.icon}"></i></div><div class="onboarding-content"><div class="title">${esc(s.title)}</div><div class="desc">${esc(s.desc)}</div></div><button class="btn ${completed[s.id]?'btn-soft':'btn-outline'} btn-sm" onclick="event.stopPropagation();openOnboardingDetail('${s.id}')">${completed[s.id]?'Revisar':'Iniciar'}</button></div>`).join('')}<div style="margin-top:14px"><button class="btn btn-outline btn-sm" onclick="resetOnboarding()">Reiniciar progresso</button></div>`;lucide.createIcons();}
+function toggleOnboardingStep(id){if(!data.onboarding)data.onboarding={};data.onboarding[id]=!data.onboarding[id];try{localStorage.setItem('onboarding_'+currentUserId,JSON.stringify(data.onboarding));}catch(e){}renderOnboarding();}
+function resetOnboarding(){if(!confirm('Reiniciar todos os passos?'))return;data.onboarding={};try{localStorage.setItem('onboarding_'+currentUserId,JSON.stringify(data.onboarding));}catch(e){}renderOnboarding();}
 
 // ============================================================
 // PERFIL
 // ============================================================
-function renderPerfil() {
-    if (!isDataLoaded || !data || !data.professor) {
-        document.getElementById("page-perfil").innerHTML = `<div class="empty" style="padding:40px;text-align:center"><p>Carregando...</p></div>`;
-        return;
-    }
-    const p = data.professor;
-    document.getElementById("page-perfil").innerHTML = `
-        ${renderHelpBox("perfil")}
-        <div class="section-head"><div><div class="section-title">Meu Perfil</div><div class="section-sub">Gerencie suas informações profissionais.</div></div></div>
-        <div class="card card-animated" style="max-width:700px;margin:0 auto">
-            <div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding:15px">
-                ${avatarHTML(p, "profile-avatar")}
-                <div style="font-size:18px;font-weight:700;margin-top:12px">${esc(p.nome)}</div>
-                <div style="font-size:11px;color:#8a9892;margin-top:4px">${esc(p.especialidade)}</div>
-                <div style="font-size:10px;color:#8a9892;margin-top:2px">
-                    <span class="license-plan-badge"><i data-lucide="crown" style="width:12px;height:12px"></i>Plano ${getPlanLabel(p.plano || 'mensal')}</span>
-                    ${p.licenca_fim ? ' · Válido até: ' + fmtDateTime(p.licenca_fim) : ''}
-                </div>
-            </div>
-            <div style="border-top:1px solid var(--line);padding-top:18px;margin-top:12px">
-                <div class="form-grid two">
-                    <div class="field"><label class="label">Nome</label><input id="profNome" class="input" value="${esc(p.nome)}"></div>
-                    <div class="field"><label class="label">Especialidade</label><input id="profEspecialidade" class="input" value="${esc(p.especialidade)}"></div>
-                    <div class="field" style="grid-column:1/-1"><label class="label">URL da foto</label><input id="profFoto" class="input" value="${esc(p.foto || "")}"></div>
-                    <div class="field" style="grid-column:1/-1"><label class="label">Bio</label><textarea id="profBio" class="textarea">${esc(p.bio || "")}</textarea></div>
-                </div>
-                <button class="btn btn-primary btn-hover" onclick="saveProfile()"><i data-lucide="save"></i>Salvar</button>
-            </div>
-        </div>`;
-    lucide.createIcons();
-}
+function renderPerfil(){if(!isDataLoaded||!data?.professor){document.getElementById('page-perfil').innerHTML='<div class="empty">Carregando...</div>';return;}const p=data.professor;p.configuracoes=p.configuracoes||{};const w=getWorkSchedule();const dias=[1,2,3,4,5];document.getElementById('page-perfil').innerHTML=`<div class="page-hero"><div class="eyebrow">Perfil profissional</div><h2>${esc(p.nome)}</h2><p>Além dos dados públicos, esta página controla sua jornada de trabalho, preço padrão e parâmetros usados pelo sistema.</p></div><div class="card" style="max-width:1000px;margin:0 auto"><div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">${avatarHTML(p,'profile-avatar')}<div style="flex:1"><div class="profile-name">${esc(p.nome)}</div><div class="profile-meta">${esc(p.especialidade||'Psicopedagogia')} · ${esc(p.cargo||'Professor')}</div></div><span class="license-plan-badge"><i data-lucide="crown"></i>${getPlanLabel(p.plano||'mensal')}</span></div><div style="border-top:1px solid var(--line);margin-top:20px;padding-top:18px"><div class="section-title">Identidade profissional</div><div class="form-grid two" style="margin-top:12px"><div class="field"><label class="label">Nome</label><input id="profNome" class="input" value="${esc(p.nome)}"></div><div class="field"><label class="label">Especialidade</label><input id="profEspecialidade" class="input" value="${esc(p.especialidade)}"></div><div class="field"><label class="label">Valor padrão por sessão</label><input id="profValorSessao" class="input" type="number" step="0.01" value="${Number(p.configuracoes.valorSessaoPadrao||0)}"></div><div class="field"><label class="label">URL da foto</label><input id="profFoto" class="input" value="${esc(p.foto||'')}"></div><div class="field" style="grid-column:1/-1"><label class="label">Bio</label><textarea id="profBio" class="textarea">${esc(p.bio||'')}</textarea></div></div></div><div style="border-top:1px solid var(--line);margin-top:18px;padding-top:18px"><div class="section-head"><div><div class="section-title">Jornada de trabalho</div><div class="section-sub">Marque os dias e defina início, fim e pausa. A carga semanal será calculada automaticamente.</div></div><strong style="font-size:18px;color:var(--sage)">${weeklyAvailableHours().toFixed(1)}h/semana</strong></div><div class="check-grid">${dias.map(d=>`<label class="check-option"><input type="checkbox" class="work-day" value="${d}" ${(w.dias||[]).includes(d)?'checked':''}>${['','Segunda','Terça','Quarta','Quinta','Sexta'][d]}</label>`).join('')}</div><div class="form-grid" style="margin-top:12px"><div class="field"><label class="label">Início</label><input id="workInicio" class="input" type="time" value="${w.inicio||'08:00'}"></div><div class="field"><label class="label">Fim</label><input id="workFim" class="input" type="time" value="${w.fim||'18:00'}"></div><div class="field"><label class="label">Início da pausa</label><input id="workPausaInicio" class="input" type="time" value="${w.pausaInicio||'12:00'}"></div><div class="field"><label class="label">Fim da pausa</label><input id="workPausaFim" class="input" type="time" value="${w.pausaFim||'13:00'}"></div></div><div class="schedule-preview">${dias.map(d=>{const active=(w.dias||[]).includes(d);return `<div class="schedule-day ${active?'active':''}"><div class="day">${['','Seg','Ter','Qua','Qui','Sex'][d]}</div><div class="hours">${active?`${w.inicio} — ${w.fim}`:'Folga'}</div><div class="break">${active?`pausa ${w.pausaInicio}–${w.pausaFim}`:'sem expediente'}</div></div>`}).join('')}</div></div><div style="border-top:1px solid var(--line);margin-top:18px;padding-top:18px"><div class="section-title">Formas de pagamento</div><div class="check-grid" style="grid-template-columns:repeat(3,1fr);margin-top:10px">${[['pix','PIX'],['cartao','Cartão'],['dinheiro','Dinheiro']].map(([v,l])=>`<label class="check-option"><input type="checkbox" class="payment-form" value="${v}" ${(p.configuracoes.formasPagamento||[]).includes(v)?'checked':''}>${l}</label>`).join('')}</div></div><div class="form-actions" style="margin-top:20px"><button class="btn btn-primary btn-hover" onclick="saveProfile()"><i data-lucide="save"></i>Salvar configurações</button></div></div>`;lucide.createIcons();}
 
-async function saveProfile() {
-    const p = data.professor;
-    if (!p) return;
-    p.nome = document.getElementById("profNome").value.trim() || "Professor";
-    p.especialidade = document.getElementById("profEspecialidade").value.trim();
-    p.foto = document.getElementById("profFoto").value.trim();
-    p.bio = document.getElementById("profBio").value.trim();
-    await saveData();
-    updateUser();
-    notify("Perfil salvo.");
-    renderPerfil();
-}
+async function saveProfile(){const p=data.professor;if(!p)return;p.nome=document.getElementById('profNome').value.trim()||'Professor';p.especialidade=document.getElementById('profEspecialidade').value.trim();p.foto=document.getElementById('profFoto').value.trim();p.bio=document.getElementById('profBio').value.trim();p.configuracoes=p.configuracoes||{};p.configuracoes.valorSessaoPadrao=Number(document.getElementById('profValorSessao').value)||0;p.configuracoes.formasPagamento=[...document.querySelectorAll('.payment-form:checked')].map(x=>x.value);p.configuracoes.horarioTrabalho={dias:[...document.querySelectorAll('.work-day:checked')].map(x=>Number(x.value)),inicio:document.getElementById('workInicio').value||'08:00',fim:document.getElementById('workFim').value||'18:00',pausaInicio:document.getElementById('workPausaInicio').value||'12:00',pausaFim:document.getElementById('workPausaFim').value||'13:00'};if(timeToMinutes(p.configuracoes.horarioTrabalho.fim)<=timeToMinutes(p.configuracoes.horarioTrabalho.inicio)){notify('O horário final precisa ser depois do início.');return;}saveWorkScheduleLocal();await saveData();updateUser();renderPerfil();notify('Perfil e jornada atualizados.');}
 
 // ============================================================
 // PDF DO ALUNO
