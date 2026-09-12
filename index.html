@@ -428,6 +428,70 @@ button{cursor:pointer}
    NOVAS FUNCIONALIDADES
    ============================================================ */
 
+
+/* ============================================================
+   AVALIAÇÕES — INTERFACE PROFISSIONAL
+   ============================================================ */
+.assessment-shell{display:grid;grid-template-columns:minmax(0,1fr);gap:18px}
+.assessment-hero{background:linear-gradient(135deg,#ffffff 0%,#f4f8f6 100%);border:1px solid var(--line);border-radius:20px;padding:24px;display:flex;justify-content:space-between;align-items:flex-start;gap:18px}
+.assessment-hero h2{margin:0;font-size:22px;letter-spacing:-.025em;color:#263832}
+.assessment-hero p{margin:7px 0 0;color:#74827c;font-size:12px;line-height:1.6;max-width:680px}
+.assessment-actions{display:flex;gap:8px;flex-wrap:wrap}
+.assessment-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.assessment-metric{background:#fff;border:1px solid var(--line);border-radius:16px;padding:15px 16px}
+.assessment-metric .m-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#89968f;font-weight:700}
+.assessment-metric .m-value{font-size:24px;font-weight:800;color:#263832;margin-top:6px}
+.assessment-metric .m-sub{font-size:10px;color:#9aa6a1;margin-top:3px}
+.assessment-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.assessment-search{flex:1;min-width:220px}
+.assessment-filter{width:170px}
+.instrument-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.instrument-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:17px;transition:.2s ease}
+.instrument-card:hover{border-color:#c4d8ce;box-shadow:0 8px 24px rgba(30,50,40,.06);transform:translateY(-2px)}
+.instrument-card .instrument-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.instrument-card .instrument-title{font-size:14px;font-weight:800;color:#2e3d37}
+.instrument-card .instrument-desc{font-size:11px;color:#7d8b85;line-height:1.55;margin-top:6px}
+.instrument-card .instrument-meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+.assessment-table{width:100%;border-collapse:collapse}
+.assessment-table th{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#8b9892;text-align:left;padding:11px 12px;border-bottom:1px solid var(--line)}
+.assessment-table td{padding:13px 12px;border-bottom:1px solid #edf1ef;font-size:12px;color:#52605a}
+.assessment-table tr:last-child td{border-bottom:0}
+.assessment-status{display:inline-flex;align-items:center;padding:4px 8px;border-radius:7px;font-size:10px;font-weight:700;background:#edf5f0;color:#4b7863}
+.assessment-result-header{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:start}
+.assessment-result-title{font-size:23px;font-weight:800;letter-spacing:-.03em;color:#263832}
+.assessment-result-meta{font-size:11px;color:#85928c;margin-top:5px}
+.result-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:18px}
+.result-kpi{background:#f8faf9;border:1px solid #e7eeea;border-radius:14px;padding:15px}
+.result-kpi .rk-label{font-size:10px;color:#89968f;text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+.result-kpi .rk-value{font-size:22px;font-weight:800;color:#30443b;margin-top:5px}
+.result-section{margin-top:18px;border-top:1px solid var(--line);padding-top:18px}
+.result-section-title{font-size:13px;font-weight:800;color:#34413c;margin-bottom:10px}
+.response-list{display:flex;flex-direction:column;gap:8px}
+.response-row{display:grid;grid-template-columns:42px minmax(0,1fr) 150px;gap:12px;align-items:start;padding:12px 13px;border:1px solid #e9efec;border-radius:11px;background:#fff}
+.response-number{font-size:10px;font-weight:800;color:#92a09a;padding-top:2px}
+.response-question{font-size:12px;font-weight:650;color:#44534d;line-height:1.5}
+.response-value{font-size:11px;color:#62716b;text-align:right;line-height:1.5}
+.response-value strong{color:#30443b}
+.result-history{display:flex;flex-direction:column;gap:8px}
+.result-history-row{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:12px 13px;border:1px solid #e9efec;border-radius:11px;background:#fff}
+.result-history-row .rh-title{font-size:12px;font-weight:750;color:#3d4c46}
+.result-history-row .rh-meta{font-size:10px;color:#8a9791;margin-top:3px}
+.assessment-note{font-size:10px;line-height:1.55;color:#8b9792;background:#f8faf9;border-left:3px solid #b8ccc2;border-radius:0 8px 8px 0;padding:10px 12px;margin-top:14px}
+.step-counter{font-size:11px;font-weight:700;color:#6d7b75}
+.step-progress-wide{height:5px;background:#edf1ef;border-radius:8px;overflow:hidden;margin:8px 0 18px}
+.step-progress-wide span{display:block;height:100%;background:var(--sage);border-radius:8px;transition:width .25s ease}
+@media(max-width:900px){
+  .assessment-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .instrument-grid{grid-template-columns:1fr}
+  .assessment-result-header{grid-template-columns:1fr}
+}
+@media(max-width:680px){
+  .assessment-metrics{grid-template-columns:1fr 1fr}
+  .result-kpis{grid-template-columns:1fr}
+  .response-row{grid-template-columns:28px minmax(0,1fr)}
+  .response-value{text-align:left;grid-column:2}
+}
+
 /* Calculadoras */
 .calc-result{background:linear-gradient(135deg,#eaf3ee,#edf4f8);border-radius:16px;padding:24px;text-align:center;margin-top:20px;animation:fadeIn 0.5s ease}
 .calc-result .result-label{font-size:12px;color:#5a6b64;text-transform:uppercase;letter-spacing:.05em;font-weight:600}
@@ -531,7 +595,7 @@ button{cursor:pointer}
 
 <div id="expiredScreen" class="expired-screen" style="display:none">
   <div class="expired-box">
-    <div class="icon-big">⏰</div>
+    <div class="icon-big"></div>
     <div class="title">Ah.. o seu plano excedeu!</div>
     <div class="subtitle">
       Seu período de acesso ao <strong>Legado Que Ensina</strong> expirou.<br>
@@ -2138,7 +2202,7 @@ function renderDashboard() {
         <!-- CARGA DE TRABALHO -->
         <div class="card card-animated" style="margin-top:18px">
             <div class="section-head">
-                <div><div class="section-title">📊 Carga de Trabalho</div><div class="section-sub">Esta semana: ${totalHoras} atendimentos, ${totalHoras}h atendidas, ${horasDisponiveis - totalHoras}h disponíveis</div></div>
+                <div><div class="section-title">Carga de Trabalho</div><div class="section-sub">Esta semana: ${totalHoras} atendimentos, ${totalHoras}h atendidas, ${horasDisponiveis - totalHoras}h disponíveis</div></div>
                 <span style="font-size:20px;font-weight:800;color:var(--sage)">${percentOcupacao}%</span>
             </div>
             <div class="workload-bar">
@@ -2377,6 +2441,84 @@ function renderStudentProfile(mode = "overview") {
         return;
     }
 
+
+    if (mode === "resultado") {
+        const a = s.avaliacoes.find(x => x.id === currentAssessment);
+        if (!a) { renderStudentProfile("avaliacoes"); return; }
+        const resultados = a.resultados || [];
+        const resultado = currentAvalId
+            ? (resultados.find(r => r.id === currentAvalId) || resultados[resultados.length - 1])
+            : resultados[resultados.length - 1];
+
+        if (!resultado) { renderStudentProfile("avaliacoes"); return; }
+
+        const respostas = resultado.respostas || [];
+        const numeric = respostas.filter(r => r && typeof r === "object" && typeof r.valor === "number");
+        const soma = numeric.reduce((sum, r) => sum + Number(r.valor), 0);
+        const media = numeric.length ? (soma / numeric.length).toFixed(2).replace(".", ",") : "—";
+        const respondidas = respostas.filter(r => {
+            if (r && typeof r === "object") return r.valor !== null && r.valor !== undefined && r.valor !== "";
+            return String(r || "").trim() !== "";
+        }).length;
+
+        document.getElementById("page-prontuario").innerHTML = `
+            <button class="btn btn-outline btn-sm btn-hover" onclick="renderStudentProfile('avaliacoes')" style="margin-bottom:14px"><i data-lucide="arrow-left"></i>Voltar para avaliações</button>
+            <div class="card card-animated" style="max-width:1050px;margin:0 auto">
+                <div class="assessment-result-header">
+                    <div>
+                        <div class="assessment-result-title">${esc(a.titulo)}</div>
+                        <div class="assessment-result-meta">${esc(s.nome)} · Aplicação em ${fmtDate(resultado.data)}${a.tipo ? ` · ${esc(a.tipo)}` : ""}</div>
+                    </div>
+                    <div class="assessment-actions">
+                        <button class="btn btn-outline btn-sm btn-hover" onclick="gerarPDFAvaliacao('${s.id}','${a.id}')"><i data-lucide="file-down"></i>Gerar PDF</button>
+                        <button class="btn btn-primary btn-sm btn-hover" onclick="applyAssessment('${a.id}')"><i data-lucide="plus"></i>Nova aplicação</button>
+                    </div>
+                </div>
+
+                ${a.objetivo ? `<div class="assessment-note">${esc(a.objetivo)}</div>` : ""}
+
+                <div class="result-kpis">
+                    <div class="result-kpi"><div class="rk-label">Itens respondidos</div><div class="rk-value">${respondidas}/${respostas.length || (a.questoes || []).length}</div></div>
+                    <div class="result-kpi"><div class="rk-label">Pontuação bruta</div><div class="rk-value">${numeric.length ? soma : "—"}</div></div>
+                    <div class="result-kpi"><div class="rk-label">Média dos itens</div><div class="rk-value">${media}</div></div>
+                </div>
+
+                <div class="result-section">
+                    <div class="result-section-title">Respostas registradas</div>
+                    <div class="response-list">
+                        ${(a.questoes || []).map((q, i) => {
+                            const r = respostas[i];
+                            const isObj = r && typeof r === "object";
+                            const value = isObj ? (r.rotulo || r.valor || "Sem resposta") : (r || "Sem resposta");
+                            return `<div class="response-row">
+                                <div class="response-number">${String(q.numero || i + 1).padStart(2,"0")}</div>
+                                <div class="response-question">${esc(q.texto || q)}</div>
+                                <div class="response-value"><strong>${esc(value)}</strong></div>
+                            </div>`;
+                        }).join("") || `<div class="empty">Este instrumento não possui questões tabuladas.</div>`}
+                    </div>
+                </div>
+
+                ${resultado.resumo ? `<div class="result-section"><div class="result-section-title">Síntese profissional</div><div style="font-size:12px;line-height:1.8;color:#596761;white-space:pre-wrap">${esc(resultado.resumo)}</div></div>` : ""}
+
+                ${resultados.length > 1 ? `
+                <div class="result-section">
+                    <div class="result-section-title">Histórico de aplicações</div>
+                    <div class="result-history">
+                        ${resultados.slice().reverse().map(r => `
+                            <div class="result-history-row">
+                                <div><div class="rh-title">Aplicação ${fmtDate(r.data)}</div><div class="rh-meta">${(r.respostas || []).length} itens registrados</div></div>
+                                <button class="btn btn-outline btn-sm btn-hover" onclick="viewAvaliacaoResultado('${s.id}','${a.id}','${r.id}')">Abrir</button>
+                            </div>`).join("")}
+                    </div>
+                </div>` : ""}
+
+                <div class="assessment-note">A pontuação exibida é apenas o registro bruto das respostas do instrumento. A interpretação e qualquer conclusão devem ser realizadas pelo profissional responsável, considerando o contexto do estudante.</div>
+            </div>`;
+        lucide.createIcons();
+        return;
+    }
+
     if (mode === "aplicar") {
         const a = s.avaliacoes.find(x => x.id === currentAssessment);
         if (!a) { renderStudentProfile("avaliacoes"); return; }
@@ -2417,18 +2559,41 @@ function renderStudentProfile(mode = "overview") {
                 <div style="display:flex;gap:8px;margin-top:12px"><button class="btn btn-primary btn-hover" onclick="saveStudentEdit()">Salvar</button><button class="btn btn-outline btn-hover" onclick="renderStudentProfile('overview')">Cancelar</button></div>
             </div>`;
     } else if (mode === "avaliacoes") {
-        const avs = studentPager((s.avaliacoes || []).slice().reverse(), studentSectionPage.avaliacoes, 5, "setStudentSectionPage");
+        const avs = (s.avaliacoes || []).slice().sort((a,b) => String(b.data || "").localeCompare(String(a.data || "")));
         content = `
             <div class="card card-animated">
-                <div class="section-head"><div><div class="section-title">Avaliações</div></div></div>
-                <div class="card" style="background:#fbfcfc;margin-bottom:16px">
-                    <div class="section-title">Nova avaliação</div>
-                    <div class="form-grid" style="margin-top:13px"><div class="field"><label class="label">Título</label><input id="avTitulo" class="input"></div><div class="field"><label class="label">Objetivo</label><input id="avObjetivo" class="input"></div></div>
-                    <div class="field" style="margin-top:10px"><label class="label">Questões (uma por linha)</label><textarea id="avQuestoes" class="textarea"></textarea></div>
-                    <button class="btn btn-primary btn-hover" onclick="createAssessment()">Criar</button>
+                <div class="section-head">
+                    <div><div class="section-title">Avaliações do estudante</div><div class="section-sub">Instrumentos aplicados, resultados e histórico.</div></div>
+                    <button class="btn btn-primary btn-sm btn-hover" onclick="renderStudentProfile('avaliacoes')"><i data-lucide="plus"></i>Novo instrumento</button>
                 </div>
-                ${avs.slice.map(a => `<div style="padding:14px 0;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:15px;align-items:center"><div><div style="font-weight:700;font-size:13px">${esc(a.titulo)}</div><div class="section-sub">${fmtDate(a.data)} · ${(a.questoes || []).length} questões · ${(a.resultados || []).length} aplicações</div></div><button class="btn btn-primary btn-sm btn-hover" onclick="applyAssessment('${a.id}')">Aplicar</button></div>`).join("") || `<div class="empty">Nenhuma avaliação.</div>`}
-                ${avs.controls}
+
+                ${avs.length ? avs.map(a => {
+                    const resultados = a.resultados || [];
+                    const ultimo = resultados[resultados.length - 1];
+                    return `<div style="padding:16px 0;border-top:1px solid var(--line)">
+                        <div style="display:flex;justify-content:space-between;gap:14px;align-items:flex-start;flex-wrap:wrap">
+                            <div>
+                                <div style="font-size:14px;font-weight:800;color:#33413b">${esc(a.titulo)}</div>
+                                <div class="section-sub">${fmtDate(a.data)} · ${resultados.length} aplicação(ões) · ${esc(a.tipo || "personalizada")}</div>
+                            </div>
+                            <div class="assessment-actions">
+                                ${ultimo ? `<button class="btn btn-outline btn-sm btn-hover" onclick="viewAvaliacaoResultado('${s.id}','${a.id}','${ultimo.id}')"><i data-lucide="eye"></i>Ver resultado</button>` : ""}
+                                <button class="btn btn-primary btn-sm btn-hover" onclick="applyAssessment('${a.id}')"><i data-lucide="play"></i>Aplicar</button>
+                            </div>
+                        </div>
+                        ${ultimo ? `<div class="assessment-note">Última aplicação: ${fmtDate(ultimo.data)} · ${(ultimo.respostas || []).length} respostas registradas.</div>` : `<div class="assessment-note">Instrumento criado, mas ainda sem aplicação concluída.</div>`}
+                    </div>`;
+                }).join("") : `<div class="empty">Nenhuma avaliação cadastrada para este estudante.</div>`}
+            </div>
+
+            <div class="card card-animated" style="margin-top:16px">
+                <div class="section-head"><div><div class="section-title">Criar avaliação personalizada</div><div class="section-sub">Monte um instrumento específico para este estudante.</div></div></div>
+                <div class="form-grid two" style="margin-top:12px">
+                    <div class="field"><label class="label">Título</label><input id="avTitulo" class="input" placeholder="Ex.: Avaliação de leitura e escrita"></div>
+                    <div class="field"><label class="label">Objetivo</label><input id="avObjetivo" class="input" placeholder="Objetivo do instrumento"></div>
+                </div>
+                <div class="field"><label class="label">Questões</label><textarea id="avQuestoes" class="textarea" style="min-height:150px" placeholder="Uma questão por linha"></textarea></div>
+                <button class="btn btn-primary btn-hover" onclick="createAssessment()"><i data-lucide="save"></i>Criar instrumento</button>
             </div>`;
     } else if (mode === "escola") {
         const reg = studentPager((s.escola.registros || []).slice().reverse(), studentSectionPage.escola, 5, "setStudentSectionPage");
@@ -2510,7 +2675,7 @@ function renderStudentProfileOverview(s, consultations, upcoming, evolucoes, tim
     const calendarHTML = `
         <div class="card card-animated" style="margin-top:16px">
             <div class="section-head">
-                <div><div class="section-title">📅 Calendário Acadêmico ${studentCalendarYear}</div><div class="section-sub">Clique para marcar períodos letivos, férias e parciais.</div></div>
+                <div><div class="section-title">Calendário Acadêmico ${studentCalendarYear}</div><div class="section-sub">Clique para marcar períodos letivos, férias e parciais.</div></div>
             </div>
             <div class="academic-calendar">
                 ${meses.map((m, i) => {
@@ -2997,7 +3162,28 @@ function setCalendarMode(mode) { calendarMode = mode; selectedDay = null; render
 // AVALIAÇÕES - TEMPLATES
 // ============================================================
 const ASSESSMENT_TEMPLATES = [
-  { id: "tpl_anamnese", nome: "Anamnese Psicopedagógica", tipo: "anamnese", descricao: "Histórico completo.", campos: [] },
+  { id: "tpl_anamnese", nome: "Anamnese Psicopedagógica", tipo: "anamnese", descricao: "Levantamento inicial estruturado do histórico do estudante.", campos: [
+    { secao: "Identificação e contexto", itens: [
+        { chave: "motivo", rotulo: "Motivo da procura / queixa principal", tipo: "textarea" },
+        { chave: "historico_escolar", rotulo: "Histórico escolar e mudanças relevantes", tipo: "textarea" },
+        { chave: "expectativas", rotulo: "Expectativas da família e objetivos do acompanhamento", tipo: "textarea" }
+    ]},
+    { secao: "Desenvolvimento e rotina", itens: [
+        { chave: "desenvolvimento", rotulo: "Aspectos do desenvolvimento", tipo: "textarea" },
+        { chave: "rotina", rotulo: "Rotina de estudos, sono e atividades", tipo: "textarea" },
+        { chave: "autonomia", rotulo: "Autonomia nas atividades diárias e escolares", tipo: "textarea" }
+    ]},
+    { secao: "Aprendizagem", itens: [
+        { chave: "leitura", rotulo: "Leitura", tipo: "textarea" },
+        { chave: "escrita", rotulo: "Escrita", tipo: "textarea" },
+        { chave: "matematica", rotulo: "Raciocínio lógico-matemático", tipo: "textarea" },
+        { chave: "atencao", rotulo: "Atenção, organização e autorregulação", tipo: "textarea" }
+    ]},
+    { secao: "Observações profissionais", itens: [
+        { chave: "observacoes", rotulo: "Observações iniciais do profissional", tipo: "textarea" },
+        { chave: "proximos_passos", rotulo: "Hipóteses de trabalho e próximos passos", tipo: "textarea" }
+    ]}
+] },
   { id: "tpl_snap", nome: "SNAP-IV (Rastreio TDAH)", tipo: "screening", descricao: "18 itens.", questoes: [
     "Não presta atenção suficiente a detalhes.", "Tem dificuldade em manter a atenção.", "Parece não escutar quando lhe falam.",
     "Não segue instruções até o fim.", "Tem dificuldade em organizar tarefas.", "Evita tarefas que exigem esforço mental.",
@@ -3053,44 +3239,80 @@ function renderAvaliacoes() {
 
 function renderAvaliacoesList() {
     const todas = getAvaliacoesGlobais();
-    const porTitulo = {};
-    todas.forEach(av => {
-        if (!porTitulo[av.titulo]) porTitulo[av.titulo] = { titulo: av.titulo, tipo: av.tipo || "custom", count: 0, aplicacoes: 0, ids: [] };
-        porTitulo[av.titulo].count++;
-        porTitulo[av.titulo].aplicacoes += (av.resultados || []).length;
-        porTitulo[av.titulo].ids.push(av.id);
-    });
-    const grupos = Object.values(porTitulo).sort((a, b) => a.titulo.localeCompare(b.titulo));
+    const concluidas = todas.filter(av => (av.resultados || []).length > 0);
+    const alunosAvaliados = new Set(concluidas.map(av => av.alunoId)).size;
+    const aplicacoes = concluidas.reduce((sum, av) => sum + (av.resultados || []).length, 0);
+    const ultimo = concluidas
+        .flatMap(av => (av.resultados || []).map(r => ({...r, titulo: av.titulo, alunoNome: av.alunoNome, alunoId: av.alunoId, avalId: av.id})))
+        .sort((a,b) => String(b.data || "").localeCompare(String(a.data || "")))
+        .slice(0, 8);
+
     document.getElementById("page-avaliacoes").innerHTML = `
-        ${renderHelpBox("avaliacoes")}
-        <div class="section-head">
-            <div><div class="section-title">Avaliações Psicopedagógicas</div><div class="section-sub">Crie e aplique instrumentos.</div></div>
-            <button class="btn btn-primary btn-hover" onclick="startNewAvaliacao()"><i data-lucide="plus"></i>Nova avaliação</button>
-        </div>
-        <div class="grid stats" style="grid-template-columns:repeat(4,minmax(0,1fr))">
-            <div class="card stat-animated"><div class="stat-label">Modelos</div><div class="stat-value">${ASSESSMENT_TEMPLATES.length}</div></div>
-            <div class="card stat-animated"><div class="stat-label">Criadas</div><div class="stat-value">${grupos.length}</div></div>
-            <div class="card stat-animated"><div class="stat-label">Aplicações</div><div class="stat-value">${grupos.reduce((s, g) => s + g.aplicacoes, 0)}</div></div>
-            <div class="card stat-animated"><div class="stat-label">Alunos avaliados</div><div class="stat-value">${[...new Set(todas.map(a => a.alunoId))].length}</div></div>
-        </div>
-        <div class="card card-animated" style="margin-top:18px">
-            <div class="section-head"><div><div class="section-title">Modelos de instrumentos</div></div></div>
-            ${ASSESSMENT_TEMPLATES.map(t => `
-                <div class="aval-list-item" style="display:flex;justify-content:space-between;align-items:center;gap:14px">
-                    <div style="flex:1">
-                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><strong style="font-size:13px">${esc(t.nome)}</strong><span class="aval-type-badge ${getAvalTypeBadge(t.tipo)}">${t.tipo}</span></div>
-                        <div class="section-sub">${esc(t.descricao)}</div>
-                    </div>
-                    <button class="btn btn-primary btn-sm btn-hover" onclick="startAvalStepWithTemplate('${t.id}')"><i data-lucide="play"></i>Aplicar</button>
-                </div>`).join("")}
-        </div>
-        <div class="card card-animated" style="margin-top:16px">
-            <div class="section-head"><div><div class="section-title">Avaliações já aplicadas</div></div></div>
-            ${grupos.length === 0 ? `<div class="empty">Nenhuma avaliação aplicada.</div>` : grupos.map(g => `
-                <div class="aval-list-item" style="display:flex;justify-content:space-between;align-items:center;gap:14px;cursor:pointer" onclick="viewAvaliacaoHistory('${esc(g.titulo).replace(/'/g, "\\'")}')">
-                    <div style="flex:1"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><strong style="font-size:13px">${esc(g.titulo)}</strong><span class="aval-type-badge ${getAvalTypeBadge(g.tipo)}">${g.tipo}</span></div><div class="section-sub">${g.count} instâncias · ${g.aplicacoes} aplicações</div></div>
-                    <button class="btn btn-outline btn-sm btn-hover"><i data-lucide="history"></i>Histórico</button>
-                </div>`).join("")}
+        <div class="assessment-shell">
+            <div class="assessment-hero">
+                <div>
+                    <h2>Avaliações psicopedagógicas</h2>
+                    <p>Crie instrumentos, aplique protocolos de forma estruturada e acompanhe cada aplicação no histórico individual do estudante.</p>
+                </div>
+                <div class="assessment-actions">
+                    <button class="btn btn-primary btn-hover" onclick="startNewAvaliacao()"><i data-lucide="plus"></i>Novo instrumento</button>
+                </div>
+            </div>
+
+            <div class="assessment-metrics">
+                <div class="assessment-metric"><div class="m-label">Instrumentos</div><div class="m-value">${ASSESSMENT_TEMPLATES.length}</div><div class="m-sub">modelos disponíveis</div></div>
+                <div class="assessment-metric"><div class="m-label">Aplicações</div><div class="m-value">${aplicacoes}</div><div class="m-sub">registros concluídos</div></div>
+                <div class="assessment-metric"><div class="m-label">Estudantes</div><div class="m-value">${alunosAvaliados}</div><div class="m-sub">com avaliação registrada</div></div>
+                <div class="assessment-metric"><div class="m-label">Em andamento</div><div class="m-value">${todas.filter(av => !(av.resultados || []).length).length}</div><div class="m-sub">sem aplicação concluída</div></div>
+            </div>
+
+            <div class="card">
+                <div class="section-head">
+                    <div><div class="section-title">Instrumentos disponíveis</div><div class="section-sub">Protocolos estruturados e avaliação personalizada.</div></div>
+                </div>
+                <div class="instrument-grid">
+                    ${ASSESSMENT_TEMPLATES.map(t => `
+                        <div class="instrument-card">
+                            <div class="instrument-head">
+                                <div>
+                                    <div class="instrument-title">${esc(t.nome)}</div>
+                                    <div class="instrument-desc">${esc(t.descricao)}</div>
+                                </div>
+                                <span class="aval-type-badge ${getAvalTypeBadge(t.tipo)}">${esc(t.tipo || "instrumento")}</span>
+                            </div>
+                            <div class="instrument-meta">
+                                <span class="tag">${t.campos ? "Formulário estruturado" : `${(t.questoes || []).length} itens`}</span>
+                                ${t.escala ? `<span class="tag">${t.escala.length} opções de resposta</span>` : ""}
+                            </div>
+                            <div class="form-actions" style="margin-top:14px">
+                                <button class="btn btn-primary btn-sm btn-hover" onclick="startAvalStepWithTemplate('${t.id}')"><i data-lucide="play"></i>Aplicar</button>
+                            </div>
+                        </div>
+                    `).join("")}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="section-head">
+                    <div><div class="section-title">Aplicações recentes</div><div class="section-sub">Acesse diretamente o resultado registrado.</div></div>
+                </div>
+                ${ultimo.length ? `
+                <div class="assessment-table-wrap" style="overflow:auto">
+                    <table class="assessment-table">
+                        <thead><tr><th>Data</th><th>Estudante</th><th>Instrumento</th><th>Status</th><th></th></tr></thead>
+                        <tbody>
+                        ${ultimo.map(r => `
+                            <tr>
+                                <td>${fmtDate(r.data)}</td>
+                                <td><strong>${esc(r.alunoNome)}</strong></td>
+                                <td>${esc(r.titulo)}</td>
+                                <td><span class="assessment-status">Concluída</span></td>
+                                <td style="text-align:right"><button class="btn btn-outline btn-sm btn-hover" onclick="viewAvaliacaoResultado('${r.alunoId}','${r.avalId}')"><i data-lucide="arrow-up-right"></i>Abrir</button></td>
+                            </tr>`).join("")}
+                        </tbody>
+                    </table>
+                </div>` : `<div class="empty">Ainda não existem aplicações concluídas.</div>`}
+            </div>
         </div>`;
     lucide.createIcons();
 }
@@ -3152,7 +3374,7 @@ function renderAvalStepAnswer() {
     document.getElementById("page-avaliacoes").innerHTML = `
         <button class="btn btn-outline btn-sm btn-hover" onclick="cancelAvalStep()" style="margin-bottom:14px"><i data-lucide="arrow-left"></i>Cancelar</button>
         <div class="aval-step">
-            <div class="step-progress">${Array.from({ length: Math.min(total, 10) }, (_, i) => `<div class="dot ${i < idx ? 'done' : i === idx ? 'active' : ''}"></div>`).join("")}${total > 10 ? `<span style="font-size:10px;color:#8a9892">+${total - 10}</span>` : ""}</div>
+            <div class="step-counter">Item ${idx + 1} de ${total}</div><div class="step-progress-wide"><span style="width:${Math.round(((idx + 1) / total) * 100)}%"></span></div>
             <div class="step-card">
                 <div style="font-size:10px;color:#8a9892;margin-bottom:8px">${Math.round((idx / total) * 100)}% concluído</div>
                 ${content}
@@ -3185,7 +3407,7 @@ function renderAvalStepDone() {
     if (!tpl || !aluno) { cancelAvalStep(); return; }
     let respostas = [], questoes = [];
     if (tpl.tipo === "anamnese" && tpl.campos) {
-        avalStepQuestions.forEach(q => { respostas.push({ secao: q.secao, rotulo: q.rotulo, chave: q.chave, valor: avalStepResponses[q.chave] || '' }); });
+        avalStepQuestions.forEach((q, i) => { respostas.push({ secao: q.secao, rotulo: q.rotulo, chave: q.chave, valor: avalStepResponses[i] || '' }); });
         questoes = tpl.campos.flatMap(sec => sec.itens.map(it => it.rotulo));
     } else if (tpl.questoes) {
         avalStepQuestions.forEach((q, i) => {
@@ -3204,7 +3426,7 @@ function renderAvalStepDone() {
     saveData().then(() => notify(`Avaliação "${tpl.nome}" aplicada a ${aluno.nome}!`));
     document.getElementById("page-avaliacoes").innerHTML = `
         <div class="card card-animated" style="max-width:600px;margin:40px auto;text-align:center;padding:40px">
-            <div style="font-size:48px;margin-bottom:16px">✅</div>
+            <div style="font-size:48px;margin-bottom:16px"></div>
             <div class="section-title" style="font-size:20px">Avaliação concluída!</div>
             <div class="section-sub" style="font-size:14px;margin-top:8px">${esc(tpl.nome)} aplicada a ${esc(aluno.nome)}</div>
             <div style="margin-top:20px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
@@ -3337,11 +3559,13 @@ function renderAvaliacoesHistory() {
     lucide.createIcons();
 }
 
-function viewAvaliacaoResultado(alunoId, avalId) {
+function viewAvaliacaoResultado(alunoId, avalId, resultadoId = null) {
     const s = getStudent(alunoId);
     if (!s) return;
-    openStudent(alunoId);
-    setTimeout(() => { currentStudent = alunoId; currentAssessment = avalId; renderStudentProfile("aplicar"); }, 100);
+    currentStudent = alunoId;
+    currentAssessment = avalId;
+    currentAvalId = resultadoId;
+    renderStudentProfile("resultado");
 }
 
 // ============================================================
@@ -3360,20 +3584,21 @@ function gerarPDFAvaliacao(alunoId, avalId) {
     doc.text('Legado Que Ensina - Avaliação', pageW / 2, y, { align: 'center' });
     y += 10;
     doc.setFontSize(14);
-    doc.text(esc(av.titulo), pageW / 2, y, { align: 'center' });
+    doc.text(String(av.titulo || ''), pageW / 2, y, { align: 'center' });
     y += 8;
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
-    doc.text(`Aluno: ${esc(s.nome)}`, 20, y); y += 6;
+    doc.text(`Aluno: ${s.nome || ''}`, 20, y); y += 6;
     doc.text(`Data: ${fmtDate(av.data)}`, 20, y); y += 6;
-    if (av.objetivo) { doc.text(`Objetivo: ${esc(av.objetivo)}`, 20, y); y += 8; }
+    if (av.objetivo) { doc.text(`Objetivo: ${av.objetivo}`, 20, y); y += 8; }
     const resultado = av.resultados && av.resultados.length ? av.resultados[av.resultados.length - 1] : null;
     if (av.questoes && av.questoes.length) {
         doc.setFont('helvetica', 'bold');
         doc.text('Questões e Respostas:', 20, y); y += 6;
         doc.setFont('helvetica', 'normal');
         av.questoes.forEach((q, i) => {
-            const resp = resultado && resultado.respostas ? resultado.respostas[i] || '' : '';
+            const rawResp = resultado && resultado.respostas ? resultado.respostas[i] || '' : '';
+            const resp = rawResp && typeof rawResp === 'object' ? (rawResp.rotulo || rawResp.valor || 'Não respondido') : rawResp;
             const text = `${q.numero}. ${q.texto}\nResposta: ${resp || 'Não respondido'}`;
             const lines = doc.splitTextToSize(text, pageW - 40);
             lines.forEach(line => { if (y > 270) { doc.addPage(); y = 20; } doc.text(line, 20, y); y += 5; });
@@ -3385,7 +3610,7 @@ function gerarPDFAvaliacao(alunoId, avalId) {
         doc.setFont('helvetica', 'bold');
         doc.text('Resumo:', 20, y); y += 6;
         doc.setFont('helvetica', 'normal');
-        const lines = doc.splitTextToSize(esc(resultado.resumo), pageW - 40);
+        const lines = doc.splitTextToSize(String(resultado.resumo || ''), pageW - 40);
         lines.forEach(line => { if (y > 270) { doc.addPage(); y = 20; } doc.text(line, 20, y); y += 5; });
     }
     y += 10;
@@ -3512,7 +3737,7 @@ function renderCalculadoras() {
         <div class="section-head"><div><div class="section-title">Calculadoras</div><div class="section-sub">Ferramentas para precificação e planejamento.</div></div></div>
         <div class="grid" style="grid-template-columns:1fr 1fr;gap:18px">
             <div class="card card-animated">
-                <div class="section-head"><div><div class="section-title">💰 Calculadora de Preço</div><div class="section-sub">Valor ideal da sessão</div></div></div>
+                <div class="section-head"><div><div class="section-title">Calculadora de Preço</div><div class="section-sub">Valor ideal da sessão</div></div></div>
                 <div class="field"><label class="label">Valor desejado (R$)</label><input id="calcPrecoDesejado" class="input" type="number" step="0.01" placeholder="Ex: 150,00" oninput="calcularPreco()"></div>
                 <div class="form-grid two">
                     <div class="field"><label class="label">Taxa do cartão (%)</label><input id="calcPrecoTaxaCartao" class="input" type="number" step="0.01" value="3.5" oninput="calcularPreco()"></div>
@@ -3525,7 +3750,7 @@ function renderCalculadoras() {
                 <div id="calcPrecoResultado"></div>
             </div>
             <div class="card card-animated">
-                <div class="section-head"><div><div class="section-title">📊 Calculadora de Sessão</div><div class="section-sub">Baseada nos custos e metas</div></div></div>
+                <div class="section-head"><div><div class="section-title">Calculadora de Sessão</div><div class="section-sub">Baseada nos custos e metas</div></div></div>
                 <div class="field"><label class="label">Renda mensal desejada (R$)</label><input id="calcSessaoRenda" class="input" type="number" step="0.01" placeholder="Ex: 4000,00" oninput="calcularSessao()"></div>
                 <div class="form-grid two">
                     <div class="field"><label class="label">Aluguel (R$/mês)</label><input id="calcSessaoAluguel" class="input" type="number" step="0.01" value="800" oninput="calcularSessao()"></div>
@@ -3665,7 +3890,7 @@ function renderListaEspera() {
                 </div>`).join("")}
         </div>
         <div class="card card-animated" style="margin-top:16px;background:#f8fbf9;border-color:#c5e0d0">
-            <div class="section-title">💡 Sugestões inteligentes</div>
+            <div class="section-title">Sugestões inteligentes</div>
             <div class="section-sub">Quando uma vaga abrir, o sistema indicará automaticamente os candidatos compatíveis.</div>
             <div style="margin-top:12px">
                 ${lista.filter(w => w.prioridade === 'alta').length > 0 ? `<div style="font-size:12px;color:#3e8060"><strong>${lista.filter(w => w.prioridade === 'alta').length} candidato(s) com prioridade ALTA</strong> aguardando vaga.</div>` : `<div style="font-size:12px;color:#8a9892">Nenhum candidato de alta prioridade no momento.</div>`}
@@ -3775,15 +4000,15 @@ function renderEquipe() {
                 </div>`).join("")}
         </div>
         <div class="card card-animated" style="margin-top:16px">
-            <div class="section-title">📋 Permissões do anfitrião</div>
+            <div class="section-title">Permissões do anfitrião</div>
             <div class="section-sub">O que o anfitrião pode fazer:</div>
             <ul style="font-size:12px;color:#596761;line-height:1.8;margin-top:10px;padding-left:20px">
-                <li>✅ Ver apenas alunos distribuídos a ele</li>
-                <li>✅ Registrar atendimentos</li>
-                <li>✅ Fazer avaliações</li>
-                <li>✅ Registrar evoluções</li>
-                <li>✅ Criar atividades/planos</li>
-                <li>✅ Consultar histórico dos seus alunos</li>
+                <li> Ver apenas alunos distribuídos a ele</li>
+                <li> Registrar atendimentos</li>
+                <li> Fazer avaliações</li>
+                <li> Registrar evoluções</li>
+                <li> Criar atividades/planos</li>
+                <li> Consultar histórico dos seus alunos</li>
                 <li>❌ Administrar a equipe</li>
                 <li>❌ Ver carteira de outros anfitriões</li>
             </ul>
@@ -3833,15 +4058,15 @@ function removeHost(i) {
 // ONBOARDING - COMECE SUA PRÁTICA
 // ============================================================
 const ONBOARDING_STEPS = [
-    { id: 'perfil', icon: '👤', title: 'Configurar perfil', desc: 'Adicione seu nome, foto, especialidade e bio profissional.', action: 'navigate("perfil")' },
-    { id: 'aluno', icon: '👶', title: 'Cadastrar primeiro aluno', desc: 'Adicione seu primeiro aluno com dados básicos.', action: 'navigate("alunos");setTimeout(()=>toggleStudentForm(true),100)' },
-    { id: 'valores', icon: '💰', title: 'Configurar valores', desc: 'Defina o valor por sessão e as formas de pagamento.', action: 'navigate("alunos")' },
-    { id: 'contrato', icon: '📄', title: 'Criar contrato', desc: 'Elabore um contrato de prestação de serviços.', action: 'navigate("onboarding")' },
-    { id: 'recebimentos', icon: '💳', title: 'Configurar recebimentos', desc: 'Conecte suas formas de recebimento (PIX, cartão).', action: 'navigate("financeiro")' },
-    { id: 'coworking', icon: '🏢', title: 'Conhecer opções de coworking', desc: 'Encontre espaços para atender presencialmente.', action: 'navigate("onboarding")' },
+    { id: 'perfil', icon: '', title: 'Configurar perfil', desc: 'Adicione seu nome, foto, especialidade e bio profissional.', action: 'navigate("perfil")' },
+    { id: 'aluno', icon: '', title: 'Cadastrar primeiro aluno', desc: 'Adicione seu primeiro aluno com dados básicos.', action: 'navigate("alunos");setTimeout(()=>toggleStudentForm(true),100)' },
+    { id: 'valores', icon: 'wallet', title: 'Configurar valores', desc: 'Defina o valor por sessão e as formas de pagamento.', action: 'navigate("alunos")' },
+    { id: 'contrato', icon: '', title: 'Criar contrato', desc: 'Elabore um contrato de prestação de serviços.', action: 'navigate("onboarding")' },
+    { id: 'recebimentos', icon: '', title: 'Configurar recebimentos', desc: 'Conecte suas formas de recebimento (PIX, cartão).', action: 'navigate("financeiro")' },
+    { id: 'coworking', icon: '', title: 'Conhecer opções de coworking', desc: 'Encontre espaços para atender presencialmente.', action: 'navigate("onboarding")' },
     { id: 'documentos', icon: '✍️', title: 'Aprender a assinar documentos', desc: 'Use assinatura digital para documentos.', action: 'navigate("onboarding")' },
-    { id: 'comunicacao', icon: '💬', title: 'Configurar comunicação', desc: 'Ative lembretes e mensagens para responsáveis.', action: 'navigate("recados")' },
-    { id: 'google', icon: '🌐', title: 'Criar presença no Google', desc: 'Apareça em buscas como profissional.', action: 'navigate("onboarding")' }
+    { id: 'comunicacao', icon: '', title: 'Configurar comunicação', desc: 'Ative lembretes e mensagens para responsáveis.', action: 'navigate("recados")' },
+    { id: 'google', icon: '', title: 'Criar presença no Google', desc: 'Apareça em buscas como profissional.', action: 'navigate("onboarding")' }
 ];
 
 function renderOnboarding() {
@@ -3856,7 +4081,7 @@ function renderOnboarding() {
     document.getElementById("page-onboarding").innerHTML = `
         ${renderHelpBox("onboarding")}
         <div class="section-head">
-            <div><div class="section-title">🚀 Comece sua prática</div><div class="section-sub">Vamos preparar seu espaço profissional?</div></div>
+            <div><div class="section-title">Comece sua prática</div><div class="section-sub">Vamos preparar seu espaço profissional?</div></div>
             <button class="btn btn-outline btn-sm btn-hover" onclick="resetOnboarding()"><i data-lucide="rotate-ccw"></i>Reiniciar</button>
         </div>
         <div class="card card-animated" style="margin-bottom:16px">
