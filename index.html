@@ -2,7 +2,6 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="app-version" content="2.0">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Legado Que Ensina · Gestão Psicopedagógica</title>
 <link rel="icon" type="image/png" href="https://i.imgur.com/AUoGLEq.png">
@@ -399,55 +398,51 @@ button{cursor:pointer}
 @media(max-width:1100px){.dash-stats,.fin-cards{grid-template-columns:repeat(2,1fr)}.dash-grid,.fin-grid{grid-template-columns:1fr}}
 @media(max-width:950px){.stats{grid-template-columns:repeat(2,1fr)}.form-grid{grid-template-columns:repeat(2,1fr)}.assessment-metrics{grid-template-columns:repeat(2,1fr)}.instrument-grid{grid-template-columns:1fr}.two-col-layout{grid-template-columns:1fr}}
 @media(max-width:680px){.sidebar{width:58px;padding:15px 6px}.brand-text .sub{display:none}.nav button{justify-content:center;padding:0 8px}.nav-label{display:none}.topbar{height:62px;padding:0 15px}.content{height:calc(100vh - 62px);padding:17px 13px}.form-grid,.form-grid.two{grid-template-columns:1fr}.stats,.dash-stats,.fin-cards{grid-template-columns:1fr 1fr}.login-box{padding:28px 20px}.profile-actions{width:100%;margin-left:0}}
+</style>
+
+<style id="ux-enhancements">
+/* ===== UX ENHANCEMENTS ===== */
+.ux-modal-backdrop{position:fixed;inset:0;background:rgba(18,27,23,.42);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;padding:20px;z-index:9999}
+.ux-modal{width:min(680px,100%);max-height:90vh;overflow:auto;background:#fff;border:1px solid #e3eae6;border-radius:18px;box-shadow:0 24px 70px rgba(18,27,23,.18)}
+.ux-modal-head{padding:20px 22px 14px;border-bottom:1px solid #edf1ef;display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.ux-modal-body{padding:20px 22px}.ux-modal-foot{padding:14px 22px 20px;display:flex;justify-content:flex-end;gap:8px;border-top:1px solid #edf1ef}
+.ux-close{border:0;background:#f3f6f4;border-radius:9px;width:34px;height:34px;cursor:pointer;font-size:18px;color:#65736d}
+.ux-help{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border:1px solid #dfeae4;background:linear-gradient(135deg,#f8fbf9,#fff);border-radius:13px;margin-bottom:16px}
+.ux-help strong{display:block;font-size:13px;color:#27352f;margin-bottom:3px}.ux-help span{font-size:12px;color:#687770;line-height:1.55}
+.ux-kicker{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#829089}.ux-bigtitle{font-size:21px;font-weight:800;color:#26342e;margin-top:4px}.ux-muted{font-size:12px;color:#74827c;line-height:1.55}
+.ux-choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.ux-choice{border:1px solid #dfe7e3;border-radius:12px;padding:13px;cursor:pointer;background:#fff}.ux-choice:hover{border-color:#b8cbc0;background:#fbfdfc}.ux-choice-title{font-size:12px;font-weight:800;color:#33423b}.ux-choice-sub{font-size:11px;color:#7b8983;margin-top:4px}
+.ux-qrow{border:1px solid #dfe7e3;border-radius:13px;padding:14px;margin-top:10px;background:#fff}.ux-qrow-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}.ux-qnum{width:28px;height:28px;border-radius:8px;background:#eef4f0;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#557064}.ux-qgrid{display:grid;grid-template-columns:minmax(0,1fr) 170px;gap:10px}.ux-qactions{display:flex;gap:6px}.ux-iconbtn{border:1px solid #dfe7e3;background:#fff;border-radius:8px;width:31px;height:31px;cursor:pointer;color:#6a7872}.ux-iconbtn:hover{background:#f4f7f5}.ux-empty{padding:28px 16px;border:1px dashed #cfdad4;border-radius:13px;text-align:center;color:#7a8882;font-size:12px}
+.ux-assessment-header{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;padding:20px 22px;border:1px solid #dfe8e3;border-radius:16px;background:linear-gradient(135deg,#fbfdfc,#f4f8f6);margin-bottom:16px}.ux-assessment-title{font-size:20px;font-weight:800;color:#26342e}.ux-progress{height:7px;background:#e8efeb;border-radius:999px;overflow:hidden;margin-top:9px}.ux-progress>span{display:block;height:100%;background:#6f9882;border-radius:999px}
+.ux-result-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0}.ux-result-stat{border:1px solid #e1e9e5;border-radius:12px;padding:13px;background:#fbfcfc}.ux-result-stat b{display:block;font-size:18px;color:#26342e}.ux-result-stat span{font-size:10px;color:#7a8882}
+@media(max-width:700px){.ux-choice-grid,.ux-qgrid,.ux-result-summary{grid-template-columns:1fr}.ux-assessment-header{display:block}.ux-assessment-header .btn{margin-top:12px}}
 
 /* ============================================================
-   SISTEMA 2.0 — ARQUITETURA DE NAVEGAÇÃO + RAIL CONTEXTUAL
+   SAAS UX 2.0 — arquitetura guiada e densidade profissional
    ============================================================ */
-:root{--rail:248px;--right-rail:286px}
-.app{display:flex;min-height:100vh}
-.sidebar{width:var(--rail);flex:0 0 var(--rail);position:fixed;left:0;top:0;bottom:0;z-index:50}
-.main{margin-left:var(--rail);margin-right:var(--right-rail);width:auto;min-width:0}
-.content{padding:26px 28px 60px;max-width:none}
-.context-rail{position:fixed;right:0;top:0;bottom:0;width:var(--right-rail);z-index:45;background:rgba(250,252,251,.96);border-left:1px solid var(--line);padding:78px 16px 18px;overflow:auto}
-.context-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-.context-kicker{font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#93a099;font-weight:800}
-.context-title{font-size:15px;font-weight:800;color:#293a33;margin-top:3px}
-.context-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:11px;box-shadow:0 5px 18px rgba(35,55,45,.035)}
-.context-card h4{margin:0 0 5px;font-size:12px;color:#34413c}
-.context-card p{margin:0;color:#7b8983;font-size:10px;line-height:1.55}
-.context-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.context-action{border:1px solid var(--line);background:#fff;border-radius:12px;padding:11px 8px;text-align:left;cursor:pointer;color:#4e625a;font-size:10px;font-weight:700;transition:.18s}
-.context-action:hover{border-color:#bcd5c9;background:#f7fbf9;transform:translateY(-1px)}
-.context-action i{display:block;width:16px;height:16px;margin-bottom:7px;color:var(--sage-dark)}
-.context-metric{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #f0f3f2;font-size:10px;color:#78867f}
-.context-metric:last-child{border-bottom:0;padding-bottom:0}
-.context-metric strong{font-size:12px;color:#34413c}
-.page-subnav{display:flex;gap:6px;align-items:center;border-bottom:1px solid var(--line);margin:-4px 0 22px;padding:0 0 10px;overflow:auto}
-.page-subnav button{white-space:nowrap;border:0;background:transparent;border-radius:10px;padding:9px 13px;color:#81908a;font-size:11px;font-weight:700;cursor:pointer}
-.page-subnav button:hover{background:#f3f7f5;color:#52645b}
-.page-subnav button.active{background:#eaf3ee;color:var(--sage-dark)}
-.page-section-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;margin-bottom:18px}
-.page-section-head h1{margin:0;font-size:22px;color:#293a33}
-.page-section-head p{margin:5px 0 0;color:#81908a;font-size:11px;line-height:1.55}
-.finance-command{background:#f7faf8;border:1px solid #dce8e1;border-radius:18px;padding:16px;margin-bottom:18px}
-.finance-command-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr auto;gap:9px;align-items:end}
-.finance-command .field{margin:0}
-.fin-chart-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:18px;margin-bottom:18px}
-.fin-chart{height:210px;display:flex;align-items:flex-end;gap:10px;padding:18px 6px 8px;border-top:1px solid #f0f3f2}
-.fin-bar-wrap{height:100%;flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:7px}
-.fin-bar-stack{width:min(34px,80%);height:100%;display:flex;align-items:flex-end;gap:3px}
-.fin-bar{flex:1;border-radius:7px 7px 2px 2px;min-height:3px;background:#86aa98}
-.fin-bar.expense{background:#d7a3a3}
-.fin-bar-label{font-size:9px;color:#8b9892}
-.fin-donut{width:150px;height:150px;border-radius:50%;margin:8px auto 12px;background:conic-gradient(#86aa98 0 62%,#d7a3a3 62% 84%,#d8e2dd 84%);display:grid;place-items:center}
-.fin-donut:after{content:"";width:92px;height:92px;background:#fff;border-radius:50%}
-.fin-legend{display:grid;gap:7px}
-.fin-legend div{display:flex;justify-content:space-between;font-size:10px;color:#718078}
-.fin-legend span:first-child{display:flex;align-items:center;gap:6px}
-.fin-dot{width:7px;height:7px;border-radius:50%;display:inline-block;background:#86aa98}.fin-dot.expense{background:#d7a3a3}.fin-dot.pending{background:#d8e2dd}
-@media(max-width:1180px){:root{--right-rail:0px}.context-rail{display:none}.main{margin-right:0}.fin-chart-grid{grid-template-columns:1fr}.finance-command-grid{grid-template-columns:1fr 1fr}}
-@media(max-width:680px){:root{--rail:58px}.main{margin-left:58px}.content{padding:17px 13px 45px}.finance-command-grid{grid-template-columns:1fr}.page-section-head{flex-direction:column}}
-
+.ux2-page{display:flex;flex-direction:column;gap:18px}
+.ux2-hero{background:linear-gradient(135deg,#ffffff,#f3f8f5);border:1px solid var(--line);border-radius:22px;padding:22px 24px;display:flex;justify-content:space-between;align-items:flex-start;gap:18px;flex-wrap:wrap}
+.ux2-eyebrow{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--sage);font-weight:800}
+.ux2-hero h1{margin:6px 0 5px;font-size:22px;letter-spacing:-.035em;color:#263832}
+.ux2-hero p{margin:0;max-width:720px;color:#718078;font-size:12px;line-height:1.65}
+.ux2-actions{display:flex;gap:7px;flex-wrap:wrap}
+.ux2-guide{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.ux2-guide-item{display:flex;gap:11px;padding:13px 14px;border:1px solid var(--line);background:#fff;border-radius:14px}
+.ux2-guide-num{width:28px;height:28px;border-radius:9px;background:var(--sage-light);color:var(--sage-dark);display:grid;place-items:center;font-size:11px;font-weight:800;flex:none}
+.ux2-guide strong{display:block;font-size:11px;color:#34413c}.ux2-guide span{display:block;margin-top:3px;font-size:10px;line-height:1.5;color:#89968f}
+.ux2-toolbar{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:12px;border:1px solid var(--line);background:#fff;border-radius:15px}
+.ux2-search{position:relative;flex:1;min-width:220px}.ux2-search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:16px;color:#9aa7a1}.ux2-search input{padding-left:36px}
+.ux2-section{background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden}.ux2-section-head{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}.ux2-section-title{font-size:14px;font-weight:800;color:#34413c}.ux2-section-sub{font-size:10px;color:#8a9892;margin-top:3px}
+.ux2-table{width:100%;border-collapse:collapse}.ux2-table th{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:#8a9892;text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);white-space:nowrap}.ux2-table td{font-size:11px;color:#53615b;padding:12px 14px;border-bottom:1px solid #f0f3f2;vertical-align:middle}.ux2-table tr:hover td{background:#fbfcfc}
+.ux2-status{display:inline-flex;padding:4px 8px;border-radius:20px;font-size:9px;font-weight:800}.ux2-status.ok{background:#eaf3ee;color:#477363}.ux2-status.pending{background:#fff6e9;color:#a66c26}.ux2-status.muted{background:#f1f3f2;color:#7b8782}
+.ux2-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.ux2-stat{background:#fff;border:1px solid var(--line);border-radius:16px;padding:15px}.ux2-stat-label{font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:#8c9993;font-weight:800}.ux2-stat-value{font-size:22px;font-weight:800;color:#2d3b35;margin-top:5px}.ux2-stat-sub{font-size:10px;color:#98a39f;margin-top:2px}
+.ux2-empty{padding:42px 24px;text-align:center}.ux2-empty .icon{width:48px;height:48px;border-radius:15px;background:#edf5f1;color:var(--sage);display:grid;place-items:center;margin:0 auto 12px}.ux2-empty strong{display:block;font-size:13px;color:#46554e}.ux2-empty span{display:block;margin:5px auto 14px;max-width:430px;font-size:11px;line-height:1.6;color:#8a9791}
+.ux2-profile{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:16px}.ux2-profile-main,.ux2-profile-side{background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden}.ux2-profile-head{padding:20px;display:flex;gap:15px;align-items:center;border-bottom:1px solid var(--line)}.ux2-profile-avatar{width:74px;height:74px;border-radius:20px;background:#eaf3ee;color:var(--sage-dark);display:grid;place-items:center;font-size:24px;font-weight:800;overflow:hidden;background-size:cover;background-position:center;flex:none}.ux2-profile-name{font-size:21px;font-weight:800;color:#293832}.ux2-profile-meta{font-size:11px;color:#89968f;margin-top:4px}.ux2-profile-actions{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.ux2-tabs{display:flex;gap:3px;padding:7px 10px;border-bottom:1px solid var(--line);overflow:auto}.ux2-tab{border:0;background:transparent;border-radius:9px;padding:8px 10px;font-size:10px;font-weight:700;color:#7b8882;white-space:nowrap;cursor:pointer}.ux2-tab:hover{background:#f4f8f6}.ux2-tab.active{background:#eaf3ee;color:#477363}.ux2-profile-content{padding:18px}.ux2-info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.ux2-info{padding:12px;border-radius:12px;background:#f8faf9}.ux2-info label{display:block;font-size:9px;text-transform:uppercase;color:#919d98;font-weight:800}.ux2-info strong{display:block;margin-top:4px;font-size:11px;color:#44534c;line-height:1.4}.ux2-side-block{padding:16px;border-bottom:1px solid var(--line)}.ux2-side-block:last-child{border-bottom:0}.ux2-side-title{font-size:11px;font-weight:800;color:#46544e}.ux2-side-row{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid #f0f3f2;font-size:10px;color:#7d8984}.ux2-side-row:last-child{border-bottom:0}.ux2-side-row strong{color:#3c4b44}
+.ux2-timeline{display:flex;flex-direction:column;gap:10px}.ux2-timeline-item{display:grid;grid-template-columns:82px 1fr;gap:12px}.ux2-timeline-date{font-size:9px;color:#8d9994;font-weight:700;padding-top:4px}.ux2-timeline-card{padding:12px;border:1px solid var(--line);border-radius:12px;background:#fbfcfc}.ux2-timeline-card strong{font-size:11px;color:#44534c}.ux2-timeline-card div{font-size:10px;color:#68766f;line-height:1.6;margin-top:4px;white-space:pre-wrap}
+.ux2-modal-steps{display:flex;gap:5px;margin-bottom:18px}.ux2-modal-step{flex:1;height:5px;border-radius:10px;background:#edf1ef}.ux2-modal-step.active{background:var(--sage)}.ux2-modal-step.done{background:#a9cbbb}
+.ux2-question{border:1px solid var(--line);border-radius:15px;background:#fff;padding:15px;margin-bottom:10px}.ux2-question-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:11px}.ux2-qbadge{width:29px;height:29px;border-radius:9px;background:#edf5f1;color:#477363;display:grid;place-items:center;font-size:10px;font-weight:800}.ux2-question-tools{display:flex;gap:4px}.ux2-mini{border:1px solid var(--line);background:#fff;border-radius:8px;padding:5px 7px;font-size:10px;color:#68766f;cursor:pointer}.ux2-mini:hover{background:#f5f8f6}
+.ux2-preview{border:1px dashed #c9d9d1;border-radius:15px;background:#fbfdfc;padding:17px}.ux2-preview-label{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#8b9892;font-weight:800}.ux2-preview h3{font-size:15px;margin:6px 0;color:#34413c}.ux2-preview p{font-size:11px;color:#718078;line-height:1.6;margin:0 0 12px}
+@media(max-width:1000px){.ux2-profile{grid-template-columns:1fr}.ux2-guide{grid-template-columns:1fr}.ux2-stats{grid-template-columns:repeat(2,1fr)}.ux2-info-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:650px){.ux2-stats{grid-template-columns:1fr 1fr}.ux2-info-grid{grid-template-columns:1fr}.ux2-profile-actions{width:100%;margin-left:0;justify-content:flex-start}.ux2-timeline-item{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -482,12 +477,12 @@ button{cursor:pointer}
   <nav class="nav">
     <button data-page="dashboard" class="active"><i data-lucide="layout-dashboard"></i><span class="nav-label">Dashboard</span></button>
     <button data-page="alunos"><i data-lucide="users"></i><span class="nav-label">Alunos</span></button>
-    <button data-page="agenda" class="context-nav-hidden" style="display:none"><i data-lucide="calendar-days"></i><span class="nav-label">Agenda</span></button>
+    <button data-page="agenda"><i data-lucide="calendar-days"></i><span class="nav-label">Agenda</span></button>
     <button data-page="avaliacoes"><i data-lucide="clipboard-check"></i><span class="nav-label">Avaliações</span></button>
     <button data-page="financeiro"><i data-lucide="wallet-cards"></i><span class="nav-label">Financeiro</span></button>
-    <button data-page="lista-espera" class="context-nav-hidden" style="display:none"><i data-lucide="list-ordered"></i><span class="nav-label">Lista de Espera</span></button>
+    <button data-page="lista-espera"><i data-lucide="list-ordered"></i><span class="nav-label">Lista de Espera</span></button>
     <button data-page="recados"><i data-lucide="mail"></i><span class="nav-label">Recados</span><span id="recadosBadge" class="nav-badge">0</span></button>
-    <button data-page="perfil" class="teacher-only-nav context-nav-hidden" style="display:none"><i data-lucide="user-round"></i><span class="nav-label">Meu Perfil</span></button>
+    <button data-page="perfil" class="teacher-only-nav"><i data-lucide="user-round"></i><span class="nav-label">Meu Perfil</span></button>
     <button data-page="master" id="masterNav" style="display:none"><i data-lucide="shield-check"></i><span class="nav-label">Suporte</span></button>
   </nav>
   <div class="side-bottom nav"><button id="logoutBtn"><i data-lucide="log-out"></i><span class="nav-label">Sair</span></button></div>
@@ -504,15 +499,15 @@ button{cursor:pointer}
 <section id="page-avaliacoes" class="view"></section>
 <section id="page-financeiro" class="view"></section>
 <section id="page-lista-espera" class="view"></section>
+<section id="page-equipe" class="view"></section>
 <section id="page-recados" class="view"></section>
 <section id="page-perfil" class="view"></section>
+<section id="page-onboarding" class="view"></section>
+<section id="page-onboarding-detalhe" class="view"></section>
 <section id="page-prontuario" class="view"></section>
 <section id="page-master" class="view"></section>
 </div>
 </main>
-<aside id="contextRail" class="context-rail">
-  <div id="contextRailInner"></div>
-</aside>
 </div>
 
 <div id="recadoModal" class="recado-modal-backdrop"><div class="recado-modal"><div class="recado-modal-head"><div><div class="recado-modal-title">Novo Comunicado</div></div><button class="btn btn-outline btn-sm" onclick="closeRecadoModal()">Fechar</button></div><div class="field"><label class="label">Título</label><input id="recadoTitulo" class="input"></div><div class="field"><label class="label">Mensagem</label><textarea id="recadoMensagem" class="textarea" style="min-height:120px"></textarea></div><div class="field"><label class="label">Destinatário</label><select id="recadoDestinatario" class="select"><option value="todos">Todos</option></select></div><div class="form-actions"><button class="btn btn-primary" onclick="sendRecado()">Enviar</button><button class="btn btn-outline" onclick="closeRecadoModal()">Cancelar</button></div></div></div>
@@ -818,7 +813,7 @@ function openStudent(id){
 }
 function setStudentSectionPage(sec,p){ studentSectionPage[sec]=p; renderStudentProfile("overview"); }
 
-function renderStudentProfile(mode="overview"){
+function renderStudentProfileLegacy(mode="overview"){
     const s=getStudent(currentStudent); if(!s)return; ensureStudentModules(s);
     const cons=(s.consultas||[]).slice().sort((a,b)=>b.data.localeCompare(a.data));
     const upc=activeAppointments().filter(a=>a.alunoId===s.id&&a.data>=today()).sort((a,b)=>(a.data+a.hora).localeCompare(b.data+b.hora)).slice(0,3);
@@ -870,7 +865,7 @@ function renderStudentProfileOverview(s,cons,upc,evo){
     const pagos=(data.transacoes||[]).filter(t=>t.alunoId===s.id&&(t.tipo||"receita")==="receita").reduce((sum,t)=>sum+Number(t.valor||0),0);
     const meses=["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
     const calHTML=`<div class="card" style="margin-top:16px"><div class="section-head"><div><div class="section-title">Calendário Acadêmico ${new Date().getFullYear()}</div><div class="section-sub">Clique para alternar letivo/férias/parcial</div></div></div><div class="academic-calendar">${meses.map((m,i)=>{const k=`${new Date().getFullYear()}-${String(i+1).padStart(2,'0')}`; const st=(s.calendarioAcademico||{})[k]||'letivo'; return `<div class="academic-month ${st}" onclick="toggleAcademicMonth('${s.id}','${k}')">${m}</div>`;}).join("")}</div></div>`;
-    document.getElementById("page-prontuario").innerHTML=`<button class="btn btn-outline btn-sm" onclick="navigate('alunos')" style="margin-bottom:14px">← Voltar</button><div class="card" style="padding:0;overflow:hidden"><div class="profile-cover"></div><div class="profile-head">${avatarHTML(s,"profile-avatar")}<div style="padding-bottom:9px"><div class="profile-name">${esc(s.nome)}</div><div class="profile-meta">${s.idade?s.idade+" anos · ":""}${esc(s.serie||"")}</div></div><div class="profile-actions">${s.telefone?`<a class="btn btn-soft btn-sm" target="_blank" href="https://wa.me/55${s.telefone.replace(/\D/g,'')}">WhatsApp</a>`:""}<button class="btn btn-outline btn-sm" onclick="renderStudentProfile('edit')">Editar</button><button class="btn btn-blue btn-sm" onclick="generateStudentPDF('${s.id}')">PDF</button><button class="btn btn-danger btn-sm" onclick="if(confirm('Excluir?')){deleteStudent('${s.id}')}">X</button></div></div><div class="profile-body"><div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px"><button class="btn btn-primary btn-sm" onclick="renderStudentProfile('overview')">Prontuário</button><button class="btn btn-outline btn-sm" onclick="renderStudentProfile('avaliacoes')">Avaliações</button><button class="btn btn-outline btn-sm" onclick="renderStudentProfile('escola')">Escola</button></div><div class="grid stats" style="margin-bottom:18px"><div class="card"><div class="stat-label">Consultas</div><div class="stat-value">${(s.consultas||[]).length}</div></div><div class="card"><div class="stat-label">Evoluções</div><div class="stat-value">${(s.evolucoes||[]).length}</div></div><div class="card"><div class="stat-label">Avaliações</div><div class="stat-value">${(s.avaliacoes||[]).length}</div></div><div class="card"><div class="stat-label">Total pago</div><div class="stat-value">${money(pagos)}</div></div></div>${calHTML}<div class="two-col-layout" style="margin-top:18px"><div><div class="card"><div class="section-head"><div><div class="section-title">Consultas</div></div><button class="btn btn-primary btn-sm" onclick="newConsultationForm()">+ Registrar</button></div>${p.slice.map(c=>`<div style="display:flex;align-items:center;gap:14px;padding:14px 0;border-top:1px solid var(--line);cursor:pointer" onclick="openConsultation('${c.id}')"><div style="width:74px;text-align:center"><strong style="font-size:17px">${new Date(c.data+"T12:00:00").getDate()}</strong></div><div style="flex:1"><div style="font-weight:700;font-size:13px">Consulta</div><div class="section-sub">${esc((c.observacoes||"—").slice(0,110))}</div></div></div>`).join("")||`<div class="empty">—</div>`}${p.controls}</div><div class="card" style="margin-top:16px"><div class="section-title">Evoluções</div><button class="btn btn-soft btn-sm" style="margin-top:8px" onclick="newEvolucaoForm()">+ Registrar</button>${evo.slice(0,3).map(e=>`<div class="evolution" style="margin-top:10px"><div class="evolution-date">${fmtDate(e.data)}</div><div class="evolution-title">${esc(e.titulo||"Evolução")}</div><div class="evolution-text">${esc(e.texto)}</div></div>`).join("")||`<div class="empty" style="margin-top:12px">—</div>`}</div></div><div class="right-sidebar"><div class="card"><div class="section-title">Próximos</div>${upc.map(a=>`<div style="padding:10px 0;border-top:1px solid var(--line);font-size:12px">${fmtDate(a.data)} · ${a.hora}</div>`).join("")||`<div class="empty">—</div>`}</div></div></div></div></div>`;
+    document.getElementById("page-prontuario").innerHTML=`<button class="btn btn-outline btn-sm" onclick="navigate('alunos')" style="margin-bottom:14px">← Voltar</button><div class="card" style="padding:0;overflow:hidden"><div class="profile-cover"></div><div class="profile-head">${avatarHTML(s,"profile-avatar")}<div style="padding-bottom:9px"><div class="profile-name">${esc(s.nome)}</div><div class="profile-meta">${s.idade?s.idade+" anos · ":""}${esc(s.serie||"")}</div></div><div class="profile-actions">${s.telefone?`<a class="btn btn-soft btn-sm" target="_blank" href="https://wa.me/55${s.telefone.replace(/\D/g,'')}">WhatsApp</a>`:""}<button class="btn btn-outline btn-sm" onclick="renderStudentProfile('edit')">Editar</button><button class="btn btn-blue btn-sm" onclick="generateStudentPDF('${s.id}')">PDF</button><button class="btn btn-danger btn-sm" onclick="requestDeleteStudent('${s.id}')">X</button></div></div><div class="profile-body"><div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px"><button class="btn btn-primary btn-sm" onclick="renderStudentProfile('overview')">Prontuário</button><button class="btn btn-outline btn-sm" onclick="renderStudentProfile('avaliacoes')">Avaliações</button><button class="btn btn-outline btn-sm" onclick="renderStudentProfile('escola')">Escola</button></div><div class="grid stats" style="margin-bottom:18px"><div class="card"><div class="stat-label">Consultas</div><div class="stat-value">${(s.consultas||[]).length}</div></div><div class="card"><div class="stat-label">Evoluções</div><div class="stat-value">${(s.evolucoes||[]).length}</div></div><div class="card"><div class="stat-label">Avaliações</div><div class="stat-value">${(s.avaliacoes||[]).length}</div></div><div class="card"><div class="stat-label">Total pago</div><div class="stat-value">${money(pagos)}</div></div></div>${calHTML}<div class="two-col-layout" style="margin-top:18px"><div><div class="card"><div class="section-head"><div><div class="section-title">Consultas</div></div><button class="btn btn-primary btn-sm" onclick="newConsultationForm()">+ Registrar</button></div>${p.slice.map(c=>`<div style="display:flex;align-items:center;gap:14px;padding:14px 0;border-top:1px solid var(--line);cursor:pointer" onclick="openConsultation('${c.id}')"><div style="width:74px;text-align:center"><strong style="font-size:17px">${new Date(c.data+"T12:00:00").getDate()}</strong></div><div style="flex:1"><div style="font-weight:700;font-size:13px">Consulta</div><div class="section-sub">${esc((c.observacoes||"—").slice(0,110))}</div></div></div>`).join("")||`<div class="empty">—</div>`}${p.controls}</div><div class="card" style="margin-top:16px"><div class="section-title">Evoluções</div><button class="btn btn-soft btn-sm" style="margin-top:8px" onclick="newEvolucaoForm()">+ Registrar</button>${evo.slice(0,3).map(e=>`<div class="evolution" style="margin-top:10px"><div class="evolution-date">${fmtDate(e.data)}</div><div class="evolution-title">${esc(e.titulo||"Evolução")}</div><div class="evolution-text">${esc(e.texto)}</div></div>`).join("")||`<div class="empty" style="margin-top:12px">—</div>`}</div></div><div class="right-sidebar"><div class="card"><div class="section-title">Próximos</div>${upc.map(a=>`<div style="padding:10px 0;border-top:1px solid var(--line);font-size:12px">${fmtDate(a.data)} · ${a.hora}</div>`).join("")||`<div class="empty">—</div>`}</div></div></div></div></div>`;
     try{lucide.createIcons();}catch(e){}
 }
 
@@ -955,7 +950,7 @@ async function addSchoolRecord(){
 }
 async function deleteSchoolRecord(id){
     const s=getStudent(currentStudent); if(!s)return;
-    if(!confirm("Excluir?"))return;
+    return;
     s.escola.registros=s.escola.registros.filter(x=>x.id!==id);
     await deleteRegistroEscolaDB(id); await saveData(); renderStudentProfile("escola");
 }
@@ -1034,7 +1029,7 @@ async function togglePayment(id){
         const met=prompt("Método:\n1-Dinheiro\n2-PIX\n3-Cartão\n4-Cartão parcelado");
         let ms="",par=0;
         if(met==='1')ms='dinheiro'; else if(met==='2')ms='pix'; else if(met==='3')ms='cartao';
-        else if(met==='4'){ms='cartao_parcelado';par=parseInt(prompt("Parcelas:"))||0;if(par<2||par>12){notify("Inválido.");return;}}
+        else if(met==='4'){ms='cartao_parcelado';par=2;}
         else{notify("Inválido.");return;}
         a.pago=true;
         data.transacoes.push({id:uid(),data:a.data,agendaId:a.id,alunoId:s.id,descricao:`Sessão de ${s.nome}`,valor:Number(s.valor)||0,tipo:"receita",categoria:"Sessão",metodo_pagamento:ms,parcelas:par});
@@ -1405,9 +1400,7 @@ function renderFinanceiro() {
     try{lucide.createIcons();}catch(e){}
 }
 function showDespesaForm() {
-    const descricao = prompt("Descrição:"); if (!descricao) return;
-    const valor = parseFloat(prompt("Valor:")); if (isNaN(valor) || valor <= 0) { notify("Valor inválido."); return; }
-    const categoria = prompt("Categoria:") || "Outros";
+    return showDespesaForm();
     if (!data.transacoes) data.transacoes = [];
     data.transacoes.push({ id: uid(), data: today(), descricao, valor, tipo: "despesa", categoria });
     saveData(); notify("Despesa registrada."); renderFinanceiro();
@@ -1600,14 +1593,14 @@ function saveWaitlist(){
 }
 function promoteWaitlist(i){
     const w=(data.listaEspera||[])[i];if(!w)return;
-    if(!confirm(`Transformar ${w.nome} em aluno?`))return;
+    return;
     const st={id:uid(),nome:w.nome,idade:w.idade||0,serie:'',responsavel:'',telefone:w.telefone||'',valor:Number(data.professor?.configuracoes?.valorSessaoPadrao)||0,foto:'',tags:[],observacoes:w.observacoes||'',ativo:true};
     data.alunos.push(st);ensureStudentModules(st);data.listaEspera.splice(i,1);
     try{localStorage.setItem('waitlist_'+currentUserId,JSON.stringify(data.listaEspera));}catch(e){}
     saveData().then(()=>{currentStudent=st.id;navigate('agenda');setTimeout(()=>{toggleAgendaForm();const s=document.getElementById('agAluno');if(s)s.value=st.id;},150);notify(`${st.nome} agora é aluno.`);});
 }
 function removeWaitlist(i){
-    if(!confirm('Remover este interessado da lista de espera?'))return;
+    return;
     data.listaEspera.splice(i,1);try{localStorage.setItem('waitlist_'+currentUserId,JSON.stringify(data.listaEspera));}catch(e){}
     renderListaEspera();notify('Interessado removido.');
 }
@@ -1722,7 +1715,7 @@ function renderRecados() {
         ${renderHelpBox("recados")}
         <div class="section-head"><div><div class="section-title">Recados</div></div>${isM ? `<button class="btn btn-primary" onclick="openNewRecadoModal()">+ Comunicado</button>` : `<button class="btn btn-soft" onclick="openNewMessageModal()">Enviar mensagem</button>`}</div>
         <div class="card" style="margin-bottom:16px"><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn ${recadosFilter === 'todos' ? 'btn-primary' : 'btn-outline'} btn-sm" onclick="setRecadosFilter('todos')">Todos (${recadosList.length})</button><button class="btn ${recadosFilter === 'nao_lidos' ? 'btn-primary' : 'btn-outline'} btn-sm" onclick="setRecadosFilter('nao_lidos')">Não lidos (${recadosUnreadCount})</button><button class="btn ${recadosFilter === 'enviados' ? 'btn-primary' : 'btn-outline'} btn-sm" onclick="setRecadosFilter('enviados')">Enviados</button><div style="flex:1"></div><button class="btn btn-outline btn-sm" onclick="loadRecados().then(()=>renderRecados())">Atualizar</button></div></div>
-        <div class="card">${slice.length === 0 ? `<div class="empty">Nenhum recado.</div>` : slice.map(r => { const isOwn = r.user_id === userId, isToMe = r.destinatario_id === userId || r.para_todos, isUnread = !r.lido && isToMe && !isOwn; return `<div style="padding:14px 0;border-bottom:1px solid #f0f3f2;${isUnread ? 'background:#f8fbf9;margin:0 -20px;padding:14px 20px;border-left:3px solid var(--sage)' : ''}"><div style="display:flex;justify-content:space-between;gap:10px"><div style="flex:1"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><strong style="font-size:13px">${esc(r.titulo)}</strong>${isUnread ? `<span class="tag" style="background:#eaf3ee;color:var(--sage-dark)">Novo</span>` : ''}</div><div style="font-size:10px;color:#8a9892;margin-top:3px">${fmtDateTime(r.created_at)}</div><div style="font-size:12px;color:#596761;margin-top:8px;line-height:1.6;white-space:pre-wrap">${esc(r.mensagem)}</div></div><div style="display:flex;gap:5px">${isUnread ? `<button class="btn btn-soft btn-sm" onclick="markRecadoAsRead('${r.id}').then(()=>renderRecados())">Ler</button>` : ''}${isOwn || isM ? `<button class="btn btn-danger btn-sm" onclick="if(confirm('Excluir?')){deleteRecado('${r.id}').then(()=>renderRecados())}">X</button>` : ''}</div></div></div>`; }).join('')}${total > 1 ? `<div style="display:flex;justify-content:center;gap:8px;margin-top:16px"><button class="btn btn-outline btn-sm" ${page <= 1 ? "disabled" : ""} onclick="recadosPage=${page - 1};renderRecados();">Anterior</button><span style="font-size:11px;color:#718078">${page}/${total}</span><button class="btn btn-outline btn-sm" ${page >= total ? "disabled" : ""} onclick="recadosPage=${page + 1};renderRecados();">Próxima</button></div>` : ''}</div>`;
+        <div class="card">${slice.length === 0 ? `<div class="empty">Nenhum recado.</div>` : slice.map(r => { const isOwn = r.user_id === userId, isToMe = r.destinatario_id === userId || r.para_todos, isUnread = !r.lido && isToMe && !isOwn; return `<div style="padding:14px 0;border-bottom:1px solid #f0f3f2;${isUnread ? 'background:#f8fbf9;margin:0 -20px;padding:14px 20px;border-left:3px solid var(--sage)' : ''}"><div style="display:flex;justify-content:space-between;gap:10px"><div style="flex:1"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><strong style="font-size:13px">${esc(r.titulo)}</strong>${isUnread ? `<span class="tag" style="background:#eaf3ee;color:var(--sage-dark)">Novo</span>` : ''}</div><div style="font-size:10px;color:#8a9892;margin-top:3px">${fmtDateTime(r.created_at)}</div><div style="font-size:12px;color:#596761;margin-top:8px;line-height:1.6;white-space:pre-wrap">${esc(r.mensagem)}</div></div><div style="display:flex;gap:5px">${isUnread ? `<button class="btn btn-soft btn-sm" onclick="markRecadoAsRead('${r.id}').then(()=>renderRecados())">Ler</button>` : ''}${isOwn || isM ? `<button class="btn btn-danger btn-sm" onclick="deleteRecado('${r.id}').then(()=>renderRecados())">X</button>` : ''}</div></div></div>`; }).join('')}${total > 1 ? `<div style="display:flex;justify-content:center;gap:8px;margin-top:16px"><button class="btn btn-outline btn-sm" ${page <= 1 ? "disabled" : ""} onclick="recadosPage=${page - 1};renderRecados();">Anterior</button><span style="font-size:11px;color:#718078">${page}/${total}</span><button class="btn btn-outline btn-sm" ${page >= total ? "disabled" : ""} onclick="recadosPage=${page + 1};renderRecados();">Próxima</button></div>` : ''}</div>`;
     try{lucide.createIcons();}catch(e){}
 }
 
@@ -1967,168 +1960,316 @@ function generateStudentPDF(id) {
 
 
 // ============================================================
-// SISTEMA 2.0 — SUBPÁGINAS + RAIL CONTEXTUAL
+// UX ENHANCEMENTS — interface guiada, sem prompts do navegador
 // ============================================================
-let dashboardSubpage = 'overview';
-let alunosSubpage = 'students';
-
-const _renderDashboardBase = renderDashboard;
-const _renderAlunosBase = renderAlunos;
-const _renderAgendaBase = renderAgenda;
-const _renderPerfilBase = renderPerfil;
-const _renderListaBase = renderListaEspera;
-const _renderFinanceBase = renderFinanceiro;
-
-function setSubpage(group, page){
-  if(group==='dashboard') dashboardSubpage=page;
-  if(group==='alunos') alunosSubpage=page;
-  renderPage();
-  updateContextRail();
-  try{lucide.createIcons();}catch(e){}
+function closeUxModal(){ const m=document.getElementById('uxModal'); if(m)m.remove(); }
+function openUxModal({title,subtitle='',body='',foot='',width=''}){
+    closeUxModal();
+    const el=document.createElement('div'); el.id='uxModal'; el.className='ux-modal-backdrop';
+    el.innerHTML=`<div class="ux-modal" ${width?`style="max-width:${width}"`:''}>
+      <div class="ux-modal-head"><div><div class="ux-kicker">Legado Que Ensina</div><div class="ux-bigtitle">${title}</div>${subtitle?`<div class="ux-muted" style="margin-top:4px">${subtitle}</div>`:''}</div><button class="ux-close" onclick="closeUxModal()" aria-label="Fechar">×</button></div>
+      <div class="ux-modal-body">${body}</div>${foot?`<div class="ux-modal-foot">${foot}</div>`:''}</div>`;
+    document.body.appendChild(el); try{lucide.createIcons();}catch(e){}
+    el.addEventListener('click',e=>{if(e.target===el)closeUxModal();});
 }
+function uxHelp(title,text,icon='circle-help'){ return `<div class="ux-help"><i data-lucide="${icon}" style="width:18px;height:18px;flex:none;color:var(--sage)"></i><div><strong>${title}</strong><span>${text}</span></div></div>`; }
 
-function subnavHTML(group, active){
-  const items = group==='dashboard'
-    ? [['overview','layout-dashboard','Visão geral'],['agenda','calendar-days','Agenda'],['perfil','user-round','Meu perfil']]
-    : [['students','users','Alunos'],['waitlist','list-ordered','Lista de espera']];
-  return `<nav class="page-subnav">${items.map(x=>`<button class="${x[0]===active?'active':''}" onclick="setSubpage('${group}','${x[0]}')"><i data-lucide="${x[1]}" style="width:14px;height:14px;vertical-align:-3px;margin-right:5px"></i>${x[2]}</button>`).join('')}</nav>`;
-}
-
-function renderDashboard(){
-  const view=document.getElementById('page-dashboard');
-  if(dashboardSubpage==='overview'){
-    _renderDashboardBase();
-    view.insertAdjacentHTML('afterbegin',subnavHTML('dashboard','overview'));
-  }else{
-    view.innerHTML=subnavHTML('dashboard',dashboardSubpage)+'<div id="dashboardSubpage"></div>';
-    const target=document.getElementById('dashboardSubpage');
-    if(dashboardSubpage==='agenda'){
-      _renderAgendaBase();
-      target.innerHTML=document.getElementById('page-agenda').innerHTML;
-    }else{
-      _renderPerfilBase();
-      target.innerHTML=document.getElementById('page-perfil').innerHTML;
+// Pagamento: substitui prompt() por fluxo visual.
+function togglePayment(id){
+    const a=data.agenda.find(x=>x.id===id); if(!a)return;
+    const s=getStudent(a.alunoId); if(!s)return;
+    if(a.pago){
+        a.pago=false;
+        data.transacoes=(data.transacoes||[]).filter(t=>t.agendaId!==a.id);
+        saveData().then(()=>{notify('Pagamento desmarcado.');renderPage();});
+        return;
     }
-  }
-  try{lucide.createIcons();}catch(e){}
+    const body=`
+      ${uxHelp('Registrar recebimento','Escolha como o valor desta sessão foi recebido. O lançamento será vinculado automaticamente ao aluno e ao atendimento.','wallet-cards')}
+      <div class="field"><label class="label">Aluno</label><div style="font-weight:800;font-size:14px">${esc(s.nome)}</div><div class="ux-muted">${fmtDate(a.data)} · ${esc(a.hora||'')}</div></div>
+      <div class="field"><label class="label">Valor</label><div style="font-size:22px;font-weight:800;color:var(--sage-dark)">${money(s.valor||0)}</div></div>
+      <div class="field"><label class="label">Forma de pagamento</label><div class="ux-choice-grid">
+        <label class="ux-choice"><input type="radio" name="uxPay" value="pix" checked> <span class="ux-choice-title">PIX</span><div class="ux-choice-sub">Pagamento instantâneo</div></label>
+        <label class="ux-choice"><input type="radio" name="uxPay" value="dinheiro"> <span class="ux-choice-title">Dinheiro</span><div class="ux-choice-sub">Recebido em espécie</div></label>
+        <label class="ux-choice"><input type="radio" name="uxPay" value="cartao"> <span class="ux-choice-title">Cartão</span><div class="ux-choice-sub">Pagamento à vista</div></label>
+        <label class="ux-choice"><input type="radio" name="uxPay" value="cartao_parcelado"> <span class="ux-choice-title">Cartão parcelado</span><div class="ux-choice-sub">De 2 a 12 parcelas</div></label>
+      </div></div>
+      <div id="uxParcelasWrap" class="field" style="display:none"><label class="label">Número de parcelas</label><select id="uxParcelas" class="select">${Array.from({length:11},(_,i)=>`<option value="${i+2}">${i+2}x</option>`).join('')}</select></div>`;
+    const foot=`<button class="btn btn-outline" onclick="closeUxModal()">Cancelar</button><button class="btn btn-primary" onclick="confirmUxPayment('${id}')">Registrar recebimento</button>`;
+    openUxModal({title:'Registrar recebimento',subtitle:'O lançamento aparecerá no Financeiro.',body,foot});
+    document.querySelectorAll('input[name="uxPay"]').forEach(r=>r.addEventListener('change',()=>{document.getElementById('uxParcelasWrap').style.display=r.checked&&r.value==='cartao_parcelado'?'block':'none';}));
 }
-
-function renderAlunos(){
-  const view=document.getElementById('page-alunos');
-  if(alunosSubpage==='students'){
-    _renderAlunosBase();
-    view.insertAdjacentHTML('afterbegin',subnavHTML('alunos','students'));
-  }else{
-    view.innerHTML=subnavHTML('alunos','waitlist')+'<div id="alunosSubpage"></div>';
-    _renderListaBase();
-    document.getElementById('alunosSubpage').innerHTML=document.getElementById('page-lista-espera').innerHTML;
-  }
-  try{lucide.createIcons();}catch(e){}
-}
-
-function navigate(page){
-  if(page==='agenda'){dashboardSubpage='agenda';page='dashboard'}
-  else if(page==='perfil'){dashboardSubpage='perfil';page='dashboard'}
-  else if(page==='lista-espera'){alunosSubpage='waitlist';page='alunos'}
-  else if(page==='dashboard'){dashboardSubpage='overview'}
-  else if(page==='alunos'){alunosSubpage='students'}
-  currentPage=page; currentStudent=null;
-  document.querySelectorAll(".view").forEach(x=>x.classList.remove("active"));
-  const target=document.getElementById("page-"+page); if(target)target.classList.add("active");
-  document.querySelectorAll(".nav button").forEach(x=>x.classList.toggle("active",x.dataset.page===page));
-  const info={dashboard:["layout-dashboard","Dashboard"],alunos:["users","Alunos"],avaliacoes:["clipboard-check","Avaliações"],financeiro:["wallet-cards","Financeiro"],recados:["mail","Recados"],master:["shield-check","Suporte"],prontuario:["notebook-tabs","Prontuário"]};
-  if(info[page])document.getElementById("pageTitle").innerHTML=`<i data-lucide="${info[page][0]}"></i>${info[page][1]}`;
-  if(page!=="avaliacoes"){avalStepMode=null;avalStepQuestions=[];avalStepCurrentIndex=0;avalStepResponses=[];avalStepTemplateId=null;avalStepAlunoId=null;}
-  renderPage(); updateContextRail(); try{lucide.createIcons();}catch(e){}
-}
-
-function renderPage(){
-  if(currentPage==="master"&&!isMaster){navigate("dashboard");return;}
-  if(!isDataLoaded||!data.session){document.querySelectorAll(".view").forEach(v=>{if(v.id!=="page-dashboard")v.innerHTML=`<div class="empty">Faça login.</div>`;});return;}
-  if(currentPage==="dashboard")renderDashboard();
-  if(currentPage==="alunos")renderAlunos();
-  if(currentPage==="avaliacoes")renderAvaliacoes();
-  if(currentPage==="financeiro")renderFinanceiro();
-  if(currentPage==="recados")renderRecados();
-  if(currentPage==="master"&&isMaster)renderMasterDashboard();
-}
-
-function updateContextRail(){
-  const el=document.getElementById('contextRailInner'); if(!el)return;
-  let title='Atalhos', kicker='Contexto';
-  let actions=[], metrics=[];
-  if(currentPage==='dashboard'){
-    title=dashboardSubpage==='overview'?'Seu dia':'Dashboard · '+(dashboardSubpage==='agenda'?'Agenda':'Meu perfil'); kicker='Visão geral';
-    actions=dashboardSubpage==='agenda'
-      ? [['plus-circle','Novo atendimento',"toggleAgendaForm(true)"],['calendar-check','Hoje',"calendarToday()"],['users','Alunos',"navigate('alunos')"],['wallet-cards','Financeiro',"navigate('financeiro')"]]
-      : [['user-plus','Novo aluno',"navigate('alunos');setTimeout(()=>toggleStudentForm(true),80)"],['calendar-plus','Abrir agenda',"setSubpage('dashboard','agenda')"],['wallet-cards','Financeiro',"navigate('financeiro')"],['list-ordered','Lista de espera',"setSubpage('alunos','waitlist');navigate('alunos')"]];
-    metrics=[['Alunos ativos',(data.alunos||[]).filter(a=>a.ativo!==false).length],['Hoje',activeAppointments().filter(a=>a.data===today()).length],['A receber',money(weekPending())]];
-  }else if(currentPage==='alunos'){
-    title=alunosSubpage==='students'?'Gestão de alunos':'Lista de espera'; kicker='Alunos';
-    actions=alunosSubpage==='students'
-      ? [['user-plus','Novo aluno',"toggleStudentForm(true)"],['list-ordered','Lista de espera',"setSubpage('alunos','waitlist')"],['search','Buscar aluno',"document.getElementById('studentSearch')?.focus()"],['calendar','Agenda',"navigate('dashboard');setSubpage('dashboard','agenda')"]]
-      : [['user-plus','Novo interessado',"openWaitlistForm()"],['search','Buscar na fila',"focusWaitlistSearch()"],['users','Ver alunos',"setSubpage('alunos','students')"],['filter','Prioridade alta',"setWaitlistPriorityFilter('alta')"]];
-    const wl=data.listaEspera||[]; metrics=[['Na fila',wl.length],['Alta prioridade',wl.filter(x=>x.prioridade==='alta').length],['Áreas',new Set(wl.map(x=>x.area).filter(Boolean)).size]];
-  }else if(currentPage==='financeiro'){
-    title='Central financeira'; kicker='Financeiro';
-    actions=[['plus-circle','Lançar despesa',"showDespesaForm()"],['file-text','Exportar PDF',"generateFinancePDF()"],['calendar','Mês anterior',"changeFinanceMonth(-1)"],['calendar','Próximo mês',"changeFinanceMonth(1)"]];
-    const ts=data.transacoes||[]; const rev=ts.filter(t=>(t.tipo||'receita')==='receita').reduce((a,t)=>a+Number(t.valor||0),0); const desp=ts.filter(t=>t.tipo==='despesa').reduce((a,t)=>a+Number(t.valor||0),0);
-    metrics=[['Receitas',money(rev)],['Despesas',money(desp)],['Saldo',money(rev-desp)]];
-  }else{
-    title='Ações rápidas'; kicker='Sistema';
-    actions=[['layout-dashboard','Dashboard',"navigate('dashboard')"],['users','Alunos',"navigate('alunos')"],['calendar','Agenda',"navigate('dashboard');setSubpage('dashboard','agenda')"],['wallet-cards','Financeiro',"navigate('financeiro')"]];
-  }
-  el.innerHTML=`<div class="context-head"><div><div class="context-kicker">${kicker}</div><div class="context-title">${title}</div></div><i data-lucide="panel-right" style="width:16px;color:#91a099"></i></div>
-  <div class="context-card"><h4>Ações rápidas</h4><p>Atalhos da área atual, sem interromper seu fluxo.</p><div class="context-actions" style="margin-top:11px">${actions.map(a=>`<button class="context-action" onclick="${a[2]}"><i data-lucide="${a[0]}"></i>${a[1]}</button>`).join('')}</div></div>
-  <div class="context-card"><h4>Resumo</h4>${metrics.map(m=>`<div class="context-metric"><span>${m[0]}</span><strong>${m[1]}</strong></div>`).join('')}</div>
-  <div class="context-card"><h4>Fluxo</h4><p>Use a navegação interna para trocar de seção sem perder o contexto da tela.</p></div>`;
-  try{lucide.createIcons();}catch(e){}
+async function confirmUxPayment(id){
+    const a=data.agenda.find(x=>x.id===id); if(!a)return; const s=getStudent(a.alunoId); if(!s)return;
+    const metodo=document.querySelector('input[name="uxPay"]:checked')?.value||'pix';
+    const parcelas=metodo==='cartao_parcelado'?Number(document.getElementById('uxParcelas')?.value||2):0;
+    a.pago=true;
+    data.transacoes=data.transacoes||[];
+    data.transacoes.push({id:uid(),data:a.data,agendaId:a.id,alunoId:s.id,descricao:`Sessão de ${s.nome}`,valor:Number(s.valor)||0,tipo:'receita',categoria:'Sessão',metodo_pagamento:metodo,parcelas});
+    closeUxModal(); const ok=await saveData(); if(ok){notify(`Recebimento de ${money(s.valor)} registrado.`);renderPage();}else{notify('Não foi possível salvar o recebimento.');}
 }
 
 function showDespesaForm(){
-  const page=document.getElementById('page-financeiro'); if(!page)return;
-  let form=document.getElementById('financeInlineForm');
-  if(form){form.scrollIntoView({behavior:'smooth',block:'center'});return;}
-  page.insertAdjacentHTML('afterbegin',`<div id="financeInlineForm" class="finance-command">
-    <div class="page-section-head" style="margin-bottom:11px"><div><h1 style="font-size:14px;margin:0">Novo lançamento de despesa</h1><p>Preencha os dados diretamente nesta tela.</p></div><button class="btn btn-outline btn-sm" onclick="document.getElementById('financeInlineForm').remove()">Fechar</button></div>
-    <div class="finance-command-grid">
-      <div class="field"><label class="label">Descrição</label><input id="finDesc" class="input" placeholder="Ex.: Material, aluguel, software"></div>
-      <div class="field"><label class="label">Valor</label><input id="finValor" class="input" type="number" min="0" step=".01" placeholder="0,00"></div>
-      <div class="field"><label class="label">Categoria</label><select id="finCat" class="select"><option>Operacional</option><option>Material</option><option>Serviços</option><option>Impostos</option><option>Outros</option></select></div>
-      <button class="btn btn-primary" onclick="saveInlineDespesa()">Salvar despesa</button>
-    </div></div>`);
-  form=document.getElementById('financeInlineForm'); form.scrollIntoView({behavior:'smooth',block:'center'});
+    const body=`${uxHelp('Nova despesa','Registre um gasto do seu atendimento. Informe descrição, valor e categoria para manter o fluxo financeiro organizado.','receipt')}
+      <div class="form-grid two"><div class="field"><label class="label">Descrição *</label><input id="uxDespDesc" class="input" placeholder="Ex.: Material pedagógico"></div><div class="field"><label class="label">Valor *</label><input id="uxDespValor" class="input" type="number" min="0.01" step="0.01" placeholder="0,00"></div></div>
+      <div class="form-grid two"><div class="field"><label class="label">Data</label><input id="uxDespData" class="input" type="date" value="${today()}"></div><div class="field"><label class="label">Categoria</label><select id="uxDespCat" class="select"><option>Materiais</option><option>Coworking</option><option>Transporte</option><option>Software</option><option>Marketing</option><option>Outros</option></select></div></div>`;
+    openUxModal({title:'Registrar despesa',subtitle:'Adicione o lançamento ao mês selecionado.',body,foot:`<button class="btn btn-outline" onclick="closeUxModal()">Cancelar</button><button class="btn btn-primary" onclick="confirmUxDespesa()">Salvar despesa</button>`});
 }
-function saveInlineDespesa(){
-  const descricao=document.getElementById('finDesc')?.value.trim(), valor=Number(document.getElementById('finValor')?.value), categoria=document.getElementById('finCat')?.value||'Outros';
-  if(!descricao||!valor||valor<=0){notify('Preencha descrição e valor.');return}
-  data.transacoes=data.transacoes||[]; data.transacoes.push({id:uid(),data:today(),descricao,valor,tipo:'despesa',categoria});
-  saveData();notify('Despesa registrada.');renderFinanceiro();updateContextRail();
+async function confirmUxDespesa(){
+    const descricao=document.getElementById('uxDespDesc')?.value.trim(); const valor=Number(document.getElementById('uxDespValor')?.value); if(!descricao||!valor||valor<=0){notify('Preencha descrição e valor.');return;}
+    data.transacoes=data.transacoes||[]; data.transacoes.push({id:uid(),data:document.getElementById('uxDespData')?.value||today(),descricao,valor,tipo:'despesa',categoria:document.getElementById('uxDespCat')?.value||'Outros'});
+    closeUxModal(); await saveData(); notify('Despesa registrada.'); renderFinanceiro();
 }
 
-function renderFinanceiro(){
-  _renderFinanceBase();
-  const page=document.getElementById('page-financeiro'); if(!page)return;
-  const ts=data.transacoes||[], months=[];
-  for(let i=5;i>=0;i--){const d=new Date(financeYear,financeMonth-i,1);const y=d.getFullYear(),m=d.getMonth();const rev=ts.filter(t=>{const x=parseDate(t.data);return x.getFullYear()===y&&x.getMonth()===m&&(t.tipo||'receita')==='receita'}).reduce((a,t)=>a+Number(t.valor||0),0);const exp=ts.filter(t=>{const x=parseDate(t.data);return x.getFullYear()===y&&x.getMonth()===m&&t.tipo==='despesa'}).reduce((a,t)=>a+Number(t.valor||0),0);months.push({label:d.toLocaleDateString('pt-BR',{month:'short'}).replace('.',''),rev,exp});}
-  const max=Math.max(1,...months.flatMap(m=>[m.rev,m.exp]));
-  const currentRev=months[5].rev,currentExp=months[5].exp;
-  const ratio=currentRev+currentExp?Math.round(currentRev/(currentRev+currentExp)*100):0;
-  page.insertAdjacentHTML('afterbegin',`<nav class="page-subnav"><button class="active"><i data-lucide="layout-dashboard" style="width:14px;vertical-align:-3px;margin-right:5px"></i>Dashboard financeiro</button><button onclick="document.getElementById('financeMov').scrollIntoView({behavior:'smooth'})"><i data-lucide="arrow-down-up" style="width:14px;vertical-align:-3px;margin-right:5px"></i>Movimentações</button><button onclick="showDespesaForm()"><i data-lucide="plus-circle" style="width:14px;vertical-align:-3px;margin-right:5px"></i>Novo lançamento</button></nav>
-  <div class="fin-chart-grid">
-    <div class="fin-panel"><div class="fp-head"><div><div class="fp-title">Fluxo financeiro · 6 meses</div><div style="font-size:10px;color:#8a9892;margin-top:3px">Receitas e despesas por período</div></div><strong style="font-size:12px;color:var(--sage-dark)">${ratio}% receita</strong></div>
-      <div class="fin-chart">${months.map(m=>`<div class="fin-bar-wrap"><div class="fin-bar-stack"><div class="fin-bar" title="Receitas ${money(m.rev)}" style="height:${Math.max(3,m.rev/max*100)}%"></div><div class="fin-bar expense" title="Despesas ${money(m.exp)}" style="height:${Math.max(3,m.exp/max*100)}%"></div></div><div class="fin-bar-label">${m.label}</div></div>`).join('')}</div>
-      <div style="display:flex;gap:15px;font-size:10px;color:#7b8983"><span><i class="fin-dot"></i> Receita</span><span><i class="fin-dot expense"></i> Despesa</span></div>
-    </div>
-    <div class="fin-panel"><div class="fp-head"><div class="fp-title">Composição do mês</div><span style="font-size:10px;color:#8a9892">${monthLabelSafe()}</span></div>
-      <div class="fin-donut" style="background:conic-gradient(#86aa98 0 ${currentRev+currentExp?Math.round(currentRev/(currentRev+currentExp)*100):0}%,#d7a3a3 ${currentRev+currentExp?Math.round(currentRev/(currentRev+currentExp)*100):0}% 100%)"></div>
-      <div class="fin-legend"><div><span><i class="fin-dot"></i>Receitas</span><strong>${money(currentRev)}</strong></div><div><span><i class="fin-dot expense"></i>Despesas</span><strong>${money(currentExp)}</strong></div></div>
-    </div>
-  </div>`);
-  page.querySelector('.fin-grid')?.setAttribute('id','financeMov');
+// Exclusão real do aluno: remove registros relacionados no banco e da memória local.
+function requestDeleteStudent(id){
+    const s=getStudent(id); if(!s)return;
+    openUxModal({title:'Excluir aluno?',subtitle:'Esta ação remove o cadastro e os registros relacionados.',body:`${uxHelp('Atenção','Consultas, avaliações, agenda, evoluções e informações escolares vinculadas serão removidas do acesso atual. Esta ação não pode ser desfeita pelo sistema.','triangle-alert')}<div style="padding:14px;border:1px solid #eadfdc;background:#fffafa;border-radius:12px"><strong>${esc(s.nome)}</strong><div class="ux-muted">Confirme somente se deseja realmente excluir este cadastro.</div></div>`,foot:`<button class="btn btn-outline" onclick="closeUxModal()">Cancelar</button><button class="btn btn-danger" onclick="deleteStudent('${id}',true)">Excluir aluno</button>`});
+}
+async function deleteStudent(id,confirmed=false){
+    const s=getStudent(id); if(!s)return; if(!confirmed){requestDeleteStudent(id);return;}
+    closeUxModal();
+    try{
+      if(supabaseClient){
+        const tables=['resultados_avaliacoes','avaliacoes','registros_escola','escola','consultas','evolucoes','agenda','transacoes','alunos'];
+        for(const t of tables){
+          let q=supabaseClient.from(t).delete();
+          if(t==='resultados_avaliacoes'){
+            const avIds=(s.avaliacoes||[]).map(a=>a.id); if(!avIds.length)continue; q=q.in('avaliacao_id',avIds);
+          } else if(t==='registros_escola'){
+            const escolaId=s.escola?.id; if(!escolaId)continue; q=q.eq('escola_id',escolaId);
+          } else if(t==='escola'||t==='consultas'||t==='evolucoes'||t==='agenda'||t==='transacoes'||t==='alunos') q=q.eq(t==='alunos'?'id':'aluno_id',id);
+          else continue;
+          const {error}=await q; if(error) console.warn('Exclusão',t,error.message);
+        }
+      }
+    }catch(e){console.warn(e)}
+    data.alunos=(data.alunos||[]).filter(a=>a.id!==id); data.agenda=(data.agenda||[]).filter(a=>a.alunoId!==id); data.transacoes=(data.transacoes||[]).filter(t=>t.alunoId!==id); currentStudent=null;
+    notify('Aluno excluído.'); navigate('alunos');
+}
+
+// Construtor visual de avaliação personalizada.
+let uxQuestionRows=[];
+function addUxQuestion(text='',type='text',options=''){uxQuestionRows.push({id:uid(),text,type,options});renderUxQuestionRows();}
+function removeUxQuestion(id){uxQuestionRows=uxQuestionRows.filter(q=>q.id!==id);renderUxQuestionRows();}
+function moveUxQuestion(id,dir){const i=uxQuestionRows.findIndex(q=>q.id===id),j=i+dir;if(i<0||j<0||j>=uxQuestionRows.length)return;[uxQuestionRows[i],uxQuestionRows[j]]=[uxQuestionRows[j],uxQuestionRows[i]];renderUxQuestionRows();}
+function updateUxQuestion(id,field,value){const q=uxQuestionRows.find(x=>x.id===id);if(q)q[field]=value;}
+function renderUxQuestionRows(){
+  const box=document.getElementById('uxQuestionBuilder'); if(!box)return;
+  box.innerHTML=uxQuestionRows.length?uxQuestionRows.map((q,i)=>`<div class="ux-qrow"><div class="ux-qrow-head"><div style="display:flex;align-items:center;gap:8px"><span class="ux-qnum">${String(i+1).padStart(2,'0')}</span><span style="font-size:11px;font-weight:800;color:#56665f">Questão ${i+1}</span></div><div class="ux-qactions"><button class="ux-iconbtn" onclick="moveUxQuestion('${q.id}',-1)" title="Subir">↑</button><button class="ux-iconbtn" onclick="moveUxQuestion('${q.id}',1)" title="Descer">↓</button><button class="ux-iconbtn" onclick="removeUxQuestion('${q.id}')" title="Excluir">×</button></div></div><div class="field"><label class="label">Enunciado *</label><textarea class="textarea ux-qtext" data-id="${q.id}" style="min-height:70px" placeholder="Escreva exatamente o que o aluno deverá responder ou realizar.">${esc(q.text)}</textarea></div><div class="ux-qgrid"><div class="field"><label class="label">Tipo de resposta</label><select class="select ux-qtype" data-id="${q.id}"><option value="text" ${q.type==='text'?'selected':''}>Resposta curta</option><option value="textarea" ${q.type==='textarea'?'selected':''}>Resposta aberta</option><option value="scale" ${q.type==='scale'?'selected':''}>Escala de opções</option></select></div><div class="field ${q.type==='scale'?'':'ux-scale-hide'}"><label class="label">Opções</label><input class="input ux-qoptions" data-id="${q.id}" value="${esc(q.options||'') }" placeholder="Sim, Não, Às vezes"></div></div></div>`).join(''):`<div class="ux-empty">Nenhuma questão criada ainda.<br><span>Comece adicionando a primeira questão.</span></div>`;
+  box.querySelectorAll('.ux-qtext').forEach(el=>el.oninput=()=>updateUxQuestion(el.dataset.id,'text',el.value));
+  box.querySelectorAll('.ux-qtype').forEach(el=>el.onchange=()=>{updateUxQuestion(el.dataset.id,'type',el.value);renderUxQuestionRows();});
+  box.querySelectorAll('.ux-qoptions').forEach(el=>el.oninput=()=>updateUxQuestion(el.dataset.id,'options',el.value));
+}
+function openCustomAssessmentBuilder(studentId=null){
+  uxQuestionRows=[];
+  const alunoOptions=(data.alunos||[]).map(a=>`<option value="${a.id}" ${studentId===a.id?'selected':''}>${esc(a.nome)}</option>`).join('');
+  const body=`${uxHelp('Monte a avaliação como um instrumento profissional','Você não precisa escrever tudo em uma caixa de texto. Crie cada questão separadamente, defina o tipo de resposta e organize a ordem. Depois, a avaliação ficará disponível para reaplicação e terá histórico das aplicações.','clipboard-list')}
+    <div class="form-grid two"><div class="field"><label class="label">Nome do instrumento *</label><input id="uxAvTitulo" class="input" placeholder="Ex.: Avaliação de leitura e escrita"></div><div class="field"><label class="label">Aluno *</label><select id="uxAvAluno" class="select"><option value="">Selecione o aluno</option>${alunoOptions}</select></div></div>
+    <div class="field"><label class="label">Objetivo</label><textarea id="uxAvObjetivo" class="textarea" style="min-height:75px" placeholder="O que você pretende observar ou investigar?"></textarea></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:18px"><div><div class="section-title" style="font-size:14px">Questões</div><div class="ux-muted">Cada item pode ter seu próprio formato de resposta.</div></div><button class="btn btn-soft btn-sm" onclick="addUxQuestion()">+ Adicionar questão</button></div>
+    <div id="uxQuestionBuilder" style="margin-top:10px"></div>`;
+  openUxModal({title:'Criar avaliação personalizada',subtitle:'Construa o instrumento passo a passo.',body,foot:`<button class="btn btn-outline" onclick="closeUxModal()">Cancelar</button><button class="btn btn-primary" onclick="saveUxAssessmentBuilder()">Criar instrumento</button>`,width:'820px'});
+  addUxQuestion();
+}
+async function saveUxAssessmentBuilder(){
+  const titulo=document.getElementById('uxAvTitulo')?.value.trim(), alunoId=document.getElementById('uxAvAluno')?.value, objetivo=document.getElementById('uxAvObjetivo')?.value.trim();
+  uxQuestionRows=uxQuestionRows.map(q=>({...q,text:q.text.trim()}));
+  if(!titulo||!alunoId||!uxQuestionRows.length||uxQuestionRows.some(q=>!q.text)){notify('Preencha o nome, o aluno e todas as questões.');return;}
+  const s=getStudent(alunoId);if(!s)return;ensureStudentModules(s);
+  const questoes=uxQuestionRows.map((q,i)=>({id:uid(),numero:i+1,texto:q.text,tipo:q.type,opcoes:q.type==='scale'?q.options.split(',').map(x=>x.trim()).filter(Boolean):[]}));
+  s.avaliacoes.push({id:uid(),data:today(),titulo,objetivo,tipo:'custom',questoes,resultados:[],finalizada:false});
+  closeUxModal();await saveData();notify(`Instrumento "${titulo}" criado.`);currentStudent=alunoId;renderAvaliacoes();
+}
+function startNewAvaliacao(){openCustomAssessmentBuilder();}
+function renderAvaliacoesNew(){openCustomAssessmentBuilder();}
+async function saveNewAvaliacao(){openCustomAssessmentBuilder();}
+
+// Aplicação personalizada com instruções e tipos de resposta adequados.
+function renderEnhancedAssessmentApply(s,a){
+  const total=(a.questoes||[]).length;
+  const body=(a.questoes||[]).map((q,i)=>{
+    const tipo=q.tipo||'textarea';
+    if(tipo==='scale')return `<div class="field" style="padding:15px 0;border-bottom:1px solid #edf1ef"><div style="font-size:12px;font-weight:800;margin-bottom:9px">${String(q.numero||i+1).padStart(2,'0')} · ${esc(q.texto||'')}</div><div class="ux-choice-grid">${(q.opcoes||[]).map((op,j)=>`<label class="ux-choice"><input type="radio" name="resp_${i}" value="${esc(op)}"> <span class="ux-choice-title">${esc(op)}</span></label>`).join('')}</div></div>`;
+    return `<div class="field" style="padding:15px 0;border-bottom:1px solid #edf1ef"><div style="font-size:12px;font-weight:800;margin-bottom:8px">${String(q.numero||i+1).padStart(2,'0')} · ${esc(q.texto||'')}</div><textarea id="resp_${i}" class="textarea" style="min-height:${tipo==='text'?'70px':'105px'}" placeholder="Registre a resposta ou observação..."></textarea></div>`;
+  }).join('');
+  document.getElementById('page-prontuario').innerHTML=`<button class="btn btn-outline btn-sm" onclick="renderStudentProfile('avaliacoes')" style="margin-bottom:14px">← Voltar</button>
+    <div class="ux-assessment-header"><div><div class="ux-kicker">Aplicação de instrumento</div><div class="ux-assessment-title">${esc(a.titulo)}</div><div class="ux-muted" style="margin-top:5px">Aluno: <strong>${esc(s.nome)}</strong> · ${total} questão(ões)</div><div class="ux-progress"><span style="width:100%"></span></div></div></div>
+    ${uxHelp('Como preencher','Registre o que foi observado durante a aplicação. Ao finalizar, a aplicação ficará salva no histórico deste aluno e poderá ser consultada depois.','info')}
+    <div class="card"><div class="section-head"><div><div class="section-title">Questões</div><div class="section-sub">Responda cada item e depois registre uma síntese.</div></div></div>${body}<div class="field" style="margin-top:18px"><label class="label">Síntese da aplicação</label><textarea id="avResumo" class="textarea" style="min-height:120px" placeholder="Registre os principais achados, observações e próximos encaminhamentos."></textarea></div><div class="form-actions"><button class="btn btn-outline" onclick="renderStudentProfile('avaliacoes')">Cancelar</button><button class="btn btn-primary" onclick="saveAssessmentApplication()">Finalizar e salvar aplicação</button></div></div>`;
   try{lucide.createIcons();}catch(e){}
 }
-function monthLabelSafe(){return new Date(financeYear,financeMonth,1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'})}
+function renderStudentProfile(mode='overview'){
+  const s=getStudent(currentStudent);if(!s)return;ensureStudentModules(s);
+  if(mode==='avaliacoes'){
+    const avs=(s.avaliacoes||[]).slice().sort((a,b)=>String(b.data).localeCompare(String(a.data)));
+    document.getElementById('page-prontuario').innerHTML=`<button class="btn btn-outline btn-sm" onclick="renderStudentProfile('overview')" style="margin-bottom:14px">← Voltar</button>
+      ${uxHelp('Avaliações deste aluno','Aqui você cria instrumentos, aplica novamente, consulta cada aplicação e gera o PDF. Uma avaliação pode ter várias aplicações ao longo do acompanhamento.','clipboard-check')}
+      <div class="section-head"><div><div class="section-title">Avaliações de ${esc(s.nome)}</div><div class="section-sub">${avs.length} instrumento(s) cadastrado(s)</div></div><button class="btn btn-primary" onclick="openCustomAssessmentBuilder('${s.id}')">+ Criar instrumento</button></div>
+      <div class="card" style="margin-top:14px">${avs.length?avs.map(a=>{const rs=a.resultados||[];const last=rs[rs.length-1];return `<div style="padding:17px 0;border-bottom:1px solid #edf1ef"><div style="display:flex;justify-content:space-between;gap:15px;align-items:flex-start"><div style="flex:1"><div style="font-size:14px;font-weight:800;color:#2c3933">${esc(a.titulo)}</div><div class="ux-muted" style="margin-top:3px">Criada em ${fmtDate(a.data)} · ${rs.length} aplicação(ões) · ${a.finalizada?'Concluída':'Ainda não aplicada'}</div>${a.objetivo?`<div style="font-size:11px;color:#687770;margin-top:8px;line-height:1.5"><strong>Objetivo:</strong> ${esc(a.objetivo)}</div>`:''}</div><div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><button class="btn btn-primary btn-sm" onclick="applyAssessment('${a.id}')">${rs.length?'Aplicar novamente':'Aplicar'}</button>${last?`<button class="btn btn-outline btn-sm" onclick="viewAvaliacaoResultado('${s.id}','${a.id}')">Ver aplicação</button>`:''}</div></div>${last?`<div style="margin-top:10px;padding:10px 12px;background:#f7faf8;border-radius:10px;font-size:11px;color:#66756e">Última aplicação: <strong>${fmtDate(last.data)}</strong>${last.resumo?` · ${esc(String(last.resumo).slice(0,130))}`:''}</div>`:''}</div>`}).join(''):`<div class="ux-empty">Nenhum instrumento cadastrado para este aluno.<br><span>Comece criando uma avaliação personalizada.</span></div>`}</div>`;
+    try{lucide.createIcons();}catch(e){}return;
+  }
+  if(mode==='aplicar'){
+    const a=s.avaliacoes.find(x=>x.id===currentAssessment);if(!a){renderStudentProfile('avaliacoes');return;}renderEnhancedAssessmentApply(s,a);return;
+  }
+  if(mode==='resultado'){
+    const a=s.avaliacoes.find(x=>x.id===currentAssessment);if(!a){renderStudentProfile('avaliacoes');return;}const rs=a.resultados||[];const r=rs[rs.length-1];if(!r){renderStudentProfile('avaliacoes');return;}
+    const respostas=r.respostas||[];
+    document.getElementById('page-prontuario').innerHTML=`<button class="btn btn-outline btn-sm" onclick="renderStudentProfile('avaliacoes')" style="margin-bottom:14px">← Voltar para avaliações</button>
+      ${uxHelp('Resultado da aplicação','Esta tela mostra a prova/instrumento exatamente com as questões e as respostas registradas. Você também pode gerar o PDF para arquivar ou compartilhar.','file-check-2')}
+      <div class="ux-assessment-header"><div><div class="ux-kicker">Aplicação registrada</div><div class="ux-assessment-title">${esc(a.titulo)}</div><div class="ux-muted" style="margin-top:5px">${esc(s.nome)} · Aplicada em ${fmtDate(r.data)}</div></div><button class="btn btn-blue" onclick="gerarPDFAvaliacao('${s.id}','${a.id}')">Gerar PDF</button></div>
+      <div class="ux-result-summary"><div class="ux-result-stat"><b>${(a.questoes||[]).length}</b><span>questões</span></div><div class="ux-result-stat"><b>${rs.length}</b><span>aplicações registradas</span></div><div class="ux-result-stat"><b>${fmtDate(r.data)}</b><span>última aplicação</span></div></div>
+      <div class="card"><div class="section-head"><div><div class="section-title">Prova aplicada</div><div class="section-sub">Questões e respostas registradas nesta aplicação.</div></div></div>${(a.questoes||[]).map((q,i)=>{const v=respostas[i];let val=v&&typeof v==='object'?(v.rotulo||v.valor||'—'):(v||'—');return `<div style="padding:17px 0;border-bottom:1px solid #edf1ef"><div style="display:flex;gap:12px"><span class="ux-qnum">${String(q.numero||i+1).padStart(2,'0')}</span><div style="flex:1"><div style="font-size:12px;font-weight:800;color:#33413b;line-height:1.55">${esc(q.texto||q)}</div><div style="margin-top:9px;padding:11px 12px;background:#f7faf8;border-radius:10px;font-size:12px;color:#55655e;white-space:pre-wrap"><strong>Resposta:</strong> ${esc(String(val))}</div></div></div></div>`}).join('')||`<div class="ux-empty">Nenhuma questão registrada.</div>`}${r.resumo?`<div style="margin-top:18px"><div class="section-title">Síntese profissional</div><div style="margin-top:8px;font-size:12px;line-height:1.8;color:#596761;white-space:pre-wrap">${esc(r.resumo)}</div></div>`:''}</div>`;
+    try{lucide.createIcons();}catch(e){}return;
+  }
+  // demais telas continuam usando a implementação original.
+  return renderStudentProfileLegacy(mode);
+}
+
+// Ajuda contextual mais útil para as telas principais.
+const _renderAvaliacoesOriginal=renderAvaliacoes;
+function renderAvaliacoes(){
+  if(!isDataLoaded||!data||!data.session){document.getElementById('page-avaliacoes').innerHTML=`<div class="empty" style="padding:40px;text-align:center">Faça login.</div>`;return;}
+  if(avalStepMode)return _renderAvaliacoesOriginal();
+  const todas=getAvaliacoesGlobais(); const concluidas=todas.filter(a=>(a.resultados||[]).length); const apps=concluidas.reduce((n,a)=>n+a.resultados.length,0);
+  const recentes=concluidas.flatMap(a=>(a.resultados||[]).map(r=>({...r,titulo:a.titulo,alunoNome:a.alunoNome,alunoId:a.alunoId,avalId:a.id}))).sort((a,b)=>String(b.data).localeCompare(String(a.data))).slice(0,10);
+  document.getElementById('page-avaliacoes').innerHTML=`<div class="assessment-shell">
+    <div class="assessment-hero"><div><h2>Avaliações psicopedagógicas</h2><p>Crie instrumentos, aplique avaliações e mantenha o histórico de cada aplicação em um único lugar.</p></div><button class="btn btn-primary" onclick="openCustomAssessmentBuilder()">+ Criar instrumento</button></div>
+    ${uxHelp('O que você pode fazer aqui','Escolha um instrumento pronto para aplicar ou crie uma avaliação personalizada. Depois de aplicada, ela fica disponível no histórico do aluno para consulta e PDF.','book-open')}
+    <div class="assessment-metrics"><div class="assessment-metric"><div class="m-label">Instrumentos</div><div class="m-value">${ASSESSMENT_TEMPLATES.length}</div><div class="m-sub">modelos disponíveis</div></div><div class="assessment-metric"><div class="m-label">Aplicações</div><div class="m-value">${apps}</div><div class="m-sub">registros concluídos</div></div><div class="assessment-metric"><div class="m-label">Alunos</div><div class="m-value">${new Set(concluidas.map(a=>a.alunoId)).size}</div><div class="m-sub">com aplicação registrada</div></div><div class="assessment-metric"><div class="m-label">Pendentes</div><div class="m-value">${todas.filter(a=>!(a.resultados||[]).length).length}</div><div class="m-sub">instrumentos ainda não aplicados</div></div></div>
+    <div class="card"><div class="section-head"><div><div class="section-title">Instrumentos disponíveis</div><div class="section-sub">Clique em aplicar para escolher o aluno e iniciar a aplicação.</div></div></div><div class="instrument-grid">${ASSESSMENT_TEMPLATES.map(t=>`<div class="instrument-card"><div class="instrument-head"><div><div class="instrument-title">${esc(t.nome)}</div><div class="instrument-desc">${esc(t.descricao)}</div></div><span class="aval-type-badge ${getAvalTypeBadge(t.tipo)}">${esc(t.tipo||'instrumento')}</span></div><div class="instrument-meta"><span class="tag">${t.campos?'Formulário estruturado':`${(t.questoes||[]).length} itens`}</span></div><div class="form-actions" style="margin-top:14px"><button class="btn btn-primary btn-sm" onclick="startAvalStepWithTemplate('${t.id}')">Aplicar instrumento</button></div></div>`).join('')}</div></div>
+    <div class="card"><div class="section-head"><div><div class="section-title">Aplicações recentes</div><div class="section-sub">Abra uma aplicação para ver a prova e as respostas registradas.</div></div></div>${recentes.length?`<div style="overflow:auto"><table class="assessment-table"><thead><tr><th>Data</th><th>Aluno</th><th>Instrumento</th><th>Status</th><th></th></tr></thead><tbody>${recentes.map(r=>`<tr><td>${fmtDate(r.data)}</td><td><strong>${esc(r.alunoNome)}</strong></td><td>${esc(r.titulo)}</td><td><span class="assessment-status">Concluída</span></td><td style="text-align:right"><button class="btn btn-outline btn-sm" onclick="viewAvaliacaoResultado('${r.alunoId}','${r.avalId}')">Ver prova</button></td></tr>`).join('')}</tbody></table></div>`:`<div class="ux-empty">Ainda não há aplicações concluídas.<br><span>Comece escolhendo um instrumento acima.</span></div>`}</div></div></div>`;
+  try{lucide.createIcons();}catch(e){}
+}
+
+// ============================================================
+
+/* ============================================================
+   SAAS UX 2.0 — overrides
+   ============================================================ */
+let uxAssessmentDraft={step:1,title:'',objective:'',studentId:'',questions:[]};
+let uxAssessmentResultId=null;
+
+function ux2Guide(items){return `<div class="ux2-guide">${items.map((x,i)=>`<div class="ux2-guide-item"><div class="ux2-guide-num">${i+1}</div><div><strong>${esc(x[0])}</strong><span>${esc(x[1])}</span></div></div>`).join('')}</div>`}
+function ux2Empty(icon,title,text,button=''){return `<div class="ux2-empty"><div class="icon"><i data-lucide="${icon}"></i></div><strong>${esc(title)}</strong><span>${esc(text)}</span>${button}</div>`}
+function ux2Status(label,kind='muted'){return `<span class="ux2-status ${kind}">${esc(label)}</span>`}
+function ux2StudentAvatar(s){if(!s)return '';return s.foto?`<div class="ux2-profile-avatar" style="background-image:url('${esc(s.foto)}')"></div>`:`<div class="ux2-profile-avatar">${esc(initials(s.nome))}</div>`}
+
+/* Dashboard: menos cartões decorativos, mais decisão operacional. */
+renderDashboard=function(){
+ const root=document.getElementById('page-dashboard'); if(!root)return;
+ const ap=activeAppointments(), todayApps=ap.filter(a=>a.data===today()).sort((a,b)=>(a.hora||'').localeCompare(b.hora||''));
+ const active=(data.alunos||[]).filter(a=>a.ativo!==false), pending=ap.filter(a=>!a.pago), done=monthDone(), rate=attendanceRate();
+ const recentStudents=active.slice().sort((a,b)=>String(b.criadoEm||'').localeCompare(String(a.criadoEm||''))).slice(0,5);
+ root.innerHTML=`<div class="ux2-page">
+  <div class="ux2-hero"><div><div class="ux2-eyebrow">Visão de gestão</div><h1>${getSaudacao()}, ${esc(data.professor?.nome?.split(' ')[0]||'Professor')}</h1><p>Tenha em um só lugar o que exige atenção agora: atendimentos de hoje, pendências financeiras, evolução dos alunos e próximas ações.</p></div><div class="ux2-actions"><button class="btn btn-primary" onclick="navigate('alunos');setTimeout(()=>toggleStudentForm(true),80)"><i data-lucide="user-plus"></i>Novo aluno</button><button class="btn btn-outline" onclick="navigate('agenda')"><i data-lucide="calendar-plus"></i>Agendar</button></div></div>
+  ${ux2Guide([['Comece pelo dia','Veja quem será atendido e registre presença, pagamento ou consulta.'],['Acompanhe os alunos','Abra um prontuário para consultar histórico, avaliações e evolução.'],['Feche o ciclo','Confira pendências financeiras e registre as próximas ações.']])}
+  <div class="ux2-stats"><div class="ux2-stat"><div class="ux2-stat-label">Alunos ativos</div><div class="ux2-stat-value">${active.length}</div><div class="ux2-stat-sub">cadastros em acompanhamento</div></div><div class="ux2-stat"><div class="ux2-stat-label">Hoje</div><div class="ux2-stat-value">${todayApps.length}</div><div class="ux2-stat-sub">atendimento(s) programado(s)</div></div><div class="ux2-stat"><div class="ux2-stat-label">A receber</div><div class="ux2-stat-value">${money(pending.reduce((v,a)=>v+Number(getStudent(a.alunoId)?.valor||0),0))}</div><div class="ux2-stat-sub">sessões sem recebimento</div></div><div class="ux2-stat"><div class="ux2-stat-label">Assiduidade</div><div class="ux2-stat-value">${rate}%</div><div class="ux2-stat-sub">atendimentos avaliados</div></div></div>
+  <div class="ux2-profile" style="grid-template-columns:minmax(0,1.55fr) minmax(260px,.75fr)">
+   <div class="ux2-section"><div class="ux2-section-head"><div><div class="ux2-section-title">Agenda de hoje</div><div class="ux2-section-sub">Ações rápidas sem sair do painel.</div></div><button class="btn btn-outline btn-sm" onclick="navigate('agenda')">Abrir agenda</button></div>
+   ${todayApps.length?`<table class="ux2-table"><thead><tr><th>Horário</th><th>Aluno</th><th>Tipo</th><th>Status</th><th></th></tr></thead><tbody>${todayApps.map(a=>{const st=getStudent(a.alunoId);return `<tr><td><strong>${esc(a.hora||'')}</strong></td><td><strong>${esc(st?.nome||'Aluno')}</strong></td><td>${esc(TYPES[a.tipo]?.label||a.tipo||'Atendimento')}</td><td>${a.pago?ux2Status('Pago','ok'):ux2Status('A receber','pending')}</td><td style="text-align:right"><button class="btn btn-outline btn-sm" onclick="openStudent('${a.alunoId}')">Prontuário</button></td></tr>`}).join('')}</tbody></table>`:ux2Empty('calendar-off','Nenhum atendimento hoje','Sua agenda está livre hoje. Você pode cadastrar um atendimento ou usar este tempo para atualizar prontuários.','<button class="btn btn-primary btn-sm" onclick="navigate(\'agenda\');setTimeout(()=>toggleAgendaForm(),80)">Agendar atendimento</button>')}</div>
+   <div class="ux2-profile-side"><div class="ux2-side-block"><div class="ux2-side-title">Próximas ações</div><div class="ux2-side-row"><span>A receber</span><strong>${pending.length}</strong></div><div class="ux2-side-row"><span>Atendimentos no mês</span><strong>${monthScheduled()}</strong></div><div class="ux2-side-row"><span>Realizados no mês</span><strong>${done}</strong></div></div><div class="ux2-side-block"><div class="ux2-side-title">Alunos recentes</div>${recentStudents.length?recentStudents.map(st=>`<div class="ux2-side-row" style="cursor:pointer" onclick="openStudent('${st.id}')"><span>${esc(st.nome)}</span><strong>→</strong></div>`).join(''):'<div style="font-size:10px;color:#8a9791;margin-top:9px">Nenhum aluno cadastrado.</div>'}</div><div class="ux2-side-block"><button class="btn btn-soft btn-sm" style="width:100%" onclick="navigate('avaliacoes')">Abrir avaliações</button></div></div>
+  </div>
+ </div>`;try{lucide.createIcons()}catch(e){}}
+
+/* Alunos: pesquisa, ações e estado vazio explicativo. */
+renderAlunos=function(){
+ const root=document.getElementById('page-alunos'); if(!root)return;
+ root.innerHTML=`<div class="ux2-page"><div class="ux2-hero"><div><div class="ux2-eyebrow">Cadastro e acompanhamento</div><h1>Alunos</h1><p>O cadastro é a porta de entrada para o prontuário. Depois de criar o aluno, use o prontuário para registrar consultas, avaliações, evolução, escola e documentos disponíveis.</p></div><div class="ux2-actions"><button class="btn btn-primary" onclick="toggleStudentForm(true)"><i data-lucide="user-plus"></i>Novo aluno</button></div></div>
+ ${ux2Guide([['1. Cadastre','Nome, responsável, contato, série, valor e foto.'],['2. Abra o prontuário','Todas as informações do aluno ficam reunidas em uma única tela.'],['3. Registre o acompanhamento','Consultas, avaliações e evolução ficam vinculadas ao histórico.']])}
+ <div id="newStudentForm" class="ux2-section" style="display:none"><div class="ux2-section-head"><div><div class="ux2-section-title">Novo aluno</div><div class="ux2-section-sub">Preencha os dados essenciais. Os demais registros podem ser adicionados depois.</div></div><button class="btn btn-outline btn-sm" onclick="toggleStudentForm(false)">Fechar</button></div><div style="padding:18px"><div class="form-grid"><div class="field"><label class="label">Nome *</label><input id="fNome" class="input"></div><div class="field"><label class="label">Idade</label><input id="fIdade" class="input" type="number"></div><div class="field"><label class="label">Série</label><input id="fSerie" class="input"></div><div class="field"><label class="label">Responsável</label><input id="fResponsavel" class="input"></div><div class="field"><label class="label">Telefone</label><input id="fTelefone" class="input"></div><div class="field"><label class="label">Valor da sessão</label><input id="fValor" class="input" type="number" step="0.01" value="${Number(data.professor?.configuracoes?.valorSessaoPadrao||150)}"></div><div class="field"><label class="label">Foto por URL</label><input id="fFoto" class="input" placeholder="https://..."></div><div class="field"><label class="label">Tags</label><input id="fTags" class="input" placeholder="Ex.: leitura, escrita"></div><div class="field" style="grid-column:1/-1"><label class="label">Observações iniciais</label><textarea id="fObs" class="textarea"></textarea></div></div><div class="form-actions"><button class="btn btn-primary" onclick="saveStudent()">Criar aluno</button><button class="btn btn-outline" onclick="toggleStudentForm(false)">Cancelar</button></div></div></div>
+ <div class="ux2-toolbar"><div class="ux2-search"><i data-lucide="search"></i><input id="studentSearch" class="input" placeholder="Buscar por nome, responsável ou tag..." oninput="filterStudents()"></div><span style="font-size:10px;color:#8a9791">${(data.alunos||[]).length} cadastro(s)</span></div><div id="studentGrid" class="student-grid"></div></div>`;
+ filterStudents();try{lucide.createIcons()}catch(e){}}
+filterStudents=function(){const term=(document.getElementById('studentSearch')?.value||'').toLowerCase().trim();const list=(data.alunos||[]).filter(a=>`${a.nome||''} ${a.responsavel||''} ${(a.tags||[]).join(' ')}`.toLowerCase().includes(term));const g=document.getElementById('studentGrid');if(!g)return;if(!list.length){g.innerHTML=ux2Empty('users-round',term?'Nenhum aluno encontrado':'Você ainda não cadastrou alunos',term?'Tente outro nome, responsável ou tag.':'Comece criando o primeiro cadastro. Depois, o prontuário será criado automaticamente para organizar o acompanhamento.','<button class="btn btn-primary btn-sm" onclick="toggleStudentForm(true)">Cadastrar primeiro aluno</button>');try{lucide.createIcons()}catch(e){}return}g.innerHTML=list.map(a=>`<div class="student" onclick="openStudent('${a.id}')"><div class="student-top">${avatarHTML(a)}<div style="min-width:0"><div class="student-name">${esc(a.nome)}</div><div class="student-meta">${a.idade?a.idade+' anos · ':''}${esc(a.serie||'Série não informada')}</div></div></div><div class="student-meta" style="margin-top:11px">Responsável: ${esc(a.responsavel||'não informado')}</div><div class="tags">${(a.tags||[]).slice(0,4).map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div><div style="display:flex;justify-content:space-between;margin-top:13px;padding-top:11px;border-top:1px solid #f0f3f2"><span style="font-size:10px;color:#8a9892">Valor da sessão</span><strong style="font-size:11px">${money(a.valor||0)}</strong></div></div>`).join('');try{lucide.createIcons()}catch(e){}}
+
+/* Agenda: guia + resumo operacional, mantendo o calendário existente. */
+const _agenda2=renderAgenda;
+renderAgenda=function(){_agenda2();const root=document.getElementById('page-agenda');if(!root)return;const old=root.querySelector('.help-box');if(old)old.outerHTML=ux2Guide([['Planeje','Navegue pela semana ou mês para localizar horários livres.'],['Agende','Use “Novo atendimento” ou clique em um horário vazio.'],['Acompanhe','Dentro do evento, registre presença, pagamento ou cancelamento.']]);}
+
+/* Financeiro: elimina calculadora e deixa o fluxo claro. */
+const _fin2=renderFinanceiro;
+renderFinanceiro=function(){_fin2();const root=document.getElementById('page-financeiro');if(!root)return;const calc=root.querySelector('.fin-calc-card');if(calc)calc.remove();const help=root.querySelector('.help-box');if(help)help.outerHTML=ux2Guide([['Receitas','Pagamentos confirmados aparecem como recebimentos.'],['Pendências','Marque uma sessão como recebida para registrar o lançamento.'],['Despesas','Use “+ Despesa” para registrar gastos e manter o mês atualizado.']]);}
+
+/* Lista de espera: mantém o conceito premium e explica o pipeline. */
+const _wait2=renderListaEspera;
+renderListaEspera=function(){_wait2();const root=document.getElementById('page-lista-espera');if(!root)return;const help=root.querySelector('.help-box');if(help)help.outerHTML=ux2Guide([['Pesquise','Encontre rapidamente por nome, área, horário ou prioridade.'],['Priorize','Use prioridade para organizar quem deve ser contatado primeiro.'],['Converta','Ao avançar, transforme o interessado em aluno e continue o fluxo.']]);}
+
+/* Perfil do aluno: navegação de produto + visão completa. */
+renderStudentProfile=function(mode='overview'){
+ const s=getStudent(currentStudent);if(!s)return;ensureStudentModules(s);
+ const root=document.getElementById('page-prontuario');
+ if(mode==='aplicar'){renderEnhancedAssessmentApply(s,s.avaliacoes.find(x=>x.id===currentAssessment));return}
+ if(mode==='resultado'){
+   const a=s.avaliacoes.find(x=>x.id===currentAssessment);if(!a)return;const rs=a.resultados||[];let r=uxAssessmentResultId?rs.find(x=>x.id===uxAssessmentResultId):rs[rs.length-1];if(!r)r=rs[rs.length-1];
+   root.innerHTML=`<div class="ux2-page"><div class="ux2-hero"><div><div class="ux2-eyebrow">Resultado registrado</div><h1>${esc(a.titulo)}</h1><p>${esc(s.nome)} · aplicação em ${fmtDate(r?.data)}. Consulte as questões, respostas e síntese sem perder o contexto do aluno.</p></div><div class="ux2-actions"><button class="btn btn-outline" onclick="renderStudentProfile('avaliacoes')">Voltar</button><button class="btn btn-primary" onclick="gerarPDFAvaliacao('${s.id}','${a.id}')">Gerar PDF</button></div></div>
+   <div class="ux2-section"><div class="ux2-section-head"><div><div class="ux2-section-title">Prova aplicada</div><div class="ux2-section-sub">Esta é a aplicação selecionada no histórico.</div></div>${r?ux2Status('Aplicação concluída','ok'):''}</div><div style="padding:18px">${(a.questoes||[]).map((q,i)=>{const raw=r?.respostas?.[i];const val=raw&&typeof raw==='object'?(raw.rotulo||raw.valor||'—'):(raw||'—');return `<div class="ux2-question"><div class="ux2-question-head"><div style="display:flex;gap:9px;align-items:center"><div class="ux2-qbadge">${String(i+1).padStart(2,'0')}</div><strong style="font-size:12px;color:#3d4b45;line-height:1.55">${esc(q.texto||q)}</strong></div></div><div style="padding:10px 12px;border-radius:10px;background:#f7faf8;font-size:11px;color:#5b6963;white-space:pre-wrap"><strong>Resposta registrada:</strong> ${esc(String(val))}</div></div>`}).join('')||ux2Empty('file-question','Nenhuma questão','O instrumento não possui questões registradas.')}${r?.resumo?`<div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--line)"><div class="ux2-section-title">Síntese profissional</div><div style="font-size:11px;line-height:1.8;color:#596761;white-space:pre-wrap;margin-top:7px">${esc(r.resumo)}</div></div>`:''}</div></div></div>`;
+   try{lucide.createIcons()}catch(e){}return;
+ }
+ if(mode==='edit'||mode==='consulta'){return renderStudentProfileLegacy(mode)}
+ const cons=(s.consultas||[]).slice().sort((a,b)=>String(b.data).localeCompare(String(a.data)));const evo=(s.evolucoes||[]).slice().sort((a,b)=>String(b.data).localeCompare(String(a.data)));const avs=(s.avaliacoes||[]).slice().sort((a,b)=>String(b.data).localeCompare(String(a.data)));const future=activeAppointments().filter(a=>a.alunoId===s.id&&a.data>=today()).sort((a,b)=>(a.data+a.hora).localeCompare(b.data+b.hora)).slice(0,4);
+ const tab=mode==='overview'?'resumo':mode;
+ const tabs=[['resumo','Resumo','layout-dashboard'],['consultas','Consultas','notebook-pen'],['avaliacoes','Avaliações','clipboard-check'],['evolucao','Evolução','trending-up'],['escola','Escola','school']];
+ let content='';
+ if(tab==='resumo')content=`<div class="ux2-info-grid"><div class="ux2-info"><label>Responsável</label><strong>${esc(s.responsavel||'Não informado')}</strong></div><div class="ux2-info"><label>Telefone</label><strong>${esc(s.telefone||'Não informado')}</strong></div><div class="ux2-info"><label>Série</label><strong>${esc(s.serie||'Não informada')}</strong></div><div class="ux2-info"><label>Valor da sessão</label><strong>${money(s.valor||0)}</strong></div><div class="ux2-info"><label>Consultas registradas</label><strong>${cons.length}</strong></div><div class="ux2-info"><label>Instrumentos</label><strong>${avs.length}</strong></div></div><div style="margin-top:18px"><div class="ux2-section-title">Próximos atendimentos</div><div style="margin-top:9px">${future.length?future.map(a=>`<div class="ux2-timeline-card" style="margin-bottom:8px;display:flex;justify-content:space-between;gap:10px"><div><strong>${fmtDate(a.data)} · ${esc(a.hora)}</strong><div>${esc(TYPES[a.tipo]?.label||a.tipo||'Atendimento')}</div></div>${a.pago?ux2Status('Pago','ok'):ux2Status('Pendente','pending')}</div>`).join(''):ux2Empty('calendar-clock','Nenhum atendimento futuro','Agende o próximo atendimento para acompanhar a continuidade do caso.','<button class="btn btn-primary btn-sm" onclick="navigate(\'agenda\');setTimeout(()=>toggleAgendaForm(),80)">Agendar</button>')}</div></div><div style="margin-top:18px"><div class="ux2-section-title">Últimas evoluções</div><div style="margin-top:9px">${evo.slice(0,3).length?`<div class="ux2-timeline">${evo.slice(0,3).map(x=>`<div class="ux2-timeline-item"><div class="ux2-timeline-date">${fmtDate(x.data)}</div><div class="ux2-timeline-card"><strong>${esc(x.titulo||'Registro de evolução')}</strong><div>${esc(x.texto||x.observacoes||'')}</div></div></div>`).join('')}</div>`:ux2Empty('trending-up','Ainda não há evoluções','Use “Evolução” para registrar avanços, dificuldades e próximos passos.','<button class="btn btn-soft btn-sm" onclick="renderStudentProfile(\'evolucao\')">Registrar evolução</button>')}</div></div>`;
+ if(tab==='consultas')content=`<div class="section-head"><div><div class="ux2-section-title">Histórico de consultas</div><div class="ux2-section-sub">Cada registro permanece vinculado ao aluno.</div></div><button class="btn btn-primary btn-sm" onclick="newConsultationForm()">+ Nova consulta</button></div>${cons.length?`<div class="ux2-timeline">${cons.map(c=>`<div class="ux2-timeline-item"><div class="ux2-timeline-date">${fmtDate(c.data)}</div><div class="ux2-timeline-card"><strong>Consulta registrada</strong><div>${esc(c.observacoes||'Sem observações.')}</div><button class="btn btn-outline btn-sm" style="margin-top:8px" onclick="openConsultation('${c.id}')">Abrir registro</button></div></div>`).join('')}</div>`:ux2Empty('notebook-pen','Nenhuma consulta registrada','Registre cada atendimento para construir um histórico cronológico do acompanhamento.','<button class="btn btn-primary btn-sm" onclick="newConsultationForm()">Registrar primeira consulta</button>')}`;
+ if(tab==='avaliacoes')content=`<div class="section-head"><div><div class="ux2-section-title">Avaliações e histórico de aplicações</div><div class="ux2-section-sub">Um instrumento pode ser reaplicado várias vezes. Cada aplicação fica preservada.</div></div><button class="btn btn-primary btn-sm" onclick="openCustomAssessmentBuilder('${s.id}')">+ Criar instrumento</button></div>${avs.length?avs.map(a=>{const rs=a.resultados||[];return `<div class="ux2-question"><div class="ux2-question-head"><div><div style="font-size:13px;font-weight:800;color:#34413c">${esc(a.titulo)}</div><div style="font-size:10px;color:#8a9791;margin-top:3px">${esc(a.objetivo||'Sem objetivo informado')} · ${rs.length} aplicação(ões)</div></div><div class="ux2-question-tools"><button class="btn btn-primary btn-sm" onclick="applyAssessment('${a.id}')">${rs.length?'Aplicar novamente':'Aplicar'}</button></div></div>${rs.length?`<div style="margin-top:11px;border-top:1px solid #edf1ef">${rs.slice().reverse().map((r,ri)=>`<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #f0f3f2"><div><strong style="font-size:10px;color:#53615b">Aplicação ${rs.length-ri}</strong><div style="font-size:10px;color:#8b9792;margin-top:2px">${fmtDate(r.data)}</div></div><button class="btn btn-outline btn-sm" onclick="viewAvaliacaoResultado('${s.id}','${a.id}','${r.id}')">Ver prova aplicada</button></div>`).join('')}</div>`:ux2Status('Ainda não aplicada','pending')}</div>`}).join(''):ux2Empty('clipboard-plus','Nenhuma avaliação criada','Crie um instrumento personalizado ou aplique um modelo. O histórico ficará vinculado a este aluno.','<button class="btn btn-primary btn-sm" onclick="openCustomAssessmentBuilder(\''+s.id+'\')">Criar avaliação</button>')}`;
+ if(tab==='evolucao')content=`<div class="section-head"><div><div class="ux2-section-title">Linha do tempo de evolução</div><div class="ux2-section-sub">Registre mudanças, avanços, dificuldades e próximos passos.</div></div><button class="btn btn-primary btn-sm" onclick="newEvolucaoForm()">+ Registrar evolução</button></div>${evo.length?`<div class="ux2-timeline">${evo.map(x=>`<div class="ux2-timeline-item"><div class="ux2-timeline-date">${fmtDate(x.data)}</div><div class="ux2-timeline-card"><strong>${esc(x.titulo||'Evolução')}</strong><div>${esc(x.texto||x.observacoes||'')}</div></div></div>`).join('')}</div>`:ux2Empty('trending-up','Histórico vazio','O primeiro registro de evolução aparecerá aqui.','<button class="btn btn-primary btn-sm" onclick="newEvolucaoForm()">Registrar evolução</button>')}`;
+ if(tab==='escola')content=`<div class="section-head"><div><div class="ux2-section-title">Informações escolares</div><div class="ux2-section-sub">Mantenha contexto da escola e registros de contato.</div></div></div><div class="ux2-info-grid"><div class="ux2-info"><label>Escola</label><strong>${esc(s.escola.nome||'Não informada')}</strong></div><div class="ux2-info"><label>Professores</label><strong>${esc(s.escola.professores||'Não informado')}</strong></div><div class="ux2-info"><label>Registros</label><strong>${(s.escola.registros||[]).length}</strong></div></div><div style="margin-top:18px">${(s.escola.registros||[]).length?`<div class="ux2-timeline">${s.escola.registros.slice().reverse().map(r=>`<div class="ux2-timeline-item"><div class="ux2-timeline-date">${fmtDate(r.data)}</div><div class="ux2-timeline-card"><strong>${esc(r.assunto||r.tipo||'Registro escolar')}</strong><div>${esc(r.relato||'')}</div></div></div>`).join('')}</div>`:ux2Empty('school','Nenhum registro escolar','Cadastre as informações da escola e registre contatos quando necessário.','<button class="btn btn-soft btn-sm" onclick="renderStudentProfileLegacy(\'escola\')">Abrir cadastro escolar</button>')}</div>`;
+ root.innerHTML=`<div class="ux2-page"><div class="ux2-profile"><div class="ux2-profile-main"><div class="ux2-profile-head">${ux2StudentAvatar(s)}<div style="min-width:0"><div class="ux2-profile-name">${esc(s.nome)}</div><div class="ux2-profile-meta">${a=>''}${s.idade?s.idade+' anos · ':''}${esc(s.serie||'Série não informada')} · ${esc(s.responsavel||'Responsável não informado')}</div></div><div class="ux2-profile-actions"><button class="btn btn-outline btn-sm" onclick="renderStudentProfile('edit')"><i data-lucide="pencil"></i>Editar</button><button class="btn btn-soft btn-sm" onclick="newConsultationForm()">+ Consulta</button><button class="btn btn-primary btn-sm" onclick="openCustomAssessmentBuilder('${s.id}')">+ Avaliação</button><button class="btn btn-danger btn-sm" onclick="requestDeleteStudent('${s.id}')"><i data-lucide="trash-2"></i>Excluir</button></div></div><div class="ux2-tabs">${tabs.map(t=>`<button class="ux2-tab ${tab===t[0]?'active':''}" onclick="renderStudentProfile('${t[0]}')"><i data-lucide="${t[2]}" style="width:13px;vertical-align:-2px"></i> ${t[1]}</button>`).join('')}</div><div class="ux2-profile-content">${content}</div></div><div class="ux2-profile-side"><div class="ux2-side-block"><div class="ux2-side-title">Resumo do prontuário</div><div class="ux2-side-row"><span>Consultas</span><strong>${cons.length}</strong></div><div class="ux2-side-row"><span>Instrumentos</span><strong>${avs.length}</strong></div><div class="ux2-side-row"><span>Aplicações</span><strong>${avs.reduce((n,a)=>n+(a.resultados||[]).length,0)}</strong></div><div class="ux2-side-row"><span>Evoluções</span><strong>${evo.length}</strong></div></div><div class="ux2-side-block"><div class="ux2-side-title">Acesso rápido</div><button class="btn btn-outline btn-sm" style="width:100%;margin-top:10px" onclick="renderStudentProfile('consultas')">Histórico de consultas</button><button class="btn btn-outline btn-sm" style="width:100%;margin-top:6px" onclick="renderStudentProfile('avaliacoes')">Avaliações aplicadas</button><button class="btn btn-outline btn-sm" style="width:100%;margin-top:6px" onclick="generateStudentPDF('${s.id}')">Gerar relatório PDF</button></div></div></div></div>`;
+ try{lucide.createIcons()}catch(e){}
+}
+
+/* Edição continua usando a tela legada, mas com ação clara de retorno. */
+const _legacyProfile=renderStudentProfileLegacy;
+
+/* Histórico: permite abrir uma aplicação específica, não apenas a última. */
+viewAvaliacaoResultado=function(alunoId,avalId,resultId=null){const s=getStudent(alunoId);if(!s)return;currentStudent=alunoId;currentAssessment=avalId;uxAssessmentResultId=resultId||null;document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));document.getElementById('page-prontuario').classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));document.getElementById('pageTitle').innerHTML='<i data-lucide="notebook-tabs"></i>Prontuário';renderStudentProfile('resultado');try{lucide.createIcons()}catch(e){}};
+
+/* Construtor de avaliação em 4 passos, com preview antes de criar. */
+function assessmentBuilderRender(){
+ const step=uxAssessmentDraft.step;const q=uxAssessmentDraft.questions;
+ const progress=`<div class="ux2-modal-steps">${[1,2,3,4].map(i=>`<div class="ux2-modal-step ${i<step?'done':i===step?'active':''}"></div>`).join('')}</div>`;
+ let body=progress;
+ if(step===1)body+=`<div class="ux2-section-title">1. Identificação do instrumento</div><div class="ux2-section-sub" style="margin:4px 0 16px">Defina para que esta avaliação existe e a quem ela será aplicada.</div><div class="field"><label class="label">Nome do instrumento *</label><input id="uxAName" class="input" value="${esc(uxAssessmentDraft.title)}" placeholder="Ex.: Avaliação de leitura e escrita"></div><div class="field"><label class="label">Aluno *</label><select id="uxAStudent" class="select"><option value="">Selecione o aluno</option>${(data.alunos||[]).map(a=>`<option value="${a.id}" ${uxAssessmentDraft.studentId===a.id?'selected':''}>${esc(a.nome)}</option>`).join('')}</select></div><div class="field"><label class="label">Objetivo</label><textarea id="uxAObjective" class="textarea" style="min-height:90px" placeholder="O que você pretende observar, investigar ou acompanhar?">${esc(uxAssessmentDraft.objective)}</textarea></div>`;
+ if(step===2)body+=`<div class="ux2-section-title">2. Construção das questões</div><div class="ux2-section-sub" style="margin:4px 0 12px">Cada questão é independente. Você escolhe o formato de resposta e pode reorganizar a ordem.</div><div id="uxAQuestions">${q.map((x,i)=>`<div class="ux2-question"><div class="ux2-question-head"><div style="display:flex;gap:9px;align-items:center"><div class="ux2-qbadge">${String(i+1).padStart(2,'0')}</div><strong style="font-size:11px">Questão ${i+1}</strong></div><div class="ux2-question-tools"><button class="ux2-mini" onclick="assessmentMove(${i},-1)">↑</button><button class="ux2-mini" onclick="assessmentMove(${i},1)">↓</button><button class="ux2-mini" onclick="assessmentRemove(${i})">Excluir</button></div></div><div class="field"><label class="label">Enunciado *</label><textarea class="textarea" style="min-height:70px" oninput="assessmentUpdate(${i},'text',this.value)" placeholder="Digite a pergunta ou tarefa..."></textarea></div><div class="form-grid two"><div class="field"><label class="label">Tipo de resposta</label><select class="select" onchange="assessmentUpdate(${i},'type',this.value);assessmentBuilderRender()"><option value="text" ${x.type==='text'?'selected':''}>Resposta curta</option><option value="textarea" ${x.type==='textarea'?'selected':''}>Resposta aberta</option><option value="scale" ${x.type==='scale'?'selected':''}>Opções</option></select></div><div class="field" ${x.type==='scale'?'':'style="display:none"'}><label class="label">Opções</label><input class="input" value="${esc(x.options||'') }" oninput="assessmentUpdate(${i},'options',this.value)" placeholder="Sim, Não, Às vezes"></div></div></div>`).join('')}</div><button class="btn btn-soft btn-sm" onclick="assessmentAdd()">+ Adicionar questão</button>`;
+ if(step===3)body+=`<div class="ux2-section-title">3. Revisão</div><div class="ux2-section-sub" style="margin:4px 0 15px">Confira o instrumento antes de criar. Você ainda poderá reaplicá-lo depois.</div><div class="ux2-preview"><div class="ux2-preview-label">Instrumento</div><h3>${esc(uxAssessmentDraft.title||'Sem título')}</h3><p>${esc(uxAssessmentDraft.objective||'Sem objetivo informado')}</p>${q.map((x,i)=>`<div class="ux2-question" style="margin-top:8px"><strong style="font-size:11px">${i+1}. ${esc(x.text||'Questão sem enunciado')}</strong><div style="font-size:10px;color:#8a9791;margin-top:5px">${x.type==='scale'?'Opções: '+esc(x.options||'não definidas'):x.type==='textarea'?'Resposta aberta':'Resposta curta'}</div></div>`).join('')}</div>`;
+ if(step===4)body+=`<div class="ux2-section-title">4. Pronto para criar</div><div style="margin-top:8px;font-size:12px;color:#68766f;line-height:1.7">O instrumento será salvo no aluno selecionado. Depois você poderá aplicá-lo novamente e cada aplicação ficará registrada no histórico.</div><div class="ux2-preview" style="margin-top:15px"><strong>${esc(uxAssessmentDraft.title)}</strong><div style="font-size:10px;color:#89968f;margin-top:4px">${q.length} questão(ões) · ${esc(getStudent(uxAssessmentDraft.studentId)?.nome||'Aluno')}</div></div>`;
+ const foot=`<button class="btn btn-outline" onclick="assessmentBuilderBack()" ${step===1?'style="display:none"':''}>Voltar</button><div style="flex:1"></div><button class="btn btn-outline" onclick="closeUxModal()">Cancelar</button>${step<4?`<button class="btn btn-primary" onclick="assessmentBuilderNext()">Continuar</button>`:`<button class="btn btn-primary" onclick="assessmentBuilderSave()">Criar instrumento</button>`}`;
+ openUxModal({title:'Criar avaliação',subtitle:`Etapa ${step} de 4`,body,foot,width:'850px'});
+ if(step===2)q.forEach((x,i)=>{const el=document.querySelectorAll('#uxAQuestions textarea')[i];if(el)el.value=x.text||''});
+}
+function openCustomAssessmentBuilder(studentId=null){uxAssessmentDraft={step:1,title:'',objective:'',studentId:studentId||'',questions:[]};assessmentBuilderRender()}
+function assessmentAdd(){uxAssessmentDraft.questions.push({text:'',type:'text',options:''});assessmentBuilderRender()}
+function assessmentRemove(i){uxAssessmentDraft.questions.splice(i,1);assessmentBuilderRender()}
+function assessmentMove(i,d){const j=i+d;if(j<0||j>=uxAssessmentDraft.questions.length)return;[uxAssessmentDraft.questions[i],uxAssessmentDraft.questions[j]]=[uxAssessmentDraft.questions[j],uxAssessmentDraft.questions[i]];assessmentBuilderRender()}
+function assessmentUpdate(i,k,v){if(uxAssessmentDraft.questions[i])uxAssessmentDraft.questions[i][k]=v}
+function assessmentCapture(){if(uxAssessmentDraft.step===1){uxAssessmentDraft.title=document.getElementById('uxAName')?.value.trim()||'';uxAssessmentDraft.studentId=document.getElementById('uxAStudent')?.value||'';uxAssessmentDraft.objective=document.getElementById('uxAObjective')?.value.trim()||''}}
+function assessmentBuilderNext(){assessmentCapture();if(uxAssessmentDraft.step===1&&!uxAssessmentDraft.title){notify('Informe o nome do instrumento.');return}if(uxAssessmentDraft.step===1&&!uxAssessmentDraft.studentId){notify('Selecione o aluno.');return}if(uxAssessmentDraft.step===2&&(!uxAssessmentDraft.questions.length||uxAssessmentDraft.questions.some(x=>!x.text.trim()))){notify('Adicione e preencha todas as questões.');return}if(uxAssessmentDraft.step<4)uxAssessmentDraft.step++;assessmentBuilderRender()}
+function assessmentBuilderBack(){assessmentCapture();if(uxAssessmentDraft.step>1)uxAssessmentDraft.step--;assessmentBuilderRender()}
+async function assessmentBuilderSave(){assessmentCapture();if(!uxAssessmentDraft.title||!uxAssessmentDraft.studentId||!uxAssessmentDraft.questions.length||uxAssessmentDraft.questions.some(x=>!x.text.trim())){notify('Complete os dados do instrumento antes de salvar.');return}const s=getStudent(uxAssessmentDraft.studentId);if(!s)return;ensureStudentModules(s);const av={id:uid(),data:today(),titulo:uxAssessmentDraft.title,objetivo:uxAssessmentDraft.objective,tipo:'custom',questoes:uxAssessmentDraft.questions.map((x,i)=>({id:uid(),numero:i+1,texto:x.text.trim(),tipo:x.type,opcoes:x.type==='scale'?x.options.split(',').map(v=>v.trim()).filter(Boolean):[]})),resultados:[],finalizada:false};s.avaliacoes.push(av);closeUxModal();await saveData();currentStudent=s.id;notify('Instrumento criado. Agora você pode aplicá-lo.');renderStudentProfile('avaliacoes')}
+
+
+/* Ações de agenda sem confirm nativo. */
+cancelAppointment=async function(id){const a=data.agenda.find(x=>x.id===id);if(!a)return;const st=getStudent(a.alunoId);openUxModal({title:'Cancelar atendimento?',subtitle:'O compromisso ficará marcado como cancelado e sairá dos atendimentos ativos.',body:`<div style="padding:14px;border:1px solid var(--line);border-radius:13px;background:#fbfcfc"><strong style="font-size:13px">${esc(st?.nome||'Aluno')}</strong><div style="font-size:11px;color:#89968f;margin-top:4px">${fmtDate(a.data)} · ${esc(a.hora||'')} · ${esc(TYPES[a.tipo]?.label||a.tipo||'Atendimento')}</div></div>`,foot:`<button class="btn btn-outline" onclick="closeUxModal()">Manter atendimento</button><button class="btn btn-danger" onclick="confirmCancelAppointment('${id}')">Cancelar atendimento</button>`})};
+async function confirmCancelAppointment(id){const a=data.agenda.find(x=>x.id===id);if(!a)return;a.status='cancelado';closeUxModal();await saveData();notify('Atendimento cancelado.');renderPage()}
+
+/* Mantém compatibilidade com chamadas antigas. */
+startNewAvaliacao=function(){openCustomAssessmentBuilder()};
+renderAvaliacoesNew=function(){openCustomAssessmentBuilder()};
+saveNewAvaliacao=function(){openCustomAssessmentBuilder()};
+
+/* Exclusões sem popups do navegador. */
+deleteSchoolRecord=function(id){const s=getStudent(currentStudent);if(!s)return;openUxModal({title:'Excluir registro escolar?',subtitle:'O registro será removido do histórico deste aluno.',body:`<div style="padding:13px;border:1px solid #eadfdc;border-radius:12px;background:#fffafa;font-size:11px;color:#64716b">Esta ação remove somente o registro selecionado.</div>`,foot:`<button class="btn btn-outline" onclick="closeUxModal()">Cancelar</button><button class="btn btn-danger" onclick="confirmDeleteSchoolRecord('${id}')">Excluir registro</button>`})}
+async function confirmDeleteSchoolRecord(id){const s=getStudent(currentStudent);if(!s)return;s.escola.registros=s.escola.registros.filter(x=>x.id!==id);try{await deleteRegistroEscolaDB(id)}catch(e){}await saveData();closeUxModal();renderStudentProfile('escola');notify('Registro escolar excluído.')}
+
+/* Ações da lista de espera sem confirm nativo. */
+promoteWaitlist=function(i){const w=(data.listaEspera||[])[i];if(!w)return;openUxModal({title:'Transformar interessado em aluno?',subtitle:'O cadastro será movido para Alunos.',body:`<div style="padding:14px;border:1px solid var(--line);border-radius:13px;background:#fbfcfc"><strong style="font-size:14px">${esc(w.nome)}</strong><div style="font-size:11px;color:#89968f;margin-top:4px">${esc(w.area||'Área não informada')} · prioridade ${esc(w.prioridade||'não informada')}</div></div>`,foot:`<button class="btn btn-outline" onclick="closeUxModal()">Cancelar</button><button class="btn btn-primary" onclick="confirmPromoteWaitlist(${i})">Transformar em aluno</button>`})}
+function confirmPromoteWaitlist(i){const w=(data.listaEspera||[])[i];if(!w)return;const st={id:uid(),nome:w.nome,idade:w.idade||0,serie:'',responsavel:'',telefone:w.telefone||'',valor:Number(data.professor?.configuracoes?.valorSessaoPadrao)||0,foto:'',tags:[],observacoes:w.observacoes||'',ativo:true};data.alunos.push(st);ensureStudentModules(st);data.listaEspera.splice(i,1);try{localStorage.setItem('waitlist_'+currentUserId,JSON.stringify(data.listaEspera))}catch(e){}closeUxModal();saveData().then(()=>{currentStudent=st.id;navigate('agenda');setTimeout(()=>{toggleAgendaForm();const el=document.getElementById('agAluno');if(el)el.value=st.id},120);notify(`${st.nome} agora é aluno.`)})}
+removeWaitlist=function(i){const w=(data.listaEspera||[])[i];if(!w)return;openUxModal({title:'Remover da lista de espera?',subtitle:'O interessado não será transformado em aluno.',body:`<div style="font-size:12px;color:#65736d">Você está removendo <strong>${esc(w.nome)}</strong> da lista de espera.</div>`,foot:`<button class="btn btn-outline" onclick="closeUxModal()">Cancelar</button><button class="btn btn-danger" onclick="confirmRemoveWaitlist(${i})">Remover</button>`})}
+function confirmRemoveWaitlist(i){if(!data.listaEspera?.[i])return;data.listaEspera.splice(i,1);try{localStorage.setItem('waitlist_'+currentUserId,JSON.stringify(data.listaEspera))}catch(e){}closeUxModal();renderListaEspera();notify('Interessado removido.')}
+
+/* Removemos qualquer popup nativo restante do código antigo. */
+window.prompt=function(){return null};window.alert=function(msg){notify(String(msg||''))};
 
 // ============================================================
 // INIT
@@ -2150,7 +2291,7 @@ document.getElementById("loginBtn").addEventListener("click", login);
 document.getElementById("loginPass").addEventListener("keydown", e => { if (e.key === "Enter") login(); });
 document.getElementById("logoutBtn").addEventListener("click", logout);
 
-Object.assign(window, { setSubpage, navigate, startNewAvaliacao, cancelAvaliacao, saveNewAvaliacao, renderAvaliacoes, startAvalStepWithTemplate, startAvalStepAnswer, selectAvalStepOption, avalStepPrev, avalStepNext, cancelAvalStep, viewAvaliacaoResultado, gerarPDFAvaliacao, openOnboardingDetail, runOnboardingDetailAction, renderOnboarding, resetOnboarding, toggleAgendaForm, saveAppointment, cancelAppointment, togglePresence, togglePayment, calendarPrev, calendarNext, calendarToday, setCalendarMode, quickSchedule, selectMonthDay, changeFinanceMonth, showDespesaForm, calcularFinanceiroRapido, saveProfile, toggleStudentForm, saveStudent, filterStudents, openStudent, renderStudentProfile, saveStudentEdit, deleteStudent, openConsultation, newConsultationForm, saveConsultation, setStudentSectionPage, toggleAcademicMonth, newEvolucaoForm, saveEvolucaoHandler, generateStudentPDF, generateFinancePDF, createAssessment, applyAssessment, saveAssessmentApplication, saveSchoolInfo, addSchoolRecord, deleteSchoolRecord, getMetodoPagamentoLabel, getMetodoPagamentoClass, getPlanLabel, showExpiredScreen, loadRecados, renderRecados, setRecadosFilter, openNewRecadoModal, openNewMessageModal, closeRecadoModal, closeMensagemModal, sendRecado, sendMensagem, markRecadoAsRead, deleteRecado, showWaitlistForm, closeWaitlistForm, saveWaitlist, editWaitlist, promoteWaitlist, removeWaitlist, showHostForm, closeHostForm, saveHost, editHost, removeHost, refreshMaster, renderMasterTable, openMasterProfessor, closeMasterModal, saveMasterProfessor, setProfessorActive, extendLicense });
+Object.assign(window, { navigate, startNewAvaliacao, cancelAvaliacao, saveNewAvaliacao, renderAvaliacoes, startAvalStepWithTemplate, startAvalStepAnswer, selectAvalStepOption, avalStepPrev, avalStepNext, cancelAvalStep, viewAvaliacaoResultado, gerarPDFAvaliacao, openOnboardingDetail, runOnboardingDetailAction, renderOnboarding, resetOnboarding, toggleAgendaForm, saveAppointment, cancelAppointment, togglePresence, togglePayment, calendarPrev, calendarNext, calendarToday, setCalendarMode, quickSchedule, selectMonthDay, changeFinanceMonth, showDespesaForm, calcularFinanceiroRapido, saveProfile, toggleStudentForm, saveStudent, filterStudents, openStudent, renderStudentProfile, saveStudentEdit, deleteStudent, openConsultation, newConsultationForm, saveConsultation, setStudentSectionPage, toggleAcademicMonth, newEvolucaoForm, saveEvolucaoHandler, generateStudentPDF, generateFinancePDF, createAssessment, applyAssessment, saveAssessmentApplication, saveSchoolInfo, addSchoolRecord, deleteSchoolRecord, getMetodoPagamentoLabel, getMetodoPagamentoClass, getPlanLabel, showExpiredScreen, loadRecados, renderRecados, setRecadosFilter, openNewRecadoModal, openNewMessageModal, closeRecadoModal, closeMensagemModal, sendRecado, sendMensagem, markRecadoAsRead, deleteRecado, showWaitlistForm, closeWaitlistForm, saveWaitlist, editWaitlist, promoteWaitlist, removeWaitlist, showHostForm, closeHostForm, saveHost, editHost, removeHost, refreshMaster, renderMasterTable, openMasterProfessor, closeMasterModal, saveMasterProfessor, setProfessorActive, extendLicense });
 
 init();
 </script>
