@@ -399,6 +399,55 @@ button{cursor:pointer}
 @media(max-width:1100px){.dash-stats,.fin-cards{grid-template-columns:repeat(2,1fr)}.dash-grid,.fin-grid{grid-template-columns:1fr}}
 @media(max-width:950px){.stats{grid-template-columns:repeat(2,1fr)}.form-grid{grid-template-columns:repeat(2,1fr)}.assessment-metrics{grid-template-columns:repeat(2,1fr)}.instrument-grid{grid-template-columns:1fr}.two-col-layout{grid-template-columns:1fr}}
 @media(max-width:680px){.sidebar{width:58px;padding:15px 6px}.brand-text .sub{display:none}.nav button{justify-content:center;padding:0 8px}.nav-label{display:none}.topbar{height:62px;padding:0 15px}.content{height:calc(100vh - 62px);padding:17px 13px}.form-grid,.form-grid.two{grid-template-columns:1fr}.stats,.dash-stats,.fin-cards{grid-template-columns:1fr 1fr}.login-box{padding:28px 20px}.profile-actions{width:100%;margin-left:0}}
+
+/* ============================================================
+   SISTEMA 2.0 — ARQUITETURA DE NAVEGAÇÃO + RAIL CONTEXTUAL
+   ============================================================ */
+:root{--rail:248px;--right-rail:286px}
+.app{display:flex;min-height:100vh}
+.sidebar{width:var(--rail);flex:0 0 var(--rail);position:fixed;left:0;top:0;bottom:0;z-index:50}
+.main{margin-left:var(--rail);margin-right:var(--right-rail);width:auto;min-width:0}
+.content{padding:26px 28px 60px;max-width:none}
+.context-rail{position:fixed;right:0;top:0;bottom:0;width:var(--right-rail);z-index:45;background:rgba(250,252,251,.96);border-left:1px solid var(--line);padding:78px 16px 18px;overflow:auto}
+.context-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.context-kicker{font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#93a099;font-weight:800}
+.context-title{font-size:15px;font-weight:800;color:#293a33;margin-top:3px}
+.context-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:11px;box-shadow:0 5px 18px rgba(35,55,45,.035)}
+.context-card h4{margin:0 0 5px;font-size:12px;color:#34413c}
+.context-card p{margin:0;color:#7b8983;font-size:10px;line-height:1.55}
+.context-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.context-action{border:1px solid var(--line);background:#fff;border-radius:12px;padding:11px 8px;text-align:left;cursor:pointer;color:#4e625a;font-size:10px;font-weight:700;transition:.18s}
+.context-action:hover{border-color:#bcd5c9;background:#f7fbf9;transform:translateY(-1px)}
+.context-action i{display:block;width:16px;height:16px;margin-bottom:7px;color:var(--sage-dark)}
+.context-metric{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #f0f3f2;font-size:10px;color:#78867f}
+.context-metric:last-child{border-bottom:0;padding-bottom:0}
+.context-metric strong{font-size:12px;color:#34413c}
+.page-subnav{display:flex;gap:6px;align-items:center;border-bottom:1px solid var(--line);margin:-4px 0 22px;padding:0 0 10px;overflow:auto}
+.page-subnav button{white-space:nowrap;border:0;background:transparent;border-radius:10px;padding:9px 13px;color:#81908a;font-size:11px;font-weight:700;cursor:pointer}
+.page-subnav button:hover{background:#f3f7f5;color:#52645b}
+.page-subnav button.active{background:#eaf3ee;color:var(--sage-dark)}
+.page-section-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;margin-bottom:18px}
+.page-section-head h1{margin:0;font-size:22px;color:#293a33}
+.page-section-head p{margin:5px 0 0;color:#81908a;font-size:11px;line-height:1.55}
+.finance-command{background:#f7faf8;border:1px solid #dce8e1;border-radius:18px;padding:16px;margin-bottom:18px}
+.finance-command-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr auto;gap:9px;align-items:end}
+.finance-command .field{margin:0}
+.fin-chart-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:18px;margin-bottom:18px}
+.fin-chart{height:210px;display:flex;align-items:flex-end;gap:10px;padding:18px 6px 8px;border-top:1px solid #f0f3f2}
+.fin-bar-wrap{height:100%;flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:7px}
+.fin-bar-stack{width:min(34px,80%);height:100%;display:flex;align-items:flex-end;gap:3px}
+.fin-bar{flex:1;border-radius:7px 7px 2px 2px;min-height:3px;background:#86aa98}
+.fin-bar.expense{background:#d7a3a3}
+.fin-bar-label{font-size:9px;color:#8b9892}
+.fin-donut{width:150px;height:150px;border-radius:50%;margin:8px auto 12px;background:conic-gradient(#86aa98 0 62%,#d7a3a3 62% 84%,#d8e2dd 84%);display:grid;place-items:center}
+.fin-donut:after{content:"";width:92px;height:92px;background:#fff;border-radius:50%}
+.fin-legend{display:grid;gap:7px}
+.fin-legend div{display:flex;justify-content:space-between;font-size:10px;color:#718078}
+.fin-legend span:first-child{display:flex;align-items:center;gap:6px}
+.fin-dot{width:7px;height:7px;border-radius:50%;display:inline-block;background:#86aa98}.fin-dot.expense{background:#d7a3a3}.fin-dot.pending{background:#d8e2dd}
+@media(max-width:1180px){:root{--right-rail:0px}.context-rail{display:none}.main{margin-right:0}.fin-chart-grid{grid-template-columns:1fr}.finance-command-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:680px){:root{--rail:58px}.main{margin-left:58px}.content{padding:17px 13px 45px}.finance-command-grid{grid-template-columns:1fr}.page-section-head{flex-direction:column}}
+
 </style>
 </head>
 <body>
@@ -433,12 +482,12 @@ button{cursor:pointer}
   <nav class="nav">
     <button data-page="dashboard" class="active"><i data-lucide="layout-dashboard"></i><span class="nav-label">Dashboard</span></button>
     <button data-page="alunos"><i data-lucide="users"></i><span class="nav-label">Alunos</span></button>
-    <button data-page="agenda"><i data-lucide="calendar-days"></i><span class="nav-label">Agenda</span></button>
+    <button data-page="agenda" class="context-nav-hidden" style="display:none"><i data-lucide="calendar-days"></i><span class="nav-label">Agenda</span></button>
     <button data-page="avaliacoes"><i data-lucide="clipboard-check"></i><span class="nav-label">Avaliações</span></button>
     <button data-page="financeiro"><i data-lucide="wallet-cards"></i><span class="nav-label">Financeiro</span></button>
-    <button data-page="lista-espera"><i data-lucide="list-ordered"></i><span class="nav-label">Lista de Espera</span></button>
+    <button data-page="lista-espera" class="context-nav-hidden" style="display:none"><i data-lucide="list-ordered"></i><span class="nav-label">Lista de Espera</span></button>
     <button data-page="recados"><i data-lucide="mail"></i><span class="nav-label">Recados</span><span id="recadosBadge" class="nav-badge">0</span></button>
-    <button data-page="perfil" class="teacher-only-nav"><i data-lucide="user-round"></i><span class="nav-label">Meu Perfil</span></button>
+    <button data-page="perfil" class="teacher-only-nav context-nav-hidden" style="display:none"><i data-lucide="user-round"></i><span class="nav-label">Meu Perfil</span></button>
     <button data-page="master" id="masterNav" style="display:none"><i data-lucide="shield-check"></i><span class="nav-label">Suporte</span></button>
   </nav>
   <div class="side-bottom nav"><button id="logoutBtn"><i data-lucide="log-out"></i><span class="nav-label">Sair</span></button></div>
@@ -455,15 +504,15 @@ button{cursor:pointer}
 <section id="page-avaliacoes" class="view"></section>
 <section id="page-financeiro" class="view"></section>
 <section id="page-lista-espera" class="view"></section>
-<section id="page-equipe" class="view"></section>
 <section id="page-recados" class="view"></section>
 <section id="page-perfil" class="view"></section>
-<section id="page-onboarding" class="view"></section>
-<section id="page-onboarding-detalhe" class="view"></section>
 <section id="page-prontuario" class="view"></section>
 <section id="page-master" class="view"></section>
 </div>
 </main>
+<aside id="contextRail" class="context-rail">
+  <div id="contextRailInner"></div>
+</aside>
 </div>
 
 <div id="recadoModal" class="recado-modal-backdrop"><div class="recado-modal"><div class="recado-modal-head"><div><div class="recado-modal-title">Novo Comunicado</div></div><button class="btn btn-outline btn-sm" onclick="closeRecadoModal()">Fechar</button></div><div class="field"><label class="label">Título</label><input id="recadoTitulo" class="input"></div><div class="field"><label class="label">Mensagem</label><textarea id="recadoMensagem" class="textarea" style="min-height:120px"></textarea></div><div class="field"><label class="label">Destinatário</label><select id="recadoDestinatario" class="select"><option value="todos">Todos</option></select></div><div class="form-actions"><button class="btn btn-primary" onclick="sendRecado()">Enviar</button><button class="btn btn-outline" onclick="closeRecadoModal()">Cancelar</button></div></div></div>
@@ -1916,6 +1965,171 @@ function generateStudentPDF(id) {
     doc.save(`relatorio-${s.nome}.pdf`); notify("PDF gerado!");
 }
 
+
+// ============================================================
+// SISTEMA 2.0 — SUBPÁGINAS + RAIL CONTEXTUAL
+// ============================================================
+let dashboardSubpage = 'overview';
+let alunosSubpage = 'students';
+
+const _renderDashboardBase = renderDashboard;
+const _renderAlunosBase = renderAlunos;
+const _renderAgendaBase = renderAgenda;
+const _renderPerfilBase = renderPerfil;
+const _renderListaBase = renderListaEspera;
+const _renderFinanceBase = renderFinanceiro;
+
+function setSubpage(group, page){
+  if(group==='dashboard') dashboardSubpage=page;
+  if(group==='alunos') alunosSubpage=page;
+  renderPage();
+  updateContextRail();
+  try{lucide.createIcons();}catch(e){}
+}
+
+function subnavHTML(group, active){
+  const items = group==='dashboard'
+    ? [['overview','layout-dashboard','Visão geral'],['agenda','calendar-days','Agenda'],['perfil','user-round','Meu perfil']]
+    : [['students','users','Alunos'],['waitlist','list-ordered','Lista de espera']];
+  return `<nav class="page-subnav">${items.map(x=>`<button class="${x[0]===active?'active':''}" onclick="setSubpage('${group}','${x[0]}')"><i data-lucide="${x[1]}" style="width:14px;height:14px;vertical-align:-3px;margin-right:5px"></i>${x[2]}</button>`).join('')}</nav>`;
+}
+
+function renderDashboard(){
+  const view=document.getElementById('page-dashboard');
+  if(dashboardSubpage==='overview'){
+    _renderDashboardBase();
+    view.insertAdjacentHTML('afterbegin',subnavHTML('dashboard','overview'));
+  }else{
+    view.innerHTML=subnavHTML('dashboard',dashboardSubpage)+'<div id="dashboardSubpage"></div>';
+    const target=document.getElementById('dashboardSubpage');
+    if(dashboardSubpage==='agenda'){
+      _renderAgendaBase();
+      target.innerHTML=document.getElementById('page-agenda').innerHTML;
+    }else{
+      _renderPerfilBase();
+      target.innerHTML=document.getElementById('page-perfil').innerHTML;
+    }
+  }
+  try{lucide.createIcons();}catch(e){}
+}
+
+function renderAlunos(){
+  const view=document.getElementById('page-alunos');
+  if(alunosSubpage==='students'){
+    _renderAlunosBase();
+    view.insertAdjacentHTML('afterbegin',subnavHTML('alunos','students'));
+  }else{
+    view.innerHTML=subnavHTML('alunos','waitlist')+'<div id="alunosSubpage"></div>';
+    _renderListaBase();
+    document.getElementById('alunosSubpage').innerHTML=document.getElementById('page-lista-espera').innerHTML;
+  }
+  try{lucide.createIcons();}catch(e){}
+}
+
+function navigate(page){
+  if(page==='agenda'){dashboardSubpage='agenda';page='dashboard'}
+  else if(page==='perfil'){dashboardSubpage='perfil';page='dashboard'}
+  else if(page==='lista-espera'){alunosSubpage='waitlist';page='alunos'}
+  else if(page==='dashboard'){dashboardSubpage='overview'}
+  else if(page==='alunos'){alunosSubpage='students'}
+  currentPage=page; currentStudent=null;
+  document.querySelectorAll(".view").forEach(x=>x.classList.remove("active"));
+  const target=document.getElementById("page-"+page); if(target)target.classList.add("active");
+  document.querySelectorAll(".nav button").forEach(x=>x.classList.toggle("active",x.dataset.page===page));
+  const info={dashboard:["layout-dashboard","Dashboard"],alunos:["users","Alunos"],avaliacoes:["clipboard-check","Avaliações"],financeiro:["wallet-cards","Financeiro"],recados:["mail","Recados"],master:["shield-check","Suporte"],prontuario:["notebook-tabs","Prontuário"]};
+  if(info[page])document.getElementById("pageTitle").innerHTML=`<i data-lucide="${info[page][0]}"></i>${info[page][1]}`;
+  if(page!=="avaliacoes"){avalStepMode=null;avalStepQuestions=[];avalStepCurrentIndex=0;avalStepResponses=[];avalStepTemplateId=null;avalStepAlunoId=null;}
+  renderPage(); updateContextRail(); try{lucide.createIcons();}catch(e){}
+}
+
+function renderPage(){
+  if(currentPage==="master"&&!isMaster){navigate("dashboard");return;}
+  if(!isDataLoaded||!data.session){document.querySelectorAll(".view").forEach(v=>{if(v.id!=="page-dashboard")v.innerHTML=`<div class="empty">Faça login.</div>`;});return;}
+  if(currentPage==="dashboard")renderDashboard();
+  if(currentPage==="alunos")renderAlunos();
+  if(currentPage==="avaliacoes")renderAvaliacoes();
+  if(currentPage==="financeiro")renderFinanceiro();
+  if(currentPage==="recados")renderRecados();
+  if(currentPage==="master"&&isMaster)renderMasterDashboard();
+}
+
+function updateContextRail(){
+  const el=document.getElementById('contextRailInner'); if(!el)return;
+  let title='Atalhos', kicker='Contexto';
+  let actions=[], metrics=[];
+  if(currentPage==='dashboard'){
+    title=dashboardSubpage==='overview'?'Seu dia':'Dashboard · '+(dashboardSubpage==='agenda'?'Agenda':'Meu perfil'); kicker='Visão geral';
+    actions=dashboardSubpage==='agenda'
+      ? [['plus-circle','Novo atendimento',"toggleAgendaForm(true)"],['calendar-check','Hoje',"calendarToday()"],['users','Alunos',"navigate('alunos')"],['wallet-cards','Financeiro',"navigate('financeiro')"]]
+      : [['user-plus','Novo aluno',"navigate('alunos');setTimeout(()=>toggleStudentForm(true),80)"],['calendar-plus','Abrir agenda',"setSubpage('dashboard','agenda')"],['wallet-cards','Financeiro',"navigate('financeiro')"],['list-ordered','Lista de espera',"setSubpage('alunos','waitlist');navigate('alunos')"]];
+    metrics=[['Alunos ativos',(data.alunos||[]).filter(a=>a.ativo!==false).length],['Hoje',activeAppointments().filter(a=>a.data===today()).length],['A receber',money(weekPending())]];
+  }else if(currentPage==='alunos'){
+    title=alunosSubpage==='students'?'Gestão de alunos':'Lista de espera'; kicker='Alunos';
+    actions=alunosSubpage==='students'
+      ? [['user-plus','Novo aluno',"toggleStudentForm(true)"],['list-ordered','Lista de espera',"setSubpage('alunos','waitlist')"],['search','Buscar aluno',"document.getElementById('studentSearch')?.focus()"],['calendar','Agenda',"navigate('dashboard');setSubpage('dashboard','agenda')"]]
+      : [['user-plus','Novo interessado',"openWaitlistForm()"],['search','Buscar na fila',"focusWaitlistSearch()"],['users','Ver alunos',"setSubpage('alunos','students')"],['filter','Prioridade alta',"setWaitlistPriorityFilter('alta')"]];
+    const wl=data.listaEspera||[]; metrics=[['Na fila',wl.length],['Alta prioridade',wl.filter(x=>x.prioridade==='alta').length],['Áreas',new Set(wl.map(x=>x.area).filter(Boolean)).size]];
+  }else if(currentPage==='financeiro'){
+    title='Central financeira'; kicker='Financeiro';
+    actions=[['plus-circle','Lançar despesa',"showDespesaForm()"],['file-text','Exportar PDF',"generateFinancePDF()"],['calendar','Mês anterior',"changeFinanceMonth(-1)"],['calendar','Próximo mês',"changeFinanceMonth(1)"]];
+    const ts=data.transacoes||[]; const rev=ts.filter(t=>(t.tipo||'receita')==='receita').reduce((a,t)=>a+Number(t.valor||0),0); const desp=ts.filter(t=>t.tipo==='despesa').reduce((a,t)=>a+Number(t.valor||0),0);
+    metrics=[['Receitas',money(rev)],['Despesas',money(desp)],['Saldo',money(rev-desp)]];
+  }else{
+    title='Ações rápidas'; kicker='Sistema';
+    actions=[['layout-dashboard','Dashboard',"navigate('dashboard')"],['users','Alunos',"navigate('alunos')"],['calendar','Agenda',"navigate('dashboard');setSubpage('dashboard','agenda')"],['wallet-cards','Financeiro',"navigate('financeiro')"]];
+  }
+  el.innerHTML=`<div class="context-head"><div><div class="context-kicker">${kicker}</div><div class="context-title">${title}</div></div><i data-lucide="panel-right" style="width:16px;color:#91a099"></i></div>
+  <div class="context-card"><h4>Ações rápidas</h4><p>Atalhos da área atual, sem interromper seu fluxo.</p><div class="context-actions" style="margin-top:11px">${actions.map(a=>`<button class="context-action" onclick="${a[2]}"><i data-lucide="${a[0]}"></i>${a[1]}</button>`).join('')}</div></div>
+  <div class="context-card"><h4>Resumo</h4>${metrics.map(m=>`<div class="context-metric"><span>${m[0]}</span><strong>${m[1]}</strong></div>`).join('')}</div>
+  <div class="context-card"><h4>Fluxo</h4><p>Use a navegação interna para trocar de seção sem perder o contexto da tela.</p></div>`;
+  try{lucide.createIcons();}catch(e){}
+}
+
+function showDespesaForm(){
+  const page=document.getElementById('page-financeiro'); if(!page)return;
+  let form=document.getElementById('financeInlineForm');
+  if(form){form.scrollIntoView({behavior:'smooth',block:'center'});return;}
+  page.insertAdjacentHTML('afterbegin',`<div id="financeInlineForm" class="finance-command">
+    <div class="page-section-head" style="margin-bottom:11px"><div><h1 style="font-size:14px;margin:0">Novo lançamento de despesa</h1><p>Preencha os dados diretamente nesta tela.</p></div><button class="btn btn-outline btn-sm" onclick="document.getElementById('financeInlineForm').remove()">Fechar</button></div>
+    <div class="finance-command-grid">
+      <div class="field"><label class="label">Descrição</label><input id="finDesc" class="input" placeholder="Ex.: Material, aluguel, software"></div>
+      <div class="field"><label class="label">Valor</label><input id="finValor" class="input" type="number" min="0" step=".01" placeholder="0,00"></div>
+      <div class="field"><label class="label">Categoria</label><select id="finCat" class="select"><option>Operacional</option><option>Material</option><option>Serviços</option><option>Impostos</option><option>Outros</option></select></div>
+      <button class="btn btn-primary" onclick="saveInlineDespesa()">Salvar despesa</button>
+    </div></div>`);
+  form=document.getElementById('financeInlineForm'); form.scrollIntoView({behavior:'smooth',block:'center'});
+}
+function saveInlineDespesa(){
+  const descricao=document.getElementById('finDesc')?.value.trim(), valor=Number(document.getElementById('finValor')?.value), categoria=document.getElementById('finCat')?.value||'Outros';
+  if(!descricao||!valor||valor<=0){notify('Preencha descrição e valor.');return}
+  data.transacoes=data.transacoes||[]; data.transacoes.push({id:uid(),data:today(),descricao,valor,tipo:'despesa',categoria});
+  saveData();notify('Despesa registrada.');renderFinanceiro();updateContextRail();
+}
+
+function renderFinanceiro(){
+  _renderFinanceBase();
+  const page=document.getElementById('page-financeiro'); if(!page)return;
+  const ts=data.transacoes||[], months=[];
+  for(let i=5;i>=0;i--){const d=new Date(financeYear,financeMonth-i,1);const y=d.getFullYear(),m=d.getMonth();const rev=ts.filter(t=>{const x=parseDate(t.data);return x.getFullYear()===y&&x.getMonth()===m&&(t.tipo||'receita')==='receita'}).reduce((a,t)=>a+Number(t.valor||0),0);const exp=ts.filter(t=>{const x=parseDate(t.data);return x.getFullYear()===y&&x.getMonth()===m&&t.tipo==='despesa'}).reduce((a,t)=>a+Number(t.valor||0),0);months.push({label:d.toLocaleDateString('pt-BR',{month:'short'}).replace('.',''),rev,exp});}
+  const max=Math.max(1,...months.flatMap(m=>[m.rev,m.exp]));
+  const currentRev=months[5].rev,currentExp=months[5].exp;
+  const ratio=currentRev+currentExp?Math.round(currentRev/(currentRev+currentExp)*100):0;
+  page.insertAdjacentHTML('afterbegin',`<nav class="page-subnav"><button class="active"><i data-lucide="layout-dashboard" style="width:14px;vertical-align:-3px;margin-right:5px"></i>Dashboard financeiro</button><button onclick="document.getElementById('financeMov').scrollIntoView({behavior:'smooth'})"><i data-lucide="arrow-down-up" style="width:14px;vertical-align:-3px;margin-right:5px"></i>Movimentações</button><button onclick="showDespesaForm()"><i data-lucide="plus-circle" style="width:14px;vertical-align:-3px;margin-right:5px"></i>Novo lançamento</button></nav>
+  <div class="fin-chart-grid">
+    <div class="fin-panel"><div class="fp-head"><div><div class="fp-title">Fluxo financeiro · 6 meses</div><div style="font-size:10px;color:#8a9892;margin-top:3px">Receitas e despesas por período</div></div><strong style="font-size:12px;color:var(--sage-dark)">${ratio}% receita</strong></div>
+      <div class="fin-chart">${months.map(m=>`<div class="fin-bar-wrap"><div class="fin-bar-stack"><div class="fin-bar" title="Receitas ${money(m.rev)}" style="height:${Math.max(3,m.rev/max*100)}%"></div><div class="fin-bar expense" title="Despesas ${money(m.exp)}" style="height:${Math.max(3,m.exp/max*100)}%"></div></div><div class="fin-bar-label">${m.label}</div></div>`).join('')}</div>
+      <div style="display:flex;gap:15px;font-size:10px;color:#7b8983"><span><i class="fin-dot"></i> Receita</span><span><i class="fin-dot expense"></i> Despesa</span></div>
+    </div>
+    <div class="fin-panel"><div class="fp-head"><div class="fp-title">Composição do mês</div><span style="font-size:10px;color:#8a9892">${monthLabelSafe()}</span></div>
+      <div class="fin-donut" style="background:conic-gradient(#86aa98 0 ${currentRev+currentExp?Math.round(currentRev/(currentRev+currentExp)*100):0}%,#d7a3a3 ${currentRev+currentExp?Math.round(currentRev/(currentRev+currentExp)*100):0}% 100%)"></div>
+      <div class="fin-legend"><div><span><i class="fin-dot"></i>Receitas</span><strong>${money(currentRev)}</strong></div><div><span><i class="fin-dot expense"></i>Despesas</span><strong>${money(currentExp)}</strong></div></div>
+    </div>
+  </div>`);
+  page.querySelector('.fin-grid')?.setAttribute('id','financeMov');
+  try{lucide.createIcons();}catch(e){}
+}
+function monthLabelSafe(){return new Date(financeYear,financeMonth,1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'})}
+
 // ============================================================
 // INIT
 // ============================================================
@@ -1936,7 +2150,7 @@ document.getElementById("loginBtn").addEventListener("click", login);
 document.getElementById("loginPass").addEventListener("keydown", e => { if (e.key === "Enter") login(); });
 document.getElementById("logoutBtn").addEventListener("click", logout);
 
-Object.assign(window, { navigate, startNewAvaliacao, cancelAvaliacao, saveNewAvaliacao, renderAvaliacoes, startAvalStepWithTemplate, startAvalStepAnswer, selectAvalStepOption, avalStepPrev, avalStepNext, cancelAvalStep, viewAvaliacaoResultado, gerarPDFAvaliacao, openOnboardingDetail, runOnboardingDetailAction, renderOnboarding, resetOnboarding, toggleAgendaForm, saveAppointment, cancelAppointment, togglePresence, togglePayment, calendarPrev, calendarNext, calendarToday, setCalendarMode, quickSchedule, selectMonthDay, changeFinanceMonth, showDespesaForm, calcularFinanceiroRapido, saveProfile, toggleStudentForm, saveStudent, filterStudents, openStudent, renderStudentProfile, saveStudentEdit, deleteStudent, openConsultation, newConsultationForm, saveConsultation, setStudentSectionPage, toggleAcademicMonth, newEvolucaoForm, saveEvolucaoHandler, generateStudentPDF, generateFinancePDF, createAssessment, applyAssessment, saveAssessmentApplication, saveSchoolInfo, addSchoolRecord, deleteSchoolRecord, getMetodoPagamentoLabel, getMetodoPagamentoClass, getPlanLabel, showExpiredScreen, loadRecados, renderRecados, setRecadosFilter, openNewRecadoModal, openNewMessageModal, closeRecadoModal, closeMensagemModal, sendRecado, sendMensagem, markRecadoAsRead, deleteRecado, showWaitlistForm, closeWaitlistForm, saveWaitlist, editWaitlist, promoteWaitlist, removeWaitlist, showHostForm, closeHostForm, saveHost, editHost, removeHost, refreshMaster, renderMasterTable, openMasterProfessor, closeMasterModal, saveMasterProfessor, setProfessorActive, extendLicense });
+Object.assign(window, { setSubpage, navigate, startNewAvaliacao, cancelAvaliacao, saveNewAvaliacao, renderAvaliacoes, startAvalStepWithTemplate, startAvalStepAnswer, selectAvalStepOption, avalStepPrev, avalStepNext, cancelAvalStep, viewAvaliacaoResultado, gerarPDFAvaliacao, openOnboardingDetail, runOnboardingDetailAction, renderOnboarding, resetOnboarding, toggleAgendaForm, saveAppointment, cancelAppointment, togglePresence, togglePayment, calendarPrev, calendarNext, calendarToday, setCalendarMode, quickSchedule, selectMonthDay, changeFinanceMonth, showDespesaForm, calcularFinanceiroRapido, saveProfile, toggleStudentForm, saveStudent, filterStudents, openStudent, renderStudentProfile, saveStudentEdit, deleteStudent, openConsultation, newConsultationForm, saveConsultation, setStudentSectionPage, toggleAcademicMonth, newEvolucaoForm, saveEvolucaoHandler, generateStudentPDF, generateFinancePDF, createAssessment, applyAssessment, saveAssessmentApplication, saveSchoolInfo, addSchoolRecord, deleteSchoolRecord, getMetodoPagamentoLabel, getMetodoPagamentoClass, getPlanLabel, showExpiredScreen, loadRecados, renderRecados, setRecadosFilter, openNewRecadoModal, openNewMessageModal, closeRecadoModal, closeMensagemModal, sendRecado, sendMensagem, markRecadoAsRead, deleteRecado, showWaitlistForm, closeWaitlistForm, saveWaitlist, editWaitlist, promoteWaitlist, removeWaitlist, showHostForm, closeHostForm, saveHost, editHost, removeHost, refreshMaster, renderMasterTable, openMasterProfessor, closeMasterModal, saveMasterProfessor, setProfessorActive, extendLicense });
 
 init();
 </script>
