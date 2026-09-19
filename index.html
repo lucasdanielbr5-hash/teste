@@ -398,57 +398,23 @@ button{cursor:pointer}
 @media(max-width:1100px){.dash-stats,.fin-cards{grid-template-columns:repeat(2,1fr)}.dash-grid,.fin-grid{grid-template-columns:1fr}}
 @media(max-width:950px){.stats{grid-template-columns:repeat(2,1fr)}.form-grid{grid-template-columns:repeat(2,1fr)}.assessment-metrics{grid-template-columns:repeat(2,1fr)}.instrument-grid{grid-template-columns:1fr}.two-col-layout{grid-template-columns:1fr}}
 @media(max-width:680px){.sidebar{width:58px;padding:15px 6px}.brand-text .sub{display:none}.nav button{justify-content:center;padding:0 8px}.nav-label{display:none}.topbar{height:62px;padding:0 15px}.content{height:calc(100vh - 62px);padding:17px 13px}.form-grid,.form-grid.two{grid-template-columns:1fr}.stats,.dash-stats,.fin-cards{grid-template-columns:1fr 1fr}.login-box{padding:28px 20px}.profile-actions{width:100%;margin-left:0}}
+</style>
 
-/* ============================================================
-   SAAS PRO REFINEMENT — DENSIDADE, HIERARQUIA E CONSISTÊNCIA
-   ============================================================ */
-:root{
-  --sage:#5f8f7a;--sage-dark:#3f6f5d;--sage-strong:#315c4c;--sage-light:#eaf3ee;
-  --blue:#6288a8;--blue-light:#edf4f8;--ink:#263238;--muted:#74827c;--line:#e4ebe7;
-  --surface:#fff;--surface-2:#f7faf8;--shadow:0 8px 28px rgba(30,50,40,.055)
-}
-body{background:#f4f7f5;color:var(--ink)}
-.sidebar{width:236px;padding:18px 12px;background:#fbfdfc}
-.brand{height:48px;padding:0 10px}
-.nav{margin-top:20px;gap:3px}
-.nav button{min-height:42px;border-radius:10px;font-size:12.5px}
-.nav button.active{box-shadow:inset 3px 0 0 var(--sage)}
-.topbar{height:66px;padding:0 28px;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);position:relative;z-index:10}
-.content{height:calc(100vh - 66px);padding:24px 28px 38px;max-width:1600px}
-.page-title{font-size:17px}
-.card,.dash-card,.fin-panel,.fin-card,.student,.instrument-card,.waitlist-panel,.waitlist-side-card{border-radius:14px;box-shadow:0 2px 10px rgba(30,50,40,.025);border-color:#e3eae6}
-.card:hover,.dash-card:hover,.fin-panel:hover,.fin-card:hover,.student:hover{box-shadow:0 8px 24px rgba(30,50,40,.06)}
-.section-head{margin-bottom:13px}.section-title{font-size:14px}.section-sub{font-size:11px}
-.btn{min-height:36px;border-radius:9px;padding:8px 12px;font-size:12px}.btn svg{width:15px}
-.input,.select,.textarea{border-radius:9px;background:#fcfdfd;border-color:#dce5e0;font-size:12px;min-height:38px}
-.label{font-size:10px;letter-spacing:.01em}.field{margin-bottom:11px}
-/* Dashboard */
-.dash-hero{border-radius:18px;padding:22px 24px;margin-bottom:14px;background:linear-gradient(135deg,#fff,#f1f7f3)}
-.dash-hero .greeting{font-size:21px}.dash-hero .subtitle{font-size:12px}
-.dash-stats{gap:10px;margin-bottom:14px}.dash-stat{border-radius:13px;padding:15px 16px}.dash-stat .ds-value{font-size:22px}.dash-stat .ds-icon{width:32px;height:32px;right:14px;top:13px}
-.dash-grid{grid-template-columns:minmax(0,1.55fr) minmax(280px,.8fr);gap:14px}.dash-card{padding:16px}.today-list{gap:6px}.today-item{padding:10px 11px;border-radius:11px}
-.workload-card{padding:16px;border-radius:14px}.month-summary{gap:7px}.ms-item{padding:11px;border-radius:9px}
-/* Finance */
-.fin-hero{border-radius:18px;padding:19px 22px;margin-bottom:14px}.fin-hero .fh-title{font-size:18px}.fin-cards{gap:10px;margin-bottom:14px}.fin-card{border-radius:13px;padding:15px 16px}.fin-card .fc-value{font-size:21px}
-.fin-grid{grid-template-columns:minmax(0,1.7fr) minmax(300px,.8fr);gap:14px}.fin-panel{padding:16px}.fin-table th{padding:9px 7px;font-size:9px}.fin-table td{padding:10px 7px;font-size:11px}
-/* Finance toolbar */
-.finance-toolbar{display:grid;grid-template-columns:minmax(220px,1fr) 150px 150px auto;gap:8px;align-items:center;margin-bottom:12px}
-.finance-search{position:relative}.finance-search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:15px;color:#96a39d}.finance-search input{padding-left:35px}
-/* Agenda */
-.agenda-shell{display:flex;flex-direction:column;gap:12px}.agenda-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
-.agenda-toolbar-pro{display:grid;grid-template-columns:auto minmax(170px,1fr) auto;gap:8px;align-items:center}
-.agenda-search{position:relative}.agenda-search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:15px;color:#96a39d}.agenda-search input{padding-left:35px}
-.agenda-calendar-card{padding:13px}.week-grid{grid-template-columns:52px repeat(5,minmax(125px,1fr));min-width:680px}.week-head{padding:7px 4px;font-size:9px}.time-cell{height:44px;font-size:8px}.slot{height:44px;padding:2px}.event{font-size:8px;border-radius:6px;padding:4px 5px}.event strong{font-size:8px}.month-grid{border-radius:11px}.month-day{min-height:62px;padding:5px}
-/* Student profile */
-.student-profile-shell{display:flex;flex-direction:column;gap:13px}.profile-cover{height:92px}.profile-head{margin-top:-34px;padding:0 20px}.profile-avatar{width:76px;height:76px;border-radius:21px;font-size:25px}.profile-name{font-size:19px}.profile-body{padding:16px 20px}.profile-actions{gap:5px}.profile-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}.profile-kpi{border:1px solid var(--line);border-radius:11px;padding:12px;background:#fff}.profile-kpi .k-label{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:#8b9892;font-weight:700}.profile-kpi .k-value{font-size:18px;font-weight:800;margin-top:4px;color:#2f4039}.profile-main-grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(250px,.7fr);gap:13px}.profile-section{background:#fff;border:1px solid var(--line);border-radius:13px;padding:15px}.profile-section-title{font-size:12px;font-weight:800;color:#34413c}.profile-info-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-top:10px}.profile-info-item{background:#f7faf8;border-radius:9px;padding:9px}.profile-info-item span{display:block;font-size:9px;color:#8b9892}.profile-info-item strong{display:block;font-size:11px;margin-top:3px;color:#405049}
-/* Waitlist */
-.waitlist-hero{border-radius:20px;padding:24px}.waitlist-hero h1{font-size:24px}.waitlist-stat-grid{gap:9px}.waitlist-stat{border-radius:13px;padding:14px}.waitlist-stat .ws-value{font-size:22px}.waitlist-layout{gap:13px}.waitlist-toolbar{padding:12px}.waitlist-row{padding:12px;border-radius:11px}.waitlist-side-card{padding:15px}
-/* Tables / empty / responsive */
-.table-scroll{overflow:auto}.data-table{width:100%;border-collapse:separate;border-spacing:0}.data-table th{font-size:9px;text-transform:uppercase;color:#89968f;text-align:left;padding:9px;border-bottom:1px solid var(--line)}.data-table td{font-size:11px;padding:10px 9px;border-bottom:1px solid #eef2f0}.data-table tr:hover td{background:#fafcfb}
-.quick-actions{display:flex;gap:6px;flex-wrap:wrap}.muted{color:#8a9892}.status-pill{display:inline-flex;align-items:center;border-radius:999px;padding:4px 8px;font-size:9px;font-weight:800}.status-pill.ok{background:#eaf3ee;color:#477363}.status-pill.pending{background:#fff7eb;color:#a86f25}.status-pill.cancelled{background:#fff0f0;color:#b85b5b}
-@media(max-width:1100px){.sidebar{width:210px}.content{padding:20px}.finance-toolbar{grid-template-columns:1fr 150px 150px}.profile-main-grid{grid-template-columns:1fr}}
-@media(max-width:760px){.sidebar{width:58px}.content{padding:15px 12px}.topbar{padding:0 13px}.finance-toolbar{grid-template-columns:1fr 1fr}.finance-toolbar .finance-action{grid-column:1/-1}.profile-kpis{grid-template-columns:1fr 1fr}.agenda-toolbar-pro{grid-template-columns:1fr}.dash-grid{grid-template-columns:1fr}}
-
+<style id="ux-enhancements">
+/* ===== UX ENHANCEMENTS ===== */
+.ux-modal-backdrop{position:fixed;inset:0;background:rgba(18,27,23,.42);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;padding:20px;z-index:9999}
+.ux-modal{width:min(680px,100%);max-height:90vh;overflow:auto;background:#fff;border:1px solid #e3eae6;border-radius:18px;box-shadow:0 24px 70px rgba(18,27,23,.18)}
+.ux-modal-head{padding:20px 22px 14px;border-bottom:1px solid #edf1ef;display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.ux-modal-body{padding:20px 22px}.ux-modal-foot{padding:14px 22px 20px;display:flex;justify-content:flex-end;gap:8px;border-top:1px solid #edf1ef}
+.ux-close{border:0;background:#f3f6f4;border-radius:9px;width:34px;height:34px;cursor:pointer;font-size:18px;color:#65736d}
+.ux-help{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border:1px solid #dfeae4;background:linear-gradient(135deg,#f8fbf9,#fff);border-radius:13px;margin-bottom:16px}
+.ux-help strong{display:block;font-size:13px;color:#27352f;margin-bottom:3px}.ux-help span{font-size:12px;color:#687770;line-height:1.55}
+.ux-kicker{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#829089}.ux-bigtitle{font-size:21px;font-weight:800;color:#26342e;margin-top:4px}.ux-muted{font-size:12px;color:#74827c;line-height:1.55}
+.ux-choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.ux-choice{border:1px solid #dfe7e3;border-radius:12px;padding:13px;cursor:pointer;background:#fff}.ux-choice:hover{border-color:#b8cbc0;background:#fbfdfc}.ux-choice-title{font-size:12px;font-weight:800;color:#33423b}.ux-choice-sub{font-size:11px;color:#7b8983;margin-top:4px}
+.ux-qrow{border:1px solid #dfe7e3;border-radius:13px;padding:14px;margin-top:10px;background:#fff}.ux-qrow-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}.ux-qnum{width:28px;height:28px;border-radius:8px;background:#eef4f0;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#557064}.ux-qgrid{display:grid;grid-template-columns:minmax(0,1fr) 170px;gap:10px}.ux-qactions{display:flex;gap:6px}.ux-iconbtn{border:1px solid #dfe7e3;background:#fff;border-radius:8px;width:31px;height:31px;cursor:pointer;color:#6a7872}.ux-iconbtn:hover{background:#f4f7f5}.ux-empty{padding:28px 16px;border:1px dashed #cfdad4;border-radius:13px;text-align:center;color:#7a8882;font-size:12px}
+.ux-assessment-header{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;padding:20px 22px;border:1px solid #dfe8e3;border-radius:16px;background:linear-gradient(135deg,#fbfdfc,#f4f8f6);margin-bottom:16px}.ux-assessment-title{font-size:20px;font-weight:800;color:#26342e}.ux-progress{height:7px;background:#e8efeb;border-radius:999px;overflow:hidden;margin-top:9px}.ux-progress>span{display:block;height:100%;background:#6f9882;border-radius:999px}
+.ux-result-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0}.ux-result-stat{border:1px solid #e1e9e5;border-radius:12px;padding:13px;background:#fbfcfc}.ux-result-stat b{display:block;font-size:18px;color:#26342e}.ux-result-stat span{font-size:10px;color:#7a8882}
+@media(max-width:700px){.ux-choice-grid,.ux-qgrid,.ux-result-summary{grid-template-columns:1fr}.ux-assessment-header{display:block}.ux-assessment-header .btn{margin-top:12px}}
 </style>
 </head>
 <body>
@@ -819,7 +785,7 @@ function openStudent(id){
 }
 function setStudentSectionPage(sec,p){ studentSectionPage[sec]=p; renderStudentProfile("overview"); }
 
-function renderStudentProfile(mode="overview"){
+function renderStudentProfileLegacy(mode="overview"){
     const s=getStudent(currentStudent); if(!s)return; ensureStudentModules(s);
     const cons=(s.consultas||[]).slice().sort((a,b)=>b.data.localeCompare(a.data));
     const upc=activeAppointments().filter(a=>a.alunoId===s.id&&a.data>=today()).sort((a,b)=>(a.data+a.hora).localeCompare(b.data+b.hora)).slice(0,3);
@@ -871,7 +837,7 @@ function renderStudentProfileOverview(s,cons,upc,evo){
     const pagos=(data.transacoes||[]).filter(t=>t.alunoId===s.id&&(t.tipo||"receita")==="receita").reduce((sum,t)=>sum+Number(t.valor||0),0);
     const meses=["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
     const calHTML=`<div class="card" style="margin-top:16px"><div class="section-head"><div><div class="section-title">Calendário Acadêmico ${new Date().getFullYear()}</div><div class="section-sub">Clique para alternar letivo/férias/parcial</div></div></div><div class="academic-calendar">${meses.map((m,i)=>{const k=`${new Date().getFullYear()}-${String(i+1).padStart(2,'0')}`; const st=(s.calendarioAcademico||{})[k]||'letivo'; return `<div class="academic-month ${st}" onclick="toggleAcademicMonth('${s.id}','${k}')">${m}</div>`;}).join("")}</div></div>`;
-    document.getElementById("page-prontuario").innerHTML=`<button class="btn btn-outline btn-sm" onclick="navigate('alunos')" style="margin-bottom:14px">← Voltar</button><div class="card" style="padding:0;overflow:hidden"><div class="profile-cover"></div><div class="profile-head">${avatarHTML(s,"profile-avatar")}<div style="padding-bottom:9px"><div class="profile-name">${esc(s.nome)}</div><div class="profile-meta">${s.idade?s.idade+" anos · ":""}${esc(s.serie||"")}</div></div><div class="profile-actions">${s.telefone?`<a class="btn btn-soft btn-sm" target="_blank" href="https://wa.me/55${s.telefone.replace(/\D/g,'')}">WhatsApp</a>`:""}<button class="btn btn-outline btn-sm" onclick="renderStudentProfile('edit')">Editar</button><button class="btn btn-blue btn-sm" onclick="generateStudentPDF('${s.id}')">PDF</button><button class="btn btn-danger btn-sm" onclick="if(confirm('Excluir?')){deleteStudent('${s.id}')}">X</button></div></div><div class="profile-body"><div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px"><button class="btn btn-primary btn-sm" onclick="renderStudentProfile('overview')">Prontuário</button><button class="btn btn-outline btn-sm" onclick="renderStudentProfile('avaliacoes')">Avaliações</button><button class="btn btn-outline btn-sm" onclick="renderStudentProfile('escola')">Escola</button></div><div class="grid stats" style="margin-bottom:18px"><div class="card"><div class="stat-label">Consultas</div><div class="stat-value">${(s.consultas||[]).length}</div></div><div class="card"><div class="stat-label">Evoluções</div><div class="stat-value">${(s.evolucoes||[]).length}</div></div><div class="card"><div class="stat-label">Avaliações</div><div class="stat-value">${(s.avaliacoes||[]).length}</div></div><div class="card"><div class="stat-label">Total pago</div><div class="stat-value">${money(pagos)}</div></div></div>${calHTML}<div class="two-col-layout" style="margin-top:18px"><div><div class="card"><div class="section-head"><div><div class="section-title">Consultas</div></div><button class="btn btn-primary btn-sm" onclick="newConsultationForm()">+ Registrar</button></div>${p.slice.map(c=>`<div style="display:flex;align-items:center;gap:14px;padding:14px 0;border-top:1px solid var(--line);cursor:pointer" onclick="openConsultation('${c.id}')"><div style="width:74px;text-align:center"><strong style="font-size:17px">${new Date(c.data+"T12:00:00").getDate()}</strong></div><div style="flex:1"><div style="font-weight:700;font-size:13px">Consulta</div><div class="section-sub">${esc((c.observacoes||"—").slice(0,110))}</div></div></div>`).join("")||`<div class="empty">—</div>`}${p.controls}</div><div class="card" style="margin-top:16px"><div class="section-title">Evoluções</div><button class="btn btn-soft btn-sm" style="margin-top:8px" onclick="newEvolucaoForm()">+ Registrar</button>${evo.slice(0,3).map(e=>`<div class="evolution" style="margin-top:10px"><div class="evolution-date">${fmtDate(e.data)}</div><div class="evolution-title">${esc(e.titulo||"Evolução")}</div><div class="evolution-text">${esc(e.texto)}</div></div>`).join("")||`<div class="empty" style="margin-top:12px">—</div>`}</div></div><div class="right-sidebar"><div class="card"><div class="section-title">Próximos</div>${upc.map(a=>`<div style="padding:10px 0;border-top:1px solid var(--line);font-size:12px">${fmtDate(a.data)} · ${a.hora}</div>`).join("")||`<div class="empty">—</div>`}</div></div></div></div></div>`;
+    document.getElementById("page-prontuario").innerHTML=`<button class="btn btn-outline btn-sm" onclick="navigate('alunos')" style="margin-bottom:14px">← Voltar</button><div class="card" style="padding:0;overflow:hidden"><div class="profile-cover"></div><div class="profile-head">${avatarHTML(s,"profile-avatar")}<div style="padding-bottom:9px"><div class="profile-name">${esc(s.nome)}</div><div class="profile-meta">${s.idade?s.idade+" anos · ":""}${esc(s.serie||"")}</div></div><div class="profile-actions">${s.telefone?`<a class="btn btn-soft btn-sm" target="_blank" href="https://wa.me/55${s.telefone.replace(/\D/g,'')}">WhatsApp</a>`:""}<button class="btn btn-outline btn-sm" onclick="renderStudentProfile('edit')">Editar</button><button class="btn btn-blue btn-sm" onclick="generateStudentPDF('${s.id}')">PDF</button><button class="btn btn-danger btn-sm" onclick="requestDeleteStudent('${s.id}')">X</button></div></div><div class="profile-body"><div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px"><button class="btn btn-primary btn-sm" onclick="renderStudentProfile('overview')">Prontuário</button><button class="btn btn-outline btn-sm" onclick="renderStudentProfile('avaliacoes')">Avaliações</button><button class="btn btn-outline btn-sm" onclick="renderStudentProfile('escola')">Escola</button></div><div class="grid stats" style="margin-bottom:18px"><div class="card"><div class="stat-label">Consultas</div><div class="stat-value">${(s.consultas||[]).length}</div></div><div class="card"><div class="stat-label">Evoluções</div><div class="stat-value">${(s.evolucoes||[]).length}</div></div><div class="card"><div class="stat-label">Avaliações</div><div class="stat-value">${(s.avaliacoes||[]).length}</div></div><div class="card"><div class="stat-label">Total pago</div><div class="stat-value">${money(pagos)}</div></div></div>${calHTML}<div class="two-col-layout" style="margin-top:18px"><div><div class="card"><div class="section-head"><div><div class="section-title">Consultas</div></div><button class="btn btn-primary btn-sm" onclick="newConsultationForm()">+ Registrar</button></div>${p.slice.map(c=>`<div style="display:flex;align-items:center;gap:14px;padding:14px 0;border-top:1px solid var(--line);cursor:pointer" onclick="openConsultation('${c.id}')"><div style="width:74px;text-align:center"><strong style="font-size:17px">${new Date(c.data+"T12:00:00").getDate()}</strong></div><div style="flex:1"><div style="font-weight:700;font-size:13px">Consulta</div><div class="section-sub">${esc((c.observacoes||"—").slice(0,110))}</div></div></div>`).join("")||`<div class="empty">—</div>`}${p.controls}</div><div class="card" style="margin-top:16px"><div class="section-title">Evoluções</div><button class="btn btn-soft btn-sm" style="margin-top:8px" onclick="newEvolucaoForm()">+ Registrar</button>${evo.slice(0,3).map(e=>`<div class="evolution" style="margin-top:10px"><div class="evolution-date">${fmtDate(e.data)}</div><div class="evolution-title">${esc(e.titulo||"Evolução")}</div><div class="evolution-text">${esc(e.texto)}</div></div>`).join("")||`<div class="empty" style="margin-top:12px">—</div>`}</div></div><div class="right-sidebar"><div class="card"><div class="section-title">Próximos</div>${upc.map(a=>`<div style="padding:10px 0;border-top:1px solid var(--line);font-size:12px">${fmtDate(a.data)} · ${a.hora}</div>`).join("")||`<div class="empty">—</div>`}</div></div></div></div></div>`;
     try{lucide.createIcons();}catch(e){}
 }
 
@@ -1966,6 +1932,191 @@ function generateStudentPDF(id) {
     doc.save(`relatorio-${s.nome}.pdf`); notify("PDF gerado!");
 }
 
+
+// ============================================================
+// UX ENHANCEMENTS — interface guiada, sem prompts do navegador
+// ============================================================
+function closeUxModal(){ const m=document.getElementById('uxModal'); if(m)m.remove(); }
+function openUxModal({title,subtitle='',body='',foot='',width=''}){
+    closeUxModal();
+    const el=document.createElement('div'); el.id='uxModal'; el.className='ux-modal-backdrop';
+    el.innerHTML=`<div class="ux-modal" ${width?`style="max-width:${width}"`:''}>
+      <div class="ux-modal-head"><div><div class="ux-kicker">Legado Que Ensina</div><div class="ux-bigtitle">${title}</div>${subtitle?`<div class="ux-muted" style="margin-top:4px">${subtitle}</div>`:''}</div><button class="ux-close" onclick="closeUxModal()" aria-label="Fechar">×</button></div>
+      <div class="ux-modal-body">${body}</div>${foot?`<div class="ux-modal-foot">${foot}</div>`:''}</div>`;
+    document.body.appendChild(el); try{lucide.createIcons();}catch(e){}
+    el.addEventListener('click',e=>{if(e.target===el)closeUxModal();});
+}
+function uxHelp(title,text,icon='circle-help'){ return `<div class="ux-help"><i data-lucide="${icon}" style="width:18px;height:18px;flex:none;color:var(--sage)"></i><div><strong>${title}</strong><span>${text}</span></div></div>`; }
+
+// Pagamento: substitui prompt() por fluxo visual.
+function togglePayment(id){
+    const a=data.agenda.find(x=>x.id===id); if(!a)return;
+    const s=getStudent(a.alunoId); if(!s)return;
+    if(a.pago){
+        a.pago=false;
+        data.transacoes=(data.transacoes||[]).filter(t=>t.agendaId!==a.id);
+        saveData().then(()=>{notify('Pagamento desmarcado.');renderPage();});
+        return;
+    }
+    const body=`
+      ${uxHelp('Registrar recebimento','Escolha como o valor desta sessão foi recebido. O lançamento será vinculado automaticamente ao aluno e ao atendimento.','wallet-cards')}
+      <div class="field"><label class="label">Aluno</label><div style="font-weight:800;font-size:14px">${esc(s.nome)}</div><div class="ux-muted">${fmtDate(a.data)} · ${esc(a.hora||'')}</div></div>
+      <div class="field"><label class="label">Valor</label><div style="font-size:22px;font-weight:800;color:var(--sage-dark)">${money(s.valor||0)}</div></div>
+      <div class="field"><label class="label">Forma de pagamento</label><div class="ux-choice-grid">
+        <label class="ux-choice"><input type="radio" name="uxPay" value="pix" checked> <span class="ux-choice-title">PIX</span><div class="ux-choice-sub">Pagamento instantâneo</div></label>
+        <label class="ux-choice"><input type="radio" name="uxPay" value="dinheiro"> <span class="ux-choice-title">Dinheiro</span><div class="ux-choice-sub">Recebido em espécie</div></label>
+        <label class="ux-choice"><input type="radio" name="uxPay" value="cartao"> <span class="ux-choice-title">Cartão</span><div class="ux-choice-sub">Pagamento à vista</div></label>
+        <label class="ux-choice"><input type="radio" name="uxPay" value="cartao_parcelado"> <span class="ux-choice-title">Cartão parcelado</span><div class="ux-choice-sub">De 2 a 12 parcelas</div></label>
+      </div></div>
+      <div id="uxParcelasWrap" class="field" style="display:none"><label class="label">Número de parcelas</label><select id="uxParcelas" class="select">${Array.from({length:11},(_,i)=>`<option value="${i+2}">${i+2}x</option>`).join('')}</select></div>`;
+    const foot=`<button class="btn btn-outline" onclick="closeUxModal()">Cancelar</button><button class="btn btn-primary" onclick="confirmUxPayment('${id}')">Registrar recebimento</button>`;
+    openUxModal({title:'Registrar recebimento',subtitle:'O lançamento aparecerá no Financeiro.',body,foot});
+    document.querySelectorAll('input[name="uxPay"]').forEach(r=>r.addEventListener('change',()=>{document.getElementById('uxParcelasWrap').style.display=r.checked&&r.value==='cartao_parcelado'?'block':'none';}));
+}
+async function confirmUxPayment(id){
+    const a=data.agenda.find(x=>x.id===id); if(!a)return; const s=getStudent(a.alunoId); if(!s)return;
+    const metodo=document.querySelector('input[name="uxPay"]:checked')?.value||'pix';
+    const parcelas=metodo==='cartao_parcelado'?Number(document.getElementById('uxParcelas')?.value||2):0;
+    a.pago=true;
+    data.transacoes=data.transacoes||[];
+    data.transacoes.push({id:uid(),data:a.data,agendaId:a.id,alunoId:s.id,descricao:`Sessão de ${s.nome}`,valor:Number(s.valor)||0,tipo:'receita',categoria:'Sessão',metodo_pagamento:metodo,parcelas});
+    closeUxModal(); const ok=await saveData(); if(ok){notify(`Recebimento de ${money(s.valor)} registrado.`);renderPage();}else{notify('Não foi possível salvar o recebimento.');}
+}
+
+function showDespesaForm(){
+    const body=`${uxHelp('Nova despesa','Registre um gasto do seu atendimento. Informe descrição, valor e categoria para manter o fluxo financeiro organizado.','receipt')}
+      <div class="form-grid two"><div class="field"><label class="label">Descrição *</label><input id="uxDespDesc" class="input" placeholder="Ex.: Material pedagógico"></div><div class="field"><label class="label">Valor *</label><input id="uxDespValor" class="input" type="number" min="0.01" step="0.01" placeholder="0,00"></div></div>
+      <div class="form-grid two"><div class="field"><label class="label">Data</label><input id="uxDespData" class="input" type="date" value="${today()}"></div><div class="field"><label class="label">Categoria</label><select id="uxDespCat" class="select"><option>Materiais</option><option>Coworking</option><option>Transporte</option><option>Software</option><option>Marketing</option><option>Outros</option></select></div></div>`;
+    openUxModal({title:'Registrar despesa',subtitle:'Adicione o lançamento ao mês selecionado.',body,foot:`<button class="btn btn-outline" onclick="closeUxModal()">Cancelar</button><button class="btn btn-primary" onclick="confirmUxDespesa()">Salvar despesa</button>`});
+}
+async function confirmUxDespesa(){
+    const descricao=document.getElementById('uxDespDesc')?.value.trim(); const valor=Number(document.getElementById('uxDespValor')?.value); if(!descricao||!valor||valor<=0){notify('Preencha descrição e valor.');return;}
+    data.transacoes=data.transacoes||[]; data.transacoes.push({id:uid(),data:document.getElementById('uxDespData')?.value||today(),descricao,valor,tipo:'despesa',categoria:document.getElementById('uxDespCat')?.value||'Outros'});
+    closeUxModal(); await saveData(); notify('Despesa registrada.'); renderFinanceiro();
+}
+
+// Exclusão real do aluno: remove registros relacionados no banco e da memória local.
+function requestDeleteStudent(id){
+    const s=getStudent(id); if(!s)return;
+    openUxModal({title:'Excluir aluno?',subtitle:'Esta ação remove o cadastro e os registros relacionados.',body:`${uxHelp('Atenção','Consultas, avaliações, agenda, evoluções e informações escolares vinculadas serão removidas do acesso atual. Esta ação não pode ser desfeita pelo sistema.','triangle-alert')}<div style="padding:14px;border:1px solid #eadfdc;background:#fffafa;border-radius:12px"><strong>${esc(s.nome)}</strong><div class="ux-muted">Confirme somente se deseja realmente excluir este cadastro.</div></div>`,foot:`<button class="btn btn-outline" onclick="closeUxModal()">Cancelar</button><button class="btn btn-danger" onclick="deleteStudent('${id}',true)">Excluir aluno</button>`});
+}
+async function deleteStudent(id,confirmed=false){
+    const s=getStudent(id); if(!s)return; if(!confirmed){requestDeleteStudent(id);return;}
+    closeUxModal();
+    try{
+      if(supabaseClient){
+        const tables=['resultados_avaliacoes','avaliacoes','registros_escola','escola','consultas','evolucoes','agenda','transacoes','alunos'];
+        for(const t of tables){
+          let q=supabaseClient.from(t).delete();
+          if(t==='resultados_avaliacoes'){
+            const avIds=(s.avaliacoes||[]).map(a=>a.id); if(!avIds.length)continue; q=q.in('avaliacao_id',avIds);
+          } else if(t==='registros_escola'){
+            const escolaId=s.escola?.id; if(!escolaId)continue; q=q.eq('escola_id',escolaId);
+          } else if(t==='escola'||t==='consultas'||t==='evolucoes'||t==='agenda'||t==='transacoes'||t==='alunos') q=q.eq(t==='alunos'?'id':'aluno_id',id);
+          else continue;
+          const {error}=await q; if(error) console.warn('Exclusão',t,error.message);
+        }
+      }
+    }catch(e){console.warn(e)}
+    data.alunos=(data.alunos||[]).filter(a=>a.id!==id); data.agenda=(data.agenda||[]).filter(a=>a.alunoId!==id); data.transacoes=(data.transacoes||[]).filter(t=>t.alunoId!==id); currentStudent=null;
+    notify('Aluno excluído.'); navigate('alunos');
+}
+
+// Construtor visual de avaliação personalizada.
+let uxQuestionRows=[];
+function addUxQuestion(text='',type='text',options=''){uxQuestionRows.push({id:uid(),text,type,options});renderUxQuestionRows();}
+function removeUxQuestion(id){uxQuestionRows=uxQuestionRows.filter(q=>q.id!==id);renderUxQuestionRows();}
+function moveUxQuestion(id,dir){const i=uxQuestionRows.findIndex(q=>q.id===id),j=i+dir;if(i<0||j<0||j>=uxQuestionRows.length)return;[uxQuestionRows[i],uxQuestionRows[j]]=[uxQuestionRows[j],uxQuestionRows[i]];renderUxQuestionRows();}
+function updateUxQuestion(id,field,value){const q=uxQuestionRows.find(x=>x.id===id);if(q)q[field]=value;}
+function renderUxQuestionRows(){
+  const box=document.getElementById('uxQuestionBuilder'); if(!box)return;
+  box.innerHTML=uxQuestionRows.length?uxQuestionRows.map((q,i)=>`<div class="ux-qrow"><div class="ux-qrow-head"><div style="display:flex;align-items:center;gap:8px"><span class="ux-qnum">${String(i+1).padStart(2,'0')}</span><span style="font-size:11px;font-weight:800;color:#56665f">Questão ${i+1}</span></div><div class="ux-qactions"><button class="ux-iconbtn" onclick="moveUxQuestion('${q.id}',-1)" title="Subir">↑</button><button class="ux-iconbtn" onclick="moveUxQuestion('${q.id}',1)" title="Descer">↓</button><button class="ux-iconbtn" onclick="removeUxQuestion('${q.id}')" title="Excluir">×</button></div></div><div class="field"><label class="label">Enunciado *</label><textarea class="textarea ux-qtext" data-id="${q.id}" style="min-height:70px" placeholder="Escreva exatamente o que o aluno deverá responder ou realizar.">${esc(q.text)}</textarea></div><div class="ux-qgrid"><div class="field"><label class="label">Tipo de resposta</label><select class="select ux-qtype" data-id="${q.id}"><option value="text" ${q.type==='text'?'selected':''}>Resposta curta</option><option value="textarea" ${q.type==='textarea'?'selected':''}>Resposta aberta</option><option value="scale" ${q.type==='scale'?'selected':''}>Escala de opções</option></select></div><div class="field ${q.type==='scale'?'':'ux-scale-hide'}"><label class="label">Opções</label><input class="input ux-qoptions" data-id="${q.id}" value="${esc(q.options||'') }" placeholder="Sim, Não, Às vezes"></div></div></div>`).join(''):`<div class="ux-empty">Nenhuma questão criada ainda.<br><span>Comece adicionando a primeira questão.</span></div>`;
+  box.querySelectorAll('.ux-qtext').forEach(el=>el.oninput=()=>updateUxQuestion(el.dataset.id,'text',el.value));
+  box.querySelectorAll('.ux-qtype').forEach(el=>el.onchange=()=>{updateUxQuestion(el.dataset.id,'type',el.value);renderUxQuestionRows();});
+  box.querySelectorAll('.ux-qoptions').forEach(el=>el.oninput=()=>updateUxQuestion(el.dataset.id,'options',el.value));
+}
+function openCustomAssessmentBuilder(studentId=null){
+  uxQuestionRows=[];
+  const alunoOptions=(data.alunos||[]).map(a=>`<option value="${a.id}" ${studentId===a.id?'selected':''}>${esc(a.nome)}</option>`).join('');
+  const body=`${uxHelp('Monte a avaliação como um instrumento profissional','Você não precisa escrever tudo em uma caixa de texto. Crie cada questão separadamente, defina o tipo de resposta e organize a ordem. Depois, a avaliação ficará disponível para reaplicação e terá histórico das aplicações.','clipboard-list')}
+    <div class="form-grid two"><div class="field"><label class="label">Nome do instrumento *</label><input id="uxAvTitulo" class="input" placeholder="Ex.: Avaliação de leitura e escrita"></div><div class="field"><label class="label">Aluno *</label><select id="uxAvAluno" class="select"><option value="">Selecione o aluno</option>${alunoOptions}</select></div></div>
+    <div class="field"><label class="label">Objetivo</label><textarea id="uxAvObjetivo" class="textarea" style="min-height:75px" placeholder="O que você pretende observar ou investigar?"></textarea></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:18px"><div><div class="section-title" style="font-size:14px">Questões</div><div class="ux-muted">Cada item pode ter seu próprio formato de resposta.</div></div><button class="btn btn-soft btn-sm" onclick="addUxQuestion()">+ Adicionar questão</button></div>
+    <div id="uxQuestionBuilder" style="margin-top:10px"></div>`;
+  openUxModal({title:'Criar avaliação personalizada',subtitle:'Construa o instrumento passo a passo.',body,foot:`<button class="btn btn-outline" onclick="closeUxModal()">Cancelar</button><button class="btn btn-primary" onclick="saveUxAssessmentBuilder()">Criar instrumento</button>`,width:'820px'});
+  addUxQuestion();
+}
+async function saveUxAssessmentBuilder(){
+  const titulo=document.getElementById('uxAvTitulo')?.value.trim(), alunoId=document.getElementById('uxAvAluno')?.value, objetivo=document.getElementById('uxAvObjetivo')?.value.trim();
+  uxQuestionRows=uxQuestionRows.map(q=>({...q,text:q.text.trim()}));
+  if(!titulo||!alunoId||!uxQuestionRows.length||uxQuestionRows.some(q=>!q.text)){notify('Preencha o nome, o aluno e todas as questões.');return;}
+  const s=getStudent(alunoId);if(!s)return;ensureStudentModules(s);
+  const questoes=uxQuestionRows.map((q,i)=>({id:uid(),numero:i+1,texto:q.text,tipo:q.type,opcoes:q.type==='scale'?q.options.split(',').map(x=>x.trim()).filter(Boolean):[]}));
+  s.avaliacoes.push({id:uid(),data:today(),titulo,objetivo,tipo:'custom',questoes,resultados:[],finalizada:false});
+  closeUxModal();await saveData();notify(`Instrumento "${titulo}" criado.`);currentStudent=alunoId;renderAvaliacoes();
+}
+function startNewAvaliacao(){openCustomAssessmentBuilder();}
+function renderAvaliacoesNew(){openCustomAssessmentBuilder();}
+async function saveNewAvaliacao(){openCustomAssessmentBuilder();}
+
+// Aplicação personalizada com instruções e tipos de resposta adequados.
+function renderEnhancedAssessmentApply(s,a){
+  const total=(a.questoes||[]).length;
+  const body=(a.questoes||[]).map((q,i)=>{
+    const tipo=q.tipo||'textarea';
+    if(tipo==='scale')return `<div class="field" style="padding:15px 0;border-bottom:1px solid #edf1ef"><div style="font-size:12px;font-weight:800;margin-bottom:9px">${String(q.numero||i+1).padStart(2,'0')} · ${esc(q.texto||'')}</div><div class="ux-choice-grid">${(q.opcoes||[]).map((op,j)=>`<label class="ux-choice"><input type="radio" name="resp_${i}" value="${esc(op)}"> <span class="ux-choice-title">${esc(op)}</span></label>`).join('')}</div></div>`;
+    return `<div class="field" style="padding:15px 0;border-bottom:1px solid #edf1ef"><div style="font-size:12px;font-weight:800;margin-bottom:8px">${String(q.numero||i+1).padStart(2,'0')} · ${esc(q.texto||'')}</div><textarea id="resp_${i}" class="textarea" style="min-height:${tipo==='text'?'70px':'105px'}" placeholder="Registre a resposta ou observação..."></textarea></div>`;
+  }).join('');
+  document.getElementById('page-prontuario').innerHTML=`<button class="btn btn-outline btn-sm" onclick="renderStudentProfile('avaliacoes')" style="margin-bottom:14px">← Voltar</button>
+    <div class="ux-assessment-header"><div><div class="ux-kicker">Aplicação de instrumento</div><div class="ux-assessment-title">${esc(a.titulo)}</div><div class="ux-muted" style="margin-top:5px">Aluno: <strong>${esc(s.nome)}</strong> · ${total} questão(ões)</div><div class="ux-progress"><span style="width:100%"></span></div></div></div>
+    ${uxHelp('Como preencher','Registre o que foi observado durante a aplicação. Ao finalizar, a aplicação ficará salva no histórico deste aluno e poderá ser consultada depois.','info')}
+    <div class="card"><div class="section-head"><div><div class="section-title">Questões</div><div class="section-sub">Responda cada item e depois registre uma síntese.</div></div></div>${body}<div class="field" style="margin-top:18px"><label class="label">Síntese da aplicação</label><textarea id="avResumo" class="textarea" style="min-height:120px" placeholder="Registre os principais achados, observações e próximos encaminhamentos."></textarea></div><div class="form-actions"><button class="btn btn-outline" onclick="renderStudentProfile('avaliacoes')">Cancelar</button><button class="btn btn-primary" onclick="saveAssessmentApplication()">Finalizar e salvar aplicação</button></div></div>`;
+  try{lucide.createIcons();}catch(e){}
+}
+function renderStudentProfile(mode='overview'){
+  const s=getStudent(currentStudent);if(!s)return;ensureStudentModules(s);
+  if(mode==='avaliacoes'){
+    const avs=(s.avaliacoes||[]).slice().sort((a,b)=>String(b.data).localeCompare(String(a.data)));
+    document.getElementById('page-prontuario').innerHTML=`<button class="btn btn-outline btn-sm" onclick="renderStudentProfile('overview')" style="margin-bottom:14px">← Voltar</button>
+      ${uxHelp('Avaliações deste aluno','Aqui você cria instrumentos, aplica novamente, consulta cada aplicação e gera o PDF. Uma avaliação pode ter várias aplicações ao longo do acompanhamento.','clipboard-check')}
+      <div class="section-head"><div><div class="section-title">Avaliações de ${esc(s.nome)}</div><div class="section-sub">${avs.length} instrumento(s) cadastrado(s)</div></div><button class="btn btn-primary" onclick="openCustomAssessmentBuilder('${s.id}')">+ Criar instrumento</button></div>
+      <div class="card" style="margin-top:14px">${avs.length?avs.map(a=>{const rs=a.resultados||[];const last=rs[rs.length-1];return `<div style="padding:17px 0;border-bottom:1px solid #edf1ef"><div style="display:flex;justify-content:space-between;gap:15px;align-items:flex-start"><div style="flex:1"><div style="font-size:14px;font-weight:800;color:#2c3933">${esc(a.titulo)}</div><div class="ux-muted" style="margin-top:3px">Criada em ${fmtDate(a.data)} · ${rs.length} aplicação(ões) · ${a.finalizada?'Concluída':'Ainda não aplicada'}</div>${a.objetivo?`<div style="font-size:11px;color:#687770;margin-top:8px;line-height:1.5"><strong>Objetivo:</strong> ${esc(a.objetivo)}</div>`:''}</div><div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><button class="btn btn-primary btn-sm" onclick="applyAssessment('${a.id}')">${rs.length?'Aplicar novamente':'Aplicar'}</button>${last?`<button class="btn btn-outline btn-sm" onclick="viewAvaliacaoResultado('${s.id}','${a.id}')">Ver aplicação</button>`:''}</div></div>${last?`<div style="margin-top:10px;padding:10px 12px;background:#f7faf8;border-radius:10px;font-size:11px;color:#66756e">Última aplicação: <strong>${fmtDate(last.data)}</strong>${last.resumo?` · ${esc(String(last.resumo).slice(0,130))}`:''}</div>`:''}</div>`}).join(''):`<div class="ux-empty">Nenhum instrumento cadastrado para este aluno.<br><span>Comece criando uma avaliação personalizada.</span></div>`}</div>`;
+    try{lucide.createIcons();}catch(e){}return;
+  }
+  if(mode==='aplicar'){
+    const a=s.avaliacoes.find(x=>x.id===currentAssessment);if(!a){renderStudentProfile('avaliacoes');return;}renderEnhancedAssessmentApply(s,a);return;
+  }
+  if(mode==='resultado'){
+    const a=s.avaliacoes.find(x=>x.id===currentAssessment);if(!a){renderStudentProfile('avaliacoes');return;}const rs=a.resultados||[];const r=rs[rs.length-1];if(!r){renderStudentProfile('avaliacoes');return;}
+    const respostas=r.respostas||[];
+    document.getElementById('page-prontuario').innerHTML=`<button class="btn btn-outline btn-sm" onclick="renderStudentProfile('avaliacoes')" style="margin-bottom:14px">← Voltar para avaliações</button>
+      ${uxHelp('Resultado da aplicação','Esta tela mostra a prova/instrumento exatamente com as questões e as respostas registradas. Você também pode gerar o PDF para arquivar ou compartilhar.','file-check-2')}
+      <div class="ux-assessment-header"><div><div class="ux-kicker">Aplicação registrada</div><div class="ux-assessment-title">${esc(a.titulo)}</div><div class="ux-muted" style="margin-top:5px">${esc(s.nome)} · Aplicada em ${fmtDate(r.data)}</div></div><button class="btn btn-blue" onclick="gerarPDFAvaliacao('${s.id}','${a.id}')">Gerar PDF</button></div>
+      <div class="ux-result-summary"><div class="ux-result-stat"><b>${(a.questoes||[]).length}</b><span>questões</span></div><div class="ux-result-stat"><b>${rs.length}</b><span>aplicações registradas</span></div><div class="ux-result-stat"><b>${fmtDate(r.data)}</b><span>última aplicação</span></div></div>
+      <div class="card"><div class="section-head"><div><div class="section-title">Prova aplicada</div><div class="section-sub">Questões e respostas registradas nesta aplicação.</div></div></div>${(a.questoes||[]).map((q,i)=>{const v=respostas[i];let val=v&&typeof v==='object'?(v.rotulo||v.valor||'—'):(v||'—');return `<div style="padding:17px 0;border-bottom:1px solid #edf1ef"><div style="display:flex;gap:12px"><span class="ux-qnum">${String(q.numero||i+1).padStart(2,'0')}</span><div style="flex:1"><div style="font-size:12px;font-weight:800;color:#33413b;line-height:1.55">${esc(q.texto||q)}</div><div style="margin-top:9px;padding:11px 12px;background:#f7faf8;border-radius:10px;font-size:12px;color:#55655e;white-space:pre-wrap"><strong>Resposta:</strong> ${esc(String(val))}</div></div></div></div>`}).join('')||`<div class="ux-empty">Nenhuma questão registrada.</div>`}${r.resumo?`<div style="margin-top:18px"><div class="section-title">Síntese profissional</div><div style="margin-top:8px;font-size:12px;line-height:1.8;color:#596761;white-space:pre-wrap">${esc(r.resumo)}</div></div>`:''}</div>`;
+    try{lucide.createIcons();}catch(e){}return;
+  }
+  // demais telas continuam usando a implementação original.
+  return renderStudentProfileLegacy(mode);
+}
+
+// Ajuda contextual mais útil para as telas principais.
+const _renderAvaliacoesOriginal=renderAvaliacoes;
+function renderAvaliacoes(){
+  if(!isDataLoaded||!data||!data.session){document.getElementById('page-avaliacoes').innerHTML=`<div class="empty" style="padding:40px;text-align:center">Faça login.</div>`;return;}
+  if(avalStepMode)return _renderAvaliacoesOriginal();
+  const todas=getAvaliacoesGlobais(); const concluidas=todas.filter(a=>(a.resultados||[]).length); const apps=concluidas.reduce((n,a)=>n+a.resultados.length,0);
+  const recentes=concluidas.flatMap(a=>(a.resultados||[]).map(r=>({...r,titulo:a.titulo,alunoNome:a.alunoNome,alunoId:a.alunoId,avalId:a.id}))).sort((a,b)=>String(b.data).localeCompare(String(a.data))).slice(0,10);
+  document.getElementById('page-avaliacoes').innerHTML=`<div class="assessment-shell">
+    <div class="assessment-hero"><div><h2>Avaliações psicopedagógicas</h2><p>Crie instrumentos, aplique avaliações e mantenha o histórico de cada aplicação em um único lugar.</p></div><button class="btn btn-primary" onclick="openCustomAssessmentBuilder()">+ Criar instrumento</button></div>
+    ${uxHelp('O que você pode fazer aqui','Escolha um instrumento pronto para aplicar ou crie uma avaliação personalizada. Depois de aplicada, ela fica disponível no histórico do aluno para consulta e PDF.','book-open')}
+    <div class="assessment-metrics"><div class="assessment-metric"><div class="m-label">Instrumentos</div><div class="m-value">${ASSESSMENT_TEMPLATES.length}</div><div class="m-sub">modelos disponíveis</div></div><div class="assessment-metric"><div class="m-label">Aplicações</div><div class="m-value">${apps}</div><div class="m-sub">registros concluídos</div></div><div class="assessment-metric"><div class="m-label">Alunos</div><div class="m-value">${new Set(concluidas.map(a=>a.alunoId)).size}</div><div class="m-sub">com aplicação registrada</div></div><div class="assessment-metric"><div class="m-label">Pendentes</div><div class="m-value">${todas.filter(a=>!(a.resultados||[]).length).length}</div><div class="m-sub">instrumentos ainda não aplicados</div></div></div>
+    <div class="card"><div class="section-head"><div><div class="section-title">Instrumentos disponíveis</div><div class="section-sub">Clique em aplicar para escolher o aluno e iniciar a aplicação.</div></div></div><div class="instrument-grid">${ASSESSMENT_TEMPLATES.map(t=>`<div class="instrument-card"><div class="instrument-head"><div><div class="instrument-title">${esc(t.nome)}</div><div class="instrument-desc">${esc(t.descricao)}</div></div><span class="aval-type-badge ${getAvalTypeBadge(t.tipo)}">${esc(t.tipo||'instrumento')}</span></div><div class="instrument-meta"><span class="tag">${t.campos?'Formulário estruturado':`${(t.questoes||[]).length} itens`}</span></div><div class="form-actions" style="margin-top:14px"><button class="btn btn-primary btn-sm" onclick="startAvalStepWithTemplate('${t.id}')">Aplicar instrumento</button></div></div>`).join('')}</div></div>
+    <div class="card"><div class="section-head"><div><div class="section-title">Aplicações recentes</div><div class="section-sub">Abra uma aplicação para ver a prova e as respostas registradas.</div></div></div>${recentes.length?`<div style="overflow:auto"><table class="assessment-table"><thead><tr><th>Data</th><th>Aluno</th><th>Instrumento</th><th>Status</th><th></th></tr></thead><tbody>${recentes.map(r=>`<tr><td>${fmtDate(r.data)}</td><td><strong>${esc(r.alunoNome)}</strong></td><td>${esc(r.titulo)}</td><td><span class="assessment-status">Concluída</span></td><td style="text-align:right"><button class="btn btn-outline btn-sm" onclick="viewAvaliacaoResultado('${r.alunoId}','${r.avalId}')">Ver prova</button></td></tr>`).join('')}</tbody></table></div>`:`<div class="ux-empty">Ainda não há aplicações concluídas.<br><span>Comece escolhendo um instrumento acima.</span></div>`}</div></div></div>`;
+  try{lucide.createIcons();}catch(e){}
+}
+
+// ============================================================
 // ============================================================
 // INIT
 // ============================================================
@@ -1989,77 +2140,6 @@ document.getElementById("logoutBtn").addEventListener("click", logout);
 Object.assign(window, { navigate, startNewAvaliacao, cancelAvaliacao, saveNewAvaliacao, renderAvaliacoes, startAvalStepWithTemplate, startAvalStepAnswer, selectAvalStepOption, avalStepPrev, avalStepNext, cancelAvalStep, viewAvaliacaoResultado, gerarPDFAvaliacao, openOnboardingDetail, runOnboardingDetailAction, renderOnboarding, resetOnboarding, toggleAgendaForm, saveAppointment, cancelAppointment, togglePresence, togglePayment, calendarPrev, calendarNext, calendarToday, setCalendarMode, quickSchedule, selectMonthDay, changeFinanceMonth, showDespesaForm, calcularFinanceiroRapido, saveProfile, toggleStudentForm, saveStudent, filterStudents, openStudent, renderStudentProfile, saveStudentEdit, deleteStudent, openConsultation, newConsultationForm, saveConsultation, setStudentSectionPage, toggleAcademicMonth, newEvolucaoForm, saveEvolucaoHandler, generateStudentPDF, generateFinancePDF, createAssessment, applyAssessment, saveAssessmentApplication, saveSchoolInfo, addSchoolRecord, deleteSchoolRecord, getMetodoPagamentoLabel, getMetodoPagamentoClass, getPlanLabel, showExpiredScreen, loadRecados, renderRecados, setRecadosFilter, openNewRecadoModal, openNewMessageModal, closeRecadoModal, closeMensagemModal, sendRecado, sendMensagem, markRecadoAsRead, deleteRecado, showWaitlistForm, closeWaitlistForm, saveWaitlist, editWaitlist, promoteWaitlist, removeWaitlist, showHostForm, closeHostForm, saveHost, editHost, removeHost, refreshMaster, renderMasterTable, openMasterProfessor, closeMasterModal, saveMasterProfessor, setProfessorActive, extendLicense });
 
 init();
-
-/* ============================================================
-   SAAS PRO RENDER OVERRIDES
-   ============================================================ */
-function renderDashboard(){
- const view=document.getElementById('page-dashboard'); if(!view)return;
- if(!isDataLoaded||!data?.session){view.innerHTML='<div class="empty">Faça login.</div>';return;}
- const mRev=monthPaid(),pend=weekPending(),done=monthDone(),rate=attendanceRate();
- const todays=activeAppointments().filter(a=>a.data===today()).sort((a,b)=>(a.hora||'').localeCompare(b.hora||''));
- const active=(data.alunos||[]).filter(a=>a.ativo!==false).length;
- const totalH=weeklyOccupiedHours(),dispH=weeklyAvailableHours()||40,pct=Math.min(100,Math.round(totalH/dispH*100));
- const monthAp=monthScheduled();
- view.innerHTML=`<div class="dash-hero"><div><div style="font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--sage);font-weight:800">Visão geral</div><h1 class="greeting" style="margin-top:6px">${getSaudacao()}, <span>${esc(data.professor?.nome?.split(' ')[0]||'Professor')}</span></h1><p class="subtitle">Acompanhe atendimentos, financeiro e rotina profissional em um só lugar.</p></div><div class="quick-actions"><button class="btn btn-primary" onclick="navigate('alunos');setTimeout(()=>toggleStudentForm(true),80)"><i data-lucide="user-plus"></i>Novo aluno</button><button class="btn btn-outline" onclick="navigate('agenda');setTimeout(()=>toggleAgendaForm(),80)"><i data-lucide="calendar-plus"></i>Agendar</button></div></div>
- <div class="dash-stats">
-  <div class="dash-stat"><div class="ds-icon"><i data-lucide="banknote"></i></div><div class="ds-label">Recebido no mês</div><div class="ds-value">${money(mRev)}</div><div class="ds-sub">Pagamentos confirmados</div></div>
-  <div class="dash-stat blue"><div class="ds-icon"><i data-lucide="clock-3"></i></div><div class="ds-label">A receber</div><div class="ds-value">${money(pend)}</div><div class="ds-sub">Pendências desta semana</div></div>
-  <div class="dash-stat"><div class="ds-icon"><i data-lucide="calendar-check-2"></i></div><div class="ds-label">Atendimentos</div><div class="ds-value">${done}</div><div class="ds-sub">${monthAp} agendados no mês</div></div>
-  <div class="dash-stat ${rate>=80?'':rate>=60?'amber':'rose'}"><div class="ds-icon"><i data-lucide="activity"></i></div><div class="ds-label">Assiduidade</div><div class="ds-value">${rate}%</div><div class="ds-sub">Presença registrada</div></div>
- </div>
- <div class="dash-grid"><div class="dash-card"><div class="dc-head"><div><div class="dc-title">Agenda de hoje</div><div class="dc-sub">${new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'})}</div></div><button class="btn btn-soft btn-sm" onclick="navigate('agenda')">Abrir agenda</button></div>${todays.length?`<div class="today-list">${todays.map(a=>{const st=getStudent(a.alunoId),t=TYPES[a.tipo];if(!st)return'';return `<div class="today-item" onclick="openStudent('${a.id?st.id:''}')"><div class="ti-time">${esc(a.hora||'')}</div>${avatarHTML(st)}<div class="ti-info"><div class="ti-name">${esc(st.nome)}</div><div class="ti-type">${esc(t?.label||a.tipo||'Atendimento')}</div></div><div class="ti-actions"><button class="btn btn-sm ${a.presente?'btn-soft':'btn-outline'}" onclick="event.stopPropagation();togglePresence('${a.id}')">${a.presente?'Presente':'Presença'}</button><button class="btn btn-sm ${a.pago?'btn-soft':'btn-outline'}" onclick="event.stopPropagation();togglePayment('${a.id}')">${a.pago?'Pago':'Pagar'}</button></div></div>`}).join('')}</div>`:'<div class="empty">Nenhum atendimento registrado para hoje.</div>'}</div>
- <div style="display:flex;flex-direction:column;gap:12px"><div class="workload-card"><div class="workload-header"><div><div class="wl-title">Carga de trabalho</div><div style="font-size:10px;color:#8a9892">Semana atual</div></div><div class="wl-percent">${pct}%</div></div><div class="workload-bar"><div class="workload-segment occupied" style="width:${pct}%"></div><div class="workload-segment available" style="width:${100-pct}%"></div></div><div class="workload-legend"><span><span class="dot occ"></span>${totalH}h ocupadas</span><span><span class="dot avail"></span>${Math.max(0,dispH-totalH)}h livres</span></div></div>
- <div class="dash-card"><div class="dc-head"><div><div class="dc-title">Resumo operacional</div><div class="dc-sub">Indicadores rápidos</div></div></div><div class="month-summary"><div class="ms-item"><div class="ms-label">Alunos ativos</div><div class="ms-value">${active}</div></div><div class="ms-item"><div class="ms-label">Agendados</div><div class="ms-value">${monthAp}</div></div><div class="ms-item"><div class="ms-label">Recebido</div><div class="ms-value" style="font-size:15px">${money(mRev)}</div></div><div class="ms-item"><div class="ms-label">A receber</div><div class="ms-value" style="font-size:15px">${money(pend)}</div></div></div></div></div></div>`;
- try{lucide.createIcons()}catch(e){}
-}
-
-let financeSearchTimer=null;
-function renderFinanceiro(){
- const view=document.getElementById('page-financeiro'); if(!view)return;
- if(!isDataLoaded||!data?.session){view.innerHTML='<div class="empty">Faça login.</div>';return;}
- const monthLabel=new Date(financeYear,financeMonth,1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
- const trans=(data.transacoes||[]).filter(t=>{const d=parseDate(t.data);return d.getFullYear()===financeYear&&d.getMonth()===financeMonth;});
- const receitas=trans.filter(t=>(t.tipo||'receita')==='receita'),despesas=trans.filter(t=>t.tipo==='despesa');
- const recebido=receitas.reduce((s,t)=>s+Number(t.valor||0),0),gasto=despesas.reduce((s,t)=>s+Number(t.valor||0),0),saldo=recebido-gasto;
- const aps=activeAppointments().filter(a=>{const d=parseDate(a.data);return d.getFullYear()===financeYear&&d.getMonth()===financeMonth});
- const pend=aps.filter(a=>!a.pago),aReceber=pend.reduce((s,a)=>s+Number(getStudent(a.alunoId)?.valor||0),0),esperado=recebido+aReceber;
- const pct=esperado?Math.round(recebido/esperado*100):0;
- view.innerHTML=`<div class="fin-hero"><div><h1 class="fh-title">Financeiro</h1><p class="fh-sub">Controle de entradas, saídas e valores pendentes com visão do período.</p></div><div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap"><div class="fin-month-nav"><button onclick="changeFinanceMonth(-1)">‹</button><span class="month-text">${esc(monthLabel)}</span><button onclick="changeFinanceMonth(1)">›</button></div><button class="btn btn-blue btn-sm" onclick="generateFinancePDF()"><i data-lucide="file-down"></i>PDF</button><button class="btn btn-primary btn-sm" onclick="showDespesaForm()"><i data-lucide="plus"></i>Nova despesa</button></div></div>
- <div class="fin-cards"><div class="fin-card ${saldo>=0?'positive':'negative'}"><div class="fc-label">Saldo</div><div class="fc-value">${money(saldo)}</div><div class="fc-sub">Receitas menos despesas</div></div><div class="fin-card positive"><div class="fc-label">Recebido</div><div class="fc-value">${money(recebido)}</div><div class="fc-sub">${receitas.length} lançamento(s)</div><div class="fc-bar"><span style="width:${pct}%"></span></div></div><div class="fin-card negative"><div class="fc-label">Despesas</div><div class="fc-value">${money(gasto)}</div><div class="fc-sub">${despesas.length} lançamento(s)</div></div><div class="fin-card neutral"><div class="fc-label">A receber</div><div class="fc-value">${money(aReceber)}</div><div class="fc-sub">${pend.length} pendência(s)</div></div></div>
- <div class="finance-toolbar"><div class="finance-search"><i data-lucide="search"></i><input id="financeSearch" class="input" placeholder="Buscar por aluno, descrição, categoria ou método..." oninput="filterFinanceTable()"></div><select id="financeTypeFilter" class="select" onchange="filterFinanceTable()"><option value="todos">Todos</option><option value="receita">Receitas</option><option value="despesa">Despesas</option><option value="pendente">Pendentes</option></select><select id="financeMethodFilter" class="select" onchange="filterFinanceTable()"><option value="todos">Todos os métodos</option><option value="pix">PIX</option><option value="cartao">Cartão</option><option value="cartao_parcelado">Cartão parcelado</option><option value="dinheiro">Dinheiro</option></select><button class="btn btn-outline finance-action" onclick="clearFinanceFilters()"><i data-lucide="rotate-ccw"></i>Limpar</button></div>
- <div class="fin-grid"><div class="fin-panel"><div class="fp-head"><div><div class="fp-title">Movimentações</div><div style="font-size:10px;color:#8a9892;margin-top:2px">${trans.length} lançamento(s) no período</div></div></div><div class="table-scroll"><table class="fin-table data-table"><thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Status</th><th>Valor</th><th style="text-align:right">Ação</th></tr></thead><tbody id="financeRows">${renderFinanceRows(trans,pend)}</tbody></table></div></div>
- <div style="display:flex;flex-direction:column;gap:12px"><div class="fin-panel"><div class="fp-head"><div class="fp-title">Pendências</div><span class="status-pill pending">${pend.length}</span></div>${pend.length?pend.slice(0,10).map(a=>{const st=getStudent(a.alunoId);return `<div class="fin-pending-item"><div class="fp-info" onclick="openStudent('${st?.id||''}')" style="cursor:pointer"><div class="fp-name">${esc(st?.nome||'Aluno')}</div><div class="fp-date">${fmtDate(a.data)} · ${esc(a.hora||'')}</div></div><div class="fp-value">${money(st?.valor||0)}</div><button class="btn btn-primary btn-sm" onclick="togglePayment('${a.id}')">Receber</button></div>`}).join(''):'<div class="empty">Nenhuma pendência no período.</div>'}</div><div class="fin-panel"><div class="fp-head"><div><div class="fp-title">Composição do mês</div><div style="font-size:10px;color:#8a9892">Visão rápida</div></div></div><div style="display:flex;flex-direction:column;gap:10px"><div style="display:flex;justify-content:space-between;font-size:11px"><span>Recebido</span><strong>${money(recebido)}</strong></div><div style="height:7px;background:#edf1ef;border-radius:9px;overflow:hidden"><span style="display:block;height:100%;width:${pct}%;background:var(--sage)"></span></div><div style="display:flex;justify-content:space-between;font-size:11px"><span>Despesas</span><strong>${money(gasto)}</strong></div><div style="display:flex;justify-content:space-between;font-size:11px"><span>Saldo</span><strong style="color:${saldo>=0?'var(--sage-dark)':'#b85b5b'}">${money(saldo)}</strong></div></div></div></div></div>`;
- try{lucide.createIcons()}catch(e){}
-}
-function renderFinanceRows(trans,pend){
- return trans.slice().sort((a,b)=>(b.data||'').localeCompare(a.data||'')).map(t=>{const st=getStudent(t.alunoId);const rec=(t.tipo||'receita')==='receita';return `<tr data-fin-search="${esc([st?.nome||'',t.descricao||'',t.categoria||'',t.metodo_pagamento||'',rec?'receita':'despesa'].join(' ').toLowerCase())}" data-fin-type="${rec?'receita':'despesa'}" data-fin-method="${esc(t.metodo_pagamento||'')}" data-fin-pending="false"><td>${fmtDate(t.data)}</td><td><strong>${esc(t.descricao||st?.nome||'Lançamento')}</strong></td><td>${esc(t.categoria||'—')}</td><td><span class="status-pill ${rec?'ok':'cancelled'}">${rec?'Receita':'Despesa'}</span></td><td><strong style="color:${rec?'var(--sage-dark)':'#b85b5b'}">${money(t.valor)}</strong></td><td style="text-align:right">${t.agendaId?`<button class="btn btn-outline btn-sm" onclick="openStudent('${st?.id||''}')">Aluno</button>`:'—'}</td></tr>`}).join('')||'<tr><td colspan="6"><div class="empty">Nenhuma movimentação encontrada.</div></td></tr>';
-}
-function filterFinanceTable(){const q=(document.getElementById('financeSearch')?.value||'').toLowerCase().trim(),ty=document.getElementById('financeTypeFilter')?.value||'todos',me=document.getElementById('financeMethodFilter')?.value||'todos';document.querySelectorAll('#financeRows tr[data-fin-search]').forEach(r=>{const okQ=!q||r.dataset.finSearch.includes(q),okT=ty==='todos'||r.dataset.finType===ty,okM=me==='todos'||r.dataset.finMethod===me;r.style.display=okQ&&okT&&okM?'':'none'})}
-function clearFinanceFilters(){['financeSearch'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''});const t=document.getElementById('financeTypeFilter'),m=document.getElementById('financeMethodFilter');if(t)t.value='todos';if(m)m.value='todos';filterFinanceTable()}
-
-function renderAgenda(){
- const view=document.getElementById('page-agenda');if(!view)return;if(!isDataLoaded||!data?.agenda){view.innerHTML='<div class="empty">Carregando...</div>';return;}
- const title=calendarMode==='week'?`${fmtDate(dateISO(weekDates(calendarDate)[0]))} — ${fmtDate(dateISO(weekDates(calendarDate)[4]))}`:monthName(calendarDate);
- view.innerHTML=`<div class="agenda-shell"><div class="agenda-top"><div><div class="section-title">Agenda</div><div class="section-sub">Organize atendimentos com navegação compacta e ações rápidas.</div></div><div class="quick-actions"><button class="btn btn-outline" onclick="calendarToday()">Hoje</button><button class="btn btn-primary" onclick="toggleAgendaForm()"><i data-lucide="plus"></i>Novo atendimento</button></div></div><div class="card" style="padding:12px"><div class="agenda-toolbar-pro"><div style="display:flex;gap:5px;align-items:center"><button class="btn btn-outline btn-sm" onclick="calendarPrev()">‹</button><strong style="font-size:13px;min-width:165px;text-align:center">${esc(title)}</strong><button class="btn btn-outline btn-sm" onclick="calendarNext()">›</button></div><div class="agenda-search"><i data-lucide="search"></i><input id="agendaSearch" class="input" placeholder="Buscar aluno na agenda..." oninput="filterAgendaEvents()"></div><div style="display:flex;gap:5px"><button class="btn ${calendarMode==='week'?'btn-soft':'btn-outline'} btn-sm" onclick="setCalendarMode('week')">Semana</button><button class="btn ${calendarMode==='month'?'btn-soft':'btn-outline'} btn-sm" onclick="setCalendarMode('month')">Mês</button></div></div><div id="agendaForm" style="display:none;background:#f7faf8;border:1px solid var(--line);border-radius:11px;padding:13px;margin:12px 0"><div class="section-title" style="margin-bottom:10px">Novo atendimento</div><div class="form-grid"><div class="field"><label class="label">Aluno</label><select id="agAluno" class="select">${(data.alunos||[]).map(a=>`<option value="${a.id}">${esc(a.nome)}</option>`).join('')}</select></div><div class="field"><label class="label">Data</label><input id="agData" class="input" type="date" value="${selectedDay||today()}"></div><div class="field"><label class="label">Horário</label><input id="agHora" class="input" type="time" value="09:00"></div><div class="field"><label class="label">Tipo</label><select id="agTipo" class="select"><option value="psicopedagogia">Psicopedagogia</option><option value="psicologia">Psicologia</option><option value="aula">Aula</option></select></div></div><div class="form-actions"><button class="btn btn-primary" onclick="saveAppointment()">Agendar</button><button class="btn btn-outline" onclick="toggleAgendaForm()">Cancelar</button></div></div>${calendarMode==='week'?renderWeek():renderMonth()}</div>${selectedDay&&calendarMode==='month'?renderDayPanel(selectedDay):''}</div>`;
- try{lucide.createIcons()}catch(e){}
-}
-function filterAgendaEvents(){const q=(document.getElementById('agendaSearch')?.value||'').toLowerCase().trim();document.querySelectorAll('.event[data-event-name], .day-event[data-event-name]').forEach(e=>{e.style.opacity=!q||e.dataset.eventName.includes(q)?'1':'0.15'})}
-
-function renderStudentProfileOverview(s,cons,upc,evo){
- const pagos=(data.transacoes||[]).filter(t=>t.alunoId===s.id&&(t.tipo||'receita')==='receita').reduce((sum,t)=>sum+Number(t.valor||0),0);
- const faltas=(s.faltas||[]).length, consultas=cons.length, avs=(s.avaliacoes||[]).length, evol=(s.evolucoes||[]).length;
- const next=upc[0];
- document.getElementById('page-prontuario').innerHTML=`<div class="student-profile-shell"><button class="btn btn-outline btn-sm" onclick="navigate('alunos')">← Voltar para alunos</button><div class="card" style="padding:0;overflow:hidden"><div class="profile-cover"></div><div class="profile-head">${avatarHTML(s,'profile-avatar')}<div style="padding-bottom:6px;min-width:0"><div class="profile-name">${esc(s.nome)}</div><div class="profile-meta">${s.idade?s.idade+' anos · ':''}${esc(s.serie||'Série não informada')} · ${s.ativo===false?'Inativo':'Ativo'}</div></div><div class="profile-actions"><button class="btn btn-outline btn-sm" onclick="renderStudentProfile('edit')"><i data-lucide="pencil"></i>Editar</button><button class="btn btn-blue btn-sm" onclick="generateStudentPDF('${s.id}')"><i data-lucide="file-down"></i>PDF</button>${s.telefone?`<a class="btn btn-soft btn-sm" target="_blank" href="https://wa.me/55${s.telefone.replace(/\D/g,'')}">WhatsApp</a>`:''}</div></div><div class="profile-body"><div class="quick-actions" style="margin-bottom:13px"><button class="btn btn-primary btn-sm" onclick="renderStudentProfile('overview')">Visão geral</button><button class="btn btn-outline btn-sm" onclick="renderStudentProfile('avaliacoes')">Avaliações</button><button class="btn btn-outline btn-sm" onclick="renderStudentProfile('escola')">Escola</button><button class="btn btn-outline btn-sm" onclick="newConsultationForm()">Nova consulta</button><button class="btn btn-soft btn-sm" onclick="newEvolucaoForm()">Nova evolução</button></div><div class="profile-kpis"><div class="profile-kpi"><div class="k-label">Consultas</div><div class="k-value">${consultas}</div></div><div class="profile-kpi"><div class="k-label">Evoluções</div><div class="k-value">${evol}</div></div><div class="profile-kpi"><div class="k-label">Avaliações</div><div class="k-value">${avs}</div></div><div class="profile-kpi"><div class="k-label">Total pago</div><div class="k-value" style="font-size:15px">${money(pagos)}</div></div></div><div class="profile-main-grid" style="margin-top:13px"><div style="display:flex;flex-direction:column;gap:12px"><div class="profile-section"><div class="profile-section-title">Informações do estudante</div><div class="profile-info-grid"><div class="profile-info-item"><span>Responsável</span><strong>${esc(s.responsavel||'Não informado')}</strong></div><div class="profile-info-item"><span>Telefone</span><strong>${esc(s.telefone||'Não informado')}</strong></div><div class="profile-info-item"><span>Valor da sessão</span><strong>${money(s.valor||0)}</strong></div><div class="profile-info-item"><span>Faltas registradas</span><strong>${faltas}</strong></div></div>${s.observacoes?`<div style="margin-top:10px;padding:10px;background:#f7faf8;border-radius:9px;font-size:11px;line-height:1.65;color:#596761"><strong style="display:block;color:#34413c;margin-bottom:3px">Observações</strong>${esc(s.observacoes)}</div>`:''}</div><div class="profile-section"><div class="section-head"><div><div class="profile-section-title">Histórico de consultas</div><div class="section-sub">Registros mais recentes</div></div><button class="btn btn-primary btn-sm" onclick="newConsultationForm()">Registrar</button></div>${cons.slice(0,5).map(c=>`<div style="display:flex;gap:11px;padding:10px 0;border-top:1px solid var(--line);cursor:pointer" onclick="openConsultation('${c.id}')"><div style="width:42px;text-align:center"><strong style="font-size:16px">${parseDate(c.data).getDate()}</strong><div style="font-size:8px;color:#8a9892">${parseDate(c.data).toLocaleDateString('pt-BR',{month:'short'})}</div></div><div style="flex:1"><div style="font-size:11px;font-weight:800">Consulta registrada</div><div style="font-size:10px;color:#8a9892;margin-top:3px;line-height:1.45">${esc((c.observacoes||'Sem observações').slice(0,150))}</div></div></div>`).join('')||'<div class="empty">Nenhuma consulta registrada.</div>'}</div><div class="profile-section"><div class="section-head"><div><div class="profile-section-title">Evolução</div><div class="section-sub">Últimos registros</div></div><button class="btn btn-soft btn-sm" onclick="newEvolucaoForm()">Registrar</button></div>${evo.slice(0,4).map(e=>`<div class="evolution" style="margin-top:8px"><div class="evolution-date">${fmtDate(e.data)}</div><div class="evolution-title">${esc(e.titulo||'Evolução')}</div><div class="evolution-text">${esc(e.texto||'')}</div></div>`).join('')||'<div class="empty">Nenhuma evolução registrada.</div>'}</div></div><aside style="display:flex;flex-direction:column;gap:12px"><div class="profile-section"><div class="profile-section-title">Próximo atendimento</div>${next?`<div style="margin-top:10px;padding:12px;background:#f7faf8;border-radius:10px"><div style="font-size:11px;font-weight:800">${fmtDate(next.data)}</div><div style="font-size:16px;font-weight:800;color:var(--sage-dark);margin-top:2px">${esc(next.hora)}</div><div style="font-size:10px;color:#8a9892;margin-top:3px">${esc(TYPES[next.tipo]?.label||next.tipo||'Atendimento')}</div></div>`:'<div class="empty" style="padding:20px 5px">Nenhum atendimento futuro.</div>'}</div><div class="profile-section"><div class="profile-section-title">Atalhos</div><div style="display:flex;flex-direction:column;gap:6px;margin-top:10px"><button class="btn btn-outline" style="justify-content:flex-start" onclick="newConsultationForm()"><i data-lucide="notebook-pen"></i>Registrar consulta</button><button class="btn btn-outline" style="justify-content:flex-start" onclick="renderStudentProfile('avaliacoes')"><i data-lucide="clipboard-check"></i>Ver avaliações</button><button class="btn btn-outline" style="justify-content:flex-start" onclick="renderStudentProfile('escola')"><i data-lucide="school"></i>Informações escolares</button></div></div></aside></div></div></div></div>`;
- try{lucide.createIcons()}catch(e){}
-}
-
-/* Add searchable names to agenda event markup without replacing core calendar logic. */
-const _renderWeekOriginal = renderWeek;
-renderWeek = function(){let h=_renderWeekOriginal();(data.alunos||[]).forEach(()=>{});return h.replace(/<div class="event ([^"]*)" onclick="openStudent\('([^']+)'\)"><strong>([^<]*)<\/strong>/g,(m,c,id,name)=>`<div class="event ${c}" data-event-name="${String(name).toLowerCase()}" onclick="openStudent('${id}')"><strong>${name}</strong>`)};
-const _renderMonthOriginal = renderMonth;
-renderMonth = function(){return _renderMonthOriginal()};
-
 </script>
 </body>
 </html>
