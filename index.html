@@ -319,6 +319,82 @@ button{cursor:pointer}
 .login-box .login-btn{width:100%;min-height:50px;padding:13px;border:0;border-radius:12px;font-size:14px;font-weight:700;background:var(--sage);color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:7px;cursor:pointer}
 .login-box .login-btn:hover{background:var(--sage-dark)}
 .login-box .login-note{display:flex;gap:9px;margin-top:22px;padding:12px;border:1px solid #e7eee9;border-radius:12px;background:#f8faf9;color:#788881;font-size:11px}
+
+
+/* Global visual refinement */
+.card,.dash-card,.fin-panel,.fin-card,.student,.instrument-card{box-shadow:0 3px 16px rgba(30,50,40,.035)}
+.btn{min-height:38px}
+.input,.select,.textarea{min-height:40px}
+.page-title{letter-spacing:-.02em}
+.topbar{box-shadow:0 1px 0 rgba(30,50,40,.02)}
+/* ============================================================
+   LISTA DE ESPERA — EXPERIÊNCIA PREMIUM
+   ============================================================ */
+.waitlist-shell{display:flex;flex-direction:column;gap:18px}
+.waitlist-hero{position:relative;overflow:hidden;background:linear-gradient(135deg,#173f33 0%,#2f6553 58%,#668f7f 100%);color:#fff;border:0;border-radius:28px;padding:30px;box-shadow:0 18px 45px rgba(40,75,62,.18)}
+.waitlist-hero:after{content:"";position:absolute;width:260px;height:260px;border-radius:50%;right:-90px;top:-120px;background:rgba(255,255,255,.09)}
+.waitlist-hero .eyebrow{font-size:10px;text-transform:uppercase;letter-spacing:.14em;font-weight:800;opacity:.72}
+.waitlist-hero h1{font-size:28px;letter-spacing:-.04em;margin:8px 0 7px}
+.waitlist-hero p{max-width:720px;margin:0;color:rgba(255,255,255,.78);font-size:13px;line-height:1.7}
+.waitlist-hero-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px}
+.waitlist-hero .btn-primary{background:#fff;color:#285544}
+.waitlist-hero .btn-primary:hover{background:#f4faf7}
+.waitlist-stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.waitlist-stat{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;position:relative;overflow:hidden}
+.waitlist-stat .ws-icon{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:#edf5f1;color:var(--sage-dark);margin-bottom:14px}
+.waitlist-stat .ws-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#8b9892;font-weight:800}
+.waitlist-stat .ws-value{font-size:26px;font-weight:800;color:#263832;margin-top:5px}
+.waitlist-stat .ws-sub{font-size:11px;color:#98a49f;margin-top:3px}
+.waitlist-layout{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:18px;align-items:start}
+.waitlist-panel{background:#fff;border:1px solid var(--line);border-radius:20px;overflow:hidden}
+.waitlist-toolbar{padding:16px;border-bottom:1px solid var(--line);display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.waitlist-search{position:relative;flex:1;min-width:220px}
+.waitlist-search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;color:#9aa7a1}
+.waitlist-search input{padding-left:38px;min-height:42px}
+.waitlist-filter{min-width:145px;min-height:42px}
+.waitlist-list{padding:8px}
+.waitlist-row{display:grid;grid-template-columns:10px 44px minmax(0,1fr) auto;gap:13px;align-items:center;padding:15px 13px;border:1px solid transparent;border-radius:15px;transition:.2s;cursor:pointer}
+.waitlist-row:hover{background:#f8fbf9;border-color:#e0ebe5;transform:translateY(-1px)}
+.waitlist-priority{width:8px;height:38px;border-radius:8px}
+.waitlist-priority.alta{background:#c85d5d}.waitlist-priority.media{background:#d89b46}.waitlist-priority.baixa{background:#6c9d86}
+.waitlist-row-avatar{width:44px;height:44px;border-radius:14px;background:#edf5f1;color:#477363;display:grid;place-items:center;font-weight:800}
+.waitlist-row-name{font-size:13px;font-weight:800;color:#2f3e38;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.waitlist-row-meta{font-size:10px;color:#8a9892;margin-top:4px;display:flex;gap:7px;flex-wrap:wrap}
+.waitlist-row-side{display:flex;align-items:center;gap:7px}
+.waitlist-priority-badge{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding:5px 8px;border-radius:20px}
+.waitlist-priority-badge.alta{background:#fff0f0;color:#b85b5b}.waitlist-priority-badge.media{background:#fff7eb;color:#b8732a}.waitlist-priority-badge.baixa{background:#eaf3ee;color:#477363}
+.waitlist-side{display:flex;flex-direction:column;gap:14px}
+.waitlist-side-card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:18px}
+.waitlist-side-title{font-size:13px;font-weight:800;color:#34413c}
+.waitlist-side-sub{font-size:11px;color:#89968f;line-height:1.55;margin-top:4px}
+.waitlist-pipeline{display:flex;flex-direction:column;gap:10px;margin-top:15px}
+.waitlist-pipeline-item{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#65736d}
+.waitlist-pipeline-item strong{color:#34413c}
+.waitlist-bar{height:7px;background:#edf1ef;border-radius:9px;overflow:hidden;margin-top:5px}
+.waitlist-bar span{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,var(--sage),var(--sage-dark))}
+.waitlist-tip{display:flex;gap:10px;padding:12px;background:#f4f8f6;border:1px solid #dce9e2;border-radius:13px;font-size:11px;color:#63726b;line-height:1.55;margin-top:15px}
+.waitlist-empty{padding:60px 25px;text-align:center}
+.waitlist-empty-icon{width:56px;height:56px;border-radius:18px;background:#edf5f1;color:#5f8f7a;display:grid;place-items:center;margin:0 auto 13px}
+.waitlist-modal-backdrop{position:fixed;inset:0;background:rgba(20,36,30,.52);backdrop-filter:blur(5px);display:none;align-items:center;justify-content:center;padding:20px;z-index:1200}
+.waitlist-modal-backdrop.open{display:flex;animation:fadeIn .2s ease}
+.waitlist-modal{width:min(720px,100%);max-height:min(88vh,800px);overflow:auto;background:#fff;border:1px solid rgba(255,255,255,.5);border-radius:24px;box-shadow:0 30px 90px rgba(15,35,27,.28)}
+.waitlist-modal-head{position:sticky;top:0;z-index:2;background:rgba(255,255,255,.96);backdrop-filter:blur(10px);display:flex;justify-content:space-between;align-items:flex-start;padding:21px 22px;border-bottom:1px solid var(--line)}
+.waitlist-modal-title{font-size:18px;font-weight:800;color:#263832}
+.waitlist-modal-sub{font-size:11px;color:#89968f;margin-top:4px}
+.waitlist-modal-body{padding:22px}
+.waitlist-form-section{border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:13px}
+.waitlist-form-section-title{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#607169;font-weight:800;margin-bottom:13px}
+.waitlist-detail-top{display:flex;gap:14px;align-items:center;padding-bottom:18px;border-bottom:1px solid var(--line)}
+.waitlist-detail-avatar{width:62px;height:62px;border-radius:18px;background:#eaf3ee;color:#477363;display:grid;place-items:center;font-size:20px;font-weight:800}
+.waitlist-detail-name{font-size:20px;font-weight:800;color:#263832}
+.waitlist-detail-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:17px}
+.waitlist-detail-item{padding:13px;border-radius:13px;background:#f8faf9}
+.waitlist-detail-item .label{margin:0 0 4px;color:#8a9892}
+.waitlist-detail-item .value{font-size:12px;font-weight:700;color:#34413c}
+.waitlist-detail-notes{margin-top:14px;padding:14px;border:1px solid var(--line);border-radius:13px;font-size:12px;color:#5e6c66;line-height:1.65;white-space:pre-wrap}
+.waitlist-modal-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;padding-top:18px}
+@media(max-width:900px){.waitlist-layout{grid-template-columns:1fr}.waitlist-side{display:grid;grid-template-columns:1fr 1fr}.waitlist-stat-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:620px){.waitlist-stat-grid,.waitlist-side{grid-template-columns:1fr}.waitlist-row{grid-template-columns:8px 40px minmax(0,1fr)}.waitlist-row-side{grid-column:3}.waitlist-detail-grid{grid-template-columns:1fr}.waitlist-hero{padding:23px}.waitlist-hero h1{font-size:23px}}
 @media(max-width:1100px){.dash-stats,.fin-cards{grid-template-columns:repeat(2,1fr)}.dash-grid,.fin-grid{grid-template-columns:1fr}}
 @media(max-width:950px){.stats{grid-template-columns:repeat(2,1fr)}.form-grid{grid-template-columns:repeat(2,1fr)}.assessment-metrics{grid-template-columns:repeat(2,1fr)}.instrument-grid{grid-template-columns:1fr}.two-col-layout{grid-template-columns:1fr}}
 @media(max-width:680px){.sidebar{width:58px;padding:15px 6px}.brand-text .sub{display:none}.nav button{justify-content:center;padding:0 8px}.nav-label{display:none}.topbar{height:62px;padding:0 15px}.content{height:calc(100vh - 62px);padding:17px 13px}.form-grid,.form-grid.two{grid-template-columns:1fr}.stats,.dash-stats,.fin-cards{grid-template-columns:1fr 1fr}.login-box{padding:28px 20px}.profile-actions{width:100%;margin-left:0}}
@@ -360,10 +436,8 @@ button{cursor:pointer}
     <button data-page="avaliacoes"><i data-lucide="clipboard-check"></i><span class="nav-label">Avaliações</span></button>
     <button data-page="financeiro"><i data-lucide="wallet-cards"></i><span class="nav-label">Financeiro</span></button>
     <button data-page="lista-espera"><i data-lucide="list-ordered"></i><span class="nav-label">Lista de Espera</span></button>
-    <button data-page="equipe"><i data-lucide="users-round"></i><span class="nav-label">Equipe</span></button>
     <button data-page="recados"><i data-lucide="mail"></i><span class="nav-label">Recados</span><span id="recadosBadge" class="nav-badge">0</span></button>
     <button data-page="perfil" class="teacher-only-nav"><i data-lucide="user-round"></i><span class="nav-label">Meu Perfil</span></button>
-    <button data-page="onboarding" class="teacher-only-nav"><i data-lucide="rocket"></i><span class="nav-label">Comece sua prática</span></button>
     <button data-page="master" id="masterNav" style="display:none"><i data-lucide="shield-check"></i><span class="nav-label">Suporte</span></button>
   </nav>
   <div class="side-bottom nav"><button id="logoutBtn"><i data-lucide="log-out"></i><span class="nav-label">Sair</span></button></div>
@@ -562,7 +636,7 @@ function navigate(page){
     const target=document.getElementById("page-"+page);
     if(target)target.classList.add("active");
     document.querySelectorAll(".nav button").forEach(x=>x.classList.toggle("active",x.dataset.page===page));
-    const info={ dashboard:["layout-dashboard","Dashboard"], alunos:["users","Alunos"], agenda:["calendar-days","Agenda"], avaliacoes:["clipboard-check","Avaliações"], financeiro:["wallet-cards","Financeiro"], "lista-espera":["list-ordered","Lista de Espera"], equipe:["users-round","Equipe"], recados:["mail","Recados"], perfil:["user-round","Meu Perfil"], onboarding:["rocket","Comece sua prática"], "onboarding-detalhe":["book-open","Orientação"], master:["shield-check","Suporte"], prontuario:["notebook-tabs","Prontuário"] };
+    const info={ dashboard:["layout-dashboard","Dashboard"], alunos:["users","Alunos"], agenda:["calendar-days","Agenda"], avaliacoes:["clipboard-check","Avaliações"], financeiro:["wallet-cards","Financeiro"], "lista-espera":["list-ordered","Lista de Espera"], recados:["mail","Recados"], perfil:["user-round","Meu Perfil"], master:["shield-check","Suporte"], prontuario:["notebook-tabs","Prontuário"] };
     if(info[page])document.getElementById("pageTitle").innerHTML=`<i data-lucide="${info[page][0]}"></i>${info[page][1]}`;
     if(page!=="avaliacoes"){ avalStepMode=null; avalStepQuestions=[]; avalStepCurrentIndex=0; avalStepResponses=[]; avalStepTemplateId=null; avalStepAlunoId=null; }
     renderPage(); try{lucide.createIcons();}catch(e){}
@@ -576,11 +650,8 @@ function renderPage(){
     if(currentPage==="avaliacoes")renderAvaliacoes();
     if(currentPage==="financeiro")renderFinanceiro();
     if(currentPage==="lista-espera")renderListaEspera();
-    if(currentPage==="equipe")renderEquipe();
     if(currentPage==="recados")renderRecados();
     if(currentPage==="perfil")renderPerfil();
-    if(currentPage==="onboarding")renderOnboarding();
-    if(currentPage==="onboarding-detalhe")renderOnboardingDetail();
     if(currentPage==="master"&&isMaster)renderMasterDashboard();
 }
 // ============================================================
@@ -1279,25 +1350,9 @@ function renderFinanceiro() {
                     <div class="fp-head"><div class="fp-title">Pendências</div><button class="btn btn-soft btn-sm" onclick="showDespesaForm()">+ Despesa</button></div>
                     ${monthAppts.filter(a => !a.pago).length ? monthAppts.filter(a => !a.pago).slice(0, 8).map(a => { const s = getStudent(a.alunoId); return `<div class="fin-pending-item"><div class="fp-info" style="cursor:pointer" onclick="openStudent('${s?.id}')"><div class="fp-name">${esc(s?.nome || "Aluno")}</div><div class="fp-date">${fmtDate(a.data)} · ${a.hora}</div></div><div class="fp-value">${money(s?.valor || 0)}</div><button class="btn btn-primary btn-sm" onclick="togglePayment('${a.id}')">✓</button></div>`; }).join("") : `<div class="empty">Sem pendências.</div>`}
                 </div>
-                <div class="fin-calc-card">
-                    <div class="fcc-title">Calculadora de preço</div>
-                    <div class="fcc-sub">Descubra o valor ideal da sessão.</div>
-                    <div class="form-grid two"><div class="field"><label class="label">Valor desejado</label><input id="finCalcDesejado" class="input" type="number" step="0.01" oninput="calcularFinanceiroRapido()"></div><div class="field"><label class="label">Taxas %</label><input id="finCalcTaxa" class="input" type="number" step="0.01" value="3.5" oninput="calcularFinanceiroRapido()"></div></div>
-                    <div id="finCalcResultado" class="calc-result"><div class="result-label">Informe um valor</div><div class="result-value" style="font-size:22px;color:#8a9892">R$ 0,00</div></div>
-                </div>
             </div>
         </div>`;
     try{lucide.createIcons();}catch(e){}
-    calcularFinanceiroRapido();
-}
-function calcularFinanceiroRapido() {
-    const d = Number(document.getElementById('finCalcDesejado')?.value || 0);
-    const t = Number(document.getElementById('finCalcTaxa')?.value || 0);
-    const el = document.getElementById('finCalcResultado');
-    if (!el) return;
-    if (d <= 0) { el.innerHTML = '<div class="result-label">Informe um valor</div><div class="result-value" style="font-size:22px;color:#8a9892">R$ 0,00</div>'; return; }
-    const bruto = d / (1 - Math.min(t / 100, .99));
-    el.innerHTML = `<div class="result-label">Preço sugerido</div><div class="result-value">${money(bruto)}</div><div class="result-detail">Líquido após ${t}%: <strong>${money(d)}</strong></div>`;
 }
 function showDespesaForm() {
     const descricao = prompt("Descrição:"); if (!descricao) return;
@@ -1327,127 +1382,185 @@ function generateFinancePDF() {
 // LISTA DE ESPERA
 // ============================================================
 function renderListaEspera() {
-    if (!isDataLoaded || !data.session) { document.getElementById("page-lista-espera").innerHTML = `<div class="empty">Faça login.</div>`; return; }
+    const view = document.getElementById("page-lista-espera");
+    if (!view) return;
+    if (!isDataLoaded || !data.session) { view.innerHTML = `<div class="empty">Faça login.</div>`; return; }
+
     const lista = data.listaEspera || [];
-    document.getElementById("page-lista-espera").innerHTML = `
-        <div class="page-hero" style="background:linear-gradient(135deg,#fff,#f3f8f5);border:1px solid var(--line);border-radius:24px;padding:24px;margin-bottom:18px">
-            <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--sage);font-weight:800">Gestão de demanda</div>
-            <h2 style="margin:7px 0 0;font-size:23px;color:#263832">Lista de espera</h2>
-            <p style="margin:7px 0 0;max-width:760px;color:#75827d;font-size:12px;line-height:1.7">Cadastre interessados e transforme em aluno quando surgir vaga.</p>
-        </div>
-        <div class="section-head"><div><div class="section-title">Interessados</div><div class="section-sub">${lista.length} pessoa(s)</div></div><button class="btn btn-primary" onclick="showWaitlistForm()">+ Novo</button></div>
-        <div id="waitlistForm" class="card" style="display:none;margin-bottom:16px">
-            <input type="hidden" id="wlEditId">
-            <div class="section-title" id="wlFormTitle">Cadastrar</div>
-            <div class="form-grid two" style="margin-top:14px">
-                <div class="field"><label class="label">Nome *</label><input id="wlNome" class="input"></div>
-                <div class="field"><label class="label">Telefone</label><input id="wlTelefone" class="input"></div>
-                <div class="field"><label class="label">Idade</label><input id="wlIdade" class="input" type="number"></div>
-                <div class="field"><label class="label">Área</label><select id="wlArea" class="select"><option>Psicopedagogia</option><option>Psicologia</option><option>Aula</option></select></div>
-                <div class="field"><label class="label">Horário</label><input id="wlHorario" class="input"></div>
-                <div class="field"><label class="label">Prioridade</label><select id="wlPrioridade" class="select"><option value="baixa">Baixa</option><option value="media" selected>Média</option><option value="alta">Alta</option></select></div>
-                <div class="field"><label class="label">Valor</label><input id="wlValor" class="input" type="number" step="0.01"></div>
-                <div class="field" style="grid-column:1/-1"><label class="label">Observações</label><textarea id="wlObs" class="textarea"></textarea></div>
+    const alta = lista.filter(w => w.prioridade === 'alta').length;
+    const media = lista.filter(w => w.prioridade === 'media').length;
+    const baixa = lista.filter(w => w.prioridade === 'baixa').length;
+    const areas = [...new Set(lista.map(w => w.area).filter(Boolean))];
+    const recentes = lista.filter(w => {
+        const d = parseDate(w.criadoEm);
+        return !isNaN(d) && (Date.now() - d.getTime()) <= 30 * 864e5;
+    }).length;
+
+    view.innerHTML = `
+      <div class="waitlist-shell">
+        <section class="waitlist-hero">
+          <div class="eyebrow">Relacionamento · Demanda</div>
+          <h1>Lista de espera</h1>
+          <p>Organize interessados, acompanhe prioridades e transforme oportunidades em novos atendimentos. Tudo centralizado em uma experiência de gestão profissional.</p>
+          <div class="waitlist-hero-actions">
+            <button class="btn btn-primary btn-hover" onclick="openWaitlistForm()"><i data-lucide="user-plus"></i>Novo interessado</button>
+            <button class="btn" style="background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2)" onclick="focusWaitlistSearch()"><i data-lucide="search"></i>Buscar na lista</button>
+          </div>
+        </section>
+
+        <section class="waitlist-stat-grid">
+          <div class="waitlist-stat"><div class="ws-icon"><i data-lucide="users"></i></div><div class="ws-label">Total na fila</div><div class="ws-value">${lista.length}</div><div class="ws-sub">Interessados ativos</div></div>
+          <div class="waitlist-stat"><div class="ws-icon" style="background:#fff0f0;color:#b85b5b"><i data-lucide="flame"></i></div><div class="ws-label">Alta prioridade</div><div class="ws-value">${alta}</div><div class="ws-sub">Atendimento prioritário</div></div>
+          <div class="waitlist-stat"><div class="ws-icon" style="background:#fff7eb;color:#b8732a"><i data-lucide="clock-3"></i></div><div class="ws-label">Prioridade média</div><div class="ws-value">${media}</div><div class="ws-sub">Acompanhar disponibilidade</div></div>
+          <div class="waitlist-stat"><div class="ws-icon" style="background:#edf4f8;color:#557994"><i data-lucide="sparkles"></i></div><div class="ws-label">Novos 30 dias</div><div class="ws-value">${recentes}</div><div class="ws-sub">${areas.length || 0} área(s) de atendimento</div></div>
+        </section>
+
+        <section class="waitlist-layout">
+          <div class="waitlist-panel">
+            <div class="waitlist-toolbar">
+              <div class="waitlist-search"><i data-lucide="search"></i><input id="waitlistSearch" class="input" placeholder="Buscar por nome, telefone ou área..." oninput="filterWaitlist()"></div>
+              <select id="waitlistPriorityFilter" class="select waitlist-filter" onchange="filterWaitlist()">
+                <option value="todos">Todas as prioridades</option><option value="alta">Alta prioridade</option><option value="media">Prioridade média</option><option value="baixa">Baixa prioridade</option>
+              </select>
+              <select id="waitlistAreaFilter" class="select waitlist-filter" onchange="filterWaitlist()">
+                <option value="todos">Todas as áreas</option>${areas.map(a => `<option value="${esc(a)}">${esc(a)}</option>`).join('')}
+              </select>
             </div>
-            <div class="form-actions"><button class="btn btn-primary" onclick="saveWaitlist()">Salvar</button><button class="btn btn-outline" onclick="closeWaitlistForm()">Cancelar</button></div>
+            <div id="waitlistList" class="waitlist-list">${renderWaitlistRows(lista)}</div>
+          </div>
+
+          <aside class="waitlist-side">
+            <div class="waitlist-side-card">
+              <div class="waitlist-side-title">Visão da fila</div>
+              <div class="waitlist-side-sub">Distribuição por prioridade para você saber onde concentrar o próximo contato.</div>
+              <div class="waitlist-pipeline">
+                ${[
+                  ['Alta prioridade',alta,lista.length,'alta'],
+                  ['Prioridade média',media,lista.length,'media'],
+                  ['Baixa prioridade',baixa,lista.length,'baixa']
+                ].map(x=>`<div><div class="waitlist-pipeline-item"><span>${x[0]}</span><strong>${x[1]}</strong></div><div class="waitlist-bar"><span style="width:${x[2]?Math.round(x[1]/x[2]*100):0}%"></span></div></div>`).join('')}
+              </div>
+              <div class="waitlist-tip"><i data-lucide="lightbulb" style="width:16px;flex-shrink:0;color:var(--sage)"></i><span>Clique em qualquer interessado para abrir o perfil completo, editar dados ou transformá-lo em aluno.</span></div>
+            </div>
+            <div class="waitlist-side-card">
+              <div class="waitlist-side-title">Ações rápidas</div>
+              <div class="waitlist-side-sub">Atalhos para manter a fila organizada.</div>
+              <div style="display:flex;flex-direction:column;gap:7px;margin-top:13px">
+                <button class="btn btn-soft" style="justify-content:flex-start" onclick="openWaitlistForm()"><i data-lucide="plus"></i>Cadastrar interessado</button>
+                <button class="btn btn-outline" style="justify-content:flex-start" onclick="setWaitlistPriorityFilter('alta')"><i data-lucide="flame"></i>Ver alta prioridade</button>
+                <button class="btn btn-outline" style="justify-content:flex-start" onclick="clearWaitlistFilters()"><i data-lucide="rotate-ccw"></i>Limpar filtros</button>
+              </div>
+            </div>
+          </aside>
+        </section>
+      </div>`;
+    try{lucide.createIcons();}catch(e){}
+}
+function renderWaitlistRows(lista) {
+    if (!lista.length) return `<div class="waitlist-empty"><div class="waitlist-empty-icon"><i data-lucide="inbox"></i></div><div style="font-size:14px;font-weight:800;color:#34413c">Nenhum interessado encontrado</div><div style="font-size:11px;color:#8a9892;margin-top:5px">Ajuste os filtros ou cadastre um novo interessado.</div><button class="btn btn-primary btn-sm" style="margin-top:14px" onclick="openWaitlistForm()">+ Novo interessado</button></div>`;
+    return lista.map((w,i) => `
+      <div class="waitlist-row" onclick="openWaitlistDetail(${i})">
+        <div class="waitlist-priority ${esc(w.prioridade||'media')}"></div>
+        <div class="waitlist-row-avatar">${esc(initials(w.nome))}</div>
+        <div style="min-width:0">
+          <div class="waitlist-row-name">${esc(w.nome)}</div>
+          <div class="waitlist-row-meta">
+            <span>${esc(w.area||'Área não informada')}</span>
+            ${w.idade?`<span>· ${w.idade} anos</span>`:''}
+            ${w.horario?`<span>· ${esc(w.horario)}</span>`:''}
+            ${w.telefone?`<span>· ${esc(w.telefone)}</span>`:''}
+          </div>
         </div>
-        ${lista.length ? lista.map((w,i) => `<div class="card" style="margin-bottom:10px;display:flex;align-items:center;gap:14px"><div style="width:8px;height:8px;border-radius:50%;background:${w.prioridade==='alta'?'#c0504d':w.prioridade==='media'?'#e8a23d':'var(--sage)'}"></div><div style="flex:1"><div style="font-size:14px;font-weight:800">${esc(w.nome)}</div><div style="font-size:10px;color:#87948e;margin-top:4px">${w.idade?w.idade+' anos · ':''}${esc(w.area||'')} · ${w.valor?money(w.valor):'sem valor'}</div></div><div style="display:flex;gap:6px"><button class="btn btn-primary btn-sm" onclick="promoteWaitlist(${i})">Agendar</button><button class="btn btn-outline btn-sm" onclick="editWaitlist(${i})">Editar</button><button class="btn btn-danger btn-sm" onclick="removeWaitlist(${i})">X</button></div></div>`).join('') : `<div class="card empty">Nenhum interessado.</div>`}`;
-    try{lucide.createIcons();}catch(e){}
+        <div class="waitlist-row-side">
+          <span class="waitlist-priority-badge ${esc(w.prioridade||'media')}">${w.prioridade==='alta'?'Alta':w.prioridade==='baixa'?'Baixa':'Média'}</span>
+          <button class="btn btn-outline btn-sm" onclick="event.stopPropagation();openWaitlistDetail(${i})"><i data-lucide="chevron-right"></i></button>
+        </div>
+      </div>`).join('');
 }
-function showWaitlistForm(editIndex=null){ const f=document.getElementById('waitlistForm'); if(!f)return; f.style.display='block'; if(editIndex===null){document.getElementById('wlEditId').value='';document.getElementById('wlFormTitle').textContent='Cadastrar';['wlNome','wlTelefone','wlIdade','wlHorario','wlValor','wlObs'].forEach(id=>document.getElementById(id).value='');document.getElementById('wlArea').value='Psicopedagogia';document.getElementById('wlPrioridade').value='media';} f.scrollIntoView({behavior:'smooth'}); }
-function closeWaitlistForm(){ const f=document.getElementById('waitlistForm'); if(f)f.style.display='none'; }
-function editWaitlist(i){ const w=(data.listaEspera||[])[i]; if(!w)return; showWaitlistForm(i); document.getElementById('wlEditId').value=String(i); document.getElementById('wlFormTitle').textContent='Editar'; document.getElementById('wlNome').value=w.nome||''; document.getElementById('wlTelefone').value=w.telefone||''; document.getElementById('wlIdade').value=w.idade||''; document.getElementById('wlArea').value=w.area||'Psicopedagogia'; document.getElementById('wlHorario').value=w.horario||''; document.getElementById('wlPrioridade').value=w.prioridade||'media'; document.getElementById('wlValor').value=w.valor||''; document.getElementById('wlObs').value=w.observacoes||''; }
-function saveWaitlist(){ const nome=document.getElementById('wlNome').value.trim(); if(!nome){notify('Informe o nome.');return;} if(!data.listaEspera)data.listaEspera=[]; const item={id:uid(),nome,telefone:document.getElementById('wlTelefone').value.trim(),idade:Number(document.getElementById('wlIdade').value)||0,area:document.getElementById('wlArea').value,horario:document.getElementById('wlHorario').value.trim(),prioridade:document.getElementById('wlPrioridade').value,valor:Number(document.getElementById('wlValor').value)||0,observacoes:document.getElementById('wlObs').value.trim(),criadoEm:today()}; const idx=document.getElementById('wlEditId').value; if(idx!==''){item.id=data.listaEspera[Number(idx)]?.id||item.id;data.listaEspera[Number(idx)]=item;} else data.listaEspera.push(item); try{localStorage.setItem('waitlist_'+currentUserId,JSON.stringify(data.listaEspera));}catch(e){} closeWaitlistForm(); renderListaEspera(); notify('Salvo.'); }
-function promoteWaitlist(i){ const w=(data.listaEspera||[])[i]; if(!w||!confirm(`Mover ${w.nome}?`))return; const st={id:uid(),nome:w.nome,idade:w.idade||0,serie:'',responsavel:'',telefone:w.telefone||'',valor:Number(w.valor)||Number(data.professor?.configuracoes?.valorSessaoPadrao)||0,foto:'',tags:[],observacoes:w.observacoes||'',ativo:true}; data.alunos.push(st); ensureStudentModules(st); data.listaEspera.splice(i,1); try{localStorage.setItem('waitlist_'+currentUserId,JSON.stringify(data.listaEspera));}catch(e){} saveData().then(()=>{currentStudent=st.id;navigate('agenda');setTimeout(()=>{toggleAgendaForm();const s=document.getElementById('agAluno');if(s)s.value=st.id;},150);notify(`${st.nome} agora é aluno.`);}); }
-function removeWaitlist(i){ if(!confirm('Remover?'))return; data.listaEspera.splice(i,1); try{localStorage.setItem('waitlist_'+currentUserId,JSON.stringify(data.listaEspera));}catch(e){} renderListaEspera(); }
-
-// ============================================================
-// EQUIPE
-// ============================================================
-function renderEquipe(){
-    if(!isDataLoaded||!data.session){document.getElementById('page-equipe').innerHTML='<div class="empty">Faça login.</div>';return;}
-    const equipe=data.equipe||[]; const plano=data.professor?.plano||'mensal'; const maxHosts=plano==='semestral'?5:plano==='trimestral'?2:1;
-    document.getElementById('page-equipe').innerHTML=`
-    <div class="page-hero" style="background:linear-gradient(135deg,#fff,#f3f8f5);border:1px solid var(--line);border-radius:24px;padding:24px;margin-bottom:18px"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--sage);font-weight:800">Administração</div><h2 style="margin:7px 0 0;font-size:23px;color:#263832">Equipe e anfitriões</h2><p style="margin:7px 0 0;max-width:760px;color:#75827d;font-size:12px;line-height:1.7">Convide profissionais e defina permissões de acesso.</p></div>
-    <div class="section-head"><div><div class="section-title">Profissionais</div><div class="section-sub">${equipe.length}/${maxHosts} vagas</div></div><button class="btn btn-primary" onclick="showHostForm()" ${equipe.length>=maxHosts?'disabled':''}>+ Novo anfitrião</button></div>
-    <div id="hostForm" class="card" style="display:none;margin-bottom:16px"><input type="hidden" id="hostEditIndex" value=""><div class="section-title" id="hostFormTitle">Cadastrar</div><div class="form-grid two" style="margin-top:14px"><div class="field"><label class="label">Nome</label><input id="hostNome" class="input"></div><div class="field"><label class="label">E-mail</label><input id="hostEmail" class="input" type="email"></div><div class="field"><label class="label">Especialidade</label><input id="hostEspec" class="input"></div><div class="field"><label class="label">Senha inicial</label><input id="hostSenha" class="input" type="password"></div></div><div style="margin-top:16px"><div class="section-title">Permissões</div><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:9px">${[['alunos_ver','Ver alunos'],['alunos_editar','Editar'],['agenda','Agenda'],['consultas','Consultas'],['avaliacoes','Avaliações'],['financeiro','Financeiro']].map(([id,t])=>`<label style="display:flex;gap:9px;align-items:center;border:1px solid var(--line);padding:10px;border-radius:10px;background:#fff;cursor:pointer;font-size:12px"><input type="checkbox" value="${id}">${t}</label>`).join('')}</div></div><div class="form-actions"><button class="btn btn-primary" onclick="saveHost()">Salvar</button><button class="btn btn-outline" onclick="closeHostForm()">Cancelar</button></div></div>
-    <div class="card">${equipe.length?equipe.map((h,i)=>`<div style="display:flex;align-items:center;gap:14px;padding:16px;border:1px solid var(--line);border-radius:14px;margin-bottom:10px"><div style="width:48px;height:48px;border-radius:50%;background:var(--sage-light);color:var(--sage-dark);display:grid;place-items:center;font-weight:700">${esc(initials(h.nome))}</div><div style="flex:1"><strong style="font-size:14px">${esc(h.nome)}</strong><div class="section-sub">${esc(h.email||'')} · ${esc(h.especialidade||'')}</div></div><div style="display:flex;gap:6px"><button class="btn btn-outline btn-sm" onclick="editHost(${i})">Editar</button><button class="btn btn-danger btn-sm" onclick="removeHost(${i})">X</button></div></div>`).join(''):'<div class="empty">Nenhum anfitrião.</div>'}</div>`;
-    try{lucide.createIcons();}catch(e){}
+function filterWaitlist() {
+    const q=(document.getElementById('waitlistSearch')?.value||'').trim().toLowerCase();
+    const pr=document.getElementById('waitlistPriorityFilter')?.value||'todos';
+    const area=document.getElementById('waitlistAreaFilter')?.value||'todos';
+    const list=(data.listaEspera||[]).filter(w=>{
+        const hay=[w.nome,w.telefone,w.area,w.horario,w.observacoes].join(' ').toLowerCase();
+        return (!q||hay.includes(q))&&(pr==='todos'||w.prioridade===pr)&&(area==='todos'||w.area===area);
+    });
+    const el=document.getElementById('waitlistList'); if(el){el.innerHTML=renderWaitlistRows(list);try{lucide.createIcons();}catch(e){}}
 }
-function showHostForm(idx=null){const f=document.getElementById('hostForm');if(!f)return;f.style.display='block';document.getElementById('hostEditIndex').value=idx===null?'':String(idx);document.getElementById('hostFormTitle').textContent=idx===null?'Cadastrar':'Editar';if(idx===null){['hostNome','hostEmail','hostEspec','hostSenha'].forEach(id=>document.getElementById(id).value='');document.querySelectorAll('#hostForm input[type=checkbox]').forEach(x=>x.checked=false);}f.scrollIntoView({behavior:'smooth'});}
-function closeHostForm(){const f=document.getElementById('hostForm');if(f)f.style.display='none';}
-function editHost(i){const h=(data.equipe||[])[i];if(!h)return;showHostForm(i);document.getElementById('hostNome').value=h.nome||'';document.getElementById('hostEmail').value=h.email||'';document.getElementById('hostEspec').value=h.especialidade||'';const p=Array.isArray(h.permissoes)?h.permissoes:[];document.querySelectorAll('#hostForm input[type=checkbox]').forEach(x=>x.checked=p.includes(x.value));}
-function saveHost(){const nome=document.getElementById('hostNome').value.trim(),email=document.getElementById('hostEmail').value.trim();if(!nome||!email){notify('Preencha nome e email.');return;}const perms=[...document.querySelectorAll('#hostForm input[type=checkbox]:checked')].map(x=>x.value);if(!data.equipe)data.equipe=[];const idx=document.getElementById('hostEditIndex').value;const base=idx!==''?data.equipe[Number(idx)]:{id:uid(),ativo:true,criadoEm:today()};Object.assign(base,{nome,email,especialidade:document.getElementById('hostEspec').value.trim(),permissoes:perms});if(idx!=='')data.equipe[Number(idx)]=base;else data.equipe.push(base);try{localStorage.setItem('equipe_'+currentUserId,JSON.stringify(data.equipe));}catch(e){}closeHostForm();renderEquipe();notify('Salvo.');}
-function removeHost(i){if(!confirm('Remover?'))return;data.equipe.splice(i,1);try{localStorage.setItem('equipe_'+currentUserId,JSON.stringify(data.equipe));}catch(e){}renderEquipe();}
-
-// ============================================================
-// ONBOARDING
-// ============================================================
-const ONBOARDING_STEPS = [
- {id:'perfil',icon:'user-round',title:'Configurar perfil',desc:'Identidade profissional, valor padrão e recebimento.'},
- {id:'aluno',icon:'user-plus',title:'Cadastrar primeiro aluno',desc:'Cadastre o primeiro estudante.'},
- {id:'valores',icon:'wallet-cards',title:'Configurar valores',desc:'Preço padrão e formas de pagamento.'},
- {id:'horarios',icon:'clock-3',title:'Definir dias e horários',desc:'Jornada semanal.'},
- {id:'contrato',icon:'file-signature',title:'Criar contrato',desc:'Pontos essenciais.'},
- {id:'recebimentos',icon:'credit-card',title:'Configurar recebimentos',desc:'PIX, cartão, etc.'},
- {id:'documentos',icon:'file-check-2',title:'Documentos e assinatura',desc:'Organização documental.'},
- {id:'comunicacao',icon:'message-square',title:'Configurar comunicação',desc:'Com responsáveis.'},
- {id:'google',icon:'globe-2',title:'Presença no Google',desc:'Visibilidade profissional.'}
-];
-const ONBOARDING_DETAILS = {
-    perfil: { title:'Configurar perfil', eyebrow:'Identidade', text:'Seu perfil alimenta relatórios e PDFs.', items:['Nome completo','Especialidade','Bio','Foto','Valor padrão'], cta:'Configurar perfil', action:()=>navigate('perfil') },
-    aluno: { title:'Cadastrar primeiro aluno', eyebrow:'Primeiro cadastro', text:'Reúne dados para prontuário, agenda e financeiro.', items:['Nome e responsável','Contato','Valor por sessão'], cta:'Abrir cadastro', action:()=>{navigate('alunos');setTimeout(()=>toggleStudentForm(true),100);} },
-    valores: { title:'Configurar valores', eyebrow:'Financeiro', text:'Defina valor padrão para novos alunos.', items:['Valor padrão','Formas de pagamento','Calculadora de preço'], cta:'Configurar', action:()=>navigate('perfil') },
-    horarios: { title:'Definir dias e horários', eyebrow:'Carga de trabalho', text:'Sua disponibilidade alimenta a carga de trabalho.', items:['Dias','Início e fim','Pausa'], cta:'Configurar', action:()=>navigate('perfil') },
-    contrato: { title:'Contrato profissional', eyebrow:'Organização', text:'Um bom contrato protege as partes.', items:['<strong>Partes:</strong> nome, CPF/CNPJ','<strong>Objeto:</strong> serviços e frequência','<strong>Valores:</strong> por sessão, formas','<strong>Faltas:</strong> regras','<strong>Confidencialidade:</strong> LGPD','<strong>Rescisão:</strong> condições'], cta:'Marcar como lida', action:()=>notify('Contrato estudado!') },
-    recebimentos: { title:'Configurar recebimentos', eyebrow:'Financeiro', text:'Organize como você recebe.', items:['<strong>PIX:</strong> rápido, sem taxas','<strong>Cartão:</strong> permite parcelamento','<strong>Dinheiro:</strong> sem taxas','<strong>Transferência:</strong> mensalidades'], cta:'Ir para Financeiro', action:()=>navigate('financeiro') },
-    documentos: { title:'Documentos e assinatura', eyebrow:'Documentação', text:'Organize separado do prontuário.', items:['Termos de consentimento','Contratos assinados','Relatórios e laudos','Autorizações de imagem'], cta:'Marcar como lida', action:()=>notify('Organizado!') },
-    comunicacao: { title:'Configurar comunicação', eyebrow:'Relacionamento', text:'Comunicação clara é essencial.', items:['Recados no sistema','WhatsApp profissional','Reuniões periódicas','Comunicação com escola'], cta:'Ir para Recados', action:()=>navigate('recados') },
-    google: { title:'Presença no Google', eyebrow:'Visibilidade', text:'Ajude famílias a encontrarem você.', items:['Perfil completo','Categoria correta','Fotos','Horário','Avaliações'], cta:'Marcar como lida', action:()=>notify('Planejado!') }
-};
-
-function openOnboardingDetail(id) {
-    const d = ONBOARDING_DETAILS[id]; if (!d) return;
-    currentPage = 'onboarding-detalhe'; currentOnboardingDetail = id;
-    document.querySelectorAll('.view').forEach(x => x.classList.remove('active'));
-    document.getElementById('page-onboarding-detalhe').classList.add('active');
-    document.querySelectorAll('.nav button').forEach(x => x.classList.remove('active'));
-    document.getElementById('pageTitle').innerHTML = '<i data-lucide="book-open"></i>' + d.title;
-    renderOnboardingDetail();
-    try{lucide.createIcons();}catch(e){}
+function focusWaitlistSearch(){const el=document.getElementById('waitlistSearch');if(el){el.focus();el.scrollIntoView({behavior:'smooth',block:'center'});}}
+function setWaitlistPriorityFilter(v){const el=document.getElementById('waitlistPriorityFilter');if(el){el.value=v;filterWaitlist();}}
+function clearWaitlistFilters(){const q=document.getElementById('waitlistSearch'),p=document.getElementById('waitlistPriorityFilter'),a=document.getElementById('waitlistAreaFilter');if(q)q.value='';if(p)p.value='todos';if(a)a.value='todos';filterWaitlist();}
+function openWaitlistForm(editIndex=null){
+    let m=document.getElementById('waitlistFormModal');
+    if(!m){m=document.createElement('div');m.id='waitlistFormModal';m.className='waitlist-modal-backdrop';m.innerHTML=`<div class="waitlist-modal" onclick="event.stopPropagation()"><div class="waitlist-modal-head"><div><div id="waitlistFormModalTitle" class="waitlist-modal-title">Novo interessado</div><div class="waitlist-modal-sub">Preencha os dados para organizar o próximo atendimento.</div></div><button class="btn btn-outline btn-sm" onclick="closeWaitlistFormModal()">Fechar</button></div><div class="waitlist-modal-body">
+      <input type="hidden" id="wlEditId">
+      <div class="waitlist-form-section"><div class="waitlist-form-section-title">Dados do interessado</div><div class="form-grid two">
+        <div class="field"><label class="label">Nome *</label><input id="wlNome" class="input" placeholder="Nome completo"></div>
+        <div class="field"><label class="label">Telefone</label><input id="wlTelefone" class="input" placeholder="(00) 00000-0000"></div>
+        <div class="field"><label class="label">Idade</label><input id="wlIdade" class="input" type="number" min="0" placeholder="Ex.: 10"></div>
+        <div class="field"><label class="label">Área de atendimento</label><select id="wlArea" class="select"><option>Psicopedagogia</option><option>Psicologia</option><option>Aula</option></select></div>
+      </div></div>
+      <div class="waitlist-form-section"><div class="waitlist-form-section-title">Preferências e prioridade</div><div class="form-grid two">
+        <div class="field"><label class="label">Horário desejado</label><input id="wlHorario" class="input" placeholder="Ex.: terça à tarde"></div>
+        <div class="field"><label class="label">Prioridade</label><select id="wlPrioridade" class="select"><option value="baixa">Baixa</option><option value="media" selected>Média</option><option value="alta">Alta</option></select></div>
+      </div></div>
+      <div class="waitlist-form-section"><div class="waitlist-form-section-title">Observações</div><textarea id="wlObs" class="textarea" placeholder="Contexto, preferência da família, disponibilidade ou outras informações importantes..."></textarea></div>
+      <div class="waitlist-modal-actions"><button class="btn btn-outline" onclick="closeWaitlistFormModal()">Cancelar</button><button class="btn btn-primary" onclick="saveWaitlist()">Salvar interessado</button></div>
+    </div></div>`;document.body.appendChild(m);m.addEventListener('click',e=>{if(e.target===m)closeWaitlistFormModal();});
+    }
+    document.getElementById('wlEditId').value=editIndex===null?'':String(editIndex);
+    document.getElementById('waitlistFormModalTitle').textContent=editIndex===null?'Novo interessado':'Editar interessado';
+    const w=editIndex===null?null:(data.listaEspera||[])[editIndex];
+    document.getElementById('wlNome').value=w?.nome||'';document.getElementById('wlTelefone').value=w?.telefone||'';document.getElementById('wlIdade').value=w?.idade||'';
+    document.getElementById('wlArea').value=w?.area||'Psicopedagogia';document.getElementById('wlHorario').value=w?.horario||'';
+    document.getElementById('wlPrioridade').value=w?.prioridade||'media';document.getElementById('wlObs').value=w?.observacoes||'';
+    m.classList.add('open');setTimeout(()=>document.getElementById('wlNome')?.focus(),80);
 }
-function renderOnboardingDetail() {
-    const d = ONBOARDING_DETAILS[currentOnboardingDetail]; if (!d) { navigate('onboarding'); return; }
-    document.getElementById('page-onboarding-detalhe').innerHTML = `
-        <div class="onboarding-content-page">
-            <div style="display:flex;justify-content:space-between;margin-bottom:16px"><button class="btn btn-outline btn-sm" onclick="navigate('onboarding')">← Voltar</button><span style="font-size:11px;color:#8a9892">Etapa de configuração</span></div>
-            <div class="page-hero"><div class="eyebrow">${esc(d.eyebrow)}</div><h2>${esc(d.title)}</h2><p>${esc(d.text)}</p></div>
-            <div class="onboarding-block"><div class="block-icon"><i data-lucide="list-checks"></i></div><h3>O que você precisa saber</h3><ul>${d.items.map(item => `<li>${item}</li>`).join('')}</ul></div>
-            <div class="onboarding-cta"><h4>Próximo passo</h4><p>Ao avançar, você será direcionado para a tela correta.</p><button class="btn btn-primary" onclick="runOnboardingDetailAction()">${esc(d.cta)}</button></div>
-        </div>`;
-    try{lucide.createIcons();}catch(e){}
+function closeWaitlistFormModal(){document.getElementById('waitlistFormModal')?.classList.remove('open');}
+function openWaitlistDetail(i){
+    const w=(data.listaEspera||[])[i]; if(!w)return;
+    let m=document.getElementById('waitlistDetailModal');
+    if(!m){m=document.createElement('div');m.id='waitlistDetailModal';m.className='waitlist-modal-backdrop';document.body.appendChild(m);m.addEventListener('click',e=>{if(e.target===m)closeWaitlistDetail();});}
+    m.innerHTML=`<div class="waitlist-modal" onclick="event.stopPropagation()"><div class="waitlist-modal-head"><div><div class="waitlist-modal-title">Detalhes do interessado</div><div class="waitlist-modal-sub">Gerencie este contato sem sair da Lista de Espera.</div></div><button class="btn btn-outline btn-sm" onclick="closeWaitlistDetail()">Fechar</button></div><div class="waitlist-modal-body">
+      <div class="waitlist-detail-top"><div class="waitlist-detail-avatar">${esc(initials(w.nome))}</div><div style="flex:1"><div class="waitlist-detail-name">${esc(w.nome)}</div><div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-top:5px"><span class="waitlist-priority-badge ${esc(w.prioridade||'media')}">${w.prioridade==='alta'?'Alta prioridade':w.prioridade==='baixa'?'Baixa prioridade':'Prioridade média'}</span><span style="font-size:10px;color:#8a9892">Entrou em ${fmtDate(w.criadoEm)}</span></div></div></div>
+      <div class="waitlist-detail-grid">
+        <div class="waitlist-detail-item"><div class="label">Área</div><div class="value">${esc(w.area||'Não informada')}</div></div>
+        <div class="waitlist-detail-item"><div class="label">Telefone</div><div class="value">${esc(w.telefone||'Não informado')}</div></div>
+        <div class="waitlist-detail-item"><div class="label">Idade</div><div class="value">${w.idade?w.idade+' anos':'Não informada'}</div></div>
+        <div class="waitlist-detail-item"><div class="label">Horário desejado</div><div class="value">${esc(w.horario||'Não informado')}</div></div>
+      </div>
+      <div class="waitlist-detail-notes"><strong style="display:block;color:#34413c;margin-bottom:5px">Observações</strong>${esc(w.observacoes||'Nenhuma observação registrada.')}</div>
+      <div class="waitlist-modal-actions"><button class="btn btn-danger" onclick="removeWaitlist(${i});closeWaitlistDetail()">Remover</button><button class="btn btn-outline" onclick="closeWaitlistDetail();openWaitlistForm(${i})">Editar cadastro</button><button class="btn btn-primary" onclick="promoteWaitlist(${i});closeWaitlistDetail()"><i data-lucide="user-check"></i>Transformar em aluno</button></div>
+    </div></div>`;
+    m.classList.add('open');try{lucide.createIcons();}catch(e){}
 }
-function runOnboardingDetailAction() {
-    const d = ONBOARDING_DETAILS[currentOnboardingDetail]; if (!d) return;
-    if (!data.onboarding) data.onboarding = {};
-    data.onboarding[currentOnboardingDetail] = true;
-    try { localStorage.setItem('onboarding_' + currentUserId, JSON.stringify(data.onboarding)); } catch(e) {}
-    if (d.action) d.action();
+function closeWaitlistDetail(){document.getElementById('waitlistDetailModal')?.classList.remove('open');}
+function showWaitlistForm(editIndex=null){openWaitlistForm(editIndex);}
+function closeWaitlistForm(){closeWaitlistFormModal();}
+function editWaitlist(i){openWaitlistForm(i);}
+function saveWaitlist(){
+    const nome=document.getElementById('wlNome')?.value.trim(); if(!nome){notify('Informe o nome.');return;}
+    if(!data.listaEspera)data.listaEspera=[];
+    const idx=document.getElementById('wlEditId')?.value||'';
+    const previous=idx!==''?data.listaEspera[Number(idx)]:null;
+    const item={id:previous?.id||uid(),nome,telefone:document.getElementById('wlTelefone').value.trim(),idade:Number(document.getElementById('wlIdade').value)||0,area:document.getElementById('wlArea').value,horario:document.getElementById('wlHorario').value.trim(),prioridade:document.getElementById('wlPrioridade').value,observacoes:document.getElementById('wlObs').value.trim(),criadoEm:previous?.criadoEm||today()};
+    if(idx!=='')data.listaEspera[Number(idx)]=item;else data.listaEspera.push(item);
+    try{localStorage.setItem('waitlist_'+currentUserId,JSON.stringify(data.listaEspera));}catch(e){}
+    closeWaitlistFormModal();renderListaEspera();notify(idx!==''?'Interessado atualizado.':'Interessado adicionado à lista.');
 }
-function renderOnboarding() {
-    if (!isDataLoaded || !data.session) { document.getElementById('page-onboarding').innerHTML = '<div class="empty">Faça login.</div>'; return; }
-    const completed = data.onboarding || {};
-    const total = ONBOARDING_STEPS.length;
-    const done = ONBOARDING_STEPS.filter(s => completed[s.id]).length;
-    const percent = Math.round(done / total * 100);
-    document.getElementById('page-onboarding').innerHTML = `
-        <div class="page-hero" style="background:linear-gradient(135deg,#fff,#f3f8f5);border:1px solid var(--line);border-radius:24px;padding:28px 30px;margin-bottom:20px"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--sage);font-weight:800">Primeiros passos</div><h2 style="margin:8px 0 0;font-size:24px;color:#263832">Comece sua prática</h2><p style="margin:8px 0 0;color:#75827d;font-size:13px;line-height:1.7">Cada etapa abre uma página de orientação e leva à configuração correspondente.</p></div>
-        <div class="card" style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;font-weight:700;color:#5a6b64">Progresso</span><strong style="font-size:22px;color:var(--sage)">${percent}%</strong></div><div class="onboarding-progress" style="margin-top:10px"><div class="fill" style="width:${percent}%"></div></div><div class="section-sub">${done} de ${total} etapas</div></div>
-        ${ONBOARDING_STEPS.map(s => `<div class="onboarding-step ${completed[s.id] ? 'completed' : ''}" onclick="openOnboardingDetail('${s.id}')"><div class="onboarding-icon"><i data-lucide="${s.icon}"></i></div><div class="onboarding-content"><div class="title">${esc(s.title)}</div><div class="desc">${esc(s.desc)}</div></div><button class="btn ${completed[s.id] ? 'btn-soft' : 'btn-outline'} btn-sm" onclick="event.stopPropagation();openOnboardingDetail('${s.id}')">${completed[s.id] ? 'Revisar' : 'Iniciar'}</button></div>`).join('')}
-        <div style="margin-top:14px"><button class="btn btn-outline btn-sm" onclick="resetOnboarding()">Reiniciar</button></div>`;
-    try{lucide.createIcons();}catch(e){}
+function promoteWaitlist(i){
+    const w=(data.listaEspera||[])[i];if(!w)return;
+    if(!confirm(`Transformar ${w.nome} em aluno?`))return;
+    const st={id:uid(),nome:w.nome,idade:w.idade||0,serie:'',responsavel:'',telefone:w.telefone||'',valor:Number(data.professor?.configuracoes?.valorSessaoPadrao)||0,foto:'',tags:[],observacoes:w.observacoes||'',ativo:true};
+    data.alunos.push(st);ensureStudentModules(st);data.listaEspera.splice(i,1);
+    try{localStorage.setItem('waitlist_'+currentUserId,JSON.stringify(data.listaEspera));}catch(e){}
+    saveData().then(()=>{currentStudent=st.id;navigate('agenda');setTimeout(()=>{toggleAgendaForm();const s=document.getElementById('agAluno');if(s)s.value=st.id;},150);notify(`${st.nome} agora é aluno.`);});
 }
-function resetOnboarding(){ if(!confirm('Reiniciar?'))return; data.onboarding={}; try{localStorage.setItem('onboarding_'+currentUserId,JSON.stringify(data.onboarding));}catch(e){} renderOnboarding(); }
+function removeWaitlist(i){
+    if(!confirm('Remover este interessado da lista de espera?'))return;
+    data.listaEspera.splice(i,1);try{localStorage.setItem('waitlist_'+currentUserId,JSON.stringify(data.listaEspera));}catch(e){}
+    renderListaEspera();notify('Interessado removido.');
+}
 
 // ============================================================
 // PERFIL
