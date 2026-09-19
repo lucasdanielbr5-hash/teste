@@ -582,18 +582,47 @@ tbody tr:hover td{background:#fbfcfb}
 <body>
 
 <div id="loginScreen" class="login-screen">
-  <div class="login-box">
-    <div class="logo-area">
-      <img src="https://i.imgur.com/AUoGLEq.png" alt="Logo" class="logo-img">
-      <div class="brand-name">Legado Que <span>Ensina</span></div>
-      <div class="brand-sub">Gestão integrada para educação e cuidado</div>
-    </div>
-    <div class="login-sub">Acesse sua conta para continuar</div>
-    <div class="field"><label class="label">E-mail</label><input id="loginUser" class="input" type="email" placeholder="seu@email.com"></div>
-    <div class="field"><label class="label">Senha</label><input id="loginPass" class="input" type="password" placeholder="••••••••"></div>
-    <button id="loginBtn" class="login-btn"><i data-lucide="log-in"></i> Entrar</button>
-    <div class="login-note"><i data-lucide="shield-check"></i><span>Entre com e-mail e senha da sua conta.</span></div>
+  <div class="login-shell">
+    <section class="login-brand-panel">
+      <div class="login-brand-top">
+        <img src="https://i.imgur.com/AUoGLEq.png" alt="Legado Que Ensina" class="login-brand-logo">
+        <div><strong>Legado Que Ensina</strong><span>Gestão Psicopedagógica</span></div>
+      </div>
+      <div class="login-brand-content">
+        <span class="login-eyebrow">ESPAÇO PSICOPEDAGÓGICO</span>
+        <h1>Gestão que acompanha.<br><em>Aprendizagem que transforma.</em></h1>
+        <p>Organize atendimentos, acompanhe a evolução dos alunos e tenha uma visão clara da sua rotina profissional em um só lugar.</p>
+        <div class="login-feature-list">
+          <div><span class="feature-check">✓</span><div><b>Agenda inteligente</b><small>Atendimentos, faltas e reposições organizados.</small></div></div>
+          <div><span class="feature-check">✓</span><div><b>Visão financeira</b><small>Métricas, metas e movimentações em tempo real.</small></div></div>
+          <div><span class="feature-check">✓</span><div><b>Histórico do aluno</b><small>Evolução, avaliações e registros em uma visão completa.</small></div></div>
+        </div>
+      </div>
+      <div class="login-brand-footer">Aprender hoje, transformar sempre.</div>
+    </section>
+    <section class="login-form-panel">
+      <div class="login-form-wrap">
+        <div class="login-mobile-brand"><img src="https://i.imgur.com/AUoGLEq.png" alt="Logo"></div>
+        <div class="login-welcome">Bem-vindo de volta</div>
+        <h2>Acesse sua conta</h2>
+        <p class="login-description">Entre com seus dados para continuar para o seu espaço.</p>
+        <form onsubmit="event.preventDefault();login();" autocomplete="on">
+          <div class="login-field">
+            <label for="loginUser">E-mail</label>
+            <div class="login-input-wrap"><i data-lucide="mail"></i><input id="loginUser" class="input" type="email" autocomplete="username" placeholder="seu@email.com"></div>
+          </div>
+          <div class="login-field">
+            <div class="login-label-row"><label for="loginPass">Senha</label><button type="button" class="login-link" onclick="notify('A recuperação de senha será disponibilizada em breve.')">Esqueceu a senha?</button></div>
+            <div class="login-input-wrap"><i data-lucide="lock-keyhole"></i><input id="loginPass" class="input" type="password" autocomplete="current-password" placeholder="Digite sua senha"><button type="button" class="password-toggle" onclick="toggleLoginPassword()" aria-label="Mostrar senha"><i data-lucide="eye"></i></button></div>
+          </div>
+          <button id="loginBtn" type="submit" class="login-btn"><span>Entrar na plataforma</span><i data-lucide="arrow-right"></i></button>
+        </form>
+        <div class="login-security"><i data-lucide="shield-check"></i><span>Seu acesso é protegido e individual.</span></div>
+        <div class="login-copyright">© 2026 Legado Que Ensina</div>
+      </div>
+    </section>
   </div>
+</div>
 </div>
 
 <div id="expiredScreen" class="login-screen" style="display:none">
@@ -2448,6 +2477,48 @@ init();
 .agenda-form-pro{background:#f8fbf9;border:1px solid #dfe9e4;border-radius:14px;padding:16px;margin:0 16px 16px}.value-summary{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 12px;border:1px solid #e5ece8;background:#fff;border-radius:11px}.value-main{font-size:18px;font-weight:800;color:#34473e}.value-caption{font-size:9px;color:#89958f}.discount-note{font-size:9px;color:#87938d;margin-top:4px}
 .attendance-options{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.attendance-option{border:1px solid #e2e9e5;border-radius:10px;padding:11px;cursor:pointer;background:#fff}.attendance-option input{margin-right:5px}.attendance-option strong{font-size:10px}.attendance-option span{display:block;font-size:9px;color:#87938e;margin-top:4px}.makeup-box{border:1px solid #e1e9e5;border-radius:11px;padding:12px;background:#fbfcfc;margin-top:12px}
 @media(max-width:1000px){.metric-strip,.agenda-summary{grid-template-columns:repeat(2,1fr)}.pro-grid,.agenda-layout{grid-template-columns:1fr}}@media(max-width:640px){.pro-hero{flex-direction:column}.metric-strip,.agenda-summary{grid-template-columns:1fr}.attendance-options{grid-template-columns:1fr}}
+
+/* ============================================================
+   FINAL VISUAL SYSTEM — LEGADO QUE ENSINA
+   ============================================================ */
+:root{
+  --ink:#17231f;--ink-2:#26352f;--muted:#71807a;--line:#e5ebe8;--surface:#ffffff;--canvas:#f4f7f5;
+  --sage:#397b68;--sage-dark:#245a4b;--sage-soft:#e8f2ee;--sage-pale:#f2f7f5;
+  --blue:#527a9a;--blue-soft:#edf3f7;--danger:#b85a5a;--danger-soft:#fbeded;--amber:#a87532;--amber-soft:#fbf3e7;
+}
+html,body{background:var(--canvas);color:var(--ink)}
+body{font-feature-settings:"cv02","cv03","cv04","cv11"}
+button,.btn,input,select,textarea{font-family:Inter,sans-serif}
+.sidebar{width:236px;background:#17251f;border-right:0;padding:18px 12px;color:#dbe8e2;box-shadow:8px 0 30px rgba(16,35,28,.06)}
+.brand{height:58px;padding:0 12px;color:#fff}.brand-mark{width:38px;height:38px;border-radius:11px;background:#fff;padding:4px}.brand-text .main{color:#fff;font-size:13px}.brand-text .sub{color:#91aaa0}
+.nav{margin-top:24px;gap:4px}.nav button{color:#9eb0a8;border-radius:10px;min-height:43px;font-size:12px}.nav button:hover{background:rgba(255,255,255,.07);color:#fff}.nav button.active{background:#2d604f;color:#fff;box-shadow:inset 3px 0 #8bc2ad}.nav svg{width:18px}.nav-badge{background:#d36a68}
+.side-bottom{border-top:1px solid rgba(255,255,255,.08);padding-top:14px}.side-bottom .nav button{color:#91a59c}
+.main{background:#f4f7f5}.topbar{height:70px;background:rgba(255,255,255,.92);border-bottom:1px solid #e4ebe7;padding:0 34px;backdrop-filter:blur(12px)}.page-title{font-size:17px;color:#24342e}.page-title svg{color:var(--sage)}
+.content{padding:28px 34px 46px}.card,.dash-card,.fin-panel,.fin-card,.student,.instrument-card{border:1px solid #e2e9e5;border-radius:16px;box-shadow:0 8px 26px rgba(29,55,45,.045)}
+.card:hover,.dash-card:hover,.fin-panel:hover,.fin-card:hover{box-shadow:0 12px 32px rgba(29,55,45,.07)}
+.btn{min-height:38px;border-radius:9px;padding:9px 14px;font-size:12px;box-shadow:none}.btn-primary{background:#2f735f;color:#fff}.btn-primary:hover{background:#245a4b}.btn-soft{background:#e7f1ed;color:#2f6957}.btn-soft:hover{background:#d9eae3}.btn-blue{background:#edf3f7;color:#4d718d}.btn-outline{background:#fff;border:1px solid #dce5e1;color:#50615a}.btn-outline:hover{background:#f5f8f6;border-color:#cbd8d2}.btn-danger{background:#fceded;color:#ad5555}.btn-danger:hover{background:#f9e1e1}
+.input,.select,.textarea{min-height:42px;border:1px solid #dce5e1;background:#fff;border-radius:9px;padding:10px 12px;color:#26352f}.input:focus,.select:focus,.textarea:focus{border-color:#5e9a85;box-shadow:0 0 0 3px rgba(57,123,104,.10);background:#fff}
+.label{color:#53635d;font-weight:700;font-size:11px}.empty{color:#84928c!important}
+/* normalize legacy panels */
+.pro-hero,.fin-hero,.assessment-hero,.waitlist-hero{border-radius:18px}.pro-hero{background:linear-gradient(135deg,#183b31,#2e6957)!important;color:#fff}.pro-title,.assessment-hero h2,.fin-hero .fh-title{letter-spacing:-.035em}.fin-hero{background:linear-gradient(135deg,#ffffff,#f0f6f3)!important}.waitlist-hero{background:linear-gradient(135deg,#183b31,#326c59)!important}
+.metric-box,.fin-card,.assessment-metric,.waitlist-stat{background:#fff;border-color:#e2e9e5}.metric-value,.fin-card .fc-value,.assessment-metric .m-value,.waitlist-stat .ws-value{color:#1f3029}
+.status-pill{border-radius:20px;font-weight:700}.status-falta{background:#fbeded!important;color:#ae5656!important}
+/* ============================================================
+   NEW SPLIT LOGIN
+   ============================================================ */
+.login-screen{position:fixed;inset:0;display:flex!important;align-items:stretch;justify-content:stretch;padding:0;background:#eef3f0;overflow:auto;z-index:3000}
+.login-shell{width:100%;min-height:100vh;display:grid;grid-template-columns:minmax(440px,48%) minmax(440px,52%);background:#fff}
+.login-brand-panel{position:relative;overflow:hidden;padding:42px 8%;display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(145deg,#12392f 0%,#1b4d3e 46%,#2f705b 100%);color:#fff}
+.login-brand-panel:before{content:"";position:absolute;width:560px;height:560px;border-radius:50%;right:-230px;top:-210px;border:1px solid rgba(255,255,255,.10);box-shadow:0 0 0 70px rgba(255,255,255,.025),0 0 0 140px rgba(255,255,255,.018)}
+.login-brand-panel:after{content:"";position:absolute;width:280px;height:280px;border-radius:50%;left:-150px;bottom:-120px;background:rgba(160,220,193,.08);filter:blur(2px)}
+.login-brand-top,.login-brand-content,.login-brand-footer{position:relative;z-index:1}.login-brand-top{display:flex;align-items:center;gap:12px}.login-brand-logo{width:40px;height:40px;object-fit:contain;background:#fff;border-radius:11px;padding:4px}.login-brand-top strong{display:block;font-size:14px;letter-spacing:-.02em}.login-brand-top span{display:block;margin-top:2px;font-size:9px;color:#a9c2b8;text-transform:uppercase;letter-spacing:.12em}
+.login-brand-content{max-width:570px;margin:auto 0;padding:70px 0}.login-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:9px;letter-spacing:.16em;font-weight:800;color:#a9d2c1}.login-eyebrow:before{content:"";width:24px;height:1px;background:#7eb39e}.login-brand-content h1{font-size:clamp(34px,4vw,58px);line-height:1.03;letter-spacing:-.055em;margin:20px 0 20px;font-weight:700}.login-brand-content h1 em{font-style:normal;color:#9ed0bc}.login-brand-content>p{font-size:13px;line-height:1.8;color:#c0d2ca;max-width:500px;margin:0}.login-feature-list{display:grid;gap:15px;margin-top:34px}.login-feature-list>div{display:flex;gap:12px;align-items:flex-start}.feature-check{width:25px;height:25px;border-radius:8px;display:grid;place-items:center;background:rgba(255,255,255,.10);color:#a9d2c1;font-size:11px;font-weight:800;flex:none}.login-feature-list b{display:block;font-size:11px;font-weight:700;color:#f1f7f4}.login-feature-list small{display:block;font-size:10px;color:#9eb8ad;margin-top:3px;line-height:1.5}.login-brand-footer{font-size:10px;color:#8eaea1;letter-spacing:.02em}
+.login-form-panel{display:flex;align-items:center;justify-content:center;background:#fff;padding:40px 7%}.login-form-wrap{width:min(430px,100%);padding:20px 0}.login-mobile-brand{display:none}.login-welcome{font-size:11px;font-weight:800;color:#397b68;text-transform:uppercase;letter-spacing:.12em;margin-bottom:10px}.login-form-wrap h2{font-size:31px;line-height:1.1;letter-spacing:-.045em;color:#1d2b26;margin:0}.login-description{font-size:12px;color:#78857f;line-height:1.7;margin:9px 0 30px}.login-field{margin-bottom:18px}.login-field label{display:block;font-size:11px;font-weight:800;color:#43544d;margin-bottom:7px}.login-label-row{display:flex;align-items:center;justify-content:space-between;gap:10px}.login-label-row label{margin:0}.login-link{border:0;background:none;padding:0;color:#397b68;font-size:10px;font-weight:700;cursor:pointer}.login-link:hover{text-decoration:underline}.login-input-wrap{position:relative}.login-input-wrap>svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:#87958f;z-index:1}.login-input-wrap .input{height:50px;padding-left:43px;padding-right:45px;border-radius:10px;border-color:#dce4e0;background:#fbfcfb;font-size:13px}.login-input-wrap .input::placeholder{color:#a5afab}.login-input-wrap .input:focus{border-color:#5c9b86;box-shadow:0 0 0 4px rgba(57,123,104,.09)}.password-toggle{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:34px;height:34px;border:0;border-radius:8px;background:transparent;color:#899690;display:grid;place-items:center}.password-toggle:hover{background:#eef4f1;color:#397b68}.password-toggle svg{width:16px}
+.login-box .login-btn,.login-btn{width:100%;height:52px;margin-top:8px;border:0;border-radius:10px;background:#2e735e;color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;box-shadow:0 10px 24px rgba(46,115,94,.18);transition:.2s}.login-btn:hover{background:#245a4b;transform:translateY(-1px);box-shadow:0 14px 28px rgba(46,115,94,.22)}.login-btn svg{width:16px}.login-security{display:flex;align-items:center;justify-content:center;gap:7px;margin-top:22px;font-size:10px;color:#8a9691}.login-security svg{width:14px;color:#397b68}.login-copyright{text-align:center;font-size:9px;color:#aab4b0;margin-top:38px}
+#expiredScreen.login-screen{background:#eef3f0}.login-screen #loginBoxOld{display:none}
+@media(max-width:900px){.login-shell{grid-template-columns:1fr}.login-brand-panel{display:none}.login-form-panel{min-height:100vh;padding:30px 24px}.login-mobile-brand{display:grid;place-items:center;margin-bottom:28px}.login-mobile-brand img{width:52px;height:52px;object-fit:contain;background:#f0f5f2;border-radius:15px;padding:6px}.login-form-wrap{max-width:410px}.login-form-wrap h2{font-size:28px}}
+@media(max-width:760px){.sidebar{width:68px}.content{padding:20px 14px 40px}.topbar{padding:0 16px}.login-form-panel{padding:24px 20px}.login-description{margin-bottom:25px}}
+
 </style>
 <script>
 // ============================================================
@@ -2522,6 +2593,18 @@ async function saveAppointment(){const aId=document.getElementById('agAluno')?.v
 </script>
 
 
+
+<script>
+function toggleLoginPassword(){
+ const input=document.getElementById('loginPass');
+ const btn=document.querySelector('.password-toggle');
+ if(!input||!btn)return;
+ input.type=input.type==='password'?'text':'password';
+ btn.innerHTML=input.type==='password'?'<i data-lucide="eye"></i>':'<i data-lucide="eye-off"></i>';
+ try{lucide.createIcons()}catch(e){}
+}
+try{setTimeout(()=>{if(window.lucide)lucide.createIcons()},80)}catch(e){}
+</script>
 </body>
 </html>
  
