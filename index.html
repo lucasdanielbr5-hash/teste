@@ -2831,7 +2831,9 @@
     }
     updateExpiredContactLink();
 
-    if (hasExpiredAccess(state.profile) || state.profile?.blocked === true) {
+    const masterAccess = typeof isMasterUser === 'function' && isMasterUser();
+
+    if (!masterAccess && (hasExpiredAccess(state.profile) || state.profile?.blocked === true)) {
       showExpiredScreen();
       return;
     }
@@ -7596,7 +7598,10 @@ window.renderFinance = async function(){
   function ensureArray(x){ return Array.isArray(x)?x:[]; }
   async function selectSafe(table, opts={}){
     try { return await sbSelect(table,opts); }
-    catch(e){ console.warn(`[V3] tabela ${table} indisponível`,e.message); return []; }
+    catch(e){
+      console.error(`[V3] falha ao consultar ${table}:`,e);
+      throw e;
+    }
   }
   async function insertSafe(table,payload){
     if(!supabaseClient) throw new Error('Supabase não está configurado.');
@@ -7691,6 +7696,10 @@ window.renderFinance = async function(){
   window.v3ShowStudentEditorFromProfile=async function(){const s=(await v3StudentData(state.currentStudentId)).student;navigate('alunos');setTimeout(()=>v3ShowStudentEditor(s),0);};
   async function v3RenderStudentSection(d){
     const b=byId('v3StudentSectionBody'); if(!b)return;
+    if(V3.studentSection==='evaluations' && typeof window.renderStudentEvaluationsInProfile==='function'){
+      await window.renderStudentEvaluationsInProfile(d,b);
+      return;
+    }
     const s=d.student; const name=val(s,'name','full_name');
     const makeList=(items,mapper,emptyText)=>items.length?`<div class="v3-history-list">${items.map(mapper).join('')}</div>`:empty(emptyText);
 
@@ -7812,8 +7821,30 @@ window.renderFinance = async function(){
   function financeSeries(entries,months=6){return Array.from({length:months},(_,i)=>{const d=new Date(V3.financeMonth.getFullYear(),V3.financeMonth.getMonth()-months+1+i,1);const key=monthKey(d);const row=entries.filter(e=>String(e.competence_date||e.entry_date||e.payment_date||'').slice(0,7)===key);return {label:d.toLocaleDateString('pt-BR',{month:'short'}).replace('.',''),income:row.filter(x=>x.kind==='income').reduce((s,x)=>s+Number(x.amount||0),0),expense:row.filter(x=>x.kind==='expense').reduce((s,x)=>s+Number(x.amount||0),0)};});}
   function svgFinanceChart(series){const w=800,h=260,p=32;const max=Math.max(1,...series.flatMap(x=>[x.income,x.expense]));const step=(w-p*2)/(series.length-1||1);const line=(key,cls)=>series.map((x,i)=>`${p+i*step},${h-p-(x[key]/max)*(h-p*2)}`).join(' ');return `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Evolução financeira"><line x1="${p}" x2="${w-p}" y1="${h-p}" y2="${h-p}" class="v3-axis"></line><polyline points="${line('income')}" class="v3-chart-income"></polyline><polyline points="${line('expense')}" class="v3-chart-expense"></polyline>${series.map((x,i)=>{const xx=p+i*step;return `<text x="${xx}" y="${h-8}" text-anchor="middle">${esc(x.label)}</text>`}).join('')}</svg><div class="v3-legend"><span><i class="income"></i>Receitas</span><span><i class="expense"></i>Despesas</span></div>`;}
   async function v3LoadFinance(){
-    const [newEntries,payments]=await Promise.all([selectSafe(TABLE.finance,{filters:{user_id:state.user.id},order:'competence_date',ascending:false,limit:2000}),selectSafe(TABLE.payments,{filters:{user_id:state.user.id},order:'payment_date',ascending:false,limit:1000})]);
-    const legacy=payments.filter(p=>!newEntries.some(n=>n.legacy_payment_id===p.id)).map(p=>({id:'legacy-'+p.id,kind:'income',amount:Number(p.amount||p.value||0),status:p.status||'paid',competence_date:dateOnly(p.payment_date||p.date),due_date:dateOnly(p.payment_date||p.date),description:p.description||p.student_name||'Recebimento',payment_method:p.method||'Não informado',legacy:true,student_name:p.student_name}));return newEntries.concat(legacy);
+    const [newEntries,payments]=await Promise.all([
+      selectSafe(TABLE.finance,{filters:{user_id:state.user.id},order:'competence_date',ascending:false,limit:2000}),
+      selectSafe(TABLE.payments,{filters:{user_id:state.user.id},order:'payment_date',ascending:false,limit:1000})
+    ]);
+    const normalized=(newEntries||[]).map(e=>({
+      ...e,
+      kind:e.kind||e.type||'income',
+      competence_date:e.competence_date||e.entry_date||e.payment_date||dateOnly(new Date())
+    }));
+    const legacy=(payments||[])
+      .filter(p=>!normalized.some(n=>n.legacy_payment_id===p.id))
+      .map(p=>({
+        id:'legacy-'+p.id,
+        kind:'income',
+        amount:Number(p.amount||p.value||0),
+        status:p.status||'paid',
+        competence_date:dateOnly(p.payment_date||p.date),
+        due_date:dateOnly(p.payment_date||p.date),
+        description:p.description||p.student_name||'Recebimento',
+        payment_method:p.method||'Não informado',
+        legacy:true,
+        student_name:p.student_name
+      }));
+    return normalized.concat(legacy);
   }
   window.renderFinance=async function(){
     const c=byId('financeiroContent');if(!c)return;const entries=await v3LoadFinance();const key=monthKey(V3.financeMonth);const current=entries.filter(e=>String(e.competence_date||'').slice(0,7)===key);const income=current.filter(e=>e.kind==='income');const expense=current.filter(e=>e.kind==='expense');const received=income.filter(e=>e.status==='paid').reduce((s,e)=>s+Number(e.amount||0),0);const receivable=income.filter(e=>e.status!=='paid').reduce((s,e)=>s+Number(e.amount||0),0);const spent=expense.filter(e=>e.status==='paid').reduce((s,e)=>s+Number(e.amount||0),0);const result=received-spent;const series=financeSeries(entries,6);
@@ -7822,7 +7853,7 @@ window.renderFinance = async function(){
   };
   window.v3FinanceMonth=function(n){V3.financeMonth=addMonths(V3.financeMonth,n);renderFinance();};
   window.v3MarkFinancePaid=async function(id){try{if(String(id).startsWith('legacy-')){showError('Este lançamento veio do financeiro antigo. Edite o registro original para mudar o status.');return;}await updateSafe(TABLE.finance,id,{status:'paid',paid_at:new Date().toISOString()});showSuccess('Lançamento marcado como pago.');renderFinance();}catch(err){showError(err.message);}};
-  window.openPaymentModal=window.v3OpenFinanceEditor=async function(){if(!studentsState.data?.length)await v3LoadStudents();const box=byId('v3FinanceEditor');if(!box)return;box.hidden=false;box.innerHTML=`<div class="v3-editor-head"><div><div class="v3-kicker">NOVO LANÇAMENTO</div><h3>Registrar receita ou despesa</h3></div><button class="icon-button" onclick="v3CloseInline('v3FinanceEditor')"><i data-lucide="x"></i></button></div><form id="v3FinanceForm" class="v3-form"><div class="v3-form-grid"><label><span>Tipo *</span><select name="kind"><option value="income">Receita / recebimento</option><option value="expense">Despesa</option></select></label><label><span>Aluno</span><select name="student_id"><option value="">Não vincular</option>${studentsState.data.map(s=>`<option value="${esc(s.id)}">${esc(val(s,'name','full_name'))}</option>`).join('')}</select></label><label><span>Valor *</span><input name="amount" placeholder="0,00" inputmode="decimal" required></label><label><span>Data de competência *</span><input type="date" name="competence_date" value="${today()}" required></label><label><span>Vencimento</span><input type="date" name="due_date" value="${today()}"></label><label><span>Status</span><select name="status"><option value="paid">Pago / recebido</option><option value="pending">Pendente</option><option value="overdue">Em atraso</option></select></label><label><span>Forma de pagamento</span><select name="payment_method"><option value="pix">Pix</option><option value="cash">Dinheiro</option><option value="debit">Débito</option><option value="credit_spot">Crédito à vista</option><option value="credit_installment">Crédito parcelado</option><option value="transfer">Transferência</option></select></label><label><span>Parcelas</span><select name="installment_total"><option value="1">1 parcela</option><option value="2">2 parcelas</option><option value="3">3 parcelas</option><option value="4">4 parcelas</option><option value="5">5 parcelas</option><option value="6">6 parcelas</option><option value="10">10 parcelas</option><option value="12">12 parcelas</option></select></label><label class="full"><span>Descrição</span><input name="description" placeholder="Ex.: Mensalidade de setembro / compra de material"></label></div><div class="v3-form-note"><i data-lucide="info"></i><span>No crédito parcelado, o sistema cria as parcelas futuras automaticamente, cada uma em seu mês, para aparecer no histórico financeiro.</span></div><div class="v3-form-actions"><button type="button" class="btn btn-outline" onclick="v3CloseInline('v3FinanceEditor')">Cancelar</button><button class="btn btn-primary">Salvar lançamento</button></div></form>`;refreshIcons();byId('v3FinanceForm').onsubmit=async e=>{e.preventDefault();try{const fd=new FormData(e.currentTarget);const amount=parseCurrency(fd.get('amount'));if(amount<=0)throw new Error('Informe um valor maior que zero.');const total=Number(fd.get('installment_total')||1);const st=studentsState.data.find(s=>String(s.id)===String(fd.get('student_id')));const group=generateId();const start=parseDateOnly(fd.get('competence_date'));for(let i=1;i<=total;i++){const d=new Date(start.getFullYear(),start.getMonth()+i-1,start.getDate());await insertSafe(TABLE.finance,{user_id:state.user.id,student_id:st?.id||null,student_name:st?val(st,'name','full_name'):null,kind:fd.get('kind'),amount:i===total?Math.round((amount-Math.round((amount/total)*100)/100*(total-1))*100)/100:Math.round((amount/total)*100)/100,competence_date:toInputDate(d),due_date:fd.get('due_date')||toInputDate(d),status:i===1?fd.get('status'):'pending',payment_method:fd.get('payment_method'),description:String(fd.get('description')||'').trim()||null,installment_group:group,installment_number:i,installment_total:total});}showSuccess(total>1?'Lançamento e parcelas futuras criados.':'Lançamento salvo.');renderFinance();}catch(err){showError('Não foi possível salvar: '+err.message);}};
+  window.openPaymentModal=window.v3OpenFinanceEditor=async function(){if(!studentsState.data?.length)await v3LoadStudents();const box=byId('v3FinanceEditor');if(!box)return;box.hidden=false;box.innerHTML=`<div class="v3-editor-head"><div><div class="v3-kicker">NOVO LANÇAMENTO</div><h3>Registrar receita ou despesa</h3></div><button class="icon-button" onclick="v3CloseInline('v3FinanceEditor')"><i data-lucide="x"></i></button></div><form id="v3FinanceForm" class="v3-form"><div class="v3-form-grid"><label><span>Tipo *</span><select name="kind"><option value="income">Receita / recebimento</option><option value="expense">Despesa</option></select></label><label><span>Aluno</span><select name="student_id"><option value="">Não vincular</option>${studentsState.data.map(s=>`<option value="${esc(s.id)}">${esc(val(s,'name','full_name'))}</option>`).join('')}</select></label><label><span>Valor *</span><input name="amount" placeholder="0,00" inputmode="decimal" required></label><label><span>Data de competência *</span><input type="date" name="competence_date" value="${today()}" required></label><label><span>Vencimento</span><input type="date" name="due_date" value="${today()}"></label><label><span>Status</span><select name="status"><option value="paid">Pago / recebido</option><option value="pending">Pendente</option><option value="overdue">Em atraso</option></select></label><label><span>Forma de pagamento</span><select name="payment_method"><option value="pix">Pix</option><option value="cash">Dinheiro</option><option value="debit">Débito</option><option value="credit_spot">Crédito à vista</option><option value="credit_installment">Crédito parcelado</option><option value="transfer">Transferência</option></select></label><label><span>Parcelas</span><select name="installment_total"><option value="1">1 parcela</option><option value="2">2 parcelas</option><option value="3">3 parcelas</option><option value="4">4 parcelas</option><option value="5">5 parcelas</option><option value="6">6 parcelas</option><option value="10">10 parcelas</option><option value="12">12 parcelas</option></select></label><label class="full"><span>Descrição</span><input name="description" placeholder="Ex.: Mensalidade de setembro / compra de material"></label></div><div class="v3-form-note"><i data-lucide="info"></i><span>No crédito parcelado, o sistema cria as parcelas futuras automaticamente, cada uma em seu mês, para aparecer no histórico financeiro.</span></div><div class="v3-form-actions"><button type="button" class="btn btn-outline" onclick="v3CloseInline('v3FinanceEditor')">Cancelar</button><button class="btn btn-primary">Salvar lançamento</button></div></form>`;refreshIcons();byId('v3FinanceForm').onsubmit=async e=>{e.preventDefault();try{const fd=new FormData(e.currentTarget);const amount=parseCurrency(fd.get('amount'));if(amount<=0)throw new Error('Informe um valor maior que zero.');const total=Number(fd.get('installment_total')||1);const st=studentsState.data.find(s=>String(s.id)===String(fd.get('student_id')));const group=generateId();const start=parseDateOnly(fd.get('competence_date'));for(let i=1;i<=total;i++){const d=new Date(start.getFullYear(),start.getMonth()+i-1,start.getDate());await insertSafe(TABLE.finance,{user_id:state.user.id,student_id:st?.id||null,student_name:st?val(st,'name','full_name'):null,kind:fd.get('kind'),type:fd.get('kind'),amount:i===total?Math.round((amount-Math.round((amount/total)*100)/100*(total-1))*100)/100:Math.round((amount/total)*100)/100,competence_date:toInputDate(d),due_date:fd.get('due_date')||toInputDate(d),status:i===1?fd.get('status'):'pending',payment_method:fd.get('payment_method'),description:String(fd.get('description')||'').trim()||null,installment_group:group,installment_number:i,installment_total:total});}showSuccess(total>1?'Lançamento e parcelas futuras criados.':'Lançamento salvo.');renderFinance();}catch(err){showError('Não foi possível salvar: '+err.message);}};
   };
 
   /* -------------------- RECADOS (ADMIN) -------------------- */
@@ -7830,7 +7861,17 @@ window.renderFinance = async function(){
     if(!supabaseClient||!state.user)return [];
     try{
       const q=supabaseClient.from(TABLE.messages).select('*').or(`user_id.eq.${state.user.id},target_all.eq.true`).order('created_at',{ascending:false}).limit(200);
-      const {data,error}=await q;if(error)throw error;return data||[];
+      const {data,error}=await q;
+      if(error)throw error;
+      const rows=data||[];
+      try{
+        const rr=await supabaseClient.from('message_reads').select('message_id').eq('user_id',state.user.id);
+        if(!rr.error){
+          const readSet=new Set((rr.data||[]).map(x=>String(x.message_id)));
+          return rows.map(r=>({...r,read:Boolean(r.read||readSet.has(String(r.id)))}));
+        }
+      }catch(_){}
+      return rows;
     }catch(err){ console.warn('[V3] recados:',err.message); return []; }
   }
   window.renderMessages=async function(){const c=byId('recadosContent');if(!c)return;const rows=await v3LoadMessages();const admin=typeof isMasterUser==='function'&&isMasterUser();c.innerHTML=pageShell('COMUNICAÇÃO','Recados',admin?'Área administrativa para publicar comunicados aos professores.':'Comunicados enviados pela administração.',admin?`<button class="btn btn-primary" onclick="v3OpenMessageEditor()"><i data-lucide="plus"></i>Novo recado</button>`:'')+panel('Central de recados',admin?'Somente administradores podem criar novos recados.':'Você pode acompanhar os comunicados recebidos.',rows.length?`<div class="v3-message-list">${rows.map(r=>`<article class="v3-message"><div class="v3-message-icon"><i data-lucide="megaphone"></i></div><div><div class="v3-inline-tags"><span class="v3-tag">${esc(r.type||'Comunicado')}</span><span>${esc(fmtDate(r.created_at))}</span></div><h3>${esc(r.title||'Recado')}</h3><p>${esc(r.message||'')}</p></div>${!r.read?`<button class="btn btn-outline btn-sm" onclick="v3ReadMessage('${esc(r.id)}')">Marcar como lido</button>`:''}</article>`).join('')}`:empty('Nenhum recado disponível.','A área será preenchida pela administração.'))+(!admin?`<div class="v3-permission-note"><i data-lucide="shield-check"></i><span>Criação de recados é restrita ao administrador.</span></div>`:'');refreshIcons();};
@@ -7862,14 +7903,45 @@ document.head.appendChild(s);}
     try{ if(typeof refreshIcons==='function')refreshIcons(); }catch(e){}
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true}); else boot();
+
+  /* API pública do núcleo V3: os módulos finais usam esta ponte em vez
+     de depender de funções presas ao escopo da IIFE. */
+  window.V3Core = {
+    TABLE,
+    selectSafe,
+    insertSafe,
+    updateSafe,
+    pageShell,
+    statCard,
+    panel,
+    empty,
+    avatar,
+    v3LoadStudents,
+    v3LoadAppointments,
+    v3LoadMessages,
+    v3RenderStudentSection,
+    v3RenderStudentProfileFast,
+    v3StudentData,
+    statusLabel
+  };
+
 })();
 
 </script>
 
+
 <script id="legado-v3-bridge">
-/* Ponte entre o núcleo V3 (escopo interno) e os módulos de Administração/Avaliações. */
+/* ============================================================
+   PONTE V3 / RECUPERAÇÃO
+   O aplicativo continua funcional mesmo se um módulo anterior
+   falhar durante a inicialização. As telas finais nunca dependem
+   de um símbolo lexical que possa desaparecer.
+   ============================================================ */
 (function(){
-  window.TABLE = window.TABLE || {
+  'use strict';
+
+  const existing=window.V3Core||{};
+  const baseTable=existing.TABLE||window.TABLE||{
     students:'students',
     appointments:'appointments',
     evaluations:'evaluations',
@@ -7881,30 +7953,140 @@ document.head.appendChild(s);}
     contacts:'student_contacts',
     finance:'financial_entries',
     availability:'professional_availability',
-    context:'student_context'
+    context:'student_context',
+    waitlist:'waitlist'
   };
 
-  window.selectSafe = async function(table, opts={}){
-    try {
-      if (typeof sbSelect !== 'function') throw new Error('sbSelect não está disponível.');
-      return await sbSelect(table, opts);
-    } catch(e) {
-      console.warn('[V3 bridge] tabela ' + table + ' indisponível:', e);
-      return [];
-    }
+  function hasFn(name){return typeof window[name]==='function';}
+
+  async function fallbackSelect(table,opts={}){
+    if(hasFn('sbSelect'))return window.sbSelect(table,opts);
+    if(!window.supabaseClient)throw new Error('Supabase não está conectado.');
+    let query=window.supabaseClient.from(table).select('*');
+    const filters=opts.filters||{};
+    Object.entries(filters).forEach(([key,value])=>{
+      if(value===null)query=query.is(key,null);
+      else if(Array.isArray(value))query=query.in(key,value);
+      else query=query.eq(key,value);
+    });
+    if(opts.order)query=query.order(opts.order,{ascending:opts.ascending!==false});
+    if(opts.limit)query=query.limit(opts.limit);
+    const {data,error}=await query;
+    if(error)throw error;
+    return data||[];
+  }
+
+  async function fallbackInsert(table,payload){
+    if(hasFn('sbInsert'))return window.sbInsert(table,payload);
+    if(!window.supabaseClient)throw new Error('Supabase não está conectado.');
+    const {data,error}=await window.supabaseClient.from(table).insert(payload).select().single();
+    if(error)throw error;
+    return data;
+  }
+
+  async function fallbackUpdate(table,id,payload){
+    if(hasFn('sbUpdate'))return window.sbUpdate(table,id,payload);
+    if(!window.supabaseClient)throw new Error('Supabase não está conectado.');
+    const {data,error}=await window.supabaseClient.from(table).update(payload).eq('id',id).select().single();
+    if(error)throw error;
+    return data;
+  }
+
+  const selectSafe=typeof existing.selectSafe==='function'?existing.selectSafe:fallbackSelect;
+  const insertSafe=typeof existing.insertSafe==='function'?existing.insertSafe:fallbackInsert;
+  const updateSafe=typeof existing.updateSafe==='function'?existing.updateSafe:fallbackUpdate;
+
+  const pageShell=typeof existing.pageShell==='function'?existing.pageShell:(window.pageShell||function(eyebrow,title,subtitle,actions=''){
+    return `<section class="page-heading"><div><div class="eyebrow">${eyebrow||''}</div><h1>${title||''}</h1><p>${subtitle||''}</p></div><div>${actions||''}</div></section>`;
+  });
+  const statCard=typeof existing.statCard==='function'?existing.statCard:(window.statCard||function(icon,label,value,detail=''){
+    return `<div class="stat-card"><div class="stat-card-icon"><i data-lucide="${icon||'activity'}"></i></div><div><strong>${value??0}</strong><span>${label||''}</span><small>${detail||''}</small></div></div>`;
+  });
+  const panel=typeof existing.panel==='function'?existing.panel:(window.panel||function(title,subtitle,body=''){
+    return `<section class="v3-panel"><div class="v3-panel-head"><div><h2>${title||''}</h2><p>${subtitle||''}</p></div></div>${body}</section>`;
+  });
+  const empty=typeof existing.empty==='function'?existing.empty:(window.empty||function(title,subtitle=''){
+    return `<div class="v3-empty"><i data-lucide="inbox"></i><strong>${title||'Nada por aqui'}</strong><span>${subtitle||''}</span></div>`;
+  });
+  const avatar=typeof existing.avatar==='function'?existing.avatar:(window.avatar||function(name=''){
+    const initial=String(name||'Aluno').trim().slice(0,1).toUpperCase();
+    return `<div class="v3-avatar">${initial}</div>`;
+  });
+
+  const statusLabel=typeof existing.statusLabel==='function'?existing.statusLabel:(window.statusLabel||function(s){
+    return ({paid:'Pago',pending:'Pendente',overdue:'Em atraso',cancelled:'Cancelado',scheduled:'Agendado',completed:'Concluído',draft:'Rascunho'}[String(s||'').toLowerCase()]||s||'—');
+  });
+
+  async function v3LoadStudentsFallback(){
+    if(!window.state?.user)return [];
+    const rows=await selectSafe(baseTable.students,{filters:{user_id:window.state.user.id},order:'name',ascending:true,limit:500});
+    try{
+      if(typeof studentsState!=='undefined'){studentsState.data=rows;}
+    }catch(_){}
+    try{window.state.students=rows;}catch(_){}
+    return rows;
+  }
+
+  async function v3LoadAppointmentsFallback(){
+    if(!window.state?.user)return [];
+    return selectSafe(baseTable.appointments,{filters:{user_id:window.state.user.id},order:'appointment_date',ascending:true,limit:1000});
+  }
+
+  async function v3RenderStudentProfileFastFallback(){
+    if(hasFn('renderStudentProfileView'))return window.renderStudentProfileView();
+    return null;
+  }
+
+  const core={
+    ...existing,
+    TABLE:{...baseTable},
+    selectSafe,
+    insertSafe,
+    updateSafe,
+    pageShell,
+    statCard,
+    panel,
+    empty,
+    avatar,
+    v3LoadStudents:typeof existing.v3LoadStudents==='function'?existing.v3LoadStudents:v3LoadStudentsFallback,
+    v3LoadAppointments:typeof existing.v3LoadAppointments==='function'?existing.v3LoadAppointments:v3LoadAppointmentsFallback,
+    v3LoadMessages:typeof existing.v3LoadMessages==='function'?existing.v3LoadMessages:null,
+    v3RenderStudentSection:typeof existing.v3RenderStudentSection==='function'?existing.v3RenderStudentSection:async function(){},
+    v3RenderStudentProfileFast:typeof existing.v3RenderStudentProfileFast==='function'?existing.v3RenderStudentProfileFast:v3RenderStudentProfileFastFallback,
+    v3StudentData:typeof existing.v3StudentData==='function'?existing.v3StudentData:async()=>null,
+    statusLabel
   };
 
-  window.insertSafe = async function(table, payload){
-    if (typeof sbInsert !== 'function') throw new Error('sbInsert não está disponível.');
-    return await sbInsert(table, payload);
+  window.V3Core=core;
+  window.TABLE=core.TABLE;
+  window.V3=window.V3||{
+    agendaSelected:(typeof window.toInputDate==='function'?window.toInputDate(new Date()):new Date().toISOString().slice(0,10)),
+    agendaMonth:new Date(new Date().getFullYear(),new Date().getMonth(),1),
+    financeMonth:new Date(new Date().getFullYear(),new Date().getMonth(),1),
+    studentSection:'overview',
+    assessmentType:'Anamnese',
+    assessmentMode:'pedagogical'
   };
 
-  window.updateSafe = async function(table, id, payload){
-    if (typeof sbUpdate !== 'function') throw new Error('sbUpdate não está disponível.');
-    return await sbUpdate(table, id, payload);
-  };
+  Object.assign(window,{
+    selectSafe,
+    insertSafe,
+    updateSafe,
+    pageShell,
+    statCard,
+    panel,
+    empty,
+    avatar,
+    v3LoadStudents:core.v3LoadStudents,
+    v3LoadAppointments:core.v3LoadAppointments,
+    v3LoadMessages:core.v3LoadMessages,
+    v3RenderStudentSection:core.v3RenderStudentSection,
+    v3RenderStudentProfileFast:core.v3RenderStudentProfileFast,
+    statusLabel
+  });
 })();
 </script>
+
 <script id="legado-final-patch">
 (function(){
   'use strict';
@@ -7914,12 +8096,26 @@ document.head.appendChild(s);}
     masterEmail: 'contato@legadoqueensina.com.br'
   };
 
+  const core = window.V3Core || {};
+  const V3TABLE = core.TABLE || window.TABLE || {};
+  const selectSafe = window.selectSafe;
+  const insertSafe = window.insertSafe;
+  const updateSafe = window.updateSafe;
+  const pageShell = core.pageShell || window.pageShell;
+  const statCard = core.statCard || window.statCard;
+  const panel = core.panel || window.panel;
+  const empty = core.empty || window.empty;
+  const v3LoadStudents = core.v3LoadStudents || window.v3LoadStudents;
+  const v3RenderStudentProfileFast = core.v3RenderStudentProfileFast || window.v3RenderStudentProfileFast;
+  const v3RenderStudentSection = core.v3RenderStudentSection || window.v3RenderStudentSection;
+
   const q = (s, r=document)=>r.querySelector(s);
   const esc = v => escapeHtml(v ?? '');
   const today = ()=>toInputDate(new Date());
   const dOnly = v=>String(v||'').slice(0,10);
   const parseD = s=>{const a=String(s||'').slice(0,10).split('-').map(Number);return a.length===3&&a.every(Boolean)?new Date(a[0],a[1]-1,a[2]):null;};
   const fDate = s=>{const d=parseD(s);return d?d.toLocaleDateString('pt-BR'): '—';};
+  const statusLabel = s=>({paid:'Pago',pending:'Pendente',overdue:'Em atraso',cancelled:'Cancelado',scheduled:'Agendado',completed:'Concluído',draft:'Rascunho'}[String(s||'').toLowerCase()] || s || '—');
 
   function isMaster(){
     return String(state.user?.email||'').toLowerCase()===P.masterEmail ||
@@ -7977,8 +8173,8 @@ document.head.appendChild(s);}
           notes:String(fd.get('notes')||'').trim()||null
         };
         if(!payload.name) throw new Error('Informe o nome do aluno.');
-        if(student) await updateSafe(TABLE.students,student.id,payload);
-        else await insertSafe(TABLE.students,payload);
+        if(student) await updateSafe(V3TABLE.students,student.id,payload);
+        else await insertSafe(V3TABLE.students,payload);
         showSuccess(student?'Aluno atualizado.':'Aluno cadastrado.');
         await renderStudents();
       }catch(err){showError(err.message||'Não foi possível salvar o aluno.');}
@@ -8142,7 +8338,7 @@ document.head.appendChild(s);}
         const data=collectAssessment(ev.currentTarget,def.fields);
         data.feedback=String(fd.get('feedback')||'').trim();
         const payload={user_id:state.user.id,student_id:st.id,student_name:st.name||st.full_name,evaluation_date:fd.get('evaluation_date'),type,title:String(fd.get('title')||type).trim()||type,status:fd.get('status'),summary:String(fd.get('summary')||'').trim()||null,notes:Object.entries(data).map(([k,v])=>`${k}: ${Array.isArray(v)?v.join(', '):v}`).filter(x=>!/: $/.test(x)).join('\n'),assessment_data:data};
-        if(existing)await updateSafe(TABLE.evaluations,existing.id,payload);else await insertSafe(TABLE.evaluations,payload);
+        if(existing)await updateSafe(V3TABLE.evaluations,existing.id,payload);else await insertSafe(V3TABLE.evaluations,payload);
         showSuccess(existing?'Avaliação atualizada.':'Avaliação salva e vinculada ao aluno.');
         renderEvaluations();
         if(state.currentView==='aluno-perfil')v3RenderStudentProfileFast();
@@ -8154,7 +8350,7 @@ document.head.appendChild(s);}
   window.renderEvaluations=async function(){
     const c=byId('avaliacoesContent');if(!c)return;
     const [evals,students]=await Promise.all([
-      selectSafe(TABLE.evaluations,{filters:{user_id:state.user.id},order:'evaluation_date',ascending:false,limit:500}),
+      selectSafe(V3TABLE.evaluations,{filters:{user_id:state.user.id},order:'evaluation_date',ascending:false,limit:500}),
       v3LoadStudents()
     ]);
     const counts=Object.keys(PEDAGOGICAL_ASSESSMENTS).map(t=>[t,evals.filter(e=>e.type===t).length]);
@@ -8175,7 +8371,7 @@ document.head.appendChild(s);}
   };
 
   window.v3EditEvaluation=async function(id){
-    const evals=await selectSafe(TABLE.evaluations,{filters:{user_id:state.user.id},limit:500});
+    const evals=await selectSafe(V3TABLE.evaluations,{filters:{user_id:state.user.id},limit:500});
     const e=evals.find(x=>String(x.id)===String(id));
     if(!e)return showError('Avaliação não encontrada.');
     if(state.currentView!=='avaliacoes'){navigate('avaliacoes');setTimeout(()=>v3OpenEvaluationEditor(e),150);}
@@ -8184,7 +8380,7 @@ document.head.appendChild(s);}
 
   window.v3DeleteEvaluation=async function(id){
     if(!confirm('Excluir esta avaliação? Essa ação não poderá ser desfeita.'))return;
-    try{await supabaseClient.from(TABLE.evaluations).delete().eq('id',id).eq('user_id',state.user.id);showSuccess('Avaliação excluída.');renderEvaluations();if(state.currentView==='aluno-perfil')v3RenderStudentProfileFast();}catch(err){showError(err.message);}
+    try{await supabaseClient.from(V3TABLE.evaluations).delete().eq('id',id).eq('user_id',state.user.id);showSuccess('Avaliação excluída.');renderEvaluations();if(state.currentView==='aluno-perfil')v3RenderStudentProfileFast();}catch(err){showError(err.message);}
   };
 
   /* -------------------------------------------------------------
@@ -8316,31 +8512,70 @@ document.head.appendChild(s);}
   window.renderMaster=async function(){
     const c=byId('masterContent');if(!c)return;
     if(!isMaster()){c.innerHTML='<div class="card"><div class="empty">Acesso restrito.</div></div>';return;}
-    const {data:profiles,error}=await supabaseClient.from('profiles').select('*').order('full_name',{ascending:true});
-    if(error){c.innerHTML=`<div class="card"><div class="empty">${esc(error.message)}</div></div>`;return;}
-    const settings=await supabaseClient.from('platform_settings').select('*').eq('key','support_whatsapp').maybeSingle();
-    const support=settings.data?.value||P.supportWhatsapp;
-    c.innerHTML=pageShell('MASTER','Administração','Controle de acesso, pagamentos, suporte e comunicados dos professores.',`<button class="btn btn-primary" onclick="v3OpenMessageEditor()"><i data-lucide="megaphone"></i>Novo comunicado</button>`)
-      +`<div class="v3-panel"><div class="v3-panel-head"><div><h2>WhatsApp de suporte</h2><p>Este número aparece quando o acesso do professor vence.</p></div></div><form id="v3SupportForm" class="v3-form"><div class="v3-form-grid"><label><span>Número com DDI</span><input name="whatsapp" value="${esc(support)}" placeholder="5511999999999" required></label></div><div class="v3-form-actions"><button class="btn btn-primary">Salvar suporte</button></div></form></div>`
-      +`<div class="v3-panel"><div class="v3-panel-head"><div><h2>Professores</h2><p>Defina validade do acesso e registre o pagamento de cada professor.</p></div></div><div class="v3-master-list">${profiles.map(p=>{
-        const expired=p.access_expires_at && new Date(p.access_expires_at)<new Date();
-        return `<article class="v3-master-prof"><div class="v3-master-main"><div class="v3-avatar"><i data-lucide="user-round"></i></div><div><strong>${esc(p.full_name||p.name||p.email||'Sem nome')}</strong><span>${esc(p.email||'')} · ${expired?'Acesso vencido':p.access_expires_at?'Acesso válido':'Sem vencimento'}</span></div></div><form class="v3-master-form" data-id="${esc(p.id)}"><label><span>Vencimento</span><input type="date" name="expires" value="${esc(p.access_expires_at?toInputDate(p.access_expires_at):'')}"></label><label><span>Quando pagou</span><input type="date" name="paid_at" value="${esc(p.last_payment_at?toInputDate(p.last_payment_at):'')}"></label><label><span>Forma de pagamento</span><select name="method"><option value="">—</option>${['PIX','Transferência','Cartão','Dinheiro','Boleto','Outro'].map(x=>`<option ${p.payment_method===x?'selected':''}>${x}</option>`).join('')}</select></label><label><span>Valor pago</span><input type="number" step="0.01" name="amount" value="${esc(p.payment_amount??'')}"></label><label class="full"><span>Observação do pagamento</span><input name="notes" value="${esc(p.payment_notes||'')}" placeholder="Ex.: mensalidade setembro, comprovante recebido..."></label><label class="v3-master-check"><input type="checkbox" name="blocked" ${p.blocked?'checked':''}><span>Bloquear manualmente</span></label><button class="btn btn-primary btn-sm">Salvar cadastro</button></form></article>`;
-      }).join('')||empty('Nenhum professor cadastrado.','Os perfis aparecerão aqui após o cadastro.')}</div></div>`;
-    refreshIcons();
-    q('#v3SupportForm').onsubmit=async e=>{e.preventDefault();try{const n=String(new FormData(e.currentTarget).get('whatsapp')||'').replace(/\D/g,'');await supabaseClient.from('platform_settings').upsert({key:'support_whatsapp',value:n,updated_by:state.user.id},{onConflict:'key'});P.supportWhatsapp=n;APP_CONFIG.whatsappNumber=n;updateExpiredContactLink();showSuccess('WhatsApp de suporte atualizado.');}catch(err){showError(err.message);}};
-    $$('.v3-master-form',c).forEach(form=>form.onsubmit=async e=>{e.preventDefault();try{const fd=new FormData(form);const id=form.dataset.id;const payload={access_expires_at:fd.get('expires')?new Date(fd.get('expires')+'T23:59:59').toISOString():null,last_payment_at:fd.get('paid_at')||null,payment_method:String(fd.get('method')||'').trim()||null,payment_amount:fd.get('amount')?Number(fd.get('amount')):null,payment_notes:String(fd.get('notes')||'').trim()||null,blocked:fd.get('blocked')==='on'};const r=await supabaseClient.from('profiles').update(payload).eq('id',id);if(r.error)throw r.error;showSuccess('Cadastro do professor atualizado.');renderMaster();}catch(err){showError(err.message);}});
+    c.innerHTML='<div class="v3-panel"><div class="v3-loading"><i data-lucide="loader-circle"></i><span>Carregando administração...</span></div></div>';refreshIcons();
+    try{
+      const [profiles,settings]=await Promise.all([
+        selectSafe(V3TABLE.profiles,{order:'full_name',ascending:true,limit:500}),
+        supabaseClient.from('platform_settings').select('value').eq('key','support_whatsapp').maybeSingle()
+      ]);
+      const teachers=profiles.filter(p=>!Boolean(p.is_master)&&!['master','admin'].includes(String(p.role||'').toLowerCase()));
+      const support=settings?.data?.value||P.supportWhatsapp;
+      const now=Date.now();
+      const active=teachers.filter(p=>!p.blocked && (!p.access_expires_at || new Date(p.access_expires_at).getTime()>=now)).length;
+      const expired=teachers.filter(p=>p.blocked || (p.access_expires_at && new Date(p.access_expires_at).getTime()<now)).length;
+      const paid=teachers.filter(p=>p.last_payment_at).length;
+      c.innerHTML=pageShell('MASTER','Administração','Controle de acesso, pagamentos, suporte e comunicados dos professores.',`<button class="btn btn-primary" onclick="v3OpenMessageEditor()"><i data-lucide="megaphone"></i>Novo comunicado</button>`)
+        +`<div class="v3-stats">${statCard('users','Professores',teachers.length,'Perfis cadastrados')}${statCard('shield-check','Acessos ativos',active,'Sem bloqueio e dentro da validade','good')}${statCard('clock-3','Precisam regularizar',expired,'Vencidos ou bloqueados','bad')}${statCard('wallet-cards','Com pagamento registrado',paid,'Controle financeiro do master')}</div>`
+        +`<div class="v3-panel"><div class="v3-panel-head"><div><h2>Central de suporte</h2><p>Este número é usado no aviso de acesso vencido.</p></div></div><form id="v3SupportForm" class="v3-form"><div class="v3-form-grid"><label class="full"><span>WhatsApp de suporte (com DDI)</span><input name="whatsapp" value="${esc(support)}" inputmode="numeric" placeholder="5511999999999" required></label></div><div class="v3-form-actions"><button class="btn btn-primary"><i data-lucide="save"></i>Salvar suporte</button></div></form></div>`
+        +`<div class="v3-panel"><div class="v3-panel-head"><div><h2>Professores</h2><p>Validade do acesso, pagamento e bloqueio manual ficam concentrados aqui.</p></div><span class="v3-tag">${teachers.length} cadastrado${teachers.length===1?'':'s'}</span></div><div class="v3-master-list">${teachers.map(p=>{
+          const expires=p.access_expires_at?new Date(p.access_expires_at):null;
+          const isExpired=Boolean(expires&&expires.getTime()<now);
+          const days=expires&&!isExpired?Math.ceil((expires.getTime()-now)/86400000):null;
+          const accessLabel=p.blocked?'Bloqueado manualmente':isExpired?'Acesso vencido':expires?(days===0?'Vence hoje':`Válido por ${days} dia${days===1?'':'s'}`):'Sem vencimento';
+          const statusClass=p.blocked||isExpired?'bad':'good';
+          return `<article class="v3-master-prof"><div class="v3-master-main"><div class="v3-avatar">${p.photo_url?`<img src="${esc(p.photo_url)}" alt="Foto de ${esc(p.full_name||p.email||'Professor')}">`:`<i data-lucide="user-round"></i>`}</div><div><strong>${esc(p.full_name||p.name||p.email||'Sem nome')}</strong><span>${esc(p.email||'')} · <b class="v3-master-access ${statusClass}">${esc(accessLabel)}</b></span></div></div><div class="v3-master-payment-chip"><span>Último pagamento</span><strong>${p.last_payment_at?esc(fDate(p.last_payment_at)):'Não registrado'}</strong>${p.payment_method?`<small>${esc(p.payment_method)}${p.payment_amount!=null?` · ${esc(formatCurrency(Number(p.payment_amount)||0))}`:''}</small>`:''}</div><form class="v3-master-form" data-id="${esc(p.id)}"><label><span>Vencimento</span><input type="date" name="expires" value="${esc(p.access_expires_at?toInputDate(p.access_expires_at):'')}"></label><label><span>Quando pagou</span><input type="date" name="paid_at" value="${esc(p.last_payment_at?toInputDate(p.last_payment_at):'')}"></label><label><span>Forma de pagamento</span><select name="method"><option value="">—</option>${['PIX','Transferência','Cartão','Dinheiro','Boleto','Outro'].map(x=>`<option value="${esc(x)}" ${p.payment_method===x?'selected':''}>${esc(x)}</option>`).join('')}</select></label><label><span>Valor pago</span><input type="number" step="0.01" min="0" name="amount" value="${esc(p.payment_amount??'')}"></label><label class="full"><span>Observação do pagamento</span><input name="notes" value="${esc(p.payment_notes||'')}" placeholder="Ex.: mensalidade setembro, comprovante recebido..." maxlength="300"></label><label class="v3-master-check"><input type="checkbox" name="blocked" ${p.blocked?'checked':''}><span>Bloquear manualmente</span></label><button class="btn btn-primary btn-sm"><i data-lucide="save"></i>Salvar cadastro</button></form></article>`;
+        }).join('')||empty('Nenhum professor cadastrado.','Os professores aparecerão aqui após o cadastro.')}</div></div>`;
+      refreshIcons();
+      q('#v3SupportForm')?.addEventListener('submit',async e=>{
+        e.preventDefault();
+        const btn=e.currentTarget.querySelector('button');
+        try{
+          btn?.classList.add('is-loading');
+          const n=String(new FormData(e.currentTarget).get('whatsapp')||'').replace(/\D/g,'');
+          if(n.length<10)throw new Error('Informe um WhatsApp válido com DDI.');
+          const r=await supabaseClient.from('platform_settings').upsert({key:'support_whatsapp',value:n,updated_by:state.user.id},{onConflict:'key'});
+          if(r.error)throw r.error;
+          P.supportWhatsapp=n;APP_CONFIG.whatsappNumber=n;updateExpiredContactLink();showSuccess('WhatsApp de suporte atualizado.');
+        }catch(err){showError(err.message||'Não foi possível salvar o suporte.');}
+        finally{btn?.classList.remove('is-loading');}
+      });
+      $$('.v3-master-form',c).forEach(form=>form.addEventListener('submit',async e=>{
+        e.preventDefault();
+        const btn=form.querySelector('button[type="submit"]')||form.querySelector('button:last-of-type');
+        try{
+          btn?.classList.add('is-loading');
+          const fd=new FormData(form);const id=form.dataset.id;
+          const payload={
+            access_expires_at:fd.get('expires')?new Date(`${fd.get('expires')}T23:59:59`).toISOString():null,
+            last_payment_at:fd.get('paid_at')||null,
+            payment_method:String(fd.get('method')||'').trim()||null,
+            payment_amount:fd.get('amount')!==''&&fd.get('amount')!=null?Number(fd.get('amount')):null,
+            payment_notes:String(fd.get('notes')||'').trim()||null,
+            blocked:fd.get('blocked')==='on'
+          };
+          if(payload.payment_amount!=null && (!Number.isFinite(payload.payment_amount)||payload.payment_amount<0))throw new Error('Informe um valor de pagamento válido.');
+          const r=await supabaseClient.from(V3TABLE.profiles).update(payload).eq('id',id);
+          if(r.error)throw r.error;
+          showSuccess('Cadastro do professor atualizado.');await renderMaster();
+        }catch(err){showError(err.message||'Não foi possível atualizar o professor.');}
+        finally{btn?.classList.remove('is-loading');}
+      }));
+    }catch(err){c.innerHTML=`<div class="v3-panel"><div class="v3-empty"><i data-lucide="circle-alert"></i><strong>Não foi possível carregar a administração.</strong><span>${esc(err.message||'Verifique as permissões do Supabase.')}</span><button class="btn btn-primary btn-sm" onclick="renderMaster()">Tentar novamente</button></div></div>`;refreshIcons();}
   };
 
   /* -------------------------------------------------------------
      VENCIMENTO: master fica liberado; professor fica bloqueado.
   ------------------------------------------------------------- */
-  const originalFinish=window.finishAuthentication;
-  if(typeof originalFinish==='function'){
-    window.finishAuthentication=async function(){
-      await originalFinish();
-      if(state.user)await loadSupportNumber();
-    };
-  }
 
   /* CSS */
   const st=document.createElement('style');st.textContent=`
@@ -8378,19 +8613,30 @@ document.head.appendChild(s);}
     .v3-master-form .full{grid-column:1/-1}
     .v3-master-check{flex-direction:row!important;align-items:center;gap:7px}
     .v3-master-check input{width:auto}
+    .v3-panel,.v3-assessment-card,.v3-wait-card,.v3-master-prof,.v3-history-item,.v3-student-card{transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+    .v3-assessment-card:hover,.v3-wait-card:hover,.v3-master-prof:hover,.v3-student-card:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(32,59,49,.07);border-color:#d3e1da}
+    .v3-history-item.clickable{cursor:pointer}
+    .v3-history-item.clickable:hover{box-shadow:0 8px 24px rgba(32,59,49,.06);border-color:#d3e1da}
+    .v3-option:has(input:checked){border-color:#b8d2c5;background:#f3f9f5;box-shadow:0 0 0 2px rgba(84,122,104,.07)}
+    .btn{transition:transform .16s ease,box-shadow .16s ease,background-color .16s ease,border-color .16s ease}
+    .btn:hover{transform:translateY(-1px)}
+    .btn:active{transform:translateY(0)}
+    .v3-inline-editor{animation:v3Reveal .2s ease-out}
+    @keyframes v3Reveal{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
+    @media(prefers-reduced-motion:reduce){.v3-panel,.v3-assessment-card,.v3-wait-card,.v3-master-prof,.v3-history-item,.v3-student-card,.btn,.v3-inline-editor{transition:none;animation:none!important}}
     @media(max-width:850px){.v3-assessment-cards{grid-template-columns:1fr}.v3-assessment-fields,.v3-wait-grid,.v3-master-form{grid-template-columns:1fr}.v3-assess-question.full,.v3-master-form .full{grid-column:auto}.v3-holiday-row{grid-template-columns:80px 1fr}.v3-holiday-row small{grid-column:2}}
   `;document.head.appendChild(st);
 
   /* Intercept the existing student profile section only when the
      evaluation tab is active, preserving the other profile tabs. */
-  const oldRenderSection=window.v3RenderStudentSection;
+  const oldRenderSection=v3RenderStudentSection;
   window.v3RenderStudentSection=async function(d){
     if(V3.studentSection==='evaluations'){
       const b=byId('v3StudentSectionBody');if(!b)return;
-      await renderStudentEvaluationsInProfile(d,b);
+      await window.renderStudentEvaluationsInProfile(d,b);
       return;
     }
-    return oldRenderSection(d);
+    if(typeof oldRenderSection==='function') return oldRenderSection(d);
   };
 
   /* Ensure master email is treated as master even before profile data
@@ -8399,6 +8645,211 @@ document.head.appendChild(s);}
 
 })();
 </script>
+
+
+
+<script id="legado-stability-layer">
+(function(){
+  'use strict';
+  const C=window.V3Core||{}, TABLE=C.TABLE||window.TABLE||{};
+  const selectSafe=typeof C.selectSafe==='function'?C.selectSafe:window.selectSafe;
+  const insertSafe=typeof C.insertSafe==='function'?C.insertSafe:window.insertSafe;
+  const updateSafe=typeof C.updateSafe==='function'?C.updateSafe:window.updateSafe;
+  const pageShell=typeof C.pageShell==='function'?C.pageShell:window.pageShell;
+  const statCard=typeof C.statCard==='function'?C.statCard:window.statCard;
+  const panel=typeof C.panel==='function'?C.panel:window.panel;
+  const empty=typeof C.empty==='function'?C.empty:window.empty;
+  const v3LoadStudents=typeof C.v3LoadStudents==='function'?C.v3LoadStudents:window.v3LoadStudents;
+  const v3RenderStudentProfileFast=typeof C.v3RenderStudentProfileFast==='function'?C.v3RenderStudentProfileFast:window.v3RenderStudentProfileFast;
+  const statusLabel=typeof C.statusLabel==='function'?C.statusLabel:(window.statusLabel||function(s){return s||'—';});
+  const V3=window.V3||{};
+  const esc=v=>typeof window.escapeHtml==='function'?window.escapeHtml(v??''):String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+  const ready=()=>Boolean(window.supabaseClient&&window.state?.user);
+  const errMsg=e=>e?.message||'Ocorreu um erro inesperado.';
+  const showErr=m=>window.showError?.(m);
+  const showOk=m=>window.showSuccess?.(m);
+  const fmtDate=v=>{const s=String(v||'').slice(0,10),d=s?new Date(s+'T12:00:00'):null;return d&&!Number.isNaN(d.getTime())?d.toLocaleDateString('pt-BR'):'—';};
+  const teacherName=()=>window.state?.profile?.full_name||window.state?.profile?.name||window.state?.user?.user_metadata?.full_name||'professor(a) do Legado Que Ensina';
+  const waLink=(phone,msg)=>{const n=String(phone||'').replace(/\D/g,'');return n?`https://wa.me/${n}?text=${encodeURIComponent(msg)}`:'#';};
+
+  Object.assign(window,{selectSafe,insertSafe,updateSafe,pageShell,statCard,panel,empty,v3LoadStudents,v3RenderStudentProfileFast,statusLabel});
+
+  // AVALIAÇÕES
+  window.renderEvaluations=async function(){
+    const c=document.getElementById('avaliacoesContent');if(!c)return;
+    if(!ready()){c.innerHTML='<div class="v3-panel"><div class="v3-empty"><strong>Sessão não disponível.</strong><span>Entre novamente para carregar as avaliações.</span></div></div>';return;}
+    c.innerHTML='<div class="v3-panel"><div class="v3-loading"><i data-lucide="loader-circle"></i><span>Carregando avaliações...</span></div></div>';
+    window.refreshIcons?.();
+    try{
+      const [evals]=await Promise.all([
+        selectSafe(TABLE.evaluations,{filters:{user_id:state.user.id},order:'evaluation_date',ascending:false,limit:500}),
+        v3LoadStudents()
+      ]);
+      const defs=window.PEDAGOGICAL_ASSESSMENTS||{};
+      const models=Object.entries(defs).map(([name,def])=>`<article class="v3-assessment-card"><div class="v3-assessment-card-icon"><i data-lucide="clipboard-check"></i></div><div><div class="v3-kicker">PRONTO PARA APLICAR</div><h3>${esc(name)}</h3><p>${esc(def.source||'Modelo pedagógico de apoio.')}</p><span class="v3-tag">${Array.isArray(def.fields)?def.fields.length:0} etapas</span></div><button class="btn btn-primary btn-sm" type="button" onclick="V3.assessmentType='${esc(name)}';v3OpenEvaluationEditor()"><i data-lucide="play"></i>Aplicar</button></article>`).join('');
+      const completed=evals.filter(e=>e.status==='completed').length;
+      const history=evals.length?evals.map(e=>{
+        const d=e.assessment_data||{};
+        const preview=Object.entries(d).filter(([k,v])=>k!=='feedback'&&v!==''&&!(Array.isArray(v)&&!v.length)).slice(0,3).map(([k,v])=>`<span class="v3-tag">${esc(k.replaceAll('_',' '))}: ${esc(Array.isArray(v)?v.join(', '):v)}</span>`).join('');
+        return `<article class="v3-history-item"><div class="v3-history-date">${esc(fmtDate(e.evaluation_date))}</div><div class="v3-history-content"><div class="v3-inline-tags"><span class="v3-tag">${esc(e.type||'Avaliação')}</span><span class="status-pill ${esc(e.status||'draft')}">${esc(statusLabel(e.status))}</span></div><strong>${esc(e.title||e.type||'Avaliação')}</strong><p>${esc(e.summary||'Sem síntese registrada.')}</p>${e.student_name?`<span class="v3-student-ref"><i data-lucide="user-round"></i>${esc(e.student_name)}</span>`:''}${preview?`<div class="v3-inline-tags" style="margin-top:8px">${preview}</div>`:''}<div class="v3-form-actions"><button class="btn btn-outline btn-sm" onclick="event.stopPropagation();v3EditEvaluation('${esc(e.id)}')"><i data-lucide="pencil"></i>Editar</button><button class="btn btn-danger btn-sm" onclick="event.stopPropagation();v3DeleteEvaluation('${esc(e.id)}')"><i data-lucide="trash-2"></i>Excluir</button></div></div></article>`;
+      }).join(''):empty('Nenhuma avaliação registrada.','Escolha um modelo pronto ou crie uma avaliação personalizada.');
+      c.innerHTML=pageShell('INVESTIGAÇÃO','Avaliações','Aplicação pedagógica, evidências, síntese, feedback e próximo passo em um mesmo lugar.',`<button class="btn btn-primary" type="button" onclick="V3.assessmentType='Avaliação personalizada';v3OpenEvaluationEditor()"><i data-lucide="plus"></i>Criar personalizada</button>`)
+      +`<div class="v3-stats">${statCard('clipboard-check','Avaliações',evals.length,'No prontuário')}${statCard('user-round-check','Alunos avaliados',new Set(evals.map(e=>e.student_id).filter(Boolean)).size,'Com aplicação')}${statCard('file-check-2','Concluídas',completed,'Finalizadas')}${statCard('clock-3','Em andamento',evals.length-completed,'Rascunhos e pendências')}</div>`
+      +`<div class="v3-panel"><div class="v3-panel-head"><div><h2>Instrumentos pedagógicos</h2><p>Escolha uma proposta pronta e aplique com alternativas, observação e registro.</p></div></div><div class="v3-assessment-cards">${models||empty('Nenhum modelo disponível.','Use a avaliação personalizada para criar seu próprio roteiro.')}</div></div>`
+      +`<div class="v3-panel"><div class="v3-panel-head"><div><h2>Histórico integrado</h2><p>Os registros ficam vinculados ao aluno e podem ser editados ou excluídos.</p></div><span class="v3-tag">${evals.length} registro${evals.length===1?'':'s'}</span></div><div class="v3-assessment-filter">${Object.keys(defs).map(n=>`<span class="v3-filter-chip">${esc(n)} <b>${evals.filter(e=>e.type===n).length}</b></span>`).join('')}</div><div class="v3-history-list">${history}</div></div>`
+      +`<div class="v3-panel"><div class="v3-form-note"><i data-lucide="info"></i><span>Os modelos apoiam avaliação formativa e não substituem instrumentos normatizados ou avaliações clínicas.</span></div></div>`;
+      window.refreshIcons?.();
+    }catch(e){
+      c.innerHTML=`<div class="v3-panel"><div class="v3-empty"><i data-lucide="circle-alert"></i><strong>Não foi possível carregar as avaliações.</strong><span>${esc(errMsg(e))}</span><button class="btn btn-primary btn-sm" type="button" onclick="renderEvaluations()">Tentar novamente</button></div></div>`;
+      window.refreshIcons?.();
+    }
+  };
+
+  window.v3EditEvaluation=async function(id){
+    try{
+      const rows=await selectSafe(TABLE.evaluations,{filters:{user_id:state.user.id},limit:500});
+      const row=rows.find(x=>String(x.id)===String(id));
+      if(!row)throw new Error('Avaliação não encontrada.');
+      if(state.currentView!=='avaliacoes'&&typeof window.navigate==='function'){
+        window.navigate('avaliacoes');setTimeout(()=>window.v3OpenEvaluationEditor?.(row),120);
+      }else await window.v3OpenEvaluationEditor?.(row);
+    }catch(e){showErr(errMsg(e));}
+  };
+
+  window.v3DeleteEvaluation=async function(id){
+    if(!window.confirm('Excluir esta avaliação? Essa ação não poderá ser desfeita.'))return;
+    try{
+      const r=await supabaseClient.from(TABLE.evaluations).delete().eq('id',id).eq('user_id',state.user.id);
+      if(r.error)throw r.error;
+      showOk('Avaliação excluída.');
+      if(state.currentView==='aluno-perfil')await window.v3RenderStudentProfileFast?.();else await window.renderEvaluations?.();
+    }catch(e){showErr(errMsg(e));}
+  };
+
+  // LISTA DE ESPERA
+  window.v3MarkWaitContacted=async function(id){
+    try{await updateSafe(TABLE.waitlist,id,{status:'contacted'});if(state.currentView==='lista-espera')await window.renderWaitlist?.();}
+    catch(e){showErr(errMsg(e));}
+  };
+
+  window.renderWaitlist=async function(){
+    const c=document.getElementById('waitlistContent');if(!c)return;
+    if(!ready()){c.innerHTML='<div class="v3-panel"><div class="v3-empty"><strong>Sessão não disponível.</strong></div></div>';return;}
+    c.innerHTML='<div class="v3-panel"><div class="v3-loading"><i data-lucide="loader-circle"></i><span>Carregando lista de espera...</span></div></div>';window.refreshIcons?.();
+    try{
+      const rows=await selectSafe(TABLE.waitlist,{filters:{user_id:state.user.id},order:'created_at',ascending:false,limit:300});
+      const active=rows.filter(r=>!['converted','cancelled'].includes(String(r.status||'waiting').toLowerCase()));
+      const closed=rows.filter(r=>['converted','cancelled'].includes(String(r.status||'').toLowerCase()));
+      const cards=active.map(r=>{
+        const msg=`Oi, tudo bem? Aqui é ${teacherName()}, professor(a) do Legado Que Ensina. Surgiu uma vaga para atendimento e lembrei de vocês. Você teria interesse em conversar para vermos se esse horário funciona para vocês?`;
+        return `<article class="v3-wait-card"><div class="v3-student-top"><div class="v3-avatar"><i data-lucide="user"></i></div><div class="v3-student-ident"><h3>${esc(r.name)}</h3><span>${esc(r.area||'Área não informada')} · prioridade ${esc(r.priority||'média')}</span></div><span class="v3-tag">${esc({waiting:'Aguardando',contacted:'Contatado'}[r.status]||'Aguardando')}</span></div><div class="v3-wait-meta"><div><b>Família</b>${esc(r.family_contact||'—')}</div><div><b>WhatsApp</b>${esc(r.phone||'—')}</div><div><b>Contexto / observações</b>${esc(r.notes||'—')}</div></div><div class="v3-form-actions"><a class="btn btn-soft btn-sm" target="_blank" rel="noopener" href="${waLink(r.phone,msg)}" onclick="v3MarkWaitContacted('${esc(r.id)}')"><i data-lucide="message-circle"></i>WhatsApp</a><button class="btn btn-primary btn-sm" type="button" onclick="v3ConvertWaitlist('${esc(r.id)}')"><i data-lucide="user-plus"></i>Incluir nos alunos</button><button class="btn btn-outline btn-sm" type="button" onclick="v3EditWaitlist('${esc(r.id)}')"><i data-lucide="pencil"></i>Editar</button></div></article>`;
+      }).join('');
+      c.innerHTML=pageShell('ATENDIMENTO','Lista de espera','Do interesse inicial à entrada no prontuário, sem perder contexto nem contato.',`<button class="btn btn-primary" type="button" onclick="v3OpenWaitlistEditor()"><i data-lucide="user-plus"></i>Adicionar futuro aluno</button>`)
+      +`<div class="v3-stats">${statCard('users-round','Interessados ativos',active.length,'Na fila')}${statCard('message-circle','Já contatados',rows.filter(r=>r.status==='contacted').length,'WhatsApp registrado')}${statCard('user-round-plus','Convertidos',rows.filter(r=>r.status==='converted').length,'Viraram alunos')}${statCard('archive','Encerrados',closed.filter(r=>r.status==='cancelled').length,'Sem continuidade')}</div>`
+      +`<div class="v3-panel"><div class="v3-panel-head"><div><h2>Fila de espera</h2><p>WhatsApp → contato → inclusão nos alunos. Cada etapa altera o registro.</p></div></div>${cards?`<div class="v3-wait-grid">${cards}</div>`:empty('A fila está vazia.','Cadastre o próximo interessado para acompanhar uma futura vaga.')}</div>`
+      +(closed.length?`<div class="v3-panel"><div class="v3-panel-head"><div><h2>Histórico encerrado</h2><p>Conversões e encerramentos permanecem consultáveis.</p></div></div><div class="v3-history-list">${closed.slice(0,40).map(r=>`<article class="v3-history-item"><div class="v3-history-date">${esc(fmtDate(r.updated_at||r.created_at))}</div><div class="v3-history-content"><div class="v3-inline-tags"><span class="v3-tag">${esc(r.status==='converted'?'Convertido':'Encerrado')}</span></div><strong>${esc(r.name)}</strong><p>${esc(r.area||r.notes||'Sem observações.')}</p></div></article>`).join('')}</div></div>`:'');
+      window.refreshIcons?.();
+    }catch(e){
+      c.innerHTML=`<div class="v3-panel"><div class="v3-empty"><i data-lucide="circle-alert"></i><strong>Não foi possível carregar a lista de espera.</strong><span>${esc(errMsg(e))}</span><button class="btn btn-primary btn-sm" type="button" onclick="renderWaitlist()">Tentar novamente</button></div></div>`;
+      window.refreshIcons?.();
+    }
+  };
+
+  // RECADOS: leitura individual dos comunicados gerais.
+  window.v3ReadMessage=async function(id){
+    try{
+      const {data:msg,error}=await supabaseClient.from(TABLE.messages).select('id,user_id,target_all').eq('id',id).maybeSingle();
+      if(error)throw error;if(!msg)throw new Error('Recado não encontrado.');
+      if(msg.target_all&&!window.isMasterUser?.()){
+        const r=await supabaseClient.from('message_reads').upsert({message_id:id,user_id:state.user.id,read_at:new Date().toISOString()},{onConflict:'message_id,user_id'});
+        if(r.error)throw r.error;
+      }else{
+        const r=await supabaseClient.from(TABLE.messages).update({read:true}).eq('id',id);
+        if(r.error)throw r.error;
+      }
+      await window.renderMessages?.();
+    }catch(e){showErr(errMsg(e));}
+  };
+
+  // Recuperação de Recados: se o núcleo V3 antigo não carregar,
+  // a comunicação Master -> professores continua disponível.
+  if(typeof window.renderMessages!=='function'){
+    window.renderMessages=async function(){
+      const c=document.getElementById('recadosContent');if(!c)return;
+      if(!ready()){c.innerHTML=empty('Sessão não disponível.','Entre novamente para consultar os comunicados.');return;}
+      try{
+        const rows=await selectSafe(TABLE.messages,{order:'created_at',ascending:false,limit:200});
+        let visible=rows;
+        if(!window.isMasterUser?.())visible=rows.filter(r=>Boolean(r.target_all)||String(r.user_id||'')===String(state.user.id));
+        const messageCards=visible.map(r=>{
+          const readAction=(!r.read&&!window.isMasterUser?.())?`<button class="btn btn-outline btn-sm" type="button" onclick="v3ReadMessage('${esc(r.id)}')">Marcar como lido</button>`:'';
+          return `<article class="v3-message"><div class="v3-message-icon"><i data-lucide="megaphone"></i></div><div><div class="v3-inline-tags"><span class="v3-tag">${esc(r.type||'Comunicado')}</span><span>${esc(fmtDate(r.created_at))}</span></div><h3>${esc(r.title||'Recado')}</h3><p>${esc(r.message||'')}</p></div>${readAction}</article>`;
+        }).join('');
+        c.innerHTML=pageShell('COMUNICAÇÃO','Recados','Comunicados e orientações ficam reunidos aqui.',window.isMasterUser?.()?'<button class="btn btn-primary" type="button" onclick="v3OpenMessageEditor()"><i data-lucide="plus"></i>Novo comunicado</button>':'')
+          +panel('Central de recados',window.isMasterUser?.()?'Publicação geral para os professores.':'Comunicados enviados pela administração.',visible.length?`<div class="v3-message-list">${messageCards}</div>`:empty('Nenhum recado disponível.','A administração ainda não publicou comunicados.'));
+        window.refreshIcons?.();
+      }catch(e){
+        c.innerHTML=`<div class="v3-panel"><div class="v3-empty"><i data-lucide="circle-alert"></i><strong>Não foi possível carregar os recados.</strong><span>${esc(errMsg(e))}</span><button class="btn btn-primary btn-sm" type="button" onclick="renderMessages()">Tentar novamente</button></div></div>`;
+        window.refreshIcons?.();
+      }
+    };
+  }
+
+  if(typeof window.v3OpenMessageEditor!=='function'){
+    window.v3OpenMessageEditor=function(){
+      if(!window.isMasterUser?.())return showErr('Acesso restrito ao Master.');
+      const c=document.getElementById('recadosContent');if(!c)return;
+      const box=document.createElement('section');box.className='v3-panel v3-inline-editor';box.id='legadoFallbackMessageEditor';
+      box.innerHTML=`<div class="v3-panel-head"><div><div class="v3-kicker">MASTER</div><h2>Novo comunicado</h2><p>Envie uma mensagem geral para todos os professores.</p></div><button class="icon-button" type="button" onclick="document.getElementById('legadoFallbackMessageEditor')?.remove()"><i data-lucide="x"></i></button></div><form class="v3-form"><label><span>Título</span><input name="title" maxlength="120" required></label><label><span>Mensagem</span><textarea name="message" rows="7" maxlength="3000" required></textarea></label><div class="v3-form-actions"><button class="btn btn-outline" type="button" onclick="document.getElementById('legadoFallbackMessageEditor')?.remove()">Cancelar</button><button class="btn btn-primary" type="submit"><i data-lucide="send"></i>Publicar para todos</button></div></form>`;
+      c.prepend(box);window.refreshIcons?.();
+      box.querySelector('form').addEventListener('submit',async ev=>{
+        ev.preventDefault();
+        const btn=box.querySelector('button[type="submit"]');
+        try{
+          btn?.classList.add('is-loading');
+          const fd=new FormData(ev.currentTarget);
+          const r=await supabaseClient.from(TABLE.messages).insert({user_id:state.user.id,target_all:true,title:String(fd.get('title')||'').trim(),type:'Comunicado',message:String(fd.get('message')||'').trim(),read:false});
+          if(r.error)throw r.error;
+          showOk('Comunicado enviado aos professores.');
+          box.remove();
+          await window.renderMessages();
+        }catch(e){showErr(errMsg(e));}
+        finally{btn?.classList.remove('is-loading');}
+      });
+    };
+  }
+
+  // Efeitos visuais sutis e acessíveis.
+  const css=document.createElement('style');
+  css.id='legado-stability-css-final';
+  css.textContent=`
+    .v3-panel,.v3-assessment-card,.v3-wait-card,.v3-master-prof,.v3-history-item,.v3-student-card{transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease,opacity .18s ease}
+    .v3-assessment-card:hover,.v3-wait-card:hover,.v3-master-prof:hover,.v3-student-card:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(32,59,49,.07);border-color:#d3e1da}
+    .v3-history-item:hover{box-shadow:0 8px 24px rgba(32,59,49,.06);border-color:#d3e1da}
+    .v3-option:has(input:checked){border-color:#b8d2c5;background:#f3f9f5;box-shadow:0 0 0 2px rgba(84,122,104,.07)}
+    .btn{transition:transform .16s ease,box-shadow .16s ease,background-color .16s ease,border-color .16s ease}.btn:hover{transform:translateY(-1px)}.btn:active{transform:translateY(0)}
+    .v3-inline-editor{animation:v3Reveal .2s ease-out}.v3-loading i{animation:v3Spin 1s linear infinite}
+    @keyframes v3Reveal{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}@keyframes v3Spin{to{transform:rotate(360deg)}}
+    .legado-view-switching{animation:legadoPageIn .18s ease-out}@keyframes legadoPageIn{from{opacity:.55;transform:translateY(4px)}to{opacity:1;transform:none}}
+    @media(prefers-reduced-motion:reduce){.v3-panel,.v3-assessment-card,.v3-wait-card,.v3-master-prof,.v3-history-item,.v3-student-card,.btn,.v3-inline-editor,.v3-loading i,.legado-view-switching{transition:none;animation:none!important}}
+  `;
+  document.head.appendChild(css);
+
+  const oldNavigate=window.navigate;
+  if(typeof oldNavigate==='function'&&!oldNavigate.__legadoStability){
+    const wrapped=function(view){
+      const target=document.querySelector('.app-main,.main-content,#appMain,#mainContent');
+      target?.classList.add('legado-view-switching');
+      const r=oldNavigate.apply(this,arguments);
+      setTimeout(()=>{target?.classList.remove('legado-view-switching');window.refreshIcons?.();},180);
+      return r;
+    };
+    wrapped.__legadoStability=true;
+    window.navigate=wrapped;
+  }
+})();
+</script>
+
 
 </body>
 </html>
