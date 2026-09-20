@@ -2476,6 +2476,7 @@
 
   function isMasterUser() {
     return Boolean(
+      String(state.user?.email || '').toLowerCase() === 'contato@legadoqueensina.com.br' ||
       state.profile?.is_master ||
       state.profile?.role === 'master' ||
       state.profile?.role === 'admin' ||
@@ -2825,9 +2826,12 @@
 
     await loadUserProfile();
 
+    if (typeof window.loadSupportNumber === 'function') {
+      await window.loadSupportNumber();
+    }
     updateExpiredContactLink();
 
-    if (hasExpiredAccess(state.profile)) {
+    if (hasExpiredAccess(state.profile) || state.profile?.blocked === true) {
       showExpiredScreen();
       return;
     }
@@ -7732,8 +7736,12 @@ window.renderFinance = async function(){
       byId('v3ProgressForm').onsubmit=async e=>{e.preventDefault();try{const fd=new FormData(e.currentTarget);await insertSafe(TABLE.progress,{user_id:state.user.id,student_id:s.id,record_date:fd.get('record_date'),domain:fd.get('domain'),level:fd.get('level'),observation:String(fd.get('observation')||'').trim(),next_goal:String(fd.get('next_goal')||'').trim()||null});showSuccess('Progresso registrado.');await v3RenderStudentProfileFast();}catch(err){showError('Não foi possível registrar: '+err.message);}};
 
     } else if(V3.studentSection==='evaluations'){
-      const history=d.evaluations.length?`<div class="v3-history-list">${d.evaluations.map(e=>`<article class="v3-history-item clickable" onclick="v3OpenEvaluationFromStudent('${esc(e.id)}')"><div class="v3-history-date">${esc(fmtDate(val(e,'evaluation_date','date')))}</div><div class="v3-history-content"><div class="v3-inline-tags"><span class="v3-tag">${esc(e.type||'Avaliação')}</span><span class="status-pill ${esc(e.status||'completed')}">${esc(statusLabel(e.status))}</span></div><strong>${esc(e.title||e.type||'Avaliação')}</strong><p>${esc(e.summary||e.notes||'')}</p></div></article>`).join('')}</div>`:empty('Nenhuma avaliação vinculada ao aluno.','Abra Avaliações para iniciar uma anamnese, TDAH, TEA ou outro instrumento.');
-      b.innerHTML=panel('Histórico de avaliações','Tudo vinculado ao perfil do aluno',history)+`<div class="v3-form-actions"><button class="btn btn-primary" onclick="navigate('avaliacoes')">Abrir avaliações</button></div>`;
+      if (typeof window.renderStudentEvaluationsInProfile === 'function') {
+        await window.renderStudentEvaluationsInProfile(d,b);
+      } else {
+        const history=d.evaluations.length?`<div class="v3-history-list">${d.evaluations.map(e=>`<article class="v3-history-item clickable" onclick="v3OpenEvaluationFromStudent('${esc(e.id)}')"><div class="v3-history-date">${esc(fmtDate(val(e,'evaluation_date','date')))}</div><div class="v3-history-content"><div class="v3-inline-tags"><span class="v3-tag">${esc(e.type||'Avaliação')}</span><span class="status-pill ${esc(e.status||'completed')}">${esc(statusLabel(e.status))}</span></div><strong>${esc(e.title||e.type||'Avaliação')}</strong><p>${esc(e.summary||e.notes||'')}</p></div></article>`).join('')}</div>`:empty('Nenhuma avaliação vinculada ao aluno.','Abra Avaliações para iniciar uma avaliação.');
+        b.innerHTML=panel('Histórico de avaliações','Tudo vinculado ao perfil do aluno',history);
+      }
 
     } else {
       const ctx=d.context||{};
@@ -7830,8 +7838,8 @@ window.renderFinance = async function(){
   window.openMessageModal=window.v3OpenMessageEditor;window.v3ReadMessage=async id=>{try{await updateSafe(TABLE.messages,id,{read:true});renderMessages();}catch(err){showError(err.message);}};
 
   /* -------------------- PERFIL DO PROFESSOR -------------------- */
-  window.renderProfile=async function(){const c=byId('perfilContent');if(!c)return;const p=state.profile||{};const photo=val(p,'photo_url','avatar_url');c.innerHTML=pageShell('PROFISSIONAL','Meu perfil','Apresente seu trabalho e mantenha os dados de contato atualizados.',`<button class="btn btn-primary" onclick="v3SaveProfile()"><i data-lucide="save"></i>Salvar perfil</button>`)+`<div class="v3-panel v3-profile-editor"><div class="v3-profile-preview">${avatar(getUserDisplayName(),photo,'xlarge')}<div><h2>${esc(getUserDisplayName())}</h2><p>${esc(state.user?.email||'')}</p><span class="v3-tag">Professor / Psicopedagogo</span></div></div><form id="v3ProfileForm" class="v3-form"><div class="v3-form-grid"><label><span>Nome profissional *</span><input name="full_name" value="${esc(val(p,'full_name','name')||getUserDisplayName())}" required></label><label><span>Telefone</span><input name="phone" value="${esc(p.phone||'')}"></label><label><span>O que você atende</span><input name="specialty" value="${esc(p.specialty||'')}" placeholder="Ex.: dificuldades de aprendizagem, alfabetização..."></label><label><span>Foto (URL)</span><input name="photo_url" value="${esc(photo)}" placeholder="https://..."></label><label><span>Enviar foto</span><input type="file" name="photo_file" accept="image/*"></label><label class="full"><span>Apresentação</span><textarea name="bio" rows="6" placeholder="Escreva uma apresentação curta para seu perfil.">${esc(p.bio||'')}</textarea></label><label class="full"><span>Serviços / áreas de atendimento</span><textarea name="services" rows="5" placeholder="Liste os atendimentos que oferece.">${esc(p.services||'')}</textarea></label></div></form></div>`;refreshIcons();};
-  window.v3SaveProfile=async function(){try{const fd=new FormData(byId('v3ProfileForm'));let photo=String(fd.get('photo_url')||'').trim()||null;const file=fd.get('photo_file');if(file&&file.size&&supabaseClient){const path=`${state.user.id}/${Date.now()}-${String(file.name).replace(/[^a-zA-Z0-9._-]/g,'_')}`;const up=await supabaseClient.storage.from('profile-photos').upload(path,file,{upsert:true,contentType:file.type||'image/jpeg'});if(up.error)throw up.error;const pub=supabaseClient.storage.from('profile-photos').getPublicUrl(path);photo=pub.data.publicUrl;}const payload={full_name:String(fd.get('full_name')||'').trim(),phone:String(fd.get('phone')||'').trim()||null,specialty:String(fd.get('specialty')||'').trim()||null,photo_url:photo,bio:String(fd.get('bio')||'').trim()||null,services:String(fd.get('services')||'').trim()||null};await updateSafe(TABLE.profiles,state.user.id,payload);state.profile={...(state.profile||{}),...payload};showSuccess('Perfil atualizado.');renderProfile();}catch(err){showError(err.message||'Não foi possível salvar o perfil.');}};
+  window.renderProfile=async function(){const c=byId('perfilContent');if(!c)return;const p=state.profile||{};const photo=val(p,'photo_url','avatar_url');c.innerHTML=pageShell('PROFISSIONAL','Meu perfil','Apresente seu trabalho e mantenha os dados de contato atualizados.',`<button class="btn btn-primary" onclick="v3SaveProfile()"><i data-lucide="save"></i>Salvar perfil</button>`)+`<div class="v3-panel v3-profile-editor"><div class="v3-profile-preview">${avatar(getUserDisplayName(),photo,'xlarge')}<div><h2>${esc(getUserDisplayName())}</h2><p>${esc(state.user?.email||'')}</p><span class="v3-tag">Professor / Psicopedagogo</span></div></div><form id="v3ProfileForm" class="v3-form"><div class="v3-form-grid"><label><span>Nome profissional *</span><input name="full_name" value="${esc(val(p,'full_name','name')||getUserDisplayName())}" required></label><label><span>Telefone</span><input name="phone" value="${esc(p.phone||'')}"></label><label><span>O que você atende</span><input name="specialty" value="${esc(p.specialty||'')}" placeholder="Ex.: dificuldades de aprendizagem, alfabetização..."></label><label><span>Foto (URL)</span><input name="photo_url" value="${esc(photo)}" placeholder="https://..."></label><label class="full"><span>Apresentação</span><textarea name="bio" rows="6" placeholder="Escreva uma apresentação curta para seu perfil.">${esc(p.bio||'')}</textarea></label><label class="full"><span>Serviços / áreas de atendimento</span><textarea name="services" rows="5" placeholder="Liste os atendimentos que oferece.">${esc(p.services||'')}</textarea></label></div></form></div>`;refreshIcons();};
+  window.v3SaveProfile=async function(){try{const fd=new FormData(byId('v3ProfileForm'));let photo=String(fd.get('photo_url')||'').trim()||null;const payload={full_name:String(fd.get('full_name')||'').trim(),phone:String(fd.get('phone')||'').trim()||null,specialty:String(fd.get('specialty')||'').trim()||null,photo_url:photo,bio:String(fd.get('bio')||'').trim()||null,services:String(fd.get('services')||'').trim()||null};await updateSafe(TABLE.profiles,state.user.id,payload);state.profile={...(state.profile||{}),...payload};showSuccess('Perfil atualizado.');renderProfile();}catch(err){showError(err.message||'Não foi possível salvar o perfil.');}};
 
   /* -------------------- PRESERVAÇÃO DE FORMULÁRIOS INLINE -------------------- */
   window.closeModal=function(){const m=byId('uxModal');if(m)m.style.display='none';};
@@ -7857,5 +7865,501 @@ document.head.appendChild(s);}
 })();
 
 </script>
+
+<script id="legado-final-patch">
+(function(){
+  'use strict';
+
+  const P = {
+    supportWhatsapp: '5500000000000',
+    masterEmail: 'contato@legadoqueensina.com.br'
+  };
+
+  const q = (s, r=document)=>r.querySelector(s);
+  const esc = v => escapeHtml(v ?? '');
+  const today = ()=>toInputDate(new Date());
+  const dOnly = v=>String(v||'').slice(0,10);
+  const parseD = s=>{const a=String(s||'').slice(0,10).split('-').map(Number);return a.length===3&&a.every(Boolean)?new Date(a[0],a[1]-1,a[2]):null;};
+  const fDate = s=>{const d=parseD(s);return d?d.toLocaleDateString('pt-BR'): '—';};
+
+  function isMaster(){
+    return String(state.user?.email||'').toLowerCase()===P.masterEmail ||
+      Boolean(state.profile?.is_master) ||
+      ['master','admin'].includes(String(state.profile?.role||'').toLowerCase());
+  }
+
+  window.isMasterUser = isMaster;
+
+  /* -------------------------------------------------------------
+     FOTO DO ALUNO: somente URL, sem upload.
+  ------------------------------------------------------------- */
+  window.v3ShowStudentEditor = function(student=null){
+    const box=byId('v3StudentEditor'); if(!box)return;
+    box.hidden=false;
+    box.innerHTML=`<div class="v3-editor-head">
+      <div><div class="v3-kicker">${student?'EDITAR ALUNO':'NOVO ALUNO'}</div><h3>${student?'Atualize o cadastro e a foto':'Cadastre o aluno e informe a foto por URL'}</h3></div>
+      <button class="icon-button" onclick="v3CloseInline('v3StudentEditor')"><i data-lucide="x"></i></button>
+    </div>
+    <form id="v3StudentForm" class="v3-form">
+      <div class="v3-form-grid">
+        <label><span>Nome completo *</span><input name="name" value="${esc(student?.name||student?.full_name||'')}" required></label>
+        <label><span>Data de nascimento</span><input type="date" name="birth_date" value="${esc(student?.birth_date?toInputDate(student.birth_date):'')}"></label>
+        <label><span>Telefone da família</span><input name="phone" value="${esc(student?.phone||'')}"></label>
+        <label><span>E-mail</span><input type="email" name="email" value="${esc(student?.email||'')}"></label>
+        <label><span>Responsável</span><input name="responsible_name" value="${esc(student?.responsible_name||student?.guardian_name||student?.parent_name||'')}"></label>
+        <label><span>CPF</span><input name="cpf" value="${esc(student?.cpf||'')}"></label>
+        <label><span>Status</span><select name="status">
+          <option value="active" ${!student||student.status==='active'?'selected':''}>Ativo</option>
+          <option value="inactive" ${student?.status==='inactive'?'selected':''}>Inativo</option>
+          <option value="pending" ${student?.status==='pending'?'selected':''}>Pendente</option>
+        </select></label>
+        <label><span>Foto do aluno — URL</span><input type="url" name="photo_url" value="${esc(student?.photo_url||'')}" placeholder="https://site.com/foto.jpg"></label>
+        <label class="full"><span>Observações cadastrais</span><textarea name="notes" rows="4">${esc(student?.notes||student?.observations||'')}</textarea></label>
+      </div>
+      <div class="v3-form-note"><i data-lucide="image"></i><span>A foto é vinculada somente por URL. Não é feito upload de imagem para o sistema.</span></div>
+      <div class="v3-form-actions"><button type="button" class="btn btn-outline" onclick="v3CloseInline('v3StudentEditor')">Cancelar</button><button class="btn btn-primary">${student?'Salvar alterações':'Cadastrar aluno'}</button></div>
+    </form>`;
+    refreshIcons();
+    q('#v3StudentForm').onsubmit=async e=>{
+      e.preventDefault();
+      try{
+        const fd=new FormData(e.currentTarget);
+        const payload={
+          user_id:state.user.id,
+          name:String(fd.get('name')||'').trim(),
+          full_name:String(fd.get('name')||'').trim(),
+          birth_date:fd.get('birth_date')||null,
+          phone:String(fd.get('phone')||'').trim()||null,
+          email:String(fd.get('email')||'').trim()||null,
+          responsible_name:String(fd.get('responsible_name')||'').trim()||null,
+          cpf:String(fd.get('cpf')||'').trim()||null,
+          status:fd.get('status')||'active',
+          photo_url:String(fd.get('photo_url')||'').trim()||null,
+          notes:String(fd.get('notes')||'').trim()||null
+        };
+        if(!payload.name) throw new Error('Informe o nome do aluno.');
+        if(student) await updateSafe(TABLE.students,student.id,payload);
+        else await insertSafe(TABLE.students,payload);
+        showSuccess(student?'Aluno atualizado.':'Aluno cadastrado.');
+        await renderStudents();
+      }catch(err){showError(err.message||'Não foi possível salvar o aluno.');}
+    };
+  };
+
+  /* -------------------------------------------------------------
+     AVALIAÇÕES PEDAGÓGICAS
+     Estrutura: situação/tarefa + observação + escolha única/múltipla
+     + escala + síntese/feedback. Os modelos abaixo são instrumentos
+     pedagógicos de apoio e não substituem testes normatizados.
+  ------------------------------------------------------------- */
+  const PEDAGOGICAL_ASSESSMENTS = {
+    'Leitura e compreensão':{
+      source:'Base pedagógica: avaliação formativa, coleta de evidências, critérios de sucesso e feedback. Referência: Siqueira (2021), Educação e Pesquisa.',
+      fields:[
+        {k:'fluencia',l:'Fluência observada',t:'single',o:['Lê com ritmo e pausas adequadas','Lê com algumas interrupções','Lê palavra a palavra','Necessita de apoio frequente']},
+        {k:'estrategia',l:'Ao encontrar uma palavra desconhecida, o aluno:',t:'multi',o:['Tenta reler o trecho','Usa pistas do contexto','Observa partes da palavra','Pede ajuda imediatamente']},
+        {k:'compreensao',l:'Após a leitura, consegue:',t:'multi',o:['Localizar informações explícitas','Explicar com suas palavras','Fazer inferências simples','Relacionar com conhecimentos prévios']},
+        {k:'atividade',l:'Tarefa aplicada / texto utilizado',t:'task'},
+        {k:'evidencias',l:'Evidências observadas',t:'text'},
+        {k:'proximo',l:'Próximo objetivo de aprendizagem',t:'text'}
+      ]
+    },
+    'Escrita e ortografia':{
+      source:'Base pedagógica: avaliação formativa e uso das evidências para regular o ensino. Referência: Vaz & Nasser (2021), Bolema.',
+      fields:[
+        {k:'hipotese',l:'Hipótese/nível de escrita observado',t:'single',o:['Pré-silábica','Silábica','Silábico-alfabética','Alfabética','Em consolidação ortográfica']},
+        {k:'estrategias',l:'Durante a escrita, utiliza:',t:'multi',o:['Segmentação de palavras','Autocorreção','Consulta a referências','Releitura do próprio texto']},
+        {k:'aspectos',l:'Aspectos observados',t:'multi',o:['Correspondência fonema-grafema','Ortografia','Segmentação','Pontuação','Coesão','Organização textual']},
+        {k:'producao',l:'Proposta de produção escrita',t:'task'},
+        {k:'evidencias',l:'Evidências observadas',t:'text'},
+        {k:'proximo',l:'Próximo objetivo de aprendizagem',t:'text'}
+      ]
+    },
+    'Matemática e raciocínio':{
+      source:'Base pedagógica: situações-problema, critérios claros, coleta de evidências e feedback formativo. Referência: Vaz & Nasser (2021), Bolema.',
+      fields:[
+        {k:'estrategia',l:'Diante de um problema, o aluno:',t:'multi',o:['Lê e identifica os dados','Explica o que precisa descobrir','Escolhe uma estratégia','Verifica o resultado','Muda de estratégia quando necessário']},
+        {k:'procedimento',l:'Autonomia no procedimento',t:'single',o:['Autônomo','Autônomo com pequenas pistas','Precisa de mediação','Ainda não inicia sem apoio']},
+        {k:'raciocinio',l:'Evidências de raciocínio',t:'multi',o:['Justifica a resposta','Representa de outra forma','Compara estratégias','Identifica o próprio erro']},
+        {k:'situacao',l:'Situação-problema proposta',t:'task'},
+        {k:'evidencias',l:'Evidências observadas',t:'text'},
+        {k:'proximo',l:'Próximo objetivo de aprendizagem',t:'text'}
+      ]
+    },
+    'Atenção e autorregulação':{
+      source:'Base pedagógica: observação situada, múltiplas evidências e feedback. Não é instrumento diagnóstico.',
+      fields:[
+        {k:'inicio',l:'Para iniciar a atividade, o aluno:',t:'single',o:['Inicia sozinho','Inicia após uma orientação','Precisa de mediação frequente','Evita/abandona a tarefa']},
+        {k:'manutencao',l:'Durante a tarefa:',t:'multi',o:['Mantém o objetivo em mente','Retoma após distração','Organiza materiais','Pede ajuda de forma adequada','Conclui dentro do combinado']},
+        {k:'estrategias',l:'Estratégias de autorregulação observadas:',t:'multi',o:['Planejamento','Autoinstrução','Checklist','Pausa combinada','Revisão do que fez']},
+        {k:'tarefa',l:'Tarefa/situação observada',t:'task'},
+        {k:'evidencias',l:'Evidências observadas',t:'text'},
+        {k:'proximo',l:'Próximo objetivo de aprendizagem',t:'text'}
+      ]
+    },
+    'Observação pedagógica':{
+      source:'Modelo aberto para registro de evidências em contexto real de aprendizagem.',
+      fields:[
+        {k:'participacao',l:'Participação na proposta',t:'single',o:['Muito envolvido','Envolvido com apoio','Oscilante','Pouco envolvido']},
+        {k:'interacao',l:'Interações relevantes',t:'multi',o:['Colabora','Explica seu raciocínio','Escuta o outro','Aceita feedback','Solicita ajuda']},
+        {k:'estrategias',l:'Estratégias percebidas',t:'multi',o:['Planeja','Testa hipóteses','Revisa','Autocorrige','Busca pistas']},
+        {k:'atividade',l:'Atividade/contexto',t:'task'},
+        {k:'evidencias',l:'Registro descritivo',t:'text'},
+        {k:'proximo',l:'Próximo objetivo',t:'text'}
+      ]
+    },
+    'Anamnese pedagógica':{
+      source:'Roteiro de levantamento de contexto. Não substitui anamnese clínica ou avaliação especializada.',
+      fields:[
+        {k:'queixa',l:'Queixa/objetivo principal',t:'text'},
+        {k:'historico',l:'Histórico escolar e de aprendizagem',t:'text'},
+        {k:'rotina',l:'Rotina de estudos e hábitos',t:'text'},
+        {k:'familia',l:'Informações relevantes trazidas pela família',t:'text'},
+        {k:'escola',l:'Informações relevantes da escola',t:'text'},
+        {k:'potencialidades',l:'Potencialidades e interesses do aluno',t:'text'},
+        {k:'proximos',l:'Focos iniciais de investigação/intervenção',t:'text'}
+      ]
+    },
+    'Avaliação personalizada':{
+      source:'Modelo aberto para criação de um instrumento próprio, com critérios e evidências definidos pelo professor.',
+      fields:[
+        {k:'criterio',l:'Critério/objetivo de aprendizagem',t:'text'},
+        {k:'evidencia',l:'O que será observado',t:'text'},
+        {k:'atividade',l:'Atividade ou situação proposta',t:'task'},
+        {k:'registro',l:'Registro das evidências',t:'text'},
+        {k:'feedback',l:'Feedback formativo ao aluno',t:'text'},
+        {k:'proximo',l:'Próximo passo pedagógico',t:'text'}
+      ]
+    }
+  };
+
+  window.PEDAGOGICAL_ASSESSMENTS=PEDAGOGICAL_ASSESSMENTS;
+
+  function fieldHTML(f,data={}){
+    const value=data[f.k];
+    if(f.t==='single') return `<label class="v3-assess-question"><span>${esc(f.l)}</span><div class="v3-options">${f.o.map((o,i)=>`<label class="v3-option"><input type="radio" name="assess_${esc(f.k)}" value="${esc(o)}" ${value===o?'checked':''}><span>${esc(o)}</span></label>`).join('')}</div></label>`;
+    if(f.t==='multi'){
+      const vals=Array.isArray(value)?value:(value?[String(value)]:[]);
+      return `<label class="v3-assess-question"><span>${esc(f.l)} <small>Você pode marcar mais de uma.</small></span><div class="v3-options">${f.o.map(o=>`<label class="v3-option"><input type="checkbox" name="assess_${esc(f.k)}" value="${esc(o)}" ${vals.includes(o)?'checked':''}><span>${esc(o)}</span></label>`).join('')}</div></label>`;
+    }
+    if(f.t==='task') return `<label class="v3-assess-question full"><span>${esc(f.l)}</span><textarea data-assess-key="${esc(f.k)}" rows="4" placeholder="Descreva a situação, proposta, material ou desafio aplicado.">${esc(value||'')}</textarea></label>`;
+    return `<label class="v3-assess-question full"><span>${esc(f.l)}</span><textarea data-assess-key="${esc(f.k)}" rows="5">${esc(value||'')}</textarea></label>`;
+  }
+
+  function collectAssessment(form, fields){
+    const data={};
+    fields.forEach(f=>{
+      if(f.t==='single'){
+        const el=form.querySelector(`input[name="assess_${CSS.escape(f.k)}"]:checked`);
+        data[f.k]=el?el.value:'';
+      }else if(f.t==='multi'){
+        data[f.k]=Array.from(form.querySelectorAll(`input[name="assess_${CSS.escape(f.k)}"]:checked`)).map(x=>x.value);
+      }else{
+        const el=form.querySelector(`[data-assess-key="${CSS.escape(f.k)}"]`);
+        data[f.k]=el?el.value:'';
+      }
+    });
+    return data;
+  }
+
+  function renderAssessmentQuestions(type,data={}){
+    const def=PEDAGOGICAL_ASSESSMENTS[type]||PEDAGOGICAL_ASSESSMENTS['Avaliação personalizada'];
+    return `<div class="v3-assessment-source"><i data-lucide="book-open"></i><span>${esc(def.source)}</span></div><div class="v3-assessment-fields">${def.fields.map(f=>fieldHTML(f,data)).join('')}</div>`;
+  }
+
+  window.v3OpenEvaluationEditor=async function(existing=null){
+    if(!studentsState.data?.length) await v3LoadStudents();
+    const box=byId('v3EvaluationEditor'); if(!box)return;
+    box.hidden=false;
+    const e=existing||{};
+    const type=e.type&&PEDAGOGICAL_ASSESSMENTS[e.type]?e.type:(V3.assessmentType&&PEDAGOGICAL_ASSESSMENTS[V3.assessmentType]?V3.assessmentType:'Leitura e compreensão');
+    const data=e.assessment_data||{};
+    box.innerHTML=`<div class="v3-editor-head"><div><div class="v3-kicker">${existing?'EDITAR AVALIAÇÃO':'NOVA AVALIAÇÃO'}</div><h3>${esc(type)}</h3><p class="v3-form-note-text">A aplicação começa por uma situação/tarefa e coleta evidências por observação e escolhas, além do registro escrito.</p></div><button class="icon-button" onclick="v3CloseInline('v3EvaluationEditor')"><i data-lucide="x"></i></button></div>
+      <form id="v3EvaluationForm" class="v3-form">
+        <div class="v3-form-grid">
+          <label><span>Aluno *</span><select name="student_id" required><option value="">Selecione</option>${studentsState.data.map(s=>`<option value="${esc(s.id)}" ${String(e.student_id)===String(s.id)?'selected':''}>${esc(s.name||s.full_name)}</option>`).join('')}</select></label>
+          <label><span>Modelo / instrumento</span><select name="type" id="v3EvaluationType">${Object.keys(PEDAGOGICAL_ASSESSMENTS).map(t=>`<option ${t===type?'selected':''}>${esc(t)}</option>`).join('')}</select></label>
+          <label><span>Data *</span><input type="date" name="evaluation_date" value="${esc(e.evaluation_date||today())}" required></label>
+          <label><span>Status</span><select name="status"><option value="draft" ${e.status==='draft'||!e.status?'selected':''}>Rascunho</option><option value="completed" ${e.status==='completed'?'selected':''}>Concluída</option></select></label>
+          <label class="full"><span>Título</span><input name="title" value="${esc(e.title||type)}"></label>
+        </div>
+        <div id="v3AssessmentFields">${renderAssessmentQuestions(type,data)}</div>
+        <div class="v3-form-grid">
+          <label class="full"><span>Síntese pedagógica</span><textarea name="summary" rows="6" placeholder="O que os dados indicam sobre a aprendizagem? Quais potencialidades, barreiras e necessidades apareceram?">${esc(e.summary||'')}</textarea></label>
+          <label class="full"><span>Feedback e próximo passo</span><textarea name="feedback" rows="5" placeholder="Registre uma devolutiva clara e a próxima ação pedagógica.">${esc(data.feedback||e.feedback||'')}</textarea></label>
+        </div>
+        <div class="v3-form-actions"><button type="button" class="btn btn-outline" onclick="v3CloseInline('v3EvaluationEditor')">Cancelar</button>${existing?`<button type="button" class="btn btn-danger" onclick="v3DeleteEvaluation('${esc(e.id)}')">Excluir avaliação</button>`:''}<button class="btn btn-primary">Salvar avaliação</button></div>
+      </form>`;
+    refreshIcons();
+    q('#v3EvaluationType').onchange=()=>{const t=q('#v3EvaluationType').value;q('#v3AssessmentFields').innerHTML=renderAssessmentQuestions(t,{});refreshIcons();};
+    q('#v3EvaluationForm').onsubmit=async ev=>{
+      ev.preventDefault();
+      try{
+        const fd=new FormData(ev.currentTarget);
+        const st=studentsState.data.find(s=>String(s.id)===String(fd.get('student_id')));
+        if(!st)throw new Error('Selecione o aluno.');
+        const type=String(fd.get('type'));
+        const def=PEDAGOGICAL_ASSESSMENTS[type];
+        const data=collectAssessment(ev.currentTarget,def.fields);
+        data.feedback=String(fd.get('feedback')||'').trim();
+        const payload={user_id:state.user.id,student_id:st.id,student_name:st.name||st.full_name,evaluation_date:fd.get('evaluation_date'),type,title:String(fd.get('title')||type).trim()||type,status:fd.get('status'),summary:String(fd.get('summary')||'').trim()||null,notes:Object.entries(data).map(([k,v])=>`${k}: ${Array.isArray(v)?v.join(', '):v}`).filter(x=>!/: $/.test(x)).join('\n'),assessment_data:data};
+        if(existing)await updateSafe(TABLE.evaluations,existing.id,payload);else await insertSafe(TABLE.evaluations,payload);
+        showSuccess(existing?'Avaliação atualizada.':'Avaliação salva e vinculada ao aluno.');
+        renderEvaluations();
+        if(state.currentView==='aluno-perfil')v3RenderStudentProfileFast();
+      }catch(err){showError(err.message||'Não foi possível salvar a avaliação.');}
+    };
+  };
+
+
+  window.renderEvaluations=async function(){
+    const c=byId('avaliacoesContent');if(!c)return;
+    const [evals,students]=await Promise.all([
+      selectSafe(TABLE.evaluations,{filters:{user_id:state.user.id},order:'evaluation_date',ascending:false,limit:500}),
+      v3LoadStudents()
+    ]);
+    const counts=Object.keys(PEDAGOGICAL_ASSESSMENTS).map(t=>[t,evals.filter(e=>e.type===t).length]);
+    const cards=Object.entries(PEDAGOGICAL_ASSESSMENTS).map(([name,def])=>`
+      <article class="v3-assessment-card">
+        <div class="v3-assessment-card-icon"><i data-lucide="clipboard-check"></i></div>
+        <div><div class="v3-kicker">MODELO PRONTO</div><h3>${esc(name)}</h3><p>${esc(def.source)}</p>
+        <span class="v3-tag">${def.fields.length} blocos de evidência</span></div>
+        <button class="btn btn-primary btn-sm" onclick="V3.assessmentType='${esc(name)}';v3OpenEvaluationEditor()"><i data-lucide="play"></i>Aplicar</button>
+      </article>`).join('');
+    const history=evals.length?evals.map(e=>`<article class="v3-history-item"><div class="v3-history-date">${esc(fDate(e.evaluation_date))}</div><div class="v3-history-content"><div class="v3-inline-tags"><span class="v3-tag">${esc(e.type||'Avaliação')}</span><span class="status-pill ${esc(e.status||'draft')}">${esc(statusLabel(e.status))}</span></div><strong>${esc(e.title||e.type||'Avaliação')}</strong><p>${esc(e.summary||'Sem síntese registrada.')}</p><div class="v3-form-actions"><button class="btn btn-outline btn-sm" onclick="v3EditEvaluation('${esc(e.id)}')"><i data-lucide="pencil"></i>Editar</button><button class="btn btn-danger btn-sm" onclick="v3DeleteEvaluation('${esc(e.id)}')"><i data-lucide="trash-2"></i>Excluir</button></div></div></article>`).join(''):`${empty('Nenhuma avaliação registrada.','Escolha um modelo pronto ou crie uma personalizada.')}`;
+    c.innerHTML=pageShell('INVESTIGAÇÃO','Avaliações','Avaliações com tarefas, observação, alternativas, múltiplas escolhas, síntese e próximo passo pedagógico.',`<button class="btn btn-primary" onclick="V3.assessmentType='Avaliação personalizada';v3OpenEvaluationEditor()"><i data-lucide="plus"></i>Criar personalizada</button>`)
+      +`<div class="v3-stats">${statCard('clipboard-check','Avaliações registradas',evals.length,'Histórico da prática')}${statCard('user-round-check','Alunos avaliados',new Set(evals.map(e=>e.student_id).filter(Boolean)).size,'Com registros')}${statCard('file-check-2','Concluídas',evals.filter(e=>e.status==='completed').length,'Finalizadas')}${statCard('clock-3','Rascunhos',evals.filter(e=>e.status!=='completed').length,'Em preenchimento')}</div>
+      <div class="v3-panel"><div class="v3-panel-head"><div><h2>Avaliações prontas para aplicar</h2><p>Modelos estruturados para observar aprendizagem e transformar evidências em próximos passos.</p></div></div><div class="v3-assessment-cards">${cards}</div></div>
+      <div class="v3-panel"><div class="v3-panel-head"><div><h2>Histórico das aplicações</h2><p>Você pode abrir, editar ou excluir qualquer aplicação.</p></div></div><div class="v3-assessment-filter">${counts.map(([t,n])=>`<span class="v3-filter-chip">${esc(t)} <b>${n}</b></span>`).join('')}</div><div class="v3-history-list">${history}</div></div>
+      <div class="v3-panel"><div class="v3-form-note"><i data-lucide="info"></i><span>Os modelos foram desenhados para apoiar avaliação formativa: situação/tarefa, coleta de evidências, critérios observáveis, feedback e próximo passo. Não substituem instrumentos normatizados ou avaliação diagnóstica especializada.</span></div></div>`;
+    refreshIcons();
+  };
+
+  window.v3EditEvaluation=async function(id){
+    const evals=await selectSafe(TABLE.evaluations,{filters:{user_id:state.user.id},limit:500});
+    const e=evals.find(x=>String(x.id)===String(id));
+    if(!e)return showError('Avaliação não encontrada.');
+    if(state.currentView!=='avaliacoes'){navigate('avaliacoes');setTimeout(()=>v3OpenEvaluationEditor(e),150);}
+    else v3OpenEvaluationEditor(e);
+  };
+
+  window.v3DeleteEvaluation=async function(id){
+    if(!confirm('Excluir esta avaliação? Essa ação não poderá ser desfeita.'))return;
+    try{await supabaseClient.from(TABLE.evaluations).delete().eq('id',id).eq('user_id',state.user.id);showSuccess('Avaliação excluída.');renderEvaluations();if(state.currentView==='aluno-perfil')v3RenderStudentProfileFast();}catch(err){showError(err.message);}
+  };
+
+  /* -------------------------------------------------------------
+     PERFIL DO ALUNO: ações de editar/excluir avaliação e visualização
+     de todos os dados.
+  ------------------------------------------------------------- */
+
+  window.renderStudentEvaluationsInProfile=async function(d,b){
+    const history=d.evaluations.length?`<div class="v3-history-list">${d.evaluations.map(e=>{
+      const raw=e.assessment_data||{};
+      const details=Object.entries(raw).filter(([k,v])=>k!=='feedback'&&v!==''&&!(Array.isArray(v)&&!v.length)).map(([k,v])=>`<div class="v3-eval-detail"><span>${esc(k.replaceAll('_',' '))}</span><strong>${esc(Array.isArray(v)?v.join(', '):v)}</strong></div>`).join('');
+      return `<article class="v3-history-item"><div class="v3-history-date">${esc(fDate(e.evaluation_date))}</div><div class="v3-history-content"><div class="v3-inline-tags"><span class="v3-tag">${esc(e.type||'Avaliação')}</span><span class="status-pill ${esc(e.status||'completed')}">${esc(statusLabel(e.status))}</span></div><strong>${esc(e.title||e.type||'Avaliação')}</strong><p>${esc(e.summary||'Sem síntese registrada.')}</p>${details?`<div class="v3-eval-details">${details}</div>`:''}${e.assessment_data?.feedback?`<div class="v3-note-block"><span>Feedback / próximo passo</span><p>${esc(e.assessment_data.feedback)}</p></div>`:''}<div class="v3-form-actions"><button class="btn btn-outline btn-sm" onclick="v3EditEvaluation('${esc(e.id)}')"><i data-lucide="pencil"></i>Editar</button><button class="btn btn-danger btn-sm" onclick="v3DeleteEvaluation('${esc(e.id)}')"><i data-lucide="trash-2"></i>Excluir</button></div></div></article>`;
+    }).join('')}</div>`:empty('Nenhuma avaliação vinculada ao aluno.','Abra Avaliações para aplicar um instrumento.');
+    b.innerHTML=panel('Histórico de avaliações','Registro completo da aplicação e dos dados coletados',history)+`<div class="v3-form-actions"><button class="btn btn-primary" onclick="navigate('avaliacoes')"><i data-lucide="clipboard-plus"></i>Nova avaliação</button></div>`;
+    refreshIcons();
+  }
+
+  /* -------------------------------------------------------------
+     FERIADOS BRASIL — calculados para o ano exibido.
+  ------------------------------------------------------------- */
+  function easterDate(year){
+    const a=year%19,b=Math.floor(year/100),c=year%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),month=Math.floor((h+l-7*m+114)/31),day=((h+l-7*m+114)%31)+1;
+    return new Date(year,month-1,day);
+  }
+  function brHolidays(year){
+    const out=[
+      [`${year}-01-01`,'Confraternização Universal','Nacional'],
+      [`${year}-04-21`,'Tiradentes','Nacional'],
+      [`${year}-05-01`,'Dia Mundial do Trabalho','Nacional'],
+      [`${year}-09-07`,'Independência do Brasil','Nacional'],
+      [`${year}-10-12`,'Nossa Senhora Aparecida','Nacional'],
+      [`${year}-11-02`,'Finados','Nacional'],
+      [`${year}-11-15`,'Proclamação da República','Nacional'],
+      [`${year}-11-20`,'Dia da Consciência Negra','Nacional'],
+      [`${year}-12-25`,'Natal','Nacional']
+    ];
+    const eas=easterDate(year);
+    const fmt=d=>toInputDate(d);
+    const add=(delta,name,type='Ponto facultativo comum')=>{const d=new Date(eas);d.setDate(d.getDate()+delta);out.push([fmt(d),name,type]);};
+    add(-47,'Carnaval','Ponto facultativo comum');
+    add(-48,'Carnaval','Ponto facultativo comum');
+    add(-2,'Sexta-feira Santa','Ponto facultativo comum');
+    add(60,'Corpus Christi','Ponto facultativo comum');
+    return out.sort((a,b)=>a[0].localeCompare(b[0]));
+  }
+  window.brHolidays=brHolidays;
+
+  const originalRenderAgenda=window.renderAgenda;
+  window.renderAgenda=async function(){
+    await originalRenderAgenda();
+    const c=byId('agendaContent'); if(!c)return;
+    const year=V3.agendaMonth.getFullYear();
+    const holidays=brHolidays(year);
+    const map=new Map(holidays.map(x=>[x[0],x]));
+    $$('.v3-day',c).forEach(btn=>{
+      const strong=btn.querySelector('strong');if(!strong)return;
+      const base=btn.getAttribute('onclick')||'';
+      const m=base.match(/'(\d{4}-\d{2}-\d{2})'/);if(!m)return;
+      const h=map.get(m[1]);if(h){
+        const old=btn.querySelector('.v3-holiday-label');if(old)old.remove();
+        const sp=document.createElement('span');sp.className='v3-holiday-label';sp.textContent=h[1];btn.appendChild(sp);
+      }
+    });
+    const existing=q('#v3HolidayPanel',c);if(existing)existing.remove();
+    const list=holidays.map(h=>`<div class="v3-holiday-row"><strong>${esc(fDate(h[0]))}</strong><span>${esc(h[1])}</span><small>${esc(h[2])}</small></div>`).join('');
+    c.insertAdjacentHTML('beforeend',`<div class="v3-panel" id="v3HolidayPanel"><div class="v3-panel-head"><div><h2>Feriados e datas especiais — ${year}</h2><p>Feriados nacionais e datas tradicionalmente observadas no calendário escolar. Feriados estaduais/municipais podem ser acrescentados conforme a localidade.</p></div></div><div class="v3-holiday-list">${list}</div></div>`);
+    refreshIcons();
+  };
+
+  /* -------------------------------------------------------------
+     LISTA DE ESPERA + WhatsApp + conversão em aluno.
+  ------------------------------------------------------------- */
+  function waNumber(v){return String(v||'').replace(/\D/g,'');}
+  function waLink(number,message){const n=waNumber(number);return n?`https://wa.me/${n}?text=${encodeURIComponent(message)}`:'#';}
+  function teacherName(){return state.profile?.full_name||state.profile?.name||state.user?.user_metadata?.full_name||'meu nome é o professor';}
+
+  window.renderWaitlist=async function(){
+    const c=byId('waitlistContent');if(!c)return;
+    const rows=await selectSafe('waitlist',{filters:{user_id:state.user.id},order:'created_at',ascending:false,limit:300});
+    const active=rows.filter(r=>!['converted','cancelled'].includes(String(r.status||'waiting').toLowerCase()));
+    c.innerHTML=pageShell('ATENDIMENTO','Lista de espera','Entenda o futuro aluno, registre o contexto e entre em contato quando surgir uma vaga.',`<button class="btn btn-primary" onclick="v3OpenWaitlistEditor()"><i data-lucide="user-plus"></i>Adicionar futuro aluno</button>`)
+      +panel('Fila de espera',`${active.length} interessado${active.length===1?'':'s'} aguardando contato.`,active.length?`<div class="v3-wait-grid">${active.map(r=>{
+        const msg=`Oi, tudo bem? Aqui é ${teacherName()}, professor(a) do Legado Que Ensina. Surgiu uma vaga para atendimento e lembrei de vocês. Você teria interesse em conversar para vermos se esse horário funciona para vocês?`;
+        return `<article class="v3-wait-card"><div class="v3-student-top"><div class="v3-avatar"><i data-lucide="user"></i></div><div class="v3-student-ident"><h3>${esc(r.name)}</h3><span>${esc(r.area||'Área não informada')} · prioridade ${esc(r.priority||'média')}</span></div></div><div class="v3-wait-meta"><div><b>Família</b>${esc(r.family_contact||r.phone||'—')}</div><div><b>Observações</b>${esc(r.notes||'—')}</div></div><div class="v3-form-actions"><a class="btn btn-soft btn-sm" target="_blank" rel="noopener" href="${waLink(r.phone,msg)}"><i data-lucide="message-circle"></i>WhatsApp</a><button class="btn btn-primary btn-sm" onclick="v3ConvertWaitlist('${esc(r.id)}')"><i data-lucide="user-plus"></i>Incluir nos alunos</button><button class="btn btn-outline btn-sm" onclick="v3EditWaitlist('${esc(r.id)}')"><i data-lucide="pencil"></i>Editar</button></div></article>`;
+      }).join('')}</div>`:empty('A lista de espera está vazia.','Cadastre o próximo interessado para acompanhar a oportunidade.') );
+    refreshIcons();
+  };
+
+  window.v3OpenWaitlistEditor=async function(existing=null){
+    const c=byId('waitlistContent');if(!c)return;
+    let holder=q('#v3WaitEditor',c);if(holder)holder.remove();
+    holder=document.createElement('section');holder.id='v3WaitEditor';holder.className='v3-panel v3-inline-editor';c.insertBefore(holder,c.children[1]||null);
+    const r=existing||{};
+    holder.innerHTML=`<div class="v3-editor-head"><div><div class="v3-kicker">${existing?'EDITAR INTERESSADO':'NOVO INTERESSADO'}</div><h3>Cadastro do futuro aluno</h3></div><button class="icon-button" onclick="v3CloseInline('v3WaitEditor')"><i data-lucide="x"></i></button></div><form id="v3WaitForm" class="v3-form"><div class="v3-form-grid"><label><span>Nome *</span><input name="name" value="${esc(r.name)}" required></label><label><span>WhatsApp / telefone *</span><input name="phone" value="${esc(r.phone)}" required></label><label><span>Contato da família</span><input name="family_contact" value="${esc(r.family_contact)}" placeholder="Nome e relação"></label><label><span>Área / motivo da procura</span><input name="area" value="${esc(r.area)}" placeholder="Ex.: alfabetização, matemática..."></label><label><span>Prioridade</span><select name="priority"><option value="baixa" ${r.priority==='baixa'?'selected':''}>Baixa</option><option value="media" ${!r.priority||r.priority==='media'?'selected':''}>Média</option><option value="alta" ${r.priority==='alta'?'selected':''}>Alta</option></select></label><label><span>Status</span><select name="status"><option value="waiting" ${!r.status||r.status==='waiting'?'selected':''}>Aguardando</option><option value="contacted" ${r.status==='contacted'?'selected':''}>Contato realizado</option><option value="converted" ${r.status==='converted'?'selected':''}>Incluído nos alunos</option><option value="cancelled" ${r.status==='cancelled'?'selected':''}>Encerrado</option></select></label><label class="full"><span>O que a família contou / contexto do aluno</span><textarea name="notes" rows="6">${esc(r.notes)}</textarea></label></div><div class="v3-form-actions"><button type="button" class="btn btn-outline" onclick="renderWaitlist()">Cancelar</button><button class="btn btn-primary">Salvar interessado</button></div></form>`;
+    refreshIcons();
+    q('#v3WaitForm').onsubmit=async e=>{
+      e.preventDefault();try{
+        const fd=new FormData(e.currentTarget);const payload={user_id:state.user.id,name:String(fd.get('name')).trim(),phone:String(fd.get('phone')).trim(),family_contact:String(fd.get('family_contact')||'').trim()||null,area:String(fd.get('area')||'').trim()||null,priority:fd.get('priority'),status:fd.get('status'),notes:String(fd.get('notes')||'').trim()||null};
+        if(existing)await updateSafe('waitlist',existing.id,payload);else await insertSafe('waitlist',payload);
+        showSuccess(existing?'Interessado atualizado.':'Interessado adicionado.');renderWaitlist();
+      }catch(err){showError(err.message);}
+    };
+  };
+
+  window.v3EditWaitlist=async function(id){const rows=await selectSafe('waitlist',{filters:{user_id:state.user.id},limit:300});const r=rows.find(x=>String(x.id)===String(id));if(r)v3OpenWaitlistEditor(r);};
+  window.v3ConvertWaitlist=async function(id){
+    const rows=await selectSafe('waitlist',{filters:{user_id:state.user.id},limit:300});const r=rows.find(x=>String(x.id)===String(id));if(!r)return;
+    if(!confirm(`Incluir ${r.name} na lista de alunos?`))return;
+    try{
+      await insertSafe('students',{user_id:state.user.id,name:r.name,full_name:r.name,phone:r.phone||null,responsible_name:r.family_contact||null,notes:r.notes||null,status:'active'});
+      await updateSafe('waitlist',r.id,{status:'converted',converted_at:new Date().toISOString()});
+      showSuccess(`${r.name} foi incluído nos alunos.`);renderWaitlist();
+    }catch(err){showError('Não foi possível converter: '+err.message);}
+  };
+
+  /* -------------------------------------------------------------
+     MASTER: comunicados, vencimento, pagamento e bloqueio.
+  ------------------------------------------------------------- */
+  async function loadSupportNumber(){
+    try{
+      const {data,error}=await supabaseClient.from('platform_settings').select('value').eq('key','support_whatsapp').maybeSingle();
+      if(!error&&data?.value)P.supportWhatsapp=data.value;
+    }catch(_){}
+    APP_CONFIG.whatsappNumber=P.supportWhatsapp;
+    updateExpiredContactLink();
+  }
+  window.loadSupportNumber=loadSupportNumber;
+
+  window.renderMaster=async function(){
+    const c=byId('masterContent');if(!c)return;
+    if(!isMaster()){c.innerHTML='<div class="card"><div class="empty">Acesso restrito.</div></div>';return;}
+    const {data:profiles,error}=await supabaseClient.from('profiles').select('*').order('full_name',{ascending:true});
+    if(error){c.innerHTML=`<div class="card"><div class="empty">${esc(error.message)}</div></div>`;return;}
+    const settings=await supabaseClient.from('platform_settings').select('*').eq('key','support_whatsapp').maybeSingle();
+    const support=settings.data?.value||P.supportWhatsapp;
+    c.innerHTML=pageShell('MASTER','Administração','Controle de acesso, pagamentos, suporte e comunicados dos professores.',`<button class="btn btn-primary" onclick="v3OpenMessageEditor()"><i data-lucide="megaphone"></i>Novo comunicado</button>`)
+      +`<div class="v3-panel"><div class="v3-panel-head"><div><h2>WhatsApp de suporte</h2><p>Este número aparece quando o acesso do professor vence.</p></div></div><form id="v3SupportForm" class="v3-form"><div class="v3-form-grid"><label><span>Número com DDI</span><input name="whatsapp" value="${esc(support)}" placeholder="5511999999999" required></label></div><div class="v3-form-actions"><button class="btn btn-primary">Salvar suporte</button></div></form></div>`
+      +`<div class="v3-panel"><div class="v3-panel-head"><div><h2>Professores</h2><p>Defina validade do acesso e registre o pagamento de cada professor.</p></div></div><div class="v3-master-list">${profiles.map(p=>{
+        const expired=p.access_expires_at && new Date(p.access_expires_at)<new Date();
+        return `<article class="v3-master-prof"><div class="v3-master-main"><div class="v3-avatar"><i data-lucide="user-round"></i></div><div><strong>${esc(p.full_name||p.name||p.email||'Sem nome')}</strong><span>${esc(p.email||'')} · ${expired?'Acesso vencido':p.access_expires_at?'Acesso válido':'Sem vencimento'}</span></div></div><form class="v3-master-form" data-id="${esc(p.id)}"><label><span>Vencimento</span><input type="date" name="expires" value="${esc(p.access_expires_at?toInputDate(p.access_expires_at):'')}"></label><label><span>Quando pagou</span><input type="date" name="paid_at" value="${esc(p.last_payment_at?toInputDate(p.last_payment_at):'')}"></label><label><span>Forma de pagamento</span><select name="method"><option value="">—</option>${['PIX','Transferência','Cartão','Dinheiro','Boleto','Outro'].map(x=>`<option ${p.payment_method===x?'selected':''}>${x}</option>`).join('')}</select></label><label><span>Valor pago</span><input type="number" step="0.01" name="amount" value="${esc(p.payment_amount??'')}"></label><label class="full"><span>Observação do pagamento</span><input name="notes" value="${esc(p.payment_notes||'')}" placeholder="Ex.: mensalidade setembro, comprovante recebido..."></label><label class="v3-master-check"><input type="checkbox" name="blocked" ${p.blocked?'checked':''}><span>Bloquear manualmente</span></label><button class="btn btn-primary btn-sm">Salvar cadastro</button></form></article>`;
+      }).join('')||empty('Nenhum professor cadastrado.','Os perfis aparecerão aqui após o cadastro.')}</div></div>`;
+    refreshIcons();
+    q('#v3SupportForm').onsubmit=async e=>{e.preventDefault();try{const n=String(new FormData(e.currentTarget).get('whatsapp')||'').replace(/\D/g,'');await supabaseClient.from('platform_settings').upsert({key:'support_whatsapp',value:n,updated_by:state.user.id},{onConflict:'key'});P.supportWhatsapp=n;APP_CONFIG.whatsappNumber=n;updateExpiredContactLink();showSuccess('WhatsApp de suporte atualizado.');}catch(err){showError(err.message);}};
+    $$('.v3-master-form',c).forEach(form=>form.onsubmit=async e=>{e.preventDefault();try{const fd=new FormData(form);const id=form.dataset.id;const payload={access_expires_at:fd.get('expires')?new Date(fd.get('expires')+'T23:59:59').toISOString():null,last_payment_at:fd.get('paid_at')||null,payment_method:String(fd.get('method')||'').trim()||null,payment_amount:fd.get('amount')?Number(fd.get('amount')):null,payment_notes:String(fd.get('notes')||'').trim()||null,blocked:fd.get('blocked')==='on'};const r=await supabaseClient.from('profiles').update(payload).eq('id',id);if(r.error)throw r.error;showSuccess('Cadastro do professor atualizado.');renderMaster();}catch(err){showError(err.message);}});
+  };
+
+  /* -------------------------------------------------------------
+     VENCIMENTO: master fica liberado; professor fica bloqueado.
+  ------------------------------------------------------------- */
+  const originalFinish=window.finishAuthentication;
+  if(typeof originalFinish==='function'){
+    window.finishAuthentication=async function(){
+      await originalFinish();
+      if(state.user)await loadSupportNumber();
+    };
+  }
+
+  /* CSS */
+  const st=document.createElement('style');st.textContent=`
+    .v3-assessment-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.v3-assessment-card{display:grid;grid-template-columns:42px 1fr auto;gap:12px;align-items:start;padding:14px;border:1px solid #e4ebe7;border-radius:15px;background:#fbfdfc}.v3-assessment-card h3{margin:2px 0 5px;font-size:14px}.v3-assessment-card p{margin:0 0 8px;font-size:10px;color:#74817b;line-height:1.5}.v3-assessment-card-icon{width:42px;height:42px;border-radius:12px;background:#edf5f0;color:#547a68;display:grid;place-items:center}.v3-assessment-source{display:flex;gap:9px;align-items:flex-start;padding:12px 14px;margin:12px 0;border:1px solid #dfe9e3;border-radius:12px;background:#f6faf7;color:#5e6f66;font-size:11px;line-height:1.55}
+    .v3-assessment-fields{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin:14px 0}
+    .v3-assess-question{padding:14px;border:1px solid #e6ece8;border-radius:13px;background:#fbfdfc}
+    .v3-assess-question.full{grid-column:1/-1}
+    .v3-assess-question>span{display:block;font-size:11px;font-weight:800;color:#52625a;margin-bottom:9px}
+    .v3-assess-question small{font-weight:500;color:#839089}
+    .v3-options{display:grid;gap:7px}
+    .v3-option{display:flex!important;flex-direction:row!important;align-items:flex-start;gap:8px;padding:8px 9px;border-radius:9px;background:#fff;border:1px solid #edf1ef;cursor:pointer}
+    .v3-option input{margin-top:2px;accent-color:#547a68}
+    .v3-option span{font-size:11px!important;font-weight:500!important;color:#5f6d66!important}
+    .v3-eval-details{display:grid;gap:7px;margin-top:10px}
+    .v3-eval-detail{padding:9px;border-radius:9px;background:#f7faf8}
+    .v3-eval-detail span{display:block;text-transform:capitalize;font-size:9px;color:#7d8a84;font-weight:800}
+    .v3-eval-detail strong{display:block;margin-top:3px;font-size:11px;color:#4f5f57}
+    .v3-holiday-label{font-size:8px!important;color:#b06b2c!important;font-weight:800;line-height:1.2}
+    .v3-holiday-list{display:grid;gap:6px}
+    .v3-holiday-row{display:grid;grid-template-columns:90px 1fr 160px;gap:12px;padding:9px;border-bottom:1px solid #edf1ef;font-size:11px}
+    .v3-holiday-row small{color:#87928d}
+    .v3-wait-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+    .v3-wait-card{padding:15px;border:1px solid #e4ebe7;border-radius:16px}
+    .v3-wait-meta{display:grid;gap:8px;margin:13px 0;padding:11px;border-radius:11px;background:#f7faf8;font-size:11px;color:#5e6b65}
+    .v3-wait-meta b{display:block;font-size:9px;text-transform:uppercase;color:#84918b;margin-bottom:3px}
+    .v3-master-list{display:grid;gap:12px}
+    .v3-master-prof{padding:15px;border:1px solid #e4ebe7;border-radius:16px}
+    .v3-master-main{display:flex;align-items:center;gap:10px;margin-bottom:13px}
+    .v3-master-main strong,.v3-master-main span{display:block}
+    .v3-master-main span{font-size:10px;color:#7c8983;margin-top:3px}
+    .v3-master-form{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;align-items:end}
+    .v3-master-form label{display:flex;flex-direction:column;gap:5px}
+    .v3-master-form label>span{font-size:9px;font-weight:800;color:#65736c}
+    .v3-master-form input,.v3-master-form select{border:1px solid #dfe7e2;border-radius:9px;padding:9px;background:#fff}
+    .v3-master-form .full{grid-column:1/-1}
+    .v3-master-check{flex-direction:row!important;align-items:center;gap:7px}
+    .v3-master-check input{width:auto}
+    @media(max-width:850px){.v3-assessment-cards{grid-template-columns:1fr}.v3-assessment-fields,.v3-wait-grid,.v3-master-form{grid-template-columns:1fr}.v3-assess-question.full,.v3-master-form .full{grid-column:auto}.v3-holiday-row{grid-template-columns:80px 1fr}.v3-holiday-row small{grid-column:2}}
+  `;document.head.appendChild(st);
+
+  /* Intercept the existing student profile section only when the
+     evaluation tab is active, preserving the other profile tabs. */
+  const oldRenderSection=window.v3RenderStudentSection;
+  window.v3RenderStudentSection=async function(d){
+    if(V3.studentSection==='evaluations'){
+      const b=byId('v3StudentSectionBody');if(!b)return;
+      await renderStudentEvaluationsInProfile(d,b);
+      return;
+    }
+    return oldRenderSection(d);
+  };
+
+  /* Ensure master email is treated as master even before profile data
+     is populated, and refresh support URL after app boot. */
+  window.addEventListener('load',()=>{try{updateMasterMenu();loadSupportNumber();}catch(_){}});
+
+})();
+</script>
+
 </body>
 </html>
