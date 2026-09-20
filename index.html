@@ -1924,35 +1924,6 @@
     ).format(date);
   }
 
-  // Compatibilidade da Agenda: converte uma data no formato YYYY-MM-DD
-  // para Date local, evitando deslocamento de fuso horário.
-  function fromInputDate(value) {
-    if (value instanceof Date) {
-      return new Date(value.getTime());
-    }
-
-    const text = safeString(value).trim();
-    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(text);
-
-    if (match) {
-      const year = Number(match[1]);
-      const month = Number(match[2]) - 1;
-      const day = Number(match[3]);
-      const date = new Date(year, month, day);
-
-      if (
-        date.getFullYear() === year &&
-        date.getMonth() === month &&
-        date.getDate() === day
-      ) {
-        return date;
-      }
-    }
-
-    const parsed = toDate(value);
-    return parsed || new Date();
-  }
-
   function toInputDate(value) {
     const date = toDate(value);
 
@@ -7301,7 +7272,6 @@ function verifySupabaseConfiguration() {
 </script>
 
 
-<!-- CAMADA FINAL UNIFICADA: preserva o código original e corrige os fluxos -->
 <script>
 (function(){
   'use strict';
@@ -7445,5 +7415,138 @@ function verifySupabaseConfiguration() {
 })();
 
 </script>
+<script>
+(function(){
+'use strict';
+
+/* ============================================================
+   RECONSTRUÇÃO V2 — DASHBOARD INTERATIVO
+   Preserva o sistema original e substitui apenas a camada visual
+   do dashboard/financeiro quando o usuário navega para essas telas.
+   ============================================================ */
+
+function rzEsc(v){
+  if (typeof escapeHtml === 'function') return escapeHtml(v == null ? '' : String(v));
+  return String(v == null ? '' : v).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function rzDate(v){
+  if (!v) return null;
+  const s=String(v).slice(0,10); const p=s.split('-');
+  if(p.length===3){ const d=new Date(Number(p[0]),Number(p[1])-1,Number(p[2])); if(!isNaN(d)) return d; }
+  const d=new Date(v); return isNaN(d)?null:d;
+}
+function rzISO(d){
+  const x=d instanceof Date?d:new Date(d); if(isNaN(x)) return '';
+  return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`;
+}
+function rzMoney(v){
+  return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+}
+function rzMonthKey(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; }
+function rzMonthLabel(k){
+  const [y,m]=k.split('-').map(Number);
+  return new Date(y,m-1,1).toLocaleDateString('pt-BR',{month:'short'}).replace('.','');
+}
+function rzRefresh(){ try{ if(typeof refreshIcons==='function') refreshIcons(); else if(window.lucide) lucide.createIcons(); }catch(e){} }
+
+function rzGet(arr, key, fallback=[]){ return Array.isArray(arr)?arr:fallback; }
+async function rzLoad(table, select='*'){
+  try{
+    if(!window.supabaseClient || !window.state || !state.user) return [];
+    let q=supabaseClient.from(table).select(select);
+    if(table && table!=='profiles') q=q.eq('user_id',state.user.id);
+    const r=await q;
+    if(r.error) return [];
+    return r.data||[];
+  }catch(e){ return []; }
+}
+
+function rzDashboardSkeleton(){
+ return `<div class="rz-page">
+  <div class="rz-head"><div><div class="rz-kicker">VISÃO GERAL</div><h1>Dashboard</h1><p>Acompanhe sua prática em um só lugar.</p></div><button class="btn btn-primary" onclick="navigate('alunos')"><i data-lucide="user-plus"></i>Novo aluno</button></div>
+  <div class="rz-kpis" id="rzKpis"><div class="rz-loading">Carregando indicadores...</div></div>
+  <div class="rz-grid-main"><section class="rz-panel"><div class="rz-panel-head"><div><h2>Atendimentos da semana</h2><span>Distribuição da agenda</span></div><button class="btn btn-outline btn-sm" onclick="navigate('agenda')">Abrir agenda</button></div><div id="rzWeekChart" class="rz-chart"></div></section>
+  <section class="rz-panel"><div class="rz-panel-head"><div><h2>Resumo financeiro</h2><span>Receitas confirmadas</span></div><button class="btn btn-outline btn-sm" onclick="navigate('financeiro')">Ver financeiro</button></div><div id="rzFinanceChart" class="rz-chart rz-chart-small"></div></section></div>
+  <div class="rz-grid-bottom"><section class="rz-panel"><div class="rz-panel-head"><div><h2>Próximos atendimentos</h2><span>Compromissos mais próximos</span></div></div><div id="rzUpcoming"></div></section>
+  <section class="rz-panel"><div class="rz-panel-head"><div><h2>Carga de trabalho</h2><span>Semana atual</span></div><strong id="rzOccupancy" class="rz-big">0%</strong></div><div class="rz-progress"><span id="rzOccupancyFill"></span></div><div id="rzWorkText" class="rz-muted"></div></section></div>
+ </div>`;
+}
+
+function rzBarChart(el, labels, values, opts={}){
+ if(!el) return;
+ const max=Math.max(1,...values); const w=760,h=250,p=34,bottom=48,innerW=w-p*2,innerH=h-p-bottom;
+ const gap=12, bw=Math.max(10,(innerW-gap*(values.length-1))/Math.max(values.length,1));
+ const bars=values.map((v,i)=>{const x=p+i*(bw+gap), bh=(v/max)*innerH, y=p+innerH-bh; return `<g><rect x="${x}" y="${y}" width="${bw}" height="${Math.max(2,bh)}" rx="7" class="rz-bar"></rect><text x="${x+bw/2}" y="${Math.max(14,y-7)}" text-anchor="middle" class="rz-value">${rzEsc(opts.valueFmt?opts.valueFmt(v):v)}</text><text x="${x+bw/2}" y="${h-18}" text-anchor="middle" class="rz-label">${rzEsc(labels[i])}</text></g>`}).join('');
+ el.innerHTML=`<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Gráfico de barras"><line x1="${p}" y1="${p+innerH}" x2="${w-p}" y2="${p+innerH}" class="rz-axis"/>${bars}</svg>`;
+}
+function rzLineChart(el, labels, values){
+ if(!el)return; const w=760,h=250,p=34,bottom=48,iw=w-p*2,ih=h-p-bottom,max=Math.max(1,...values);
+ const pts=values.map((v,i)=>{const x=p+(values.length===1?iw/2:i*iw/(values.length-1)),y=p+ih-(v/max)*ih;return [x,y]});
+ const path=pts.map((p0,i)=>(i?'L':'M')+p0[0]+' '+p0[1]).join(' ');
+ el.innerHTML=`<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Evolução financeira"><line x1="${p}" y1="${p+ih}" x2="${w-p}" y2="${p+ih}" class="rz-axis"/><path d="${path}" class="rz-line"/><path d="${path} L ${pts[pts.length-1][0]} ${p+ih} L ${pts[0][0]} ${p+ih} Z" class="rz-area"/>${pts.map((q,i)=>`<circle cx="${q[0]}" cy="${q[1]}" r="5" class="rz-dot"/><text x="${q[0]}" y="${Math.max(15,q[1]-10)}" text-anchor="middle" class="rz-value">${rzMoney(values[i])}</text><text x="${q[0]}" y="${h-18}" text-anchor="middle" class="rz-label">${rzEsc(labels[i])}</text>`).join('')}</svg>`;
+}
+
+window.renderDashboard = async function(){
+ const c=document.getElementById('dashboardContent'); if(!c)return;
+ c.innerHTML=rzDashboardSkeleton(); rzRefresh();
+ const [students,appointments,payments,evaluations,waitlist]=await Promise.all([
+  rzLoad('students'),rzLoad('appointments'),rzLoad('payments'),rzLoad('evaluations'),rzLoad('waitlist')
+ ]);
+ const now=new Date(), today=rzISO(now), weekStart=new Date(now); weekStart.setDate(now.getDate()-((now.getDay()+6)%7));
+ const weekDates=Array.from({length:7},(_,i)=>{const d=new Date(weekStart);d.setDate(weekStart.getDate()+i);return rzISO(d)});
+ const active=students.filter(s=>String(s.status||'active').toLowerCase()!=='inactive');
+ const todayAp=appointments.filter(a=>String(a.appointment_date||a.date||'').slice(0,10)===today);
+ const weekAp=appointments.filter(a=>weekDates.includes(String(a.appointment_date||a.date||'').slice(0,10)));
+ const month=rzMonthKey(now);
+ const monthPaid=payments.filter(p=>rzMonthKey(rzDate(p.payment_date||p.date)||new Date(0))===month && ['paid','confirmed','pago','received'].includes(String(p.status||'paid').toLowerCase()));
+ const revenue=monthPaid.reduce((s,p)=>s+Number(p.amount||p.valor||0),0);
+ const pending=payments.filter(p=>['pending','pendente','unpaid'].includes(String(p.status||'').toLowerCase())).reduce((s,p)=>s+Number(p.amount||p.valor||0),0);
+ const done=appointments.filter(a=>rzMonthKey(rzDate(a.appointment_date||a.date)||new Date(0))===month && ['completed','concluido','concluida','done'].includes(String(a.status||'').toLowerCase())).length;
+ const pendingEval=evaluations.filter(e=>!['completed','concluido','concluida'].includes(String(e.status||'').toLowerCase())).length;
+ const wait=waitlist.length;
+ const occupancy=Math.min(100,Math.round((weekAp.length/40)*100));
+ document.getElementById('rzKpis').innerHTML=[
+  ['users','Alunos ativos',active.length,'Cadastros ativos'],['calendar-check-2','Atendimentos hoje',todayAp.length,'Na agenda de hoje'],['wallet','Receita do mês',rzMoney(revenue),'Pagamentos confirmados'],['clipboard-clock','Avaliações pendentes',pendingEval,'Acompanhar'],
+ ].map(x=>`<div class="rz-kpi"><div class="rz-icon"><i data-lucide="${x[0]}"></i></div><div><span>${x[1]}</span><strong>${x[2]}</strong><small>${x[3]}</small></div></div>`).join('');
+ const dayLabels=['Seg','Ter','Qua','Qui','Sex','Sáb','Dom']; const dayVals=weekDates.map(d=>weekAp.filter(a=>String(a.appointment_date||a.date||'').slice(0,10)===d).length);
+ rzBarChart(document.getElementById('rzWeekChart'),dayLabels,dayVals);
+ const months=Array.from({length:6},(_,i)=>{const d=new Date(now.getFullYear(),now.getMonth()-5+i,1);return rzMonthKey(d)});
+ const revs=months.map(k=>payments.filter(p=>rzMonthKey(rzDate(p.payment_date||p.date)||new Date(0))===k && ['paid','confirmed','pago','received'].includes(String(p.status||'paid').toLowerCase())).reduce((s,p)=>s+Number(p.amount||p.valor||0),0));
+ rzLineChart(document.getElementById('rzFinanceChart'),months.map(rzMonthLabel),revs);
+ const upcoming=appointments.filter(a=>String(a.appointment_date||a.date||'').slice(0,10)>=today && !['cancelled','canceled'].includes(String(a.status||'').toLowerCase())).sort((a,b)=>String(a.appointment_date||a.date).localeCompare(String(b.appointment_date||b.date))).slice(0,6);
+ const studentMap=new Map(students.map(s=>[String(s.id),s]));
+ document.getElementById('rzUpcoming').innerHTML=upcoming.length?upcoming.map(a=>{const s=studentMap.get(String(a.student_id||a.alunoId));const d=String(a.appointment_date||a.date||'').slice(0,10);return `<div class="rz-row"><div class="rz-date"><strong>${d.slice(8,10)}</strong><span>${rzDate(d)?.toLocaleDateString('pt-BR',{month:'short'}).replace('.','')}</span></div><div class="rz-row-main"><strong>${rzEsc(s?.name||s?.nome||'Aluno')}</strong><span>${rzEsc(a.appointment_time||a.time||'')} · ${rzEsc(a.type||a.tipo||'Atendimento')}</span></div><span class="status-pill ${rzEsc(String(a.status||'scheduled').toLowerCase())}">${rzEsc(a.status||'Agendado')}</span></div>`}).join(''):`<div class="rz-empty">Nenhum próximo atendimento.</div>`;
+ document.getElementById('rzOccupancy').textContent=occupancy+'%'; document.getElementById('rzOccupancyFill').style.width=occupancy+'%'; document.getElementById('rzWorkText').textContent=`${weekAp.length} atendimentos agendados nesta semana · ${Math.max(0,40-weekAp.length)} blocos disponíveis de uma referência de 40.`;
+ rzRefresh();
+};
+
+/* Financeiro: mantém os dados do sistema original, mas entrega uma visão analítica completa. */
+window.renderFinance = async function(){
+ const c=document.getElementById('financeiroContent'); if(!c)return;
+ c.innerHTML=`<div class="rz-page"><div class="rz-head"><div><div class="rz-kicker">GESTÃO</div><h1>Financeiro</h1><p>Receitas, pendências e evolução financeira.</p></div><button class="btn btn-primary" onclick="openPaymentModal()"><i data-lucide="plus"></i>Novo lançamento</button></div><div id="rzFinKpis" class="rz-kpis"></div><div class="rz-grid-main"><section class="rz-panel"><div class="rz-panel-head"><div><h2>Receita dos últimos 6 meses</h2><span>Pagamentos confirmados</span></div></div><div id="rzFinChart" class="rz-chart"></div></section><section class="rz-panel"><div class="rz-panel-head"><div><h2>Resumo</h2><span>Período atual</span></div></div><div id="rzFinSummary"></div></section></div><section class="rz-panel" style="margin-top:18px"><div class="rz-panel-head"><div><h2>Últimos lançamentos</h2><span>Registros financeiros</span></div></div><div id="rzFinRows"></div></section></div>`;
+ rzRefresh();
+ const [payments,appointments]=await Promise.all([rzLoad('payments'),rzLoad('appointments')]); const now=new Date(), month=rzMonthKey(now);
+ const paid=payments.filter(p=>['paid','confirmed','pago','received'].includes(String(p.status||'paid').toLowerCase())); const monthPaid=paid.filter(p=>rzMonthKey(rzDate(p.payment_date||p.date)||new Date(0))===month);
+ const revenue=monthPaid.reduce((s,p)=>s+Number(p.amount||p.valor||0),0); const allPaid=paid.reduce((s,p)=>s+Number(p.amount||p.valor||0),0); const pending=payments.filter(p=>['pending','pendente','unpaid'].includes(String(p.status||'').toLowerCase())).reduce((s,p)=>s+Number(p.amount||p.valor||0),0);
+ const months=Array.from({length:6},(_,i)=>{const d=new Date(now.getFullYear(),now.getMonth()-5+i,1);return rzMonthKey(d)}); const vals=months.map(k=>paid.filter(p=>rzMonthKey(rzDate(p.payment_date||p.date)||new Date(0))===k).reduce((s,p)=>s+Number(p.amount||p.valor||0),0));
+ document.getElementById('rzFinKpis').innerHTML=[['wallet','Receita do mês',rzMoney(revenue),'Confirmado'],['clock-3','A receber',rzMoney(pending),'Pendências'],['trending-up','Receita acumulada',rzMoney(allPaid),'Registros confirmados'],['calendar-check-2','Atendimentos no mês',appointments.filter(a=>rzMonthKey(rzDate(a.appointment_date||a.date)||new Date(0))===month).length,'Agenda']].map(x=>`<div class="rz-kpi"><div class="rz-icon"><i data-lucide="${x[0]}"></i></div><div><span>${x[1]}</span><strong>${x[2]}</strong><small>${x[3]}</small></div></div>`).join('');
+ rzLineChart(document.getElementById('rzFinChart'),months.map(rzMonthLabel),vals);
+ document.getElementById('rzFinSummary').innerHTML=`<div class="rz-fin-summary"><div><span>Recebido</span><strong>${rzMoney(revenue)}</strong></div><div><span>Pendente</span><strong>${rzMoney(pending)}</strong></div><div><span>Registros</span><strong>${monthPaid.length}</strong></div></div>`;
+ const rows=payments.slice().sort((a,b)=>String(b.payment_date||b.date||'').localeCompare(String(a.payment_date||a.date||''))).slice(0,15);
+ document.getElementById('rzFinRows').innerHTML=rows.length?`<div class="rz-table"><div class="rz-tr rz-th"><span>Data</span><span>Descrição</span><span>Valor</span><span>Status</span></div>${rows.map(p=>`<div class="rz-tr"><span>${rzEsc(String(p.payment_date||p.date||'').slice(0,10))}</span><span>${rzEsc(p.description||p.descricao||'Pagamento')}</span><strong>${rzMoney(p.amount||p.valor||0)}</strong><span class="status-pill ${rzEsc(String(p.status||'pending').toLowerCase())}">${rzEsc(p.status||'')}</span></div>`).join('')}</div>`:`<div class="rz-empty">Nenhum lançamento encontrado.</div>`;
+ rzRefresh();
+};
+
+})();
+
+</script>
+
+<style id="rebuild-v2-css">
+.rz-page{padding-bottom:30px}.rz-head{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-bottom:24px}.rz-kicker{font-size:11px;letter-spacing:.12em;font-weight:800;color:var(--primary,#547a68);margin-bottom:6px}.rz-head h1{margin:0;font-size:30px;letter-spacing:-.04em}.rz-head p{margin:7px 0 0;color:var(--muted,#718078)}
+.rz-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.rz-kpi{display:flex;align-items:center;gap:13px;padding:18px;border:1px solid var(--border,#e4ebe7);border-radius:16px;background:#fff;box-shadow:0 4px 16px rgba(25,45,37,.05)}.rz-kpi span,.rz-kpi small{display:block;color:var(--muted,#718078);font-size:11px}.rz-kpi strong{display:block;font-size:24px;letter-spacing:-.04em;margin:3px 0}.rz-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:13px;background:#edf5f0;color:var(--primary,#547a68)}
+.rz-grid-main{display:grid;grid-template-columns:1.55fr 1fr;gap:18px;margin-top:18px}.rz-grid-bottom{display:grid;grid-template-columns:1.55fr 1fr;gap:18px;margin-top:18px}.rz-panel{background:#fff;border:1px solid var(--border,#e4ebe7);border-radius:18px;padding:20px;box-shadow:0 4px 16px rgba(25,45,37,.04);min-width:0}.rz-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:15px}.rz-panel-head h2{font-size:17px;margin:0}.rz-panel-head span{display:block;color:var(--muted,#718078);font-size:11px;margin-top:4px}.rz-big{font-size:25px;letter-spacing:-.04em}.rz-chart{min-height:250px}.rz-chart svg{width:100%;height:auto;display:block}.rz-chart-small{min-height:250px}.rz-axis{stroke:#dce6e1;stroke-width:1}.rz-bar{fill:var(--primary,#547a68);opacity:.86}.rz-line{fill:none;stroke:var(--primary,#547a68);stroke-width:3}.rz-area{fill:#dcece4;opacity:.65}.rz-dot{fill:#fff;stroke:var(--primary,#547a68);stroke-width:3}.rz-value{font-size:10px;fill:#41544b;font-weight:700}.rz-label{font-size:10px;fill:#78877f}.rz-progress{height:12px;background:#edf2ef;border-radius:99px;overflow:hidden;margin:20px 0 10px}.rz-progress span{display:block;height:100%;border-radius:inherit;background:var(--primary,#547a68);transition:width .4s}.rz-muted{font-size:12px;color:var(--muted,#718078)}.rz-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border,#e8eeeb)}.rz-row:last-child{border-bottom:0}.rz-date{width:45px;text-align:center;border-radius:10px;background:#f1f6f3;padding:6px 4px}.rz-date strong{display:block;font-size:18px}.rz-date span{font-size:9px;text-transform:uppercase;color:#728178}.rz-row-main{flex:1;min-width:0}.rz-row-main strong,.rz-row-main span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rz-row-main span{font-size:11px;color:var(--muted,#718078);margin-top:3px}.rz-empty,.rz-loading{padding:35px;text-align:center;color:var(--muted,#718078);font-size:13px}.rz-fin-summary{display:grid;gap:10px}.rz-fin-summary div{padding:15px;border-radius:13px;background:#f7faf8}.rz-fin-summary span{display:block;color:#718078;font-size:11px}.rz-fin-summary strong{display:block;font-size:21px;margin-top:5px}.rz-table{width:100%;overflow:auto}.rz-tr{display:grid;grid-template-columns:110px 1fr 130px 110px;gap:14px;align-items:center;padding:12px 4px;border-bottom:1px solid var(--border,#e8eeeb);font-size:12px}.rz-th{font-weight:800;color:#718078;font-size:10px;text-transform:uppercase}.rz-tr>span{min-width:0;overflow:hidden;text-overflow:ellipsis}.rz-tr strong{font-size:13px}
+@media(max-width:900px){.rz-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.rz-grid-main,.rz-grid-bottom{grid-template-columns:1fr}}@media(max-width:600px){.rz-head{flex-direction:column}.rz-kpis{grid-template-columns:1fr}.rz-panel{padding:15px}.rz-tr{grid-template-columns:80px 1fr 95px}.rz-tr .status-pill{display:none}}
+</style>
+
 </body>
 </html>
