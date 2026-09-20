@@ -7866,6 +7866,45 @@ document.head.appendChild(s);}
 
 </script>
 
+<script id="legado-v3-bridge">
+/* Ponte entre o núcleo V3 (escopo interno) e os módulos de Administração/Avaliações. */
+(function(){
+  window.TABLE = window.TABLE || {
+    students:'students',
+    appointments:'appointments',
+    evaluations:'evaluations',
+    payments:'payments',
+    messages:'messages',
+    profiles:'profiles',
+    records:'student_records',
+    progress:'student_progress',
+    contacts:'student_contacts',
+    finance:'financial_entries',
+    availability:'professional_availability',
+    context:'student_context'
+  };
+
+  window.selectSafe = async function(table, opts={}){
+    try {
+      if (typeof sbSelect !== 'function') throw new Error('sbSelect não está disponível.');
+      return await sbSelect(table, opts);
+    } catch(e) {
+      console.warn('[V3 bridge] tabela ' + table + ' indisponível:', e);
+      return [];
+    }
+  };
+
+  window.insertSafe = async function(table, payload){
+    if (typeof sbInsert !== 'function') throw new Error('sbInsert não está disponível.');
+    return await sbInsert(table, payload);
+  };
+
+  window.updateSafe = async function(table, id, payload){
+    if (typeof sbUpdate !== 'function') throw new Error('sbUpdate não está disponível.');
+    return await sbUpdate(table, id, payload);
+  };
+})();
+</script>
 <script id="legado-final-patch">
 (function(){
   'use strict';
