@@ -1746,6 +1746,11 @@
   };
 
 
+  // API global estável para módulos reconstruídos.
+  // O núcleo original continua usando os mesmos objetos por referência.
+  window.supabaseClient = supabaseClient;
+  window.state = state;
+
   const viewTitles = {
     dashboard: {
       label: 'Início',
@@ -2388,8 +2393,13 @@
 
     refreshIcons();
 
-    if (typeof renderCurrentView === 'function') {
-      renderCurrentView(target);
+    if (typeof window.renderCurrentView === 'function') {
+      Promise.resolve(window.renderCurrentView(target)).catch(error => {
+        console.error('Erro ao renderizar a tela:', error);
+        if (typeof window.showError === 'function') {
+          window.showError(error?.message || 'Erro ao carregar a página.');
+        }
+      });
     }
   }
 
@@ -7005,6 +7015,8 @@ const SUPABASE_SCHEMA = {
   waitlist: 'waitlist'
 };
 
+window.SUPABASE_SCHEMA = SUPABASE_SCHEMA;
+
 async function sbSelect(table, { filters = {}, order = null, ascending = true, limit = null } = {}) {
   if (!supabaseClient || !state.user) return [];
   let q = supabaseClient.from(table).select('*');
@@ -7245,19 +7257,22 @@ async function renderMaster() {
 
 function renderCurrentView(viewName) {
   const actions = {
-    dashboard: renderDashboard,
-    alunos: renderStudents,
-    'aluno-perfil': renderStudentProfileView,
-    agenda: renderAgenda,
-    avaliacoes: renderEvaluations,
-    financeiro: renderFinance,
-    recados: renderMessages,
-    'lista-espera': renderWaitlist,
-    perfil: renderProfile,
-    master: renderMaster
+    dashboard: window.renderDashboard || renderDashboard,
+    alunos: window.renderStudents || renderStudents,
+    'aluno-perfil': window.renderStudentProfileView || renderStudentProfileView,
+    agenda: window.renderAgenda || renderAgenda,
+    avaliacoes: window.renderEvaluations || renderEvaluations,
+    financeiro: window.renderFinance || renderFinance,
+    recados: window.renderMessages || renderMessages,
+    'lista-espera': window.renderWaitlist || renderWaitlist,
+    perfil: window.renderProfile || renderProfile,
+    master: window.renderMaster || renderMaster
   };
-  const fn=actions[viewName];
-  if(typeof fn==='function') Promise.resolve(fn()).catch(e=>{console.error(e);showError(e.message||'Erro ao carregar a página.');});
+  const fn = actions[viewName];
+  if (typeof fn !== 'function') {
+    throw new Error(`Tela "${viewName}" não possui um renderizador ativo.`);
+  }
+  return Promise.resolve(fn());
 }
 
 /* Garantia: se o usuário entrar em uma tela e o perfil ainda não
@@ -7941,7 +7956,7 @@ document.head.appendChild(s);}
   'use strict';
 
   const existing=window.V3Core||{};
-  const baseTable=existing.TABLE||window.TABLE||{
+  const baseTable={
     students:'students',
     appointments:'appointments',
     evaluations:'evaluations',
@@ -7954,7 +7969,8 @@ document.head.appendChild(s);}
     finance:'financial_entries',
     availability:'professional_availability',
     context:'student_context',
-    waitlist:'waitlist'
+    waitlist:'waitlist',
+    ...(existing.TABLE||window.TABLE||{})
   };
 
   function hasFn(name){return typeof window[name]==='function';}
@@ -8082,7 +8098,8 @@ document.head.appendChild(s);}
     v3LoadMessages:core.v3LoadMessages,
     v3RenderStudentSection:core.v3RenderStudentSection,
     v3RenderStudentProfileFast:core.v3RenderStudentProfileFast,
-    statusLabel
+    statusLabel,
+    TABLE:core.TABLE
   });
 })();
 </script>
@@ -8511,6 +8528,10 @@ document.head.appendChild(s);}
 
   window.renderMaster=async function(){
     const c=byId('masterContent');if(!c)return;
+    try{ await window.ensureSession?.(); }catch(e){
+      c.innerHTML=`<div class="v3-panel"><div class="v3-empty"><strong>Não foi possível restaurar a sessão.</strong><span>${esc(e?.message||'Recarregue a página para restaurar o acesso.')}</span><button class="btn btn-primary btn-sm" type="button" onclick="location.reload()">Recarregar</button></div></div>`;
+      refreshIcons(); return;
+    }
     if(!isMaster()){c.innerHTML='<div class="card"><div class="empty">Acesso restrito.</div></div>';return;}
     c.innerHTML='<div class="v3-panel"><div class="v3-loading"><i data-lucide="loader-circle"></i><span>Carregando administração...</span></div></div>';refreshIcons();
     try{
@@ -8664,19 +8685,37 @@ document.head.appendChild(s);}
   const statusLabel=typeof C.statusLabel==='function'?C.statusLabel:(window.statusLabel||function(s){return s||'—';});
   const V3=window.V3||{};
   const esc=v=>typeof window.escapeHtml==='function'?window.escapeHtml(v??''):String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
-  const ready=()=>Boolean(window.supabaseClient&&window.state?.user);
   const errMsg=e=>e?.message||'Ocorreu um erro inesperado.';
+  async function ensureSession(){
+    if(!window.supabaseClient) throw new Error('Supabase não está disponível.');
+    if(!window.state) throw new Error('Estado da aplicação não foi inicializado.');
+    if(window.state.user) return window.state.user;
+    const result=await window.supabaseClient.auth.getSession();
+    if(result.error) throw result.error;
+    const session=result.data?.session;
+    if(!session?.user) return null;
+    window.state.session=session;
+    window.state.user=session.user;
+    try{ if(typeof window.loadUserProfile==='function') await window.loadUserProfile(); }catch(e){ console.warn('Perfil:',e); }
+    try{ window.updateMasterMenu?.(); }catch(e){}
+    return window.state.user;
+  }
+  const ready=()=>Boolean(window.supabaseClient&&window.state?.user);
   const showErr=m=>window.showError?.(m);
   const showOk=m=>window.showSuccess?.(m);
   const fmtDate=v=>{const s=String(v||'').slice(0,10),d=s?new Date(s+'T12:00:00'):null;return d&&!Number.isNaN(d.getTime())?d.toLocaleDateString('pt-BR'):'—';};
   const teacherName=()=>window.state?.profile?.full_name||window.state?.profile?.name||window.state?.user?.user_metadata?.full_name||'professor(a) do Legado Que Ensina';
   const waLink=(phone,msg)=>{const n=String(phone||'').replace(/\D/g,'');return n?`https://wa.me/${n}?text=${encodeURIComponent(msg)}`:'#';};
 
-  Object.assign(window,{selectSafe,insertSafe,updateSafe,pageShell,statCard,panel,empty,v3LoadStudents,v3RenderStudentProfileFast,statusLabel});
+  Object.assign(window,{selectSafe,insertSafe,updateSafe,pageShell,statCard,panel,empty,v3LoadStudents,v3RenderStudentProfileFast,statusLabel,ensureSession});
 
   // AVALIAÇÕES
   window.renderEvaluations=async function(){
     const c=document.getElementById('avaliacoesContent');if(!c)return;
+    try{ await ensureSession(); }catch(e){
+      c.innerHTML=`<div class="v3-panel"><div class="v3-empty"><strong>Não foi possível restaurar a sessão.</strong><span>${esc(errMsg(e))}</span><button class="btn btn-primary btn-sm" type="button" onclick="location.reload()">Recarregar</button></div></div>`;
+      window.refreshIcons?.(); return;
+    }
     if(!ready()){c.innerHTML='<div class="v3-panel"><div class="v3-empty"><strong>Sessão não disponível.</strong><span>Entre novamente para carregar as avaliações.</span></div></div>';return;}
     c.innerHTML='<div class="v3-panel"><div class="v3-loading"><i data-lucide="loader-circle"></i><span>Carregando avaliações...</span></div></div>';
     window.refreshIcons?.();
@@ -8734,6 +8773,10 @@ document.head.appendChild(s);}
 
   window.renderWaitlist=async function(){
     const c=document.getElementById('waitlistContent');if(!c)return;
+    try{ await ensureSession(); }catch(e){
+      c.innerHTML=`<div class="v3-panel"><div class="v3-empty"><strong>Não foi possível restaurar a sessão.</strong><span>${esc(errMsg(e))}</span><button class="btn btn-primary btn-sm" type="button" onclick="location.reload()">Recarregar</button></div></div>`;
+      window.refreshIcons?.(); return;
+    }
     if(!ready()){c.innerHTML='<div class="v3-panel"><div class="v3-empty"><strong>Sessão não disponível.</strong></div></div>';return;}
     c.innerHTML='<div class="v3-panel"><div class="v3-loading"><i data-lucide="loader-circle"></i><span>Carregando lista de espera...</span></div></div>';window.refreshIcons?.();
     try{
@@ -8850,6 +8893,124 @@ document.head.appendChild(s);}
 })();
 </script>
 
+
+
+<script id="legado-hard-router">
+(function(){
+  'use strict';
+
+  // Reafirma a API pública depois de todos os scripts antigos/reconstruídos.
+  if (typeof state !== 'undefined') window.state = state;
+  if (typeof supabaseClient !== 'undefined') window.supabaseClient = supabaseClient;
+  if (typeof SUPABASE_SCHEMA !== 'undefined') window.SUPABASE_SCHEMA = SUPABASE_SCHEMA;
+  if (typeof loadUserProfile === 'function') window.loadUserProfile = loadUserProfile;
+  if (typeof updateMasterMenu === 'function') window.updateMasterMenu = updateMasterMenu;
+
+  const legacy = {
+    dashboard: (typeof renderDashboard==='function'?renderDashboard:null),
+    alunos: (typeof renderStudents==='function'?renderStudents:null),
+    'aluno-perfil': (typeof renderStudentProfileView==='function'?renderStudentProfileView:null),
+    agenda: (typeof renderAgenda==='function'?renderAgenda:null),
+    avaliacoes: (typeof renderEvaluations==='function'?renderEvaluations:null),
+    financeiro: (typeof renderFinance==='function'?renderFinance:null),
+    recados: (typeof renderMessages==='function'?renderMessages:null),
+    'lista-espera': (typeof renderWaitlist==='function'?renderWaitlist:null),
+    perfil: (typeof renderProfile==='function'?renderProfile:null),
+    master: (typeof renderMaster==='function'?renderMaster:null)
+  };
+
+  const rootRoute = {
+    dashboard: () => (typeof window.renderDashboard==='function'?window.renderDashboard():legacy.dashboard?.()),
+    alunos: () => (typeof window.renderStudents==='function'?window.renderStudents():legacy.alunos?.()),
+    'aluno-perfil': () => (typeof window.renderStudentProfileView==='function'?window.renderStudentProfileView():legacy['aluno-perfil']?.()),
+    agenda: () => (typeof window.renderAgenda==='function'?window.renderAgenda():legacy.agenda?.()),
+    avaliacoes: () => (typeof window.renderEvaluations==='function'?window.renderEvaluations():legacy.avaliacoes?.()),
+    financeiro: () => (typeof window.renderFinance==='function'?window.renderFinance():legacy.financeiro?.()),
+    recados: () => (typeof window.renderMessages==='function'?window.renderMessages():legacy.recados?.()),
+    'lista-espera': () => (typeof window.renderWaitlist==='function'?window.renderWaitlist():legacy['lista-espera']?.()),
+    perfil: () => (typeof window.renderProfile==='function'?window.renderProfile():legacy.perfil?.()),
+    master: () => (typeof window.renderMaster==='function'?window.renderMaster():legacy.master?.())
+  };
+
+  window.renderCurrentView = async function(view){
+    const fn=rootRoute[view]||rootRoute.dashboard;
+    if(typeof fn!=='function') throw new Error('Esta tela ainda não possui renderizador.');
+    return await fn();
+  };
+
+  // Todas as telas críticas apontam para as implementações finais.
+  // Isso evita que onclick="renderEvaluations()" recupere uma função antiga.
+  if (typeof window.renderEvaluations === 'function') {
+    globalThis.renderEvaluations = window.renderEvaluations;
+  }
+  if (typeof window.renderMaster === 'function') {
+    globalThis.renderMaster = window.renderMaster;
+  }
+  if (typeof window.renderWaitlist === 'function') {
+    globalThis.renderWaitlist = window.renderWaitlist;
+  }
+  if (typeof window.renderMessages === 'function') {
+    globalThis.renderMessages = window.renderMessages;
+  }
+
+  // Navegação global estável, com validação antes de executar.
+  const originalNavigate = window.navigate;
+  if(typeof originalNavigate==='function' && !originalNavigate.__hardRouter){
+    const hardNavigate=function(view){
+      const known={
+        dashboard:1,alunos:1,'aluno-perfil':1,agenda:1,avaliacoes:1,
+        financeiro:1,recados:1,'lista-espera':1,perfil:1,master:1
+      };
+      const target=known[view]?view:'dashboard';
+      const r=originalNavigate.call(this,target);
+      // O navigate original já chama window.renderCurrentView.
+      return r;
+    };
+    hardNavigate.__hardRouter=true;
+    window.navigate=hardNavigate;
+  }
+
+  // Pequeno watchdog: se alguma tela ficar sem conteúdo após navegação,
+  // permite recuperar pelo mesmo renderizador sem recarregar a página.
+  window.__legadoRenderSafely = async function(view){
+    try{
+      return await window.renderCurrentView(view);
+    }catch(error){
+      console.error('Renderização recuperável:',error);
+      if(typeof window.showError==='function') window.showError(error?.message||'Não foi possível abrir esta tela.');
+    }
+  };
+})();
+</script>
+
+
+<script id="legado-final-interaction-watchdog">
+(function(){
+  'use strict';
+  async function hydrate(){
+    try{
+      if(window.ensureSession) return await window.ensureSession();
+      if(!window.supabaseClient?.auth||!window.state) return null;
+      if(window.state.user) return window.state.user;
+      const r=await window.supabaseClient.auth.getSession();
+      if(r.error) throw r.error;
+      if(r.data?.session){ window.state.session=r.data.session; window.state.user=r.data.session.user; }
+      return window.state.user||null;
+    }catch(e){ console.warn('Hydrate:',e); return null; }
+  }
+  window.__legadoOpenEvaluation=async function(){
+    const u=await hydrate();
+    if(!u){ window.showError?.('Não foi possível restaurar sua sessão. Recarregue a página.'); return; }
+    if(typeof window.v3OpenEvaluationEditor==='function') return window.v3OpenEvaluationEditor();
+    if(typeof window.openNewEvaluationModal==='function') return window.openNewEvaluationModal();
+  };
+  window.__legadoOpenMaster=async function(){
+    const u=await hydrate();
+    if(!u){ window.showError?.('Não foi possível restaurar sua sessão. Recarregue a página.'); return; }
+    return window.renderMaster?.();
+  };
+})();
+</script>
 
 </body>
 </html>
