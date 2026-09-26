@@ -12463,6 +12463,146 @@ body.legado-v4-modal-open{overflow:hidden}
   window.v7PrintFinanceYear=async function(year){year=Number(year)||new Date().getFullYear();try{const entries=await loadFinanceV7();const rows=entries.filter(e=>dateOnly(e.competence_date||e.payment_date).startsWith(String(year))).sort((a,b)=>String(a.competence_date||'').localeCompare(String(b.competence_date||'')));const received=rows.filter(e=>e.kind!=='expense'&&e.status==='paid').reduce((s,e)=>s+Number(e.amount||0),0);const pending=rows.filter(e=>e.kind!=='expense'&&!['paid','cancelled'].includes(String(e.status||''))).reduce((s,e)=>s+Number(e.amount||0),0);const expenses=rows.filter(e=>e.kind==='expense'&&e.status==='paid').reduce((s,e)=>s+Number(e.amount||0),0);const win=window.open('','_blank','noopener,noreferrer,width=1100,height=800');if(!win)throw new Error('O navegador bloqueou a janela de impressão. Permita pop-ups para este site.');const html=`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Histórico financeiro ${year}</title><style>body{font-family:Arial,sans-serif;color:#26352e;margin:32px}h1{margin:0 0 6px;font-size:24px}p{margin:0 0 18px;color:#65736c;font-size:12px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}.k{padding:12px;border:1px solid #dfe7e2;border-radius:10px}.k small{display:block;color:#7a8881;font-size:10px}.k strong{display:block;margin-top:4px;font-size:16px}.box{border:1px solid #dfe7e2;border-radius:12px;overflow:hidden}.head,.row{display:grid;grid-template-columns:85px 1fr 100px 110px 100px 120px;gap:10px;align-items:center;padding:9px 10px}.head{background:#f5f8f6;font-size:9px;font-weight:700;text-transform:uppercase;color:#6b7972}.row{border-top:1px solid #edf1ee;font-size:10px}.row span{min-width:0;overflow:hidden;text-overflow:ellipsis}.foot{margin-top:20px;text-align:right;color:#7a8881;font-size:10px}@media print{button{display:none}}</style></head><body><h1>Histórico financeiro — ${year}</h1><p>Relatório anual dos lançamentos da plataforma.</p><div class="grid"><div class="k"><small>Recebido</small><strong>${money(received)}</strong></div><div class="k"><small>A receber</small><strong>${money(pending)}</strong></div><div class="k"><small>Despesas pagas</small><strong>${money(expenses)}</strong></div><div class="k"><small>Resultado</small><strong>${money(received-expenses)}</strong></div></div><div class="box"><div class="head"><span>Data</span><span>Aluno / descrição</span><span>Tipo</span><span>Valor</span><span>Status</span><span>Forma</span></div>${rows.map(e=>`<div class="row"><span>${esc(String(e.competence_date||e.payment_date||'').slice(0,10))}</span><span>${esc(e.student_name||e.description||'Lançamento')}</span><span>${e.kind==='expense'?'Despesa':'Receita'}</span><span>${esc(money(e.amount))}</span><span>${esc(statusPt(e.status))}</span><span>${esc(methodPt(e.payment_method))}</span></div>`).join('')||'<div style="padding:25px;text-align:center;color:#78867e">Nenhum lançamento no ano selecionado.</div>'}</div><div class="foot">Gerado em ${new Date().toLocaleString('pt-BR')}</div><script>setTimeout(()=>window.print(),250)<\/script>
 
 
+<script id="legado-final9-correcoes">
+(function(){
+  'use strict';
+  const W=window;
+  const esc=W.escapeHtml || (v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])));
+  const uid=()=>W.state?.user?.id||null;
+  const appTable=()=>W.V3Core?.TABLE?.appointments || W.TABLES?.appointments || W.TABLE?.appointments || 'appointments';
+  const studentTable=()=>W.V3Core?.TABLE?.students || W.TABLES?.students || W.TABLE?.students || 'students';
+  const evalTable=()=>W.V3Core?.TABLE?.evaluations || W.TABLES?.evaluations || W.TABLE?.evaluations || 'evaluations';
+
+  const style=document.createElement('style');
+  style.textContent=`
+    .f9-upcoming-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:8px}
+    .f9-upcoming-actions .btn{min-height:30px;padding:6px 9px;font-size:11px}
+    .f9-upcoming-actions .btn-danger{color:#a94e4e}
+    .f9-eval-models{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .f9-eval-model{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:16px;border:1px solid #e3ebe7;border-radius:16px;background:#fff}
+    .f9-eval-model:hover{box-shadow:0 7px 22px rgba(35,55,45,.07)}
+    .f9-eval-model-icon{width:42px;height:42px;border-radius:12px;background:#edf6f1;display:grid;place-items:center;color:#4f7d69}
+    .f9-eval-model-main h3{margin:4px 0 5px;font-size:14px;color:#2b3b35}
+    .f9-eval-model-main p{margin:0 0 8px;color:#788680;font-size:11px;line-height:1.5}
+    .f9-eval-meta{display:flex;gap:6px;flex-wrap:wrap}
+    .f9-eval-meta span{font-size:10px;padding:4px 7px;border-radius:999px;background:#f4f7f5;color:#68766f}
+    .f9-eval-history-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+    .f9-eval-history-actions .btn{min-height:31px;font-size:11px}
+    @media(max-width:850px){.f9-eval-models{grid-template-columns:1fr}.f9-eval-model{grid-template-columns:auto 1fr}.f9-eval-model>.btn{grid-column:1/-1;width:max-content}}
+  `;
+  document.head.appendChild(style);
+
+  async function f9CancelAppointment(id){
+    if(!uid()) throw new Error('Sessão não encontrada.');
+    if(!W.confirm?.('Cancelar este atendimento? Ele permanecerá no histórico como cancelado.')) return;
+    const sb=W.supabaseClient;
+    if(!sb) throw new Error('Supabase não disponível.');
+    const {error}=await sb.from(appTable()).update({status:'cancelled',updated_at:new Date().toISOString()}).eq('id',id).eq('user_id',uid());
+    if(error) throw error;
+    W.showSuccess?.('Atendimento cancelado.');
+    await W.renderDashboard?.();
+  }
+
+  async function f9DeleteAppointment(id){
+    if(!uid()) throw new Error('Sessão não encontrada.');
+    if(!W.confirm?.('Excluir este atendimento permanentemente? Esta ação não poderá ser desfeita.')) return;
+    const sb=W.supabaseClient;
+    if(!sb) throw new Error('Supabase não disponível.');
+    const {error}=await sb.from(appTable()).delete().eq('id',id).eq('user_id',uid());
+    if(error) throw error;
+    W.showSuccess?.('Atendimento excluído.');
+    await W.renderDashboard?.();
+    if(W.state?.currentView==='agenda') await W.renderAgenda?.();
+  }
+
+  W.f9CancelAppointment=async id=>{try{await f9CancelAppointment(id)}catch(e){console.error(e);W.showError?.('Não foi possível cancelar: '+(e.message||e))}};
+  W.f9DeleteAppointment=async id=>{try{await f9DeleteAppointment(id)}catch(e){console.error(e);W.showError?.('Não foi possível excluir: '+(e.message||e))}};
+
+  async function f9RebuildUpcoming(){
+    const box=document.getElementById('rzUpcoming');
+    if(!box||!uid()) return;
+    try{
+      const [appointments,students]=await Promise.all([
+        (W.selectSafe?W.selectSafe(appTable(),{filters:{user_id:uid()},limit:1000}):Promise.resolve([])),
+        (W.selectSafe?W.selectSafe(studentTable(),{filters:{user_id:uid()},limit:500}):Promise.resolve([]))
+      ]);
+      const today=new Date().toISOString().slice(0,10);
+      const smap=new Map((students||[]).map(s=>[String(s.id),s]));
+      const upcoming=(appointments||[])
+        .filter(a=>String(a.appointment_date||a.date||'').slice(0,10)>=today && !['cancelled','canceled','completed'].includes(String(a.status||'').toLowerCase()))
+        .sort((a,b)=>{
+          const da=String(a.appointment_date||a.date||'');
+          const db=String(b.appointment_date||b.date||'');
+          const ta=String(a.appointment_time||a.start_time||a.time||'');
+          const tb=String(b.appointment_time||b.start_time||b.time||'');
+          return `${da} ${ta}`.localeCompare(`${db} ${tb}`);
+        })
+        .slice(0,8);
+      const monthName=d=>new Date(`${d}T12:00:00`).toLocaleDateString('pt-BR',{month:'short'}).replace('.','');
+      if(!upcoming.length){box.innerHTML='<div class="rz-empty">Nenhum próximo atendimento.</div>';W.refreshIcons?.();return;}
+      box.innerHTML=upcoming.map(a=>{
+        const s=smap.get(String(a.student_id||a.alunoId));
+        const date=String(a.appointment_date||a.date||'').slice(0,10);
+        const time=String(a.appointment_time||a.start_time||a.time||'').slice(0,5);
+        const status=String(a.status||'scheduled').toLowerCase();
+        const label=({scheduled:'Agendado',confirmed:'Confirmado',pending:'Pendente'})[status]||'Agendado';
+        return `<div class="rz-row"><div class="rz-date"><strong>${esc(date.slice(8,10))}</strong><span>${esc(monthName(date))}</span></div><div class="rz-row-main"><strong title="${esc(s?.name||s?.nome||a.student_name||'Aluno')}">${esc(s?.name||s?.nome||a.student_name||'Aluno')}</strong><span>${esc(time)} · ${esc(a.type||a.tipo||'Atendimento')}</span><div class="f9-upcoming-actions"><button class="btn btn-outline" type="button" onclick="event.stopPropagation();v4OpenAppointmentModal('${esc(date)}','${esc(time)}','${esc(a.student_id||'')}','${esc(a.id||'')}')"><i data-lucide="calendar-clock"></i>Reagendar</button><button class="btn btn-outline" type="button" onclick="event.stopPropagation();f9CancelAppointment('${esc(a.id)}')"><i data-lucide="calendar-x"></i>Cancelar</button><button class="btn btn-danger" type="button" onclick="event.stopPropagation();f9DeleteAppointment('${esc(a.id)}')"><i data-lucide="trash-2"></i>Excluir</button></div></div><span class="status-pill ${esc(status)}">${esc(label)}</span></div>`;
+      }).join('');
+      W.refreshIcons?.();
+    }catch(e){
+      console.warn('[FINAL9] upcoming',e);
+    }
+  }
+
+  const baseDashboard=W.renderDashboard;
+  if(typeof baseDashboard==='function'&&!baseDashboard.__final9Upcoming){
+    const wrappedDashboard=async function(){
+      const result=await baseDashboard.apply(this,arguments);
+      await f9RebuildUpcoming();
+      return result;
+    };
+    wrappedDashboard.__final9Upcoming=true;
+    W.renderDashboard=wrappedDashboard;
+    globalThis.renderDashboard=wrappedDashboard;
+  }
+
+  function f9EvalHistory(evals,sm){
+    if(!evals.length) return `<div class="f4-empty"><i data-lucide="clipboard-list"></i><strong>Nenhuma aplicação registrada</strong><span>Os instrumentos ficam disponíveis acima. Ao aplicar uma avaliação, ela aparecerá aqui e no prontuário do aluno.</span></div>`;
+    return `<div class="v4-history">${evals.map(e=>{
+      const raw=e.assessment_data&&typeof e.assessment_data==='object'?e.assessment_data:{};
+      const entries=Object.entries(raw).filter(([,v])=>v!==null&&v!==undefined&&String(v).trim()!=='').slice(0,3);
+      const student=sm.get(String(e.student_id));
+      const st=String(e.status||'draft').toLowerCase();
+      const stLabel=({draft:'Rascunho',completed:'Concluída',pending:'Pendente',cancelled:'Cancelada',scheduled:'Agendada'})[st]||String(e.status||'Registro');
+      return `<article class="v4-history-item" onclick="v3EditEvaluation('${esc(e.id)}')"><div class="v4-history-date"><strong>${esc(W.fmtDateV4?W.fmtDateV4(e.evaluation_date):((W.formatDate&&W.formatDate(e.evaluation_date))||'—'))}</strong><span>${esc(stLabel)}</span></div><div class="v4-history-main"><div class="v4-inline-tags"><span class="v3-tag">${esc(e.type||'Avaliação')}</span>${student?`<span class="v3-student-ref"><i data-lucide="user-round"></i>${esc(student.name||student.full_name||'Aluno')}</span>`:''}</div><h3>${esc(e.title||e.type||'Avaliação')}</h3><p>${esc(e.summary||e.notes||'Sem síntese registrada. Clique para abrir a aplicação.')}</p>${entries.length?`<div class="f4-eval-preview">${entries.map(([k,v])=>`<div><span>${esc(k.replaceAll('_',' '))}</span><strong>${esc(Array.isArray(v)?v.join(', '):String(v))}</strong></div>`).join('')}</div>`:''}<div class="f9-eval-history-actions"><button type="button" class="btn btn-outline btn-sm" onclick="event.stopPropagation();v3EditEvaluation('${esc(e.id)}')"><i data-lucide="pencil"></i>Editar aplicação</button><button type="button" class="btn btn-danger btn-sm" onclick="event.stopPropagation();v3DeleteEvaluation('${esc(e.id)}')"><i data-lucide="trash-2"></i>Excluir</button></div></div></article>`;
+    }).join('')}</div>`;
+  }
+
+  W.renderEvaluations=async function(){
+    const c=document.getElementById('avaliacoesContent'); if(!c)return;
+    c.innerHTML='<div class="v3-loading"><i data-lucide="loader-circle"></i><span>Carregando instrumentos e histórico...</span></div>';W.refreshIcons?.();
+    try{
+      const [evals,students]=await Promise.all([
+        W.selectSafe(evalTable(),{filters:{user_id:uid()},order:'evaluation_date',ascending:false,limit:500}),
+        W.selectSafe(studentTable(),{filters:{user_id:uid()},order:'name',ascending:true,limit:500})
+      ]);
+      const list=evals||[]; const sm=new Map((students||[]).map(s=>[String(s.id),s]));
+      const defs=W.V4_ASSESSMENTS||W.PEDAGOGICAL_ASSESSMENTS||{};
+      const models=Object.entries(defs).map(([name,def])=>`<article class="f9-eval-model"><div class="f9-eval-model-icon"><i data-lucide="clipboard-check"></i></div><div class="f9-eval-model-main"><div class="v3-kicker">PRONTO PARA APLICAÇÃO</div><h3>${esc(name)}</h3><p>${esc(def.objective||def.source||'Instrumento pedagógico de apoio para observação e planejamento.')}</p><div class="f9-eval-meta"><span>${esc(def.area||'Avaliação pedagógica')}</span><span>${esc(def.duration||'Conforme aplicação')}</span><span>${Array.isArray(def.fields)?def.fields.length:0} campos</span></div></div><button class="btn btn-primary btn-sm" type="button" onclick="V3.assessmentType='${esc(name)}';v4OpenEvaluationModal()"><i data-lucide="play"></i>Aplicar</button></article>`).join('');
+      const completed=list.filter(e=>String(e.status||'').toLowerCase()==='completed').length;
+      const drafts=list.filter(e=>['draft','pending'].includes(String(e.status||'').toLowerCase())).length;
+      c.innerHTML=`<div class="f8-page"><div class="f8-head"><div><div class="v3-kicker">INVESTIGAÇÃO PEDAGÓGICA</div><h1>Avaliações</h1><p>Instrumentos pedagógicos, aplicação, evidências, síntese e próximos passos — sem perder o histórico já registrado.</p></div><div class="f8-head-actions"><button class="btn btn-primary" type="button" onclick="V3.assessmentType='Avaliação personalizada';v4OpenEvaluationModal()"><i data-lucide="clipboard-plus"></i>Aplicar avaliação</button></div></div><div class="v3-stats">${W.statCard?.('clipboard-check','Aplicações',list.length,'Registros salvos')||''}${W.statCard?.('user-round-check','Alunos avaliados',new Set(list.map(e=>e.student_id).filter(Boolean)).size,'Com histórico')||''}${W.statCard?.('file-check-2','Concluídas',completed,'Aplicações finalizadas')||''}${W.statCard?.('clock-3','Rascunhos',drafts,'Em preenchimento')||''}</div><section class="f8-card"><div class="f8-card-head"><div><h2>Avaliações prontas para aplicar</h2><p>Escolha um instrumento para abrir a aplicação pedagógica completa.</p></div></div><div class="f9-eval-models">${models||'<div class="f8-empty">Nenhum instrumento configurado.</div>'}</div></section><section class="f8-card"><div class="f8-card-head"><div><h2>Histórico das aplicações</h2><p>Todos os registros anteriores continuam disponíveis para editar, revisar ou excluir.</p></div><span class="v3-tag">${list.length} registro${list.length===1?'':'s'}</span></div>${f9EvalHistory(list,sm)}</section><section class="f8-card"><div class="v3-form-note"><i data-lucide="info"></i><span>Os instrumentos são apoio pedagógico para observar evidências e planejar intervenções. Eles não substituem instrumentos normatizados.</span></div></section></div>`;
+      W.refreshIcons?.();
+    }catch(e){
+      console.error('[FINAL9] avaliações',e);
+      c.innerHTML=`<div class="f8-card f8-empty"><i data-lucide="circle-alert"></i><strong>Não foi possível carregar as avaliações.</strong><span>${esc(e.message||e)}</span><button class="btn btn-primary btn-sm" onclick="renderEvaluations()">Tentar novamente</button></div>`;W.refreshIcons?.();
+    }
+  };
+  globalThis.renderEvaluations=W.renderEvaluations;
+  W.__legadoFinal9=true;
+})();
+</script>
+
 </body></html>`;win.document.write(html);win.document.close();}catch(err){window.showError?.('Não foi possível preparar a impressão: '+(err.message||err));}};
 
   window.renderFinance=async function(){
@@ -12778,7 +12918,147 @@ body.legado-v4-modal-open{overflow:hidden}
   };
   W.f8ChangeFinanceMonth=function(delta){const current=W.V3?.financeMonth instanceof Date?W.V3.financeMonth:new Date();W.V3.financeMonth=delta===0?new Date(new Date().getFullYear(),new Date().getMonth(),1):addMonths(current,delta);W.renderFinance?.();};
   W.f8PrintFinanceYear=async function(year){
-    try{year=Number(year)||new Date().getFullYear();const rows=(await loadFinance()).filter(e=>dateOnly(e.competence_date||e.payment_date).startsWith(String(year))).sort((a,b)=>String(a.competence_date||'').localeCompare(String(b.competence_date||'')));const received=rows.filter(e=>e.kind!=='expense'&&e.status==='paid').reduce((s,e)=>s+Number(e.amount||0),0),pending=rows.filter(e=>e.kind!=='expense'&&!['paid','cancelled'].includes(String(e.status||''))).reduce((s,e)=>s+Number(e.amount||0),0),expense=rows.filter(e=>e.kind==='expense'&&e.status==='paid').reduce((s,e)=>s+Number(e.amount||0),0);const w=window.open('','_blank','width=1100,height=800');if(!w)throw new Error('Permita pop-ups para imprimir o relatório.');w.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Histórico financeiro ${year}</title><style>body{font-family:Arial;margin:28px;color:#26352e}h1{font-size:24px;margin:0 0 5px}.k{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:18px 0}.card{border:1px solid #ddd;border-radius:10px;padding:10px}.card small{display:block;color:#78847e;font-size:10px}.card b{display:block;margin-top:5px;font-size:16px}.tab{border:1px solid #ddd;border-radius:10px;overflow:hidden}.tr{display:grid;grid-template-columns:90px 1.6fr 90px 110px 110px 110px;gap:8px;padding:9px;border-top:1px solid #eee;font-size:10px}.th{background:#f5f7f6;font-weight:700;color:#68766e;text-transform:uppercase;font-size:8px}.foot{margin-top:15px;color:#7f8a84;font-size:9px}@media print{button{display:none}}</style></head><body><h1>Histórico financeiro — ${year}</h1><p>Legado Que Ensina</p><div class="k"><div class="card"><small>Recebido</small><b>${money(received)}</b></div><div class="card"><small>A receber</small><b>${money(pending)}</b></div><div class="card"><small>Despesas pagas</small><b>${money(expense)}</b></div><div class="card"><small>Resultado</small><b>${money(received-expense)}</b></div></div><div class="tab"><div class="tr th"><span>Data</span><span>Aluno / descrição</span><span>Tipo</span><span>Valor</span><span>Status</span><span>Forma</span></div>${rows.map(e=>`<div class="tr"><span>${esc(fmtDate(e.competence_date||e.payment_date))}</span><span>${esc(e.student_name||e.description||'Lançamento')}</span><span>${e.kind==='expense'?'Despesa':'Receita'}</span><span>${esc(money(e.amount))}</span><span>${esc(statusPt(e.status))}</span><span>${esc(methodPt(e.payment_method))}</span></div>`).join('')||'<div style="padding:22px;text-align:center">Nenhum lançamento no ano.</div>'}</div><div class="foot">Gerado em ${new Date().toLocaleString('pt-BR')}</div><script>setTimeout(()=>window.print(),300)<\\/script></body></html>`);w.document.close();}catch(err){W.showError?.('Não foi possível imprimir o histórico: '+(err.message||err));}
+    try{year=Number(year)||new Date().getFullYear();const rows=(await loadFinance()).filter(e=>dateOnly(e.competence_date||e.payment_date).startsWith(String(year))).sort((a,b)=>String(a.competence_date||'').localeCompare(String(b.competence_date||'')));const received=rows.filter(e=>e.kind!=='expense'&&e.status==='paid').reduce((s,e)=>s+Number(e.amount||0),0),pending=rows.filter(e=>e.kind!=='expense'&&!['paid','cancelled'].includes(String(e.status||''))).reduce((s,e)=>s+Number(e.amount||0),0),expense=rows.filter(e=>e.kind==='expense'&&e.status==='paid').reduce((s,e)=>s+Number(e.amount||0),0);const w=window.open('','_blank','width=1100,height=800');if(!w)throw new Error('Permita pop-ups para imprimir o relatório.');w.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Histórico financeiro ${year}</title><style>body{font-family:Arial;margin:28px;color:#26352e}h1{font-size:24px;margin:0 0 5px}.k{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:18px 0}.card{border:1px solid #ddd;border-radius:10px;padding:10px}.card small{display:block;color:#78847e;font-size:10px}.card b{display:block;margin-top:5px;font-size:16px}.tab{border:1px solid #ddd;border-radius:10px;overflow:hidden}.tr{display:grid;grid-template-columns:90px 1.6fr 90px 110px 110px 110px;gap:8px;padding:9px;border-top:1px solid #eee;font-size:10px}.th{background:#f5f7f6;font-weight:700;color:#68766e;text-transform:uppercase;font-size:8px}.foot{margin-top:15px;color:#7f8a84;font-size:9px}@media print{button{display:none}}</style></head><body><h1>Histórico financeiro — ${year}</h1><p>Legado Que Ensina</p><div class="k"><div class="card"><small>Recebido</small><b>${money(received)}</b></div><div class="card"><small>A receber</small><b>${money(pending)}</b></div><div class="card"><small>Despesas pagas</small><b>${money(expense)}</b></div><div class="card"><small>Resultado</small><b>${money(received-expense)}</b></div></div><div class="tab"><div class="tr th"><span>Data</span><span>Aluno / descrição</span><span>Tipo</span><span>Valor</span><span>Status</span><span>Forma</span></div>${rows.map(e=>`<div class="tr"><span>${esc(fmtDate(e.competence_date||e.payment_date))}</span><span>${esc(e.student_name||e.description||'Lançamento')}</span><span>${e.kind==='expense'?'Despesa':'Receita'}</span><span>${esc(money(e.amount))}</span><span>${esc(statusPt(e.status))}</span><span>${esc(methodPt(e.payment_method))}</span></div>`).join('')||'<div style="padding:22px;text-align:center">Nenhum lançamento no ano.</div>'}</div><div class="foot">Gerado em ${new Date().toLocaleString('pt-BR')}</div><script>setTimeout(()=>window.print(),300)<\\/script><script id="legado-final9-correcoes">
+(function(){
+  'use strict';
+  const W=window;
+  const esc=W.escapeHtml || (v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])));
+  const uid=()=>W.state?.user?.id||null;
+  const appTable=()=>W.V3Core?.TABLE?.appointments || W.TABLES?.appointments || W.TABLE?.appointments || 'appointments';
+  const studentTable=()=>W.V3Core?.TABLE?.students || W.TABLES?.students || W.TABLE?.students || 'students';
+  const evalTable=()=>W.V3Core?.TABLE?.evaluations || W.TABLES?.evaluations || W.TABLE?.evaluations || 'evaluations';
+
+  const style=document.createElement('style');
+  style.textContent=`
+    .f9-upcoming-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:8px}
+    .f9-upcoming-actions .btn{min-height:30px;padding:6px 9px;font-size:11px}
+    .f9-upcoming-actions .btn-danger{color:#a94e4e}
+    .f9-eval-models{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .f9-eval-model{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:16px;border:1px solid #e3ebe7;border-radius:16px;background:#fff}
+    .f9-eval-model:hover{box-shadow:0 7px 22px rgba(35,55,45,.07)}
+    .f9-eval-model-icon{width:42px;height:42px;border-radius:12px;background:#edf6f1;display:grid;place-items:center;color:#4f7d69}
+    .f9-eval-model-main h3{margin:4px 0 5px;font-size:14px;color:#2b3b35}
+    .f9-eval-model-main p{margin:0 0 8px;color:#788680;font-size:11px;line-height:1.5}
+    .f9-eval-meta{display:flex;gap:6px;flex-wrap:wrap}
+    .f9-eval-meta span{font-size:10px;padding:4px 7px;border-radius:999px;background:#f4f7f5;color:#68766f}
+    .f9-eval-history-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+    .f9-eval-history-actions .btn{min-height:31px;font-size:11px}
+    @media(max-width:850px){.f9-eval-models{grid-template-columns:1fr}.f9-eval-model{grid-template-columns:auto 1fr}.f9-eval-model>.btn{grid-column:1/-1;width:max-content}}
+  `;
+  document.head.appendChild(style);
+
+  async function f9CancelAppointment(id){
+    if(!uid()) throw new Error('Sessão não encontrada.');
+    if(!W.confirm?.('Cancelar este atendimento? Ele permanecerá no histórico como cancelado.')) return;
+    const sb=W.supabaseClient;
+    if(!sb) throw new Error('Supabase não disponível.');
+    const {error}=await sb.from(appTable()).update({status:'cancelled',updated_at:new Date().toISOString()}).eq('id',id).eq('user_id',uid());
+    if(error) throw error;
+    W.showSuccess?.('Atendimento cancelado.');
+    await W.renderDashboard?.();
+  }
+
+  async function f9DeleteAppointment(id){
+    if(!uid()) throw new Error('Sessão não encontrada.');
+    if(!W.confirm?.('Excluir este atendimento permanentemente? Esta ação não poderá ser desfeita.')) return;
+    const sb=W.supabaseClient;
+    if(!sb) throw new Error('Supabase não disponível.');
+    const {error}=await sb.from(appTable()).delete().eq('id',id).eq('user_id',uid());
+    if(error) throw error;
+    W.showSuccess?.('Atendimento excluído.');
+    await W.renderDashboard?.();
+    if(W.state?.currentView==='agenda') await W.renderAgenda?.();
+  }
+
+  W.f9CancelAppointment=async id=>{try{await f9CancelAppointment(id)}catch(e){console.error(e);W.showError?.('Não foi possível cancelar: '+(e.message||e))}};
+  W.f9DeleteAppointment=async id=>{try{await f9DeleteAppointment(id)}catch(e){console.error(e);W.showError?.('Não foi possível excluir: '+(e.message||e))}};
+
+  async function f9RebuildUpcoming(){
+    const box=document.getElementById('rzUpcoming');
+    if(!box||!uid()) return;
+    try{
+      const [appointments,students]=await Promise.all([
+        (W.selectSafe?W.selectSafe(appTable(),{filters:{user_id:uid()},limit:1000}):Promise.resolve([])),
+        (W.selectSafe?W.selectSafe(studentTable(),{filters:{user_id:uid()},limit:500}):Promise.resolve([]))
+      ]);
+      const today=new Date().toISOString().slice(0,10);
+      const smap=new Map((students||[]).map(s=>[String(s.id),s]));
+      const upcoming=(appointments||[])
+        .filter(a=>String(a.appointment_date||a.date||'').slice(0,10)>=today && !['cancelled','canceled','completed'].includes(String(a.status||'').toLowerCase()))
+        .sort((a,b)=>{
+          const da=String(a.appointment_date||a.date||'');
+          const db=String(b.appointment_date||b.date||'');
+          const ta=String(a.appointment_time||a.start_time||a.time||'');
+          const tb=String(b.appointment_time||b.start_time||b.time||'');
+          return `${da} ${ta}`.localeCompare(`${db} ${tb}`);
+        })
+        .slice(0,8);
+      const monthName=d=>new Date(`${d}T12:00:00`).toLocaleDateString('pt-BR',{month:'short'}).replace('.','');
+      if(!upcoming.length){box.innerHTML='<div class="rz-empty">Nenhum próximo atendimento.</div>';W.refreshIcons?.();return;}
+      box.innerHTML=upcoming.map(a=>{
+        const s=smap.get(String(a.student_id||a.alunoId));
+        const date=String(a.appointment_date||a.date||'').slice(0,10);
+        const time=String(a.appointment_time||a.start_time||a.time||'').slice(0,5);
+        const status=String(a.status||'scheduled').toLowerCase();
+        const label=({scheduled:'Agendado',confirmed:'Confirmado',pending:'Pendente'})[status]||'Agendado';
+        return `<div class="rz-row"><div class="rz-date"><strong>${esc(date.slice(8,10))}</strong><span>${esc(monthName(date))}</span></div><div class="rz-row-main"><strong title="${esc(s?.name||s?.nome||a.student_name||'Aluno')}">${esc(s?.name||s?.nome||a.student_name||'Aluno')}</strong><span>${esc(time)} · ${esc(a.type||a.tipo||'Atendimento')}</span><div class="f9-upcoming-actions"><button class="btn btn-outline" type="button" onclick="event.stopPropagation();v4OpenAppointmentModal('${esc(date)}','${esc(time)}','${esc(a.student_id||'')}','${esc(a.id||'')}')"><i data-lucide="calendar-clock"></i>Reagendar</button><button class="btn btn-outline" type="button" onclick="event.stopPropagation();f9CancelAppointment('${esc(a.id)}')"><i data-lucide="calendar-x"></i>Cancelar</button><button class="btn btn-danger" type="button" onclick="event.stopPropagation();f9DeleteAppointment('${esc(a.id)}')"><i data-lucide="trash-2"></i>Excluir</button></div></div><span class="status-pill ${esc(status)}">${esc(label)}</span></div>`;
+      }).join('');
+      W.refreshIcons?.();
+    }catch(e){
+      console.warn('[FINAL9] upcoming',e);
+    }
+  }
+
+  const baseDashboard=W.renderDashboard;
+  if(typeof baseDashboard==='function'&&!baseDashboard.__final9Upcoming){
+    const wrappedDashboard=async function(){
+      const result=await baseDashboard.apply(this,arguments);
+      await f9RebuildUpcoming();
+      return result;
+    };
+    wrappedDashboard.__final9Upcoming=true;
+    W.renderDashboard=wrappedDashboard;
+    globalThis.renderDashboard=wrappedDashboard;
+  }
+
+  function f9EvalHistory(evals,sm){
+    if(!evals.length) return `<div class="f4-empty"><i data-lucide="clipboard-list"></i><strong>Nenhuma aplicação registrada</strong><span>Os instrumentos ficam disponíveis acima. Ao aplicar uma avaliação, ela aparecerá aqui e no prontuário do aluno.</span></div>`;
+    return `<div class="v4-history">${evals.map(e=>{
+      const raw=e.assessment_data&&typeof e.assessment_data==='object'?e.assessment_data:{};
+      const entries=Object.entries(raw).filter(([,v])=>v!==null&&v!==undefined&&String(v).trim()!=='').slice(0,3);
+      const student=sm.get(String(e.student_id));
+      const st=String(e.status||'draft').toLowerCase();
+      const stLabel=({draft:'Rascunho',completed:'Concluída',pending:'Pendente',cancelled:'Cancelada',scheduled:'Agendada'})[st]||String(e.status||'Registro');
+      return `<article class="v4-history-item" onclick="v3EditEvaluation('${esc(e.id)}')"><div class="v4-history-date"><strong>${esc(W.fmtDateV4?W.fmtDateV4(e.evaluation_date):((W.formatDate&&W.formatDate(e.evaluation_date))||'—'))}</strong><span>${esc(stLabel)}</span></div><div class="v4-history-main"><div class="v4-inline-tags"><span class="v3-tag">${esc(e.type||'Avaliação')}</span>${student?`<span class="v3-student-ref"><i data-lucide="user-round"></i>${esc(student.name||student.full_name||'Aluno')}</span>`:''}</div><h3>${esc(e.title||e.type||'Avaliação')}</h3><p>${esc(e.summary||e.notes||'Sem síntese registrada. Clique para abrir a aplicação.')}</p>${entries.length?`<div class="f4-eval-preview">${entries.map(([k,v])=>`<div><span>${esc(k.replaceAll('_',' '))}</span><strong>${esc(Array.isArray(v)?v.join(', '):String(v))}</strong></div>`).join('')}</div>`:''}<div class="f9-eval-history-actions"><button type="button" class="btn btn-outline btn-sm" onclick="event.stopPropagation();v3EditEvaluation('${esc(e.id)}')"><i data-lucide="pencil"></i>Editar aplicação</button><button type="button" class="btn btn-danger btn-sm" onclick="event.stopPropagation();v3DeleteEvaluation('${esc(e.id)}')"><i data-lucide="trash-2"></i>Excluir</button></div></div></article>`;
+    }).join('')}</div>`;
+  }
+
+  W.renderEvaluations=async function(){
+    const c=document.getElementById('avaliacoesContent'); if(!c)return;
+    c.innerHTML='<div class="v3-loading"><i data-lucide="loader-circle"></i><span>Carregando instrumentos e histórico...</span></div>';W.refreshIcons?.();
+    try{
+      const [evals,students]=await Promise.all([
+        W.selectSafe(evalTable(),{filters:{user_id:uid()},order:'evaluation_date',ascending:false,limit:500}),
+        W.selectSafe(studentTable(),{filters:{user_id:uid()},order:'name',ascending:true,limit:500})
+      ]);
+      const list=evals||[]; const sm=new Map((students||[]).map(s=>[String(s.id),s]));
+      const defs=W.V4_ASSESSMENTS||W.PEDAGOGICAL_ASSESSMENTS||{};
+      const models=Object.entries(defs).map(([name,def])=>`<article class="f9-eval-model"><div class="f9-eval-model-icon"><i data-lucide="clipboard-check"></i></div><div class="f9-eval-model-main"><div class="v3-kicker">PRONTO PARA APLICAÇÃO</div><h3>${esc(name)}</h3><p>${esc(def.objective||def.source||'Instrumento pedagógico de apoio para observação e planejamento.')}</p><div class="f9-eval-meta"><span>${esc(def.area||'Avaliação pedagógica')}</span><span>${esc(def.duration||'Conforme aplicação')}</span><span>${Array.isArray(def.fields)?def.fields.length:0} campos</span></div></div><button class="btn btn-primary btn-sm" type="button" onclick="V3.assessmentType='${esc(name)}';v4OpenEvaluationModal()"><i data-lucide="play"></i>Aplicar</button></article>`).join('');
+      const completed=list.filter(e=>String(e.status||'').toLowerCase()==='completed').length;
+      const drafts=list.filter(e=>['draft','pending'].includes(String(e.status||'').toLowerCase())).length;
+      c.innerHTML=`<div class="f8-page"><div class="f8-head"><div><div class="v3-kicker">INVESTIGAÇÃO PEDAGÓGICA</div><h1>Avaliações</h1><p>Instrumentos pedagógicos, aplicação, evidências, síntese e próximos passos — sem perder o histórico já registrado.</p></div><div class="f8-head-actions"><button class="btn btn-primary" type="button" onclick="V3.assessmentType='Avaliação personalizada';v4OpenEvaluationModal()"><i data-lucide="clipboard-plus"></i>Aplicar avaliação</button></div></div><div class="v3-stats">${W.statCard?.('clipboard-check','Aplicações',list.length,'Registros salvos')||''}${W.statCard?.('user-round-check','Alunos avaliados',new Set(list.map(e=>e.student_id).filter(Boolean)).size,'Com histórico')||''}${W.statCard?.('file-check-2','Concluídas',completed,'Aplicações finalizadas')||''}${W.statCard?.('clock-3','Rascunhos',drafts,'Em preenchimento')||''}</div><section class="f8-card"><div class="f8-card-head"><div><h2>Avaliações prontas para aplicar</h2><p>Escolha um instrumento para abrir a aplicação pedagógica completa.</p></div></div><div class="f9-eval-models">${models||'<div class="f8-empty">Nenhum instrumento configurado.</div>'}</div></section><section class="f8-card"><div class="f8-card-head"><div><h2>Histórico das aplicações</h2><p>Todos os registros anteriores continuam disponíveis para editar, revisar ou excluir.</p></div><span class="v3-tag">${list.length} registro${list.length===1?'':'s'}</span></div>${f9EvalHistory(list,sm)}</section><section class="f8-card"><div class="v3-form-note"><i data-lucide="info"></i><span>Os instrumentos são apoio pedagógico para observar evidências e planejar intervenções. Eles não substituem instrumentos normatizados.</span></div></section></div>`;
+      W.refreshIcons?.();
+    }catch(e){
+      console.error('[FINAL9] avaliações',e);
+      c.innerHTML=`<div class="f8-card f8-empty"><i data-lucide="circle-alert"></i><strong>Não foi possível carregar as avaliações.</strong><span>${esc(e.message||e)}</span><button class="btn btn-primary btn-sm" onclick="renderEvaluations()">Tentar novamente</button></div>`;W.refreshIcons?.();
+    }
+  };
+  globalThis.renderEvaluations=W.renderEvaluations;
+  W.__legadoFinal9=true;
+})();
+</script>
+
+</body></html>`);w.document.close();}catch(err){W.showError?.('Não foi possível imprimir o histórico: '+(err.message||err));}
   };
 
   /* ============================================================
@@ -12906,6 +13186,146 @@ body.legado-v4-modal-open{overflow:hidden}
   // Mantém as APIs globais coerentes para scripts que usam nomes sem window.
   globalThis.renderAgenda=W.renderAgenda;globalThis.renderFinance=W.renderFinance;globalThis.renderEvaluations=W.renderEvaluations;globalThis.renderStudentProfileView=W.renderStudentProfileView;globalThis.navigate=W.navigate;
   W.__legadoFinal8=true;
+})();
+</script>
+
+<script id="legado-final9-correcoes">
+(function(){
+  'use strict';
+  const W=window;
+  const esc=W.escapeHtml || (v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])));
+  const uid=()=>W.state?.user?.id||null;
+  const appTable=()=>W.V3Core?.TABLE?.appointments || W.TABLES?.appointments || W.TABLE?.appointments || 'appointments';
+  const studentTable=()=>W.V3Core?.TABLE?.students || W.TABLES?.students || W.TABLE?.students || 'students';
+  const evalTable=()=>W.V3Core?.TABLE?.evaluations || W.TABLES?.evaluations || W.TABLE?.evaluations || 'evaluations';
+
+  const style=document.createElement('style');
+  style.textContent=`
+    .f9-upcoming-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:8px}
+    .f9-upcoming-actions .btn{min-height:30px;padding:6px 9px;font-size:11px}
+    .f9-upcoming-actions .btn-danger{color:#a94e4e}
+    .f9-eval-models{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .f9-eval-model{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:16px;border:1px solid #e3ebe7;border-radius:16px;background:#fff}
+    .f9-eval-model:hover{box-shadow:0 7px 22px rgba(35,55,45,.07)}
+    .f9-eval-model-icon{width:42px;height:42px;border-radius:12px;background:#edf6f1;display:grid;place-items:center;color:#4f7d69}
+    .f9-eval-model-main h3{margin:4px 0 5px;font-size:14px;color:#2b3b35}
+    .f9-eval-model-main p{margin:0 0 8px;color:#788680;font-size:11px;line-height:1.5}
+    .f9-eval-meta{display:flex;gap:6px;flex-wrap:wrap}
+    .f9-eval-meta span{font-size:10px;padding:4px 7px;border-radius:999px;background:#f4f7f5;color:#68766f}
+    .f9-eval-history-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+    .f9-eval-history-actions .btn{min-height:31px;font-size:11px}
+    @media(max-width:850px){.f9-eval-models{grid-template-columns:1fr}.f9-eval-model{grid-template-columns:auto 1fr}.f9-eval-model>.btn{grid-column:1/-1;width:max-content}}
+  `;
+  document.head.appendChild(style);
+
+  async function f9CancelAppointment(id){
+    if(!uid()) throw new Error('Sessão não encontrada.');
+    if(!W.confirm?.('Cancelar este atendimento? Ele permanecerá no histórico como cancelado.')) return;
+    const sb=W.supabaseClient;
+    if(!sb) throw new Error('Supabase não disponível.');
+    const {error}=await sb.from(appTable()).update({status:'cancelled',updated_at:new Date().toISOString()}).eq('id',id).eq('user_id',uid());
+    if(error) throw error;
+    W.showSuccess?.('Atendimento cancelado.');
+    await W.renderDashboard?.();
+  }
+
+  async function f9DeleteAppointment(id){
+    if(!uid()) throw new Error('Sessão não encontrada.');
+    if(!W.confirm?.('Excluir este atendimento permanentemente? Esta ação não poderá ser desfeita.')) return;
+    const sb=W.supabaseClient;
+    if(!sb) throw new Error('Supabase não disponível.');
+    const {error}=await sb.from(appTable()).delete().eq('id',id).eq('user_id',uid());
+    if(error) throw error;
+    W.showSuccess?.('Atendimento excluído.');
+    await W.renderDashboard?.();
+    if(W.state?.currentView==='agenda') await W.renderAgenda?.();
+  }
+
+  W.f9CancelAppointment=async id=>{try{await f9CancelAppointment(id)}catch(e){console.error(e);W.showError?.('Não foi possível cancelar: '+(e.message||e))}};
+  W.f9DeleteAppointment=async id=>{try{await f9DeleteAppointment(id)}catch(e){console.error(e);W.showError?.('Não foi possível excluir: '+(e.message||e))}};
+
+  async function f9RebuildUpcoming(){
+    const box=document.getElementById('rzUpcoming');
+    if(!box||!uid()) return;
+    try{
+      const [appointments,students]=await Promise.all([
+        (W.selectSafe?W.selectSafe(appTable(),{filters:{user_id:uid()},limit:1000}):Promise.resolve([])),
+        (W.selectSafe?W.selectSafe(studentTable(),{filters:{user_id:uid()},limit:500}):Promise.resolve([]))
+      ]);
+      const today=new Date().toISOString().slice(0,10);
+      const smap=new Map((students||[]).map(s=>[String(s.id),s]));
+      const upcoming=(appointments||[])
+        .filter(a=>String(a.appointment_date||a.date||'').slice(0,10)>=today && !['cancelled','canceled','completed'].includes(String(a.status||'').toLowerCase()))
+        .sort((a,b)=>{
+          const da=String(a.appointment_date||a.date||'');
+          const db=String(b.appointment_date||b.date||'');
+          const ta=String(a.appointment_time||a.start_time||a.time||'');
+          const tb=String(b.appointment_time||b.start_time||b.time||'');
+          return `${da} ${ta}`.localeCompare(`${db} ${tb}`);
+        })
+        .slice(0,8);
+      const monthName=d=>new Date(`${d}T12:00:00`).toLocaleDateString('pt-BR',{month:'short'}).replace('.','');
+      if(!upcoming.length){box.innerHTML='<div class="rz-empty">Nenhum próximo atendimento.</div>';W.refreshIcons?.();return;}
+      box.innerHTML=upcoming.map(a=>{
+        const s=smap.get(String(a.student_id||a.alunoId));
+        const date=String(a.appointment_date||a.date||'').slice(0,10);
+        const time=String(a.appointment_time||a.start_time||a.time||'').slice(0,5);
+        const status=String(a.status||'scheduled').toLowerCase();
+        const label=({scheduled:'Agendado',confirmed:'Confirmado',pending:'Pendente'})[status]||'Agendado';
+        return `<div class="rz-row"><div class="rz-date"><strong>${esc(date.slice(8,10))}</strong><span>${esc(monthName(date))}</span></div><div class="rz-row-main"><strong title="${esc(s?.name||s?.nome||a.student_name||'Aluno')}">${esc(s?.name||s?.nome||a.student_name||'Aluno')}</strong><span>${esc(time)} · ${esc(a.type||a.tipo||'Atendimento')}</span><div class="f9-upcoming-actions"><button class="btn btn-outline" type="button" onclick="event.stopPropagation();v4OpenAppointmentModal('${esc(date)}','${esc(time)}','${esc(a.student_id||'')}','${esc(a.id||'')}')"><i data-lucide="calendar-clock"></i>Reagendar</button><button class="btn btn-outline" type="button" onclick="event.stopPropagation();f9CancelAppointment('${esc(a.id)}')"><i data-lucide="calendar-x"></i>Cancelar</button><button class="btn btn-danger" type="button" onclick="event.stopPropagation();f9DeleteAppointment('${esc(a.id)}')"><i data-lucide="trash-2"></i>Excluir</button></div></div><span class="status-pill ${esc(status)}">${esc(label)}</span></div>`;
+      }).join('');
+      W.refreshIcons?.();
+    }catch(e){
+      console.warn('[FINAL9] upcoming',e);
+    }
+  }
+
+  const baseDashboard=W.renderDashboard;
+  if(typeof baseDashboard==='function'&&!baseDashboard.__final9Upcoming){
+    const wrappedDashboard=async function(){
+      const result=await baseDashboard.apply(this,arguments);
+      await f9RebuildUpcoming();
+      return result;
+    };
+    wrappedDashboard.__final9Upcoming=true;
+    W.renderDashboard=wrappedDashboard;
+    globalThis.renderDashboard=wrappedDashboard;
+  }
+
+  function f9EvalHistory(evals,sm){
+    if(!evals.length) return `<div class="f4-empty"><i data-lucide="clipboard-list"></i><strong>Nenhuma aplicação registrada</strong><span>Os instrumentos ficam disponíveis acima. Ao aplicar uma avaliação, ela aparecerá aqui e no prontuário do aluno.</span></div>`;
+    return `<div class="v4-history">${evals.map(e=>{
+      const raw=e.assessment_data&&typeof e.assessment_data==='object'?e.assessment_data:{};
+      const entries=Object.entries(raw).filter(([,v])=>v!==null&&v!==undefined&&String(v).trim()!=='').slice(0,3);
+      const student=sm.get(String(e.student_id));
+      const st=String(e.status||'draft').toLowerCase();
+      const stLabel=({draft:'Rascunho',completed:'Concluída',pending:'Pendente',cancelled:'Cancelada',scheduled:'Agendada'})[st]||String(e.status||'Registro');
+      return `<article class="v4-history-item" onclick="v3EditEvaluation('${esc(e.id)}')"><div class="v4-history-date"><strong>${esc(W.fmtDateV4?W.fmtDateV4(e.evaluation_date):((W.formatDate&&W.formatDate(e.evaluation_date))||'—'))}</strong><span>${esc(stLabel)}</span></div><div class="v4-history-main"><div class="v4-inline-tags"><span class="v3-tag">${esc(e.type||'Avaliação')}</span>${student?`<span class="v3-student-ref"><i data-lucide="user-round"></i>${esc(student.name||student.full_name||'Aluno')}</span>`:''}</div><h3>${esc(e.title||e.type||'Avaliação')}</h3><p>${esc(e.summary||e.notes||'Sem síntese registrada. Clique para abrir a aplicação.')}</p>${entries.length?`<div class="f4-eval-preview">${entries.map(([k,v])=>`<div><span>${esc(k.replaceAll('_',' '))}</span><strong>${esc(Array.isArray(v)?v.join(', '):String(v))}</strong></div>`).join('')}</div>`:''}<div class="f9-eval-history-actions"><button type="button" class="btn btn-outline btn-sm" onclick="event.stopPropagation();v3EditEvaluation('${esc(e.id)}')"><i data-lucide="pencil"></i>Editar aplicação</button><button type="button" class="btn btn-danger btn-sm" onclick="event.stopPropagation();v3DeleteEvaluation('${esc(e.id)}')"><i data-lucide="trash-2"></i>Excluir</button></div></div></article>`;
+    }).join('')}</div>`;
+  }
+
+  W.renderEvaluations=async function(){
+    const c=document.getElementById('avaliacoesContent'); if(!c)return;
+    c.innerHTML='<div class="v3-loading"><i data-lucide="loader-circle"></i><span>Carregando instrumentos e histórico...</span></div>';W.refreshIcons?.();
+    try{
+      const [evals,students]=await Promise.all([
+        W.selectSafe(evalTable(),{filters:{user_id:uid()},order:'evaluation_date',ascending:false,limit:500}),
+        W.selectSafe(studentTable(),{filters:{user_id:uid()},order:'name',ascending:true,limit:500})
+      ]);
+      const list=evals||[]; const sm=new Map((students||[]).map(s=>[String(s.id),s]));
+      const defs=W.V4_ASSESSMENTS||W.PEDAGOGICAL_ASSESSMENTS||{};
+      const models=Object.entries(defs).map(([name,def])=>`<article class="f9-eval-model"><div class="f9-eval-model-icon"><i data-lucide="clipboard-check"></i></div><div class="f9-eval-model-main"><div class="v3-kicker">PRONTO PARA APLICAÇÃO</div><h3>${esc(name)}</h3><p>${esc(def.objective||def.source||'Instrumento pedagógico de apoio para observação e planejamento.')}</p><div class="f9-eval-meta"><span>${esc(def.area||'Avaliação pedagógica')}</span><span>${esc(def.duration||'Conforme aplicação')}</span><span>${Array.isArray(def.fields)?def.fields.length:0} campos</span></div></div><button class="btn btn-primary btn-sm" type="button" onclick="V3.assessmentType='${esc(name)}';v4OpenEvaluationModal()"><i data-lucide="play"></i>Aplicar</button></article>`).join('');
+      const completed=list.filter(e=>String(e.status||'').toLowerCase()==='completed').length;
+      const drafts=list.filter(e=>['draft','pending'].includes(String(e.status||'').toLowerCase())).length;
+      c.innerHTML=`<div class="f8-page"><div class="f8-head"><div><div class="v3-kicker">INVESTIGAÇÃO PEDAGÓGICA</div><h1>Avaliações</h1><p>Instrumentos pedagógicos, aplicação, evidências, síntese e próximos passos — sem perder o histórico já registrado.</p></div><div class="f8-head-actions"><button class="btn btn-primary" type="button" onclick="V3.assessmentType='Avaliação personalizada';v4OpenEvaluationModal()"><i data-lucide="clipboard-plus"></i>Aplicar avaliação</button></div></div><div class="v3-stats">${W.statCard?.('clipboard-check','Aplicações',list.length,'Registros salvos')||''}${W.statCard?.('user-round-check','Alunos avaliados',new Set(list.map(e=>e.student_id).filter(Boolean)).size,'Com histórico')||''}${W.statCard?.('file-check-2','Concluídas',completed,'Aplicações finalizadas')||''}${W.statCard?.('clock-3','Rascunhos',drafts,'Em preenchimento')||''}</div><section class="f8-card"><div class="f8-card-head"><div><h2>Avaliações prontas para aplicar</h2><p>Escolha um instrumento para abrir a aplicação pedagógica completa.</p></div></div><div class="f9-eval-models">${models||'<div class="f8-empty">Nenhum instrumento configurado.</div>'}</div></section><section class="f8-card"><div class="f8-card-head"><div><h2>Histórico das aplicações</h2><p>Todos os registros anteriores continuam disponíveis para editar, revisar ou excluir.</p></div><span class="v3-tag">${list.length} registro${list.length===1?'':'s'}</span></div>${f9EvalHistory(list,sm)}</section><section class="f8-card"><div class="v3-form-note"><i data-lucide="info"></i><span>Os instrumentos são apoio pedagógico para observar evidências e planejar intervenções. Eles não substituem instrumentos normatizados.</span></div></section></div>`;
+      W.refreshIcons?.();
+    }catch(e){
+      console.error('[FINAL9] avaliações',e);
+      c.innerHTML=`<div class="f8-card f8-empty"><i data-lucide="circle-alert"></i><strong>Não foi possível carregar as avaliações.</strong><span>${esc(e.message||e)}</span><button class="btn btn-primary btn-sm" onclick="renderEvaluations()">Tentar novamente</button></div>`;W.refreshIcons?.();
+    }
+  };
+  globalThis.renderEvaluations=W.renderEvaluations;
+  W.__legadoFinal9=true;
 })();
 </script>
 
