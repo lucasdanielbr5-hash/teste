@@ -12438,5 +12438,276 @@ body.legado-v4-modal-open{overflow:hidden}
 })();
 
 </script>
+
+
+<style id="legado-final19-css">
+  .final19-modal-overlay{position:fixed;inset:0;z-index:10050;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(19,31,26,.5);backdrop-filter:blur(3px)}
+  .final19-choice-card,.final19-doc-modal{position:relative;width:min(680px,100%);max-height:calc(100vh - 40px);overflow:auto;padding:28px;border:1px solid #e1e9e4;border-radius:22px;background:#fff;box-shadow:0 30px 90px rgba(25,45,36,.22)}
+  .final19-choice-icon{width:52px;height:52px;display:grid;place-items:center;border-radius:15px;background:#edf5f0;color:#4f7b69;margin-bottom:14px}.final19-choice-icon svg{width:25px;height:25px}
+  .final19-choice-kicker,.final19-greeting-kicker,.final19-plan-kicker,.final19-doc-kicker{color:#5b63e8;font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}.final19-choice-card h2,.final19-doc-modal h2{margin:7px 0;color:#263b49;font-size:24px;line-height:1.2}.final19-choice-card p,.final19-doc-modal>p{margin:0;color:#74828a;font-size:12px;line-height:1.6}.final19-choice-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:24px}.final19-choice-close{position:absolute;top:14px;right:14px;width:36px;height:36px;border:0;border-radius:10px;background:#f4f7f5;color:#67766f;display:grid;place-items:center;cursor:pointer}.final19-choice-close svg{width:18px}
+  .final19-greeting{display:flex;align-items:center;gap:15px;margin-bottom:18px;padding:18px 20px;border:1px solid #dfe8e3;border-radius:18px;background:linear-gradient(135deg,#f4faf7,#fff);box-shadow:0 8px 24px rgba(30,50,42,.045)}.final19-greeting-icon{width:44px;height:44px;display:grid;place-items:center;flex:none;border-radius:14px;background:#eaf3ee;color:#4f7c68}.final19-greeting-icon svg{width:22px}.final19-greeting h2{margin:4px 0;color:#2f453c;font-size:20px;line-height:1.25}.final19-greeting p{margin:0;color:#7b8983;font-size:11px}
+  .final19-plan-card{display:flex;align-items:center;gap:14px;margin-top:16px;padding:18px;border:1px solid #dfe8e3;border-radius:18px;background:linear-gradient(135deg,#f7fbf8,#fff);box-shadow:0 7px 22px rgba(30,50,42,.04)}.final19-plan-icon{width:44px;height:44px;display:grid;place-items:center;border-radius:14px;background:#eaf3ee;color:#4f7c68}.final19-plan-icon svg{width:22px}.final19-plan-main{min-width:0;flex:1}.final19-plan-main h3{margin:5px 0;color:#30473d;font-size:17px}.final19-plan-main p{margin:0;color:#77847e;font-size:11px;overflow-wrap:anywhere}.final19-plan-status{padding:6px 9px;border-radius:999px;font-size:9px;font-weight:800}.final19-plan-status.good{background:#eaf5ee;color:#477d63}.final19-plan-status.bad{background:#fff0f0;color:#b85b5b}
+  .final19-up-actions{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap;grid-column:1/-1}.final19-up-actions .btn{font-size:10px;min-height:30px;padding:6px 9px}
+  .final19-doc-page{width:100%;min-width:0}.final19-doc-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:14px}.final19-doc-card{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:13px;align-items:center;padding:17px;border:1px solid #dfe8e3;border-radius:18px;background:#fff;box-shadow:0 7px 22px rgba(30,50,42,.045);min-width:0}.final19-doc-icon{width:46px;height:46px;display:grid;place-items:center;border-radius:14px;background:#eef5f1;color:#507a68}.final19-doc-icon svg{width:22px}.final19-doc-card h3{margin:4px 0;color:#30473d;font-size:14px}.final19-doc-card p{margin:0;color:#78857f;font-size:10px;line-height:1.55}.final19-doc-tip{display:flex;gap:11px;margin-top:15px;padding:15px 17px;border:1px solid #e2e9e5;border-radius:16px;background:#fafcfb;color:#74817b}.final19-doc-tip svg{width:19px;flex:none;color:#5a7f6d}.final19-doc-tip strong{display:block;color:#4b6056;font-size:11px}.final19-doc-tip p{margin:4px 0 0;font-size:10px;line-height:1.55}.final19-doc-form{margin-top:18px}.final19-doc-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.final19-doc-fields label{display:flex;flex-direction:column;gap:6px;color:#66756e;font-size:11px;font-weight:700}.final19-doc-fields label.full{grid-column:1/-1}.final19-doc-fields input,.final19-doc-fields textarea{width:100%;border:1px solid #dfe7e3;border-radius:11px;background:#fbfcfc;padding:10px 11px;color:#263238;font:13px Inter,Arial,sans-serif;outline:none}.final19-doc-fields textarea{resize:vertical}.final19-doc-fields input:focus,.final19-doc-fields textarea:focus{border-color:#8eb2a3;box-shadow:0 0 0 3px rgba(95,143,122,.09)}.final19-doc-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+  @media(max-width:800px){.final19-doc-grid{grid-template-columns:1fr}.final19-doc-card{grid-template-columns:auto 1fr}.final19-doc-card .btn{grid-column:1/-1;width:max-content}.final19-doc-fields{grid-template-columns:1fr}.final19-doc-fields label.full{grid-column:auto}.final19-choice-actions{flex-direction:column}.final19-choice-actions .btn{width:100%}}
+  @media(max-width:520px){.final19-greeting{align-items:flex-start}.final19-plan-card{align-items:flex-start}.final19-plan-status{margin-left:auto}.final19-doc-card .btn{width:100%}.final19-doc-actions{flex-direction:column}.final19-doc-actions .btn{width:100%}.final19-choice-card,.final19-doc-modal{padding:22px}.final19-up-actions{justify-content:flex-start}}
+</style>
+
+<script id="legado-final19">
+(function(){
+  'use strict';
+  const W=window;
+  const esc=W.escapeHtml||(v=>String(v??'').replace(/[&<>\"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[m])));
+  const byId=id=>document.getElementById(id);
+  const uid=()=>W.state?.user?.id||null;
+  const sb=()=>W.supabaseClient;
+  const schemaName=n=>W.SUPABASE_SCHEMA?.[n]||W.TABLE?.[n]||n;
+  const financeTable=()=>W.SUPABASE_SCHEMA?.finance||W.TABLE?.finance||'financial_entries';
+  const dateOnly=v=>{
+    if(!v)return '';
+    const d=new Date(String(v).slice(0,10)+'T12:00:00');
+    return Number.isNaN(d.getTime())?'':d.toLocaleDateString('pt-BR');
+  };
+  const teacherName=()=>String(W.state?.profile?.full_name||W.state?.profile?.name||W.state?.user?.user_metadata?.full_name||W.state?.user?.user_metadata?.name||W.state?.user?.email?.split('@')[0]||'Professor').trim();
+
+  /* ============================================================
+     1) AGENDA: CANCELAR x EXCLUIR DE VERDADE
+     ============================================================ */
+  W.l14CancelAppointment=async function(id){
+    const client=sb(), me=uid();
+    if(!client||!me){W.showError?.('Sessão não encontrada.');return;}
+    const old=W.openModal;
+    const close=()=>{
+      if(byId('final19AppointmentChoice')) byId('final19AppointmentChoice').remove();
+    };
+    close();
+    const root=document.createElement('div');
+    root.id='final19AppointmentChoice';
+    root.className='final19-modal-overlay';
+    root.innerHTML=`<div class="final19-choice-card" role="dialog" aria-modal="true">
+      <div class="final19-choice-icon"><i data-lucide="calendar-x-2"></i></div>
+      <div class="final19-choice-kicker">GERENCIAR ATENDIMENTO</div>
+      <h2>O que deseja fazer?</h2>
+      <p>Você pode apenas cancelar este horário, mantendo o registro, ou excluir o atendimento definitivamente.</p>
+      <div class="final19-choice-actions">
+        <button type="button" class="btn btn-outline" id="final19CancelOnly"><i data-lucide="calendar-off"></i>Cancelar atendimento</button>
+        <button type="button" class="btn btn-danger" id="final19DeleteForever"><i data-lucide="trash-2"></i>Excluir definitivamente</button>
+      </div>
+      <button type="button" class="final19-choice-close" id="final19ChoiceClose" aria-label="Fechar"><i data-lucide="x"></i></button>
+    </div>`;
+    document.body.appendChild(root);
+    W.refreshIcons?.();
+    const finish=()=>root.remove();
+    byId('final19ChoiceClose').onclick=finish;
+    root.addEventListener('click',e=>{if(e.target===root)finish();});
+    byId('final19CancelOnly').onclick=async()=>{
+      const b=byId('final19CancelOnly'); if(b)b.disabled=true;
+      try{
+        const {error}=await client.from(schemaName('appointments')).update({status:'cancelled',updated_at:new Date().toISOString()}).eq('id',id).eq('user_id',me);
+        if(error)throw error;
+        finish(); W.showSuccess?.('Atendimento cancelado.'); await W.renderAgenda?.();
+      }catch(e){if(b)b.disabled=false;W.showError?.('Não foi possível cancelar: '+(e.message||e));}
+    };
+    byId('final19DeleteForever').onclick=async()=>{
+      const b=byId('final19DeleteForever'); if(b)b.disabled=true;
+      try{
+        const {error}=await client.from(schemaName('appointments')).delete().eq('id',id).eq('user_id',me);
+        if(error)throw error;
+        finish(); W.showSuccess?.('Atendimento excluído definitivamente.'); await W.renderAgenda?.();
+      }catch(e){if(b)b.disabled=false;W.showError?.('Não foi possível excluir o atendimento: '+(e.message||e));}
+    };
+  };
+
+  async function decorateUpcomingAppointmentActions(){
+    const root=byId('agendaContent'); if(!root||!uid()||!sb())return;
+    const items=[...root.querySelectorAll('.l14-up-item')]; if(!items.length)return;
+    try{
+      const today=W.todayInputDate?.()||new Date().toISOString().slice(0,10);
+      const {data,error}=await sb().from(schemaName('appointments')).select('*').eq('user_id',uid()).gte('appointment_date',today).order('appointment_date',{ascending:true}).order('appointment_time',{ascending:true}).limit(50);
+      if(error)return;
+      const apps=(data||[]).filter(a=>!['cancelled','canceled','completed'].includes(String(a.status||'').toLowerCase()));
+      items.forEach(item=>{
+        if(item.querySelector('.final19-up-actions'))return;
+        const dateTxt=item.querySelector('.l14-up-date strong')?.textContent?.trim()||'';
+        const timeTxt=item.querySelector('.l14-up-date span')?.textContent?.trim()||'';
+        const nameTxt=item.querySelector('.l14-up-main strong')?.textContent?.trim()||'';
+        const app=apps.find(a=>dateOnly(a.appointment_date)===dateTxt && String(a.appointment_time||a.start_time||a.time||'').slice(0,5)===timeTxt && String(a.student_name||'').trim()===nameTxt) || apps.find(a=>dateOnly(a.appointment_date)===dateTxt && String(a.appointment_time||a.start_time||a.time||'').slice(0,5)===timeTxt);
+        if(!app)return;
+        const actions=document.createElement('div'); actions.className='final19-up-actions';
+        actions.innerHTML=`<button type="button" class="btn btn-outline btn-sm" data-final19-reagendar="${esc(app.id)}"><i data-lucide="calendar-sync"></i>Reagendar</button><button type="button" class="btn btn-danger btn-sm" data-final19-excluir="${esc(app.id)}"><i data-lucide="trash-2"></i>Excluir</button>`;
+        item.appendChild(actions);
+        actions.querySelector('[data-final19-reagendar]')?.addEventListener('click',()=>W.v4OpenAppointmentModal?.(app.appointment_date,String(app.appointment_time||app.start_time||app.time||'').slice(0,5),app.student_id||''));
+        actions.querySelector('[data-final19-excluir]')?.addEventListener('click',()=>W.l14CancelAppointment(app.id));
+      });
+      W.refreshIcons?.();
+    }catch(_){/* não interrompe a agenda */}
+  }
+
+  /* ============================================================
+     2) DASHBOARD: SAUDAÇÃO DINÂMICA
+     ============================================================ */
+  function greeting(){
+    const h=new Date().getHours();
+    if(h>=5&&h<12)return 'Bom dia';
+    if(h>=12&&h<18)return 'Boa tarde';
+    return 'Boa noite';
+  }
+  function ensureDashboardGreeting(){
+    const c=byId('dashboardContent'); if(!c)return;
+    let g=c.querySelector('[data-final19-greeting]');
+    if(!g){
+      g=document.createElement('section');g.dataset.final19Greeting='1';g.className='final19-greeting';
+      c.prepend(g);
+    }
+    g.innerHTML=`<div class="final19-greeting-icon"><i data-lucide="sun-medium"></i></div><div><div class="final19-greeting-kicker">SEJA BEM-VINDO</div><h2>${esc(greeting())}, ${esc(teacherName())}!</h2><p>Que seu atendimento hoje seja organizado, acolhedor e produtivo.</p></div>`;
+    W.refreshIcons?.();
+  }
+
+  const originalDashboard=W.renderDashboard;
+  if(typeof originalDashboard==='function'&&!originalDashboard.__final19){
+    W.renderDashboard=async function(){const r=await originalDashboard.apply(this,arguments);ensureDashboardGreeting();return r;};
+    W.renderDashboard.__final19=true;
+  }
+
+  /* ============================================================
+     3) MEU PERFIL: MOSTRAR PLANO CONTRATADO
+     ============================================================ */
+  function ensurePlanCard(){
+    const c=byId('perfilContent'); if(!c)return;
+    const host=c.querySelector('.v3-profile-editor'); if(!host)return;
+    let card=c.querySelector('[data-final19-plan]');
+    if(!card){card=document.createElement('section');card.dataset.final19Plan='1';card.className='final19-plan-card';host.insertAdjacentElement('afterend',card);}
+    const p=W.state?.profile||{};
+    const plan=p.plan_name||p.plan||'Plano não informado';
+    const price=p.plan_price!=null&&p.plan_price!=='' ? (W.formatCurrency?W.formatCurrency(Number(p.plan_price)):'R$ '+Number(p.plan_price).toFixed(2).replace('.',',')) : 'Valor não informado';
+    const expiry=p.access_expires_at||p.subscription_expires_at||p.plan_expires_at||null;
+    const status=expiry&&new Date(expiry).getTime()<Date.now()?'Vencido':'Ativo';
+    card.innerHTML=`<div class="final19-plan-icon"><i data-lucide="badge-check"></i></div><div class="final19-plan-main"><div class="final19-plan-kicker">SEU PLANO</div><h3>${esc(plan)}</h3><p>${esc(price)}${expiry?' · acesso até '+esc(dateOnly(expiry)):''}</p></div><span class="final19-plan-status ${status==='Ativo'?'good':'bad'}">${status}</span>`;
+    W.refreshIcons?.();
+  }
+  const originalProfile=W.renderProfile;
+  if(typeof originalProfile==='function'&&!originalProfile.__final19){
+    W.renderProfile=async function(){const r=await originalProfile.apply(this,arguments);ensurePlanCard();return r;};
+    W.renderProfile.__final19=true;
+  }
+
+  /* ============================================================
+     4) NOVA PÁGINA: MODELOS E DOCUMENTOS
+     ============================================================ */
+  const DOCS=[
+    {id:'recibo',title:'Recibo de pagamento',desc:'Comprovante simples e profissional de pagamento recebido.',icon:'receipt-text'},
+    {id:'declaracao',title:'Declaração',desc:'Modelo para declarar comparecimento ou acompanhamento.',icon:'file-check-2'},
+    {id:'encaminhamento',title:'Encaminhamento',desc:'Modelo de encaminhamento para outro especialista.',icon:'send'},
+    {id:'contrato',title:'Declaração de acompanhamento',desc:'Modelo de declaração de acompanhamento psicopedagógico.',icon:'file-text'}
+  ];
+  function ensureDocsView(){
+    const content=byId('content'); if(!content)return;
+    if(!byId('view-documentos')){
+      const s=document.createElement('section');s.id='view-documentos';s.className='view';s.innerHTML='<div id="documentosContent"></div>';content.appendChild(s);
+    }
+    const nav=byId('mainNav');
+    if(nav&&!nav.querySelector('[data-view="documentos"]')){
+      const b=document.createElement('button');b.type='button';b.dataset.view='documentos';b.onclick=()=>W.navigate('documentos');b.innerHTML='<i data-lucide="file-text"></i><span class="nav-label">Modelos e documentos</span>';nav.appendChild(b);W.refreshIcons?.();
+    }
+  }
+  function docsView(){
+    const c=byId('documentosContent'); if(!c)return;
+    c.innerHTML=`<div class="final19-doc-page"><div class="v3-head"><div><div class="v3-kicker">DOCUMENTOS</div><h1>Modelos e documentos</h1><p>Escolha um modelo, preencha as informações e depois salve em PDF ou imprima.</p></div></div><div class="final19-doc-grid">${DOCS.map(d=>`<article class="final19-doc-card"><div class="final19-doc-icon"><i data-lucide="${d.icon}"></i></div><div><div class="final19-doc-kicker">MODELO</div><h3>${d.title}</h3><p>${d.desc}</p></div><button type="button" class="btn btn-primary btn-sm" data-final19-doc="${d.id}"><i data-lucide="pencil-line"></i>Preencher</button></article>`).join('')}</div><div class="final19-doc-tip"><i data-lucide="lightbulb"></i><div><strong>Como funciona</strong><p>Preencha o modelo, revise o texto e escolha entre <b>Salvar em PDF</b> ou <b>Imprimir</b>. O documento usa os dados do professor logado.</p></div></div></div>`;
+    c.querySelectorAll('[data-final19-doc]').forEach(b=>b.addEventListener('click',()=>openDocModal(b.dataset.final19Doc)));
+    W.refreshIcons?.();
+  }
+  function docFields(type){
+    if(type==='recibo')return `
+      <label><span>Nome de quem pagou *</span><input name="payer" required></label>
+      <label><span>Valor *</span><input name="amount" inputmode="decimal" placeholder="0,00" required></label>
+      <label><span>Referente a</span><input name="reference" value="Atendimento psicopedagógico"></label>
+      <label><span>Data do pagamento</span><input type="date" name="date" value="${W.todayInputDate?.()||new Date().toISOString().slice(0,10)}"></label>
+      <label><span>Forma de pagamento</span><input name="method" placeholder="PIX, dinheiro, cartão..."></label>
+      <label class="full"><span>Observação</span><textarea name="note" rows="3"></textarea></label>`;
+    if(type==='declaracao')return `
+      <label><span>Nome do(a) interessado(a) *</span><input name="person" required></label>
+      <label><span>Documento (opcional)</span><input name="document"></label>
+      <label><span>Finalidade</span><input name="purpose" value="Declarar comparecimento/acompanhamento psicopedagógico"></label>
+      <label><span>Período</span><input name="period" placeholder="Ex.: agosto de 2026"></label>
+      <label class="full"><span>Texto adicional</span><textarea name="note" rows="4"></textarea></label>`;
+    if(type==='encaminhamento')return `
+      <label><span>Nome do(a) aluno(a) *</span><input name="student" required></label>
+      <label><span>Idade</span><input name="age"></label>
+      <label><span>Especialista / área *</span><input name="specialist" placeholder="Ex.: fonoaudiologia, neurologia, psicologia..." required></label>
+      <label><span>Data</span><input type="date" name="date" value="${W.todayInputDate?.()||new Date().toISOString().slice(0,10)}"></label>
+      <label class="full"><span>Motivo do encaminhamento *</span><textarea name="reason" rows="5" required></textarea></label>`;
+    return `
+      <label><span>Nome do(a) aluno(a) *</span><input name="student" required></label>
+      <label><span>Período de acompanhamento</span><input name="period"></label>
+      <label><span>Data de emissão</span><input type="date" name="date" value="${W.todayInputDate?.()||new Date().toISOString().slice(0,10)}"></label>
+      <label class="full"><span>Observações</span><textarea name="note" rows="5"></textarea></label>`;
+  }
+  function docTitle(type){return DOCS.find(x=>x.id===type)?.title||'Documento';}
+  function buildDocText(type,fd){
+    const t=teacherName();const today=dateOnly(fd.get('date'))||new Date().toLocaleDateString('pt-BR');
+    if(type==='recibo')return {title:'RECIBO DE PAGAMENTO',body:[`Recebi de ${fd.get('payer')||'________________________________'} a importância de R$ ${fd.get('amount')||'__________'}, referente a ${fd.get('reference')||'________________________________'}.`,`Forma de pagamento: ${fd.get('method')||'____________________'}.`,`Data do pagamento: ${today}.`,fd.get('note')?`Observação: ${fd.get('note')}`:'',`\n${t}\nProfessor(a) / Psicopedagogo(a)`].filter(Boolean)};
+    if(type==='declaracao')return {title:'DECLARAÇÃO',body:[`Declaro, para os devidos fins, que ${fd.get('person')||'________________________________'} participou de ${fd.get('purpose')||'acompanhamento psicopedagógico'} ${fd.get('period')?`no período de ${fd.get('period')}`:''}.`,`Documento: ${fd.get('document')||'não informado'}.`,fd.get('note')||'',`\n${t}\nProfessor(a) / Psicopedagogo(a)\n${today}`].filter(Boolean)};
+    if(type==='encaminhamento')return {title:'ENCAMINHAMENTO',body:[`Encaminho o(a) aluno(a) ${fd.get('student')||'________________________________'}, ${fd.get('age')?fd.get('age')+' anos.':''}`,`Solicito avaliação/atendimento na área de ${fd.get('specialist')||'________________________'}.`,`Motivo do encaminhamento:\n${fd.get('reason')||'________________________________'}`,`\n${t}\nProfessor(a) / Psicopedagogo(a)\n${today}`]};
+    return {title:'DECLARAÇÃO DE ACOMPANHAMENTO',body:[`Declaro que o(a) aluno(a) ${fd.get('student')||'________________________________'} encontra-se em acompanhamento psicopedagógico ${fd.get('period')?`no período de ${fd.get('period')}`:''}.`,fd.get('note')||'',`\n${t}\nProfessor(a) / Psicopedagogo(a)\n${today}`].filter(Boolean)};
+  }
+  function openDocModal(type){
+    byId('final19DocModal')?.remove();
+    const root=document.createElement('div');root.id='final19DocModal';root.className='final19-modal-overlay';
+    root.innerHTML=`<div class="final19-doc-modal" role="dialog" aria-modal="true"><button type="button" class="final19-choice-close" id="final19DocClose"><i data-lucide="x"></i></button><div class="final19-choice-kicker">MODELO PROFISSIONAL</div><h2>${esc(docTitle(type))}</h2><p>Preencha os campos e depois escolha a saída desejada.</p><form id="final19DocForm" class="final19-doc-form"><div class="final19-doc-fields">${docFields(type)}</div><div class="final19-doc-actions"><button type="button" class="btn btn-outline" id="final19DocPrint"><i data-lucide="printer"></i>Imprimir</button><button type="button" class="btn btn-primary" id="final19DocPdf"><i data-lucide="file-down"></i>Salvar em PDF</button></div></form></div>`;
+    document.body.appendChild(root);W.refreshIcons?.();
+    byId('final19DocClose').onclick=()=>root.remove();root.addEventListener('click',e=>{if(e.target===root)root.remove();});
+    byId('final19DocPrint').onclick=()=>printDoc(type,new FormData(byId('final19DocForm')));
+    byId('final19DocPdf').onclick=()=>saveDocPdf(type,new FormData(byId('final19DocForm')));
+  }
+  function saveDocPdf(type,fd){
+    const Js=W.jspdf?.jsPDF;if(!Js){W.showError?.('Biblioteca de PDF não disponível.');return;}
+    const data=buildDocText(type,fd),pdf=new Js({unit:'mm',format:'a4'}),w=210,m=20;pdf.setTextColor(38,50,56);pdf.setFont('helvetica','bold');pdf.setFontSize(18);pdf.text(data.title,w/2,30,{align:'center'});pdf.setFont('helvetica','normal');pdf.setFontSize(11);let y=52;for(const block of data.body){const lines=pdf.splitTextToSize(String(block),w-m*2);pdf.text(lines,m,y);y+=lines.length*7+6;if(y>270){pdf.addPage();y=25;}}pdf.setFontSize(9);pdf.setTextColor(120,130,125);pdf.text('Legado Que Ensina',m,287);pdf.save(`${type}-${new Date().toISOString().slice(0,10)}.pdf`);W.showSuccess?.('PDF gerado com sucesso.');}
+  function printDoc(type,fd){
+    const data=buildDocText(type,fd),w=window.open('','_blank','noopener,noreferrer');
+    if(!w){W.showError?.('O navegador bloqueou a janela de impressão. Permita pop-ups para imprimir.');return;}
+    w.document.write(`<html lang="pt-BR"><head><meta charset="utf-8"><title>${esc(data.title)}</title><style>body{font-family:Arial,sans-serif;padding:42px;line-height:1.7;color:#263238}h1{text-align:center;font-size:20px;margin-bottom:36px}p{white-space:pre-wrap;margin:0 0 18px}.sign{margin-top:80px;text-align:center}</style></head><body><h1>${esc(data.title)}</h1>${data.body.map(x=>`<p>${esc(x)}</p>`).join('')}</body></html>`);w.document.close();w.focus();setTimeout(()=>w.print(),250);
+  }
+
+  /* ============================================================
+     5) ROTEAMENTO FINAL — inclui DOCUMENTOS sem mexer nas demais telas
+     ============================================================ */
+  const titles={dashboard:{label:'Início',icon:'layout-dashboard'},alunos:{label:'Alunos',icon:'users'},'aluno-perfil':{label:'Perfil do aluno',icon:'user-round'},agenda:{label:'Agenda',icon:'calendar-days'},avaliacoes:{label:'Avaliações',icon:'clipboard-check'},financeiro:{label:'Financeiro',icon:'wallet-cards'},recados:{label:'Recados',icon:'message-square'},'lista-espera':{label:'Lista de espera',icon:'list-ordered'},perfil:{label:'Meu perfil',icon:'user-round-cog'},master:{label:'Administração',icon:'shield'},documentos:{label:'Modelos e documentos',icon:'file-text'}};
+  W.renderCurrentView=async function(view){
+    ensureDocsView();
+    if(view==='documentos'){docsView();return;}
+    const fnMap={dashboard:'renderDashboard',alunos:'renderStudents','aluno-perfil':'renderStudentProfileView',agenda:'renderAgenda',avaliacoes:'renderEvaluations',financeiro:'renderFinance',recados:'renderMessages','lista-espera':'renderWaitlist',perfil:'renderProfile',master:'renderMaster'};
+    const fn=W[fnMap[view]||'renderDashboard'];
+    if(typeof fn!=='function')throw new Error(`Tela "${view}" não possui um renderizador ativo.`);
+    const r=await fn();
+    if(view==='dashboard')ensureDashboardGreeting();
+    if(view==='perfil')ensurePlanCard();
+    if(view==='agenda'){await decorateUpcomingAppointmentActions();}
+    return r;
+  };
+  W.navigate=function(view){
+    const valid=titles[view]?view:'dashboard';
+    if(W.state)W.state.currentView=valid;
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    byId(`view-${valid}`)?.classList.add('active');
+    document.querySelectorAll('#mainNav button[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===valid));
+    const pt=byId('pageTitle'),info=titles[valid];
+    if(pt)pt.innerHTML=`<i data-lucide="${info.icon}"></i><span>${esc(info.label)}</span>`;
+    W.refreshIcons?.();
+    Promise.resolve(W.renderCurrentView(valid)).catch(e=>{console.error('[FINAL19 router]',e);W.showError?.(e.message||'Não foi possível abrir a página.');});
+  };
+
+  /* Disponibilidade continua recolhida ao entrar na Agenda. */
+  const keepAvailabilityClosed=()=>document.querySelectorAll('.l14-agenda-availability').forEach(d=>d.removeAttribute('open'));
+  const originalAgenda=W.renderAgenda;
+  if(typeof originalAgenda==='function'&&!originalAgenda.__final19){
+    W.renderAgenda=async function(){const r=await originalAgenda.apply(this,arguments);keepAvailabilityClosed();await decorateUpcomingAppointmentActions();return r;};
+    W.renderAgenda.__final19=true;
+  }
+
+  function init(){ensureDocsView();if(W.state?.currentView==='dashboard')ensureDashboardGreeting();if(byId('perfilContent')?.querySelector('.v3-profile-editor'))ensurePlanCard();keepAvailabilityClosed();}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else setTimeout(init,0);
+})();
+
+</script>
 </body>
 </html>
