@@ -1064,6 +1064,7 @@
       }
     }
   </style>
+<meta name="legado-build" content="2026-09-26-final16">
 </head>
 <body>
 
@@ -11752,5 +11753,282 @@ body.legado-v4-modal-open{overflow:hidden}
 })();
 </script>
 
+<script id="legado-final16-fixes">
+(function(){
+  'use strict';
+
+  const W = window;
+  const byId = id => document.getElementById(id);
+  const esc = W.escapeHtml || (v => String(v ?? '').replace(/[&<>\"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[m])));
+  const uid = () => W.state?.user?.id || null;
+  const sb = () => W.supabaseClient;
+  const table = name => W.SUPABASE_SCHEMA?.[name] || W.TABLE?.[name] || name;
+
+  function notifyError(err, fallback){
+    W.showError?.(err?.message || fallback);
+  }
+
+  /* ============================================================
+     1) NOVO ALUNO — sempre em popup modal
+     ============================================================ */
+  W.openNewStudentModal = function(){
+    try{
+      if(typeof W.getStudentForm !== 'function'){
+        throw new Error('Formulário de aluno não está disponível.');
+      }
+      if(W.studentsState) W.studentsState.editingId = null;
+      W.openModal(W.getStudentForm());
+      W.refreshIcons?.();
+      const form = byId('studentForm');
+      if(!form) throw new Error('Não foi possível abrir o formulário do aluno.');
+      form.addEventListener('submit', W.handleStudentFormSubmit, { once: true });
+    }catch(err){
+      notifyError(err,'Não foi possível abrir o cadastro do aluno.');
+    }
+  };
+
+  /* ============================================================
+     2) NOVO LANÇAMENTO — sempre em popup modal, nunca inline
+     ============================================================ */
+  function parseMoney(value){
+    if(typeof W.parseCurrency === 'function') return W.parseCurrency(value);
+    const raw=String(value??'').replace(/\s/g,'').replace(/\./g,'').replace(',','.');
+    const n=Number(raw);
+    return Number.isFinite(n)?n:0;
+  }
+
+  W.openPaymentModal = W.v3OpenFinanceEditor = async function(){
+    try{
+      let students = W.studentsState?.data || W.state?.students || [];
+      if(!students.length && typeof W.loadStudents === 'function'){
+        students = await W.loadStudents();
+      }
+      const today = typeof W.todayInputDate === 'function' ? W.todayInputDate() : new Date().toISOString().slice(0,10);
+      W.openModal(`
+        <div class="modal-header">
+          <div>
+            <div class="eyebrow">FINANCEIRO</div>
+            <h2>Novo lançamento</h2>
+            <p>Registre uma receita, recebimento ou despesa.</p>
+          </div>
+          <button class="icon-button" type="button" onclick="closeModal()" aria-label="Fechar"><i data-lucide="x"></i></button>
+        </div>
+        <form id="final16FinanceForm" class="modal-form">
+          <div class="form-grid">
+            <label class="form-field"><span>Tipo *</span><select name="kind" required><option value="income">Receita / recebimento</option><option value="expense">Despesa</option></select></label>
+            <label class="form-field"><span>Aluno</span><select name="student_id"><option value="">Não vincular</option>${students.map(s=>`<option value="${esc(s.id)}">${esc(s.name||s.full_name||'Aluno')}</option>`).join('')}</select></label>
+            <label class="form-field"><span>Valor *</span><input name="amount" inputmode="decimal" placeholder="0,00" required></label>
+            <label class="form-field"><span>Data *</span><input type="date" name="competence_date" value="${today}" required></label>
+            <label class="form-field"><span>Vencimento</span><input type="date" name="due_date" value="${today}"></label>
+            <label class="form-field"><span>Status</span><select name="status"><option value="paid">Pago / recebido</option><option value="pending">Pendente</option><option value="overdue">Em atraso</option></select></label>
+            <label class="form-field"><span>Forma de pagamento</span><select name="payment_method"><option value="pix">Pix</option><option value="cash">Dinheiro</option><option value="debit">Débito</option><option value="credit_spot">Crédito à vista</option><option value="credit_installment">Crédito parcelado</option><option value="transfer">Transferência</option><option value="boleto">Boleto</option></select></label>
+            <label class="form-field"><span>Parcelas</span><select name="installment_total"><option value="1">1 parcela</option><option value="2">2 parcelas</option><option value="3">3 parcelas</option><option value="4">4 parcelas</option><option value="5">5 parcelas</option><option value="6">6 parcelas</option><option value="10">10 parcelas</option><option value="12">12 parcelas</option></select></label>
+            <label class="form-field full"><span>Descrição</span><input name="description" placeholder="Ex.: Mensalidade de setembro"></label>
+          </div>
+          <div class="help-box"><i data-lucide="info"></i><span>O lançamento ficará registrado no histórico financeiro e poderá ser editado ou excluído depois.</span></div>
+          <div class="modal-actions"><button type="button" class="btn btn-outline" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" type="submit"><i data-lucide="save"></i>Salvar lançamento</button></div>
+        </form>
+      `);
+      W.refreshIcons?.();
+      const form = byId('final16FinanceForm');
+      if(!form) throw new Error('Não foi possível abrir o formulário financeiro.');
+      form.onsubmit = async ev => {
+        ev.preventDefault();
+        const btn=form.querySelector('button[type="submit"]');
+        btn?.classList.add('is-loading');
+        try{
+          const fd=new FormData(form);
+          const amount=parseMoney(fd.get('amount'));
+          if(amount<=0) throw new Error('Informe um valor maior que zero.');
+          const total=Math.max(1,Number(fd.get('installment_total')||1));
+          const studentId=String(fd.get('student_id')||'');
+          const student=students.find(s=>String(s.id)===studentId);
+          const financeTable=table('finance') || 'financial_entries';
+          if(!financeTable) throw new Error('Tabela financeira não configurada.');
+          const baseDate=String(fd.get('competence_date')||today);
+          const start=new Date(`${baseDate}T12:00:00`);
+          if(Number.isNaN(start.getTime())) throw new Error('Data inválida.');
+          const group=(typeof W.generateId==='function'?W.generateId():crypto.randomUUID());
+          const centsTotal=Math.round(amount*100);
+          const base=Math.floor(centsTotal/total);
+          let remainder=centsTotal-base*total;
+          for(let i=1;i<=total;i++){
+            const cents=base+(remainder>0?1:0); if(remainder>0) remainder--;
+            const d=new Date(start.getFullYear(),start.getMonth()+i-1,start.getDate());
+            const competence=typeof W.toInputDate==='function'?W.toInputDate(d):d.toISOString().slice(0,10);
+            const payload={
+              user_id:uid(),
+              student_id:student?.id||null,
+              student_name:student?(student.name||student.full_name||null):null,
+              kind:String(fd.get('kind')||'income'),
+              amount:cents/100,
+              competence_date:competence,
+              due_date:String(fd.get('due_date')||competence),
+              status:i===1?String(fd.get('status')||'paid'):'pending',
+              payment_method:String(fd.get('payment_method')||'')||null,
+              description:String(fd.get('description')||'').trim()||null,
+              installment_group:group,
+              installment_number:i,
+              installment_total:total
+            };
+            const result=typeof W.insertSafe==='function'?await W.insertSafe(financeTable,payload):await sb().from(financeTable).insert(payload);
+            if(result?.error) throw result.error;
+          }
+          W.closeModal?.();
+          W.showSuccess?.(total>1?'Lançamento e parcelas criados.':'Lançamento salvo.');
+          await W.renderFinance?.();
+        }catch(err){
+          console.error('[Financeiro FINAL16]',err);
+          notifyError(err,'Não foi possível salvar o lançamento.');
+        }finally{btn?.classList.remove('is-loading');}
+      };
+    }catch(err){notifyError(err,'Não foi possível abrir o lançamento financeiro.');}
+  };
+
+  /* ============================================================
+     3) RECADOS — recebidos/enviados + excluir para si ou definitivamente
+     ============================================================ */
+  async function loadMessagesFinal16(includeTrash=false){
+    const client=sb(), id=uid();
+    if(!client||!id) return [];
+    const master=typeof W.isMasterUser==='function' && W.isMasterUser();
+    let q;
+    if(master){
+      q=client.from('messages').select('*').order('created_at',{ascending:false}).limit(300);
+    }else{
+      q=client.from('messages').select('*').or(`user_id.eq.${id},target_all.eq.true`).order('created_at',{ascending:false}).limit(300);
+    }
+    const {data,error}=await q;
+    if(error) throw error;
+    const rows=data||[];
+    let readRows=[];
+    if(!master){
+      const rr=await client.from('message_reads').select('message_id,read_at,hidden_at,deleted_at,dismissed_at').eq('user_id',id).limit(1000);
+      if(rr.error) console.warn('[Recados] message_reads:',rr.error.message); else readRows=rr.data||[];
+    }
+    const map=new Map(readRows.map(x=>[String(x.message_id),x]));
+    return rows.map(r=>{
+      const read=map.get(String(r.id));
+      const hidden=Boolean(read?.hidden_at||read?.deleted_at);
+      return {...r,final16Read:Boolean(r.read||read?.read_at),final16Hidden:hidden,final16Sent:String(r.user_id||'')===String(id)&&!r.target_all,final16Meta:read||null};
+    }).filter(r=>includeTrash?r.final16Hidden:!r.final16Hidden);
+  }
+
+  W.legadoDeleteMessageFinal16=async function(id){
+    try{
+      const client=sb(), me=uid(); if(!client||!me) throw new Error('Sessão não encontrada.');
+      const {data:msg,error}=await client.from('messages').select('id,user_id,target_all,title').eq('id',id).maybeSingle();
+      if(error) throw error; if(!msg) throw new Error('Recado não encontrado.');
+      const master=typeof W.isMasterUser==='function' && W.isMasterUser();
+      const own=!msg.target_all && String(msg.user_id||'')===String(me);
+      if(master || own){
+        const del=await client.from('messages').delete().eq('id',id);
+        if(del.error) throw del.error;
+        W.showSuccess?.('Recado excluído definitivamente.');
+      }else{
+        const now=new Date().toISOString();
+        const up=await client.from('message_reads').upsert({message_id:String(id),user_id:me,hidden_at:now,deleted_at:now,updated_at:now},{onConflict:'message_id,user_id'});
+        if(up.error) throw up.error;
+        W.showSuccess?.('Recado excluído da sua caixa de entrada.');
+      }
+      await W.renderMessages?.();
+    }catch(err){
+      console.error('[Recados FINAL16]',err);
+      notifyError(err,'Não foi possível excluir o recado.');
+    }
+  };
+
+  W.legadoRestoreMessageFinal16=async function(id){
+    try{
+      const client=sb(),me=uid();
+      const up=await client.from('message_reads').update({hidden_at:null,deleted_at:null,updated_at:new Date().toISOString()}).eq('message_id',String(id)).eq('user_id',me);
+      if(up.error) throw up.error;
+      W.showSuccess?.('Recado restaurado.'); await W.renderMessages?.();
+    }catch(err){notifyError(err,'Não foi possível restaurar o recado.');}
+  };
+
+  W.legadoReadMessageFinal16=async function(id){
+    try{
+      const client=sb(),me=uid();
+      const up=await client.from('message_reads').upsert({message_id:String(id),user_id:me,read_at:new Date().toISOString(),seen_at:new Date().toISOString(),dismissed_at:new Date().toISOString(),updated_at:new Date().toISOString()},{onConflict:'message_id,user_id'});
+      if(up.error) throw up.error;
+      await W.renderMessages?.();
+    }catch(err){notifyError(err,'Não foi possível marcar o recado como lido.');}
+  };
+
+  W.renderMessages=async function(){
+    const c=byId('recadosContent'); if(!c)return;
+    c.innerHTML='<div class="v3-loading"><i data-lucide="loader-circle"></i><span>Carregando recados...</span></div>';W.refreshIcons?.();
+    try{
+      const master=typeof W.isMasterUser==='function' && W.isMasterUser();
+      const [rows,trash]=await Promise.all([loadMessagesFinal16(false),loadMessagesFinal16(true)]);
+      const received=rows.filter(r=>!r.final16Sent);
+      const sent=rows.filter(r=>r.final16Sent);
+      const item=r=>`<article class="final16-message-item ${r.final16Read?'is-read':'is-unread'}"><div class="final16-message-icon"><i data-lucide="${r.final16Sent?'send':'megaphone'}"></i></div><div class="final16-message-main"><div class="final16-message-meta"><span class="final16-tag">${esc(r.final16Sent?'Enviado':'Recebido')}</span><span>${esc(typeof W.formatDate==='function'?W.formatDate(r.created_at):new Date(r.created_at).toLocaleDateString('pt-BR'))}</span></div><h3>${esc(r.title||'Recado')}</h3><p>${esc(r.message||'')}</p></div><div class="final16-message-actions">${!r.final16Read&&!r.final16Sent?`<button type="button" class="btn btn-outline btn-sm" onclick="legadoReadMessageFinal16('${esc(r.id)}')"><i data-lucide="check"></i>Lido</button>`:''}<button type="button" class="btn btn-danger btn-sm" onclick="legadoDeleteMessageFinal16('${esc(r.id)}')"><i data-lucide="trash-2"></i>Excluir</button></div></article>`;
+      const trashItem=r=>`<article class="final16-message-item is-trash"><div class="final16-message-icon"><i data-lucide="trash-2"></i></div><div class="final16-message-main"><div class="final16-message-meta"><span class="final16-tag">Lixeira</span><span>${esc(typeof W.formatDate==='function'?W.formatDate(r.created_at):new Date(r.created_at).toLocaleDateString('pt-BR'))}</span></div><h3>${esc(r.title||'Recado')}</h3><p>${esc(r.message||'')}</p></div><div class="final16-message-actions"><button type="button" class="btn btn-outline btn-sm" onclick="legadoRestoreMessageFinal16('${esc(r.id)}')"><i data-lucide="rotate-ccw"></i>Restaurar</button><button type="button" class="btn btn-danger btn-sm" onclick="legadoDeleteMessageFinal16('${esc(r.id)}')"><i data-lucide="trash-2"></i>Excluir</button></div></article>`;
+      c.innerHTML=`
+        <div class="page-heading"><div><div class="eyebrow">COMUNICAÇÃO</div><h1>Recados</h1><p>${master?'Publique e administre comunicados da plataforma.':'Acompanhe mensagens, comunicados e orientações.'}</p></div>${master?'<button class="btn btn-primary" type="button" onclick="v3OpenMessageEditor()"><i data-lucide="plus"></i>Novo comunicado</button>':''}</div>
+        <section class="final16-message-hero"><div class="final16-message-hero-icon"><i data-lucide="messages-square"></i></div><div><strong>${rows.length}</strong><span>recados na caixa de entrada</span></div><div><strong>${trash.length}</strong><span>na lixeira</span></div></section>
+        <div class="final16-message-tabs"><button type="button" class="active" data-final16-tab="inbox"><i data-lucide="inbox"></i>Entrada</button><button type="button" data-final16-tab="trash"><i data-lucide="trash-2"></i>Lixeira <b>${trash.length}</b></button></div>
+        <div class="final16-message-panel" data-final16-panel="inbox">${rows.length?`<div class="final16-message-groups">${received.length?`<section><div class="final16-section-title">Recebidos</div>${received.map(item).join('')}</section>`:''}${sent.length?`<section><div class="final16-section-title">Enviados</div>${sent.map(item).join('')}</section>`:''}</div>`:'<div class="final16-empty"><i data-lucide="inbox"></i><strong>Nenhum recado na caixa de entrada.</strong><span>Novos comunicados aparecerão aqui.</span></div>'}</div>
+        <div class="final16-message-panel" data-final16-panel="trash" hidden>${trash.length?trash.map(trashItem).join(''):'<div class="final16-empty"><i data-lucide="trash-2"></i><strong>A lixeira está vazia.</strong><span>Recados excluídos da sua visualização aparecerão aqui.</span></div>'}</div>
+      `;
+      c.querySelectorAll('[data-final16-tab]').forEach(btn=>btn.addEventListener('click',()=>{c.querySelectorAll('[data-final16-tab]').forEach(x=>x.classList.remove('active'));c.querySelectorAll('[data-final16-panel]').forEach(x=>x.hidden=true);btn.classList.add('active');const p=c.querySelector(`[data-final16-panel="${btn.dataset.final16Tab}"]`);if(p)p.hidden=false;}));
+      const badge=byId('recadosBadge'); if(badge){const unread=received.filter(r=>!r.final16Read).length;badge.textContent=unread;badge.style.display=unread?'':'none';}
+      W.refreshIcons?.();
+    }catch(err){
+      c.innerHTML=`<div class="v3-panel"><div class="v3-empty"><i data-lucide="circle-alert"></i><strong>Não foi possível carregar os recados.</strong><span>${esc(err.message||'')}</span><button class="btn btn-primary btn-sm" type="button" onclick="renderMessages()">Tentar novamente</button></div></div>`;W.refreshIcons?.();
+    }
+  };
+
+  /* ============================================================
+     4) STATUS — nunca mostrar scheduled/completed ao usuário
+     ============================================================ */
+  function translateStatusText(root=document.body){
+    const map={scheduled:'Agendado',completed:'Concluído',confirmed:'Confirmado',in_progress:'Em andamento',cancelled:'Cancelado',canceled:'Cancelado',pending:'Pendente',paid:'Pago',overdue:'Em atraso',draft:'Rascunho'};
+    const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let n;
+    while(n=walker.nextNode()){
+      const t=String(n.nodeValue||'').trim();
+      if(map[t]) n.nodeValue=map[t];
+    }
+  }
+  translateStatusText();
+
+  /* ============================================================
+     5) Botões finais permanecem disponíveis mesmo após re-render
+     ============================================================ */
+  const previousRenderFinance=W.renderFinance;
+  if(typeof previousRenderFinance==='function' && !previousRenderFinance.__final16){
+    const wrappedFinance=async function(){
+      const r=await previousRenderFinance.apply(this,arguments);
+      translateStatusText(byId('financeiroContent')||document.body);
+      return r;
+    };
+    wrappedFinance.__final16=true;
+    W.renderFinance=wrappedFinance;
+  }
+
+  const previousRenderAgenda=W.renderAgenda;
+  if(typeof previousRenderAgenda==='function' && !previousRenderAgenda.__final16){
+    const wrappedAgenda=async function(){
+      const r=await previousRenderAgenda.apply(this,arguments);
+      document.querySelectorAll('.l14-agenda-availability').forEach(x=>x.removeAttribute('open'));
+      translateStatusText(byId('agendaContent')||document.body);
+      return r;
+    };
+    wrappedAgenda.__final16=true;
+    W.renderAgenda=wrappedAgenda;
+  }
+
+  /* Remove explicit cache busting hacks that force full reloads; navigation is SPA. */
+  W.__legadoFinal16=true;
+  W.__legadoBuild='2026-09-26-final16';
+
+  /* Keep status labels translated after asynchronous UI updates without observing
+     the entire DOM (avoids the mutation-loop that previously froze the browser). */
+  setTimeout(()=>translateStatusText(),50);
+})();
+
+</script>
 </body>
 </html>
