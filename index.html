@@ -2511,7 +2511,7 @@
      ============================================================ */
 
   const APP_CONFIG = {
-    whatsappNumber: '5500000000000',
+    whatsappNumber: '5543991466210',
     profileTable: 'profiles',
 
     /*
@@ -11364,7 +11364,7 @@ body.legado-v4-modal-open{overflow:hidden}
   function renderAvailability14(avMap){
     const sample=avMap.get(1)||avMap.get(2)||{start:'08:00',end:'18:00',lunchStart:'11:00',lunchEnd:'12:00',slot:60};
     const active=new Set([...avMap.entries()].filter(([,v])=>v.active).map(([k])=>k));
-    return `<details class="l14-agenda-availability" open>
+    return `<details class="l14-agenda-availability">
       <summary><div class="l14-av-title"><div class="l14-av-icon"><i data-lucide="calendar-clock"></i></div><div class="l14-av-text"><strong>Disponibilidade</strong><span>${[1,2,3,4,5].filter(d=>active.has(d)).map(fmtDayName).join(', ')||'Configure seus dias e horários de atendimento'}</span></div></div><i data-lucide="chevron-down" class="l14-av-chevron"></i></summary>
       <div class="l14-av-body"><form id="l14AvailabilityForm">
         <div class="l14-weekdays">${[1,2,3,4,5,6,0].map(w=>`<label class="l14-weekday"><input type="checkbox" name="weekday" value="${w}" ${active.has(w)?'checked':''}><span>${fmtDayName(w)}</span></label>`).join('')}</div>
@@ -11475,6 +11475,280 @@ body.legado-v4-modal-open{overflow:hidden}
 
   /* expõe a versão final para inspeção/diagnóstico */
   window.__legadoFinal14=true;
+})();
+</script>
+
+
+
+<script id="legado-final15-integrity-fixes">
+(function(){
+  'use strict';
+
+  const W=window;
+  const esc=v=>typeof W.escapeHtml==='function'?W.escapeHtml(v??''):String(v??'');
+  const q=(s,r=document)=>r.querySelector(s);
+  const table=(name,fallback)=>W.V3Core?.TABLE?.[name]||W.TABLE?.[name]||fallback||name;
+  const uid=()=>W.state?.user?.id||null;
+  const today=()=>typeof W.todayInputDate==='function'?W.todayInputDate():new Date().toISOString().slice(0,10);
+  const dateBR=v=>{if(!v)return '—';const d=new Date(String(v).slice(0,10)+'T12:00:00');return Number.isNaN(d.getTime())?'—':d.toLocaleDateString('pt-BR');};
+  const statusBR=v=>({scheduled:'Agendado',confirmed:'Confirmado',in_progress:'Em andamento',completed:'Concluído',cancelled:'Cancelado',canceled:'Cancelado',pending:'Pendente',draft:'Rascunho',paid:'Pago',overdue:'Em atraso',courtesy:'Cortesia'}[String(v??'').toLowerCase()]||String(v??'—'));
+  const msg=(text,type='error')=>type==='success'?W.showSuccess?.(text):W.showError?.(text);
+
+  /* ============================================================
+     1) LINKS DE WHATSAPP E RECUPERAÇÃO DE SENHA
+     ============================================================ */
+  const SUPPORT='5543991466210';
+  const waUrl=text=>`https://wa.me/${SUPPORT}?text=${encodeURIComponent(text||'Olá! Gostaria de solicitar acesso ao Legado Que Ensina.')}`;
+
+  function wireLoginActions(){
+    const forgot=document.getElementById('forgotPasswordLink');
+    if(forgot && !forgot.dataset.final15){
+      const clone=forgot.cloneNode(true);
+      forgot.replaceWith(clone);
+      clone.dataset.final15='1';
+      clone.addEventListener('click',async ev=>{
+        ev.preventDefault();
+        const input=document.getElementById('loginEmail');
+        let email=String(input?.value||'').trim().toLowerCase();
+        if(!email) email=String(window.prompt('Digite o e-mail da sua conta para receber o link de recuperação:')||'').trim().toLowerCase();
+        if(!email){ msg('Informe seu e-mail para recuperar a senha.'); input?.focus(); return; }
+        try{
+          const redirectTo=`${location.origin}${location.pathname}`;
+          const {error}=await W.supabaseClient.auth.resetPasswordForEmail(email,{redirectTo});
+          if(error) throw error;
+          msg('Enviamos um link de recuperação para o seu e-mail. Verifique também a caixa de spam.','success');
+        }catch(e){
+          console.error('[Senha]',e);
+          msg(e?.message||'Não foi possível enviar o link de recuperação.');
+        }
+      });
+    }
+
+    const request=document.getElementById('requestAccessLink');
+    if(request && !request.dataset.final15){
+      const clone=request.cloneNode(true);
+      request.replaceWith(clone);
+      clone.dataset.final15='1';
+      clone.href=waUrl();
+      clone.target='_blank';
+      clone.rel='noopener noreferrer';
+      clone.addEventListener('click',ev=>{
+        ev.preventDefault();
+        window.open(waUrl('Olá! Gostaria de solicitar acesso ao Legado Que Ensina.'),'_blank','noopener,noreferrer');
+      });
+    }
+
+    const expired=document.getElementById('expiredContactButton');
+    if(expired){
+      expired.href=waUrl('Olá! Meu acesso ao Legado Que Ensina está bloqueado ou expirado e gostaria de regularizar o acesso.');
+      expired.target='_blank';
+      expired.rel='noopener noreferrer';
+      expired.innerHTML='<span class="final15-wa-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M20.5 3.5A11.85 11.85 0 0 0 12 0C5.37 0 .01 5.36.01 11.98c0 2.11.55 4.17 1.6 5.99L0 24l6.2-1.58a12 12 0 0 0 5.79 1.48h.01C18.62 23.9 24 18.53 24 11.92c0-3.19-1.24-6.18-3.5-8.42ZM12 21.75h-.01a9.8 9.8 0 0 1-5-1.37l-.36-.21-3.68.94.98-3.59-.23-.37a9.73 9.73 0 0 1-1.5-5.18C2.2 6.53 6.6 2.2 12.02 2.2a9.7 9.7 0 0 1 6.91 2.85 9.7 9.7 0 0 1 2.87 6.9c0 5.4-4.4 9.8-9.8 9.8Zm5.36-7.33c-.29-.15-1.71-.84-1.97-.93-.26-.1-.45-.15-.64.15-.19.29-.74.93-.9 1.12-.17.19-.33.22-.62.07-.29-.15-1.23-.45-2.34-1.44-.86-.77-1.44-1.71-1.61-2-.17-.29-.02-.45.13-.59.13-.13.29-.33.43-.5.14-.17.19-.29.29-.48.1-.19.05-.36-.02-.5-.07-.15-.64-1.55-.88-2.12-.23-.55-.47-.48-.64-.49h-.55c-.19 0-.5.07-.76.36-.26.29-1 1-1 2.43 0 1.43 1.02 2.81 1.16 3 .14.19 2 3.05 4.84 4.28.68.29 1.21.46 1.63.59.68.22 1.3.19 1.78.12.55-.08 1.71-.7 1.95-1.37.24-.68.24-1.26.17-1.38-.07-.12-.26-.19-.55-.34Z"/></svg></span><span>Falar pelo WhatsApp</span>';
+    }
+  }
+
+  wireLoginActions();
+  document.addEventListener('DOMContentLoaded',wireLoginActions);
+
+  /* ============================================================
+     2) EDITAR ALUNO DIRETO NO PRONTUÁRIO
+     Nunca mais manda para a tela "Alunos".
+     ============================================================ */
+  W.v3ShowStudentEditorFromProfile=async function(){
+    try{
+      const id=W.state?.currentStudentId;
+      if(!id) throw new Error('Nenhum aluno selecionado.');
+      const student= W.state?.selectedStudent && String(W.state.selectedStudent.id)===String(id)
+        ? W.state.selectedStudent
+        : ((await W.supabaseClient.from(table('students','students')).select('*').eq('id',id).eq('user_id',uid()).maybeSingle()).data);
+      if(!student) throw new Error('Aluno não encontrado.');
+      const html=`
+        <div class="modal-header"><div><div class="eyebrow">PRONTUÁRIO</div><h2>Editar aluno</h2><p>Altere os dados do cadastro sem sair do perfil.</p></div><button class="icon-button" type="button" onclick="closeModal()"><i data-lucide="x"></i></button></div>
+        <form id="final15StudentEditForm" class="modal-form">
+          <div class="form-grid">
+            <label class="form-field"><span>Nome completo *</span><input name="name" value="${esc(student.name||student.full_name||'')}" required></label>
+            <label class="form-field"><span>Data de nascimento</span><input type="date" name="birth_date" value="${esc(String(student.birth_date||'').slice(0,10))}"></label>
+            <label class="form-field"><span>Telefone da família</span><input name="phone" value="${esc(student.phone||'')}"></label>
+            <label class="form-field"><span>E-mail</span><input type="email" name="email" value="${esc(student.email||'')}"></label>
+            <label class="form-field"><span>Responsável</span><input name="responsible_name" value="${esc(student.responsible_name||student.guardian_name||student.parent_name||'')}"></label>
+            <label class="form-field"><span>CPF</span><input name="cpf" value="${esc(student.cpf||'')}"></label>
+            <label class="form-field"><span>Status</span><select name="status"><option value="active" ${student.status!=='inactive'&&student.status!=='pending'?'selected':''}>Ativo</option><option value="inactive" ${student.status==='inactive'?'selected':''}>Inativo</option><option value="pending" ${student.status==='pending'?'selected':''}>Pendente</option></select></label>
+            <label class="form-field"><span>Foto do aluno — URL</span><input type="url" name="photo_url" value="${esc(student.photo_url||'')}" placeholder="https://..."></label>
+            <label class="form-field full"><span>Observações cadastrais</span><textarea name="notes" rows="5">${esc(student.notes||student.observations||'')}</textarea></label>
+          </div>
+          <div class="modal-actions"><button type="button" class="btn btn-outline" onclick="closeModal()">Cancelar</button><button type="submit" class="btn btn-primary"><i data-lucide="save"></i>Salvar alterações</button></div>
+        </form>`;
+      W.openModal?.(html);
+      W.refreshIcons?.();
+      const form=document.getElementById('final15StudentEditForm');
+      if(!form)return;
+      form.onsubmit=async ev=>{
+        ev.preventDefault();
+        const btn=form.querySelector('button[type="submit"]');btn?.classList.add('is-loading');
+        try{
+          const fd=new FormData(form);
+          const payload={
+            user_id:uid(),name:String(fd.get('name')||'').trim(),full_name:String(fd.get('name')||'').trim(),
+            birth_date:fd.get('birth_date')||null,phone:String(fd.get('phone')||'').trim()||null,email:String(fd.get('email')||'').trim()||null,
+            responsible_name:String(fd.get('responsible_name')||'').trim()||null,cpf:String(fd.get('cpf')||'').trim()||null,
+            status:String(fd.get('status')||'active'),photo_url:String(fd.get('photo_url')||'').trim()||null,notes:String(fd.get('notes')||'').trim()||null
+          };
+          if(!payload.name)throw new Error('Informe o nome do aluno.');
+          const updater=W.updateSafe || (async (t,i,p)=>{const r=await W.supabaseClient.from(t).update(p).eq('id',i).eq('user_id',uid());if(r.error)throw r.error;return r.data;});
+          const updated=await updater(table('students','students'),id,payload);
+          W.state.selectedStudent={...(W.state.selectedStudent||student),...payload,...(updated||{})};
+          W.closeModal?.();
+          W.showSuccess?.('Cadastro do aluno atualizado.');
+          await W.renderStudentProfileView?.();
+        }catch(e){W.showError?.(e.message||'Não foi possível salvar o aluno.');}
+        finally{btn?.classList.remove('is-loading');}
+      };
+    }catch(e){W.showError?.(e.message||'Não foi possível abrir a edição do aluno.');}
+  };
+
+  /* ============================================================
+     3) PDF COMPLETO DO PRONTUÁRIO
+     ============================================================ */
+  function humanKey(k){return String(k||'').replaceAll('_',' ').replace(/\b\w/g,m=>m.toUpperCase());}
+  function plainValue(v){
+    if(v===null||v===undefined||v==='')return '';
+    if(Array.isArray(v))return v.map(plainValue).join(', ');
+    if(typeof v==='object')return Object.entries(v).map(([k,x])=>`${humanKey(k)}: ${plainValue(x)}`).join(' | ');
+    return String(v);
+  }
+  async function getStudentFullExport(id){
+    const sb=W.supabaseClient;if(!sb||!uid())throw new Error('Sessão não encontrada.');
+    const T={students:table('students','students'),appointments:table('appointments','appointments'),evaluations:table('evaluations','evaluations'),records:table('records','student_records'),progress:table('progress','student_progress'),contacts:table('contacts','student_contacts'),payments:table('payments','payments'),context:table('context','student_context')};
+    const fetchRows=async(name,order,limit=1000)=>{
+      if(typeof W.selectSafe==='function')return await W.selectSafe(name,{filters:{user_id:uid(),student_id:id},order,ascending:false,limit});
+      let q=sb.from(name).select('*').eq('user_id',uid()).eq('student_id',id).limit(limit);if(order)q=q.order(order,{ascending:false});const r=await q;if(r.error)throw r.error;return r.data||[];
+    };
+    const studentQ=await sb.from(T.students).select('*').eq('id',id).eq('user_id',uid()).maybeSingle();if(studentQ.error)throw studentQ.error;if(!studentQ.data)throw new Error('Aluno não encontrado.');
+    const [appointments,evaluations,records,progress,contacts,payments,ctx]=await Promise.all([
+      fetchRows(T.appointments,'appointment_date'),fetchRows(T.evaluations,'evaluation_date'),fetchRows(T.records,'record_date'),fetchRows(T.progress,'record_date'),fetchRows(T.contacts,'contact_date'),fetchRows(T.payments,'payment_date'),(async()=>{let r=await sb.from(T.context).select('*').eq('student_id',id).eq('user_id',uid()).order('updated_at',{ascending:false}).limit(1).maybeSingle();if(r.error){r=await sb.from(T.context).select('*').eq('id',id).eq('user_id',uid()).maybeSingle();}return r.error?null:r.data;})()
+    ]);
+    return {student:studentQ.data,appointments,evaluations,records,progress,contacts,payments,context:ctx};
+  }
+  W.exportStudentProfilePDF=async function(id=W.state?.currentStudentId){
+    try{
+      if(!id)throw new Error('Nenhum aluno selecionado.');
+      if(!window.jspdf?.jsPDF)throw new Error('A biblioteca de PDF ainda não foi carregada. Atualize a página e tente novamente.');
+      const data=await getStudentFullExport(id),s=data.student;
+      const JsPDF=window.jspdf.jsPDF;const pdf=new JsPDF({unit:'mm',format:'a4'});
+      const margin=15;const pageW=210;const usable=pageW-margin*2;let y=18;
+      const colors={ink:[38,50,56],muted:[104,119,111],line:[220,230,225],accent:[71,115,99]};
+      const name=String(s.name||s.full_name||'Aluno');
+      function header(){
+        pdf.setFont('helvetica','bold');pdf.setFontSize(17);pdf.setTextColor(...colors.ink);pdf.text('Legado Que Ensina',margin,y);y+=8;
+        pdf.setFontSize(13);pdf.setTextColor(...colors.accent);pdf.text('PRONTUÁRIO PSICOPEDAGÓGICO',margin,y);y+=6;
+        pdf.setDrawColor(...colors.line);pdf.line(margin,y,pageW-margin,y);y+=8;
+      }
+      function page(){if(y>272){pdf.addPage();y=18;header();}}
+      function section(title){page();pdf.setFont('helvetica','bold');pdf.setFontSize(12);pdf.setTextColor(...colors.accent);pdf.text(title,margin,y);y+=6;}
+      function field(label,value){const text=plainValue(value);if(!text)return;page();pdf.setFont('helvetica','bold');pdf.setFontSize(9);pdf.setTextColor(...colors.muted);pdf.text(label,margin,y);y+=4;pdf.setFont('helvetica','normal');pdf.setFontSize(9.5);pdf.setTextColor(...colors.ink);const lines=pdf.splitTextToSize(text,usable);for(const line of lines){page();pdf.text(line,margin,y);y+=4.7;}y+=2;}
+      function item(title,date,lines){section(title);field('Data',date);for(const [l,v] of lines)field(l,v);}
+      header();
+      pdf.setFont('helvetica','bold');pdf.setFontSize(16);pdf.setTextColor(...colors.ink);pdf.text(name,margin,y);y+=7;
+      field('Data de nascimento',dateBR(s.birth_date));field('Responsável',s.responsible_name||s.guardian_name||s.parent_name);field('Telefone',s.phone);field('E-mail',s.email);field('CPF',s.cpf);field('Status',s.status==='inactive'?'Inativo':s.status==='pending'?'Pendente':'Ativo');field('Observações cadastrais',s.notes||s.observations);field('Foto por URL',s.photo_url);
+      if(data.context){section('Cenário psicopedagógico');for(const [k,v] of Object.entries(data.context))if(!['id','student_id','user_id','created_at','updated_at'].includes(k))field(humanKey(k),v);}
+      section(`Atendimentos (${data.appointments.length})`);for(const a of data.appointments){item(a.type||'Atendimento',dateBR(a.appointment_date||a.date),[['Horário',a.appointment_time||a.start_time||a.time],['Status',statusBR(a.status)],['Duração',a.duration?`${a.duration} minutos`:null],['Observações',a.notes||a.observations]]);}
+      section(`Avaliações aplicadas (${data.evaluations.length})`);for(const e of data.evaluations){item(e.title||e.type||'Avaliação',dateBR(e.evaluation_date||e.date),[['Aluno',e.student_name||name],['Instrumento',e.type||'Avaliação'],['Status',statusBR(e.status)],['Síntese',e.summary||e.notes||e.observation],['Dados da aplicação',e.assessment_data]]);}
+      section(`Registros de atendimento (${data.records.length})`);for(const r of data.records){item(r.title||r.record_type||'Registro',dateBR(r.record_date||r.date),[['Conteúdo',r.content||r.notes||r.observation],['Próximo passo',r.next_step]]);}
+      section(`Progresso (${data.progress.length})`);for(const p of data.progress){item(p.domain||'Evolução',dateBR(p.record_date||p.date),[['Nível',p.level],['Observação',p.observation],['Próxima meta',p.next_goal]]);}
+      section(`Família / escola (${data.contacts.length})`);for(const c of data.contacts){item(c.subject||c.contact_type||'Contato',dateBR(c.contact_date||c.date),[['Conteúdo',c.content||c.notes],['Responsável',c.responsible_name]]);}
+      section(`Pagamentos (${data.payments.length})`);for(const p of data.payments){item(p.description||'Pagamento',dateBR(p.payment_date||p.date),[['Valor',W.formatCurrency?W.formatCurrency(Number(p.amount||p.value||0)):String(p.amount||p.value||0)],['Status',statusBR(p.status)],['Forma',p.payment_method||p.method],['Observação',p.notes||p.payment_notes]]);}
+      // footer on every page
+      const pageCount=pdf.getNumberOfPages();for(let i=1;i<=pageCount;i++){pdf.setPage(i);pdf.setFont('helvetica','normal');pdf.setFontSize(8);pdf.setTextColor(...colors.muted);pdf.text(`Legado Que Ensina • Prontuário de ${name}`,margin,287);pdf.text(`${i}/${pageCount}`,pageW-margin,287,{align:'right'});}
+      const safe=name.replace(/[^a-z0-9à-úç\s-]/gi,'').trim().replace(/\s+/g,'-').toLowerCase()||'aluno';
+      pdf.save(`prontuario-${safe}.pdf`);
+      W.showSuccess?.('Prontuário completo salvo em PDF.');
+    }catch(e){console.error('[PDF prontuário]',e);W.showError?.(e.message||'Não foi possível gerar o PDF completo.');}
+  };
+
+  function ensurePdfButton(){
+    const c=document.getElementById('studentProfileContent');if(!c)return;
+    const actions=c.querySelector('.v3-student-hero .v3-hero-actions');if(!actions)return;
+    let btn=actions.querySelector('[data-final15-pdf]');
+    if(!btn){
+      btn=document.createElement('button');btn.type='button';btn.className='btn btn-outline';btn.dataset.final15Pdf='1';btn.innerHTML='<i data-lucide="file-down"></i>Salvar prontuário em PDF';btn.onclick=()=>W.exportStudentProfilePDF?.(W.state?.currentStudentId);actions.appendChild(btn);W.refreshIcons?.();
+    }
+  }
+
+  /* ============================================================
+     4) DISPONIBILIDADE: sempre recolhida ao entrar na Agenda
+     ============================================================ */
+  function keepAvailabilityClosed(){document.querySelectorAll('.l14-agenda-availability').forEach(d=>d.removeAttribute('open'));}
+
+  /* ============================================================
+     5) STATUS SEM INGLÊS + NAVEGAÇÃO ÚNICA
+     ============================================================ */
+  function translateVisibleStatuses(root=document.body){
+    if(!root)return;
+    const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+    const exact=new Set(['scheduled','completed','confirmed','in_progress','cancelled','canceled','pending','paid','overdue','draft','courtesy']);
+    let n;while(n=walker.nextNode()){
+      const t=String(n.nodeValue||'').trim();
+      if(exact.has(t))n.nodeValue=statusBR(t);
+    }
+  }
+
+  function installFinalRenderGuards(){
+    const names=['renderAgenda','renderFinance','renderEvaluations','renderMessages','renderWaitlist','renderStudentProfileView','renderMaster'];
+    names.forEach(name=>{
+      const fn=W[name];if(typeof fn!=='function'||fn.__final15Guard)return;
+      const wrapped=async function(){
+        const result=await fn.apply(this,arguments);
+        if(name==='renderAgenda')keepAvailabilityClosed();
+        if(name==='renderStudentProfileView')ensurePdfButton();
+        translateVisibleStatuses(document.body);
+        return result;
+      };
+      wrapped.__final15Guard=true;W[name]=wrapped;
+    });
+  }
+
+  /* Render functions are already defined before this script. */
+  installFinalRenderGuards();
+
+  /* Override the router rather than stacking another wrapper. This keeps
+     the final/current window.renderAgenda and other screens authoritative. */
+  W.navigate=function(view){
+    const FINAL_TITLES={dashboard:{label:'Início',icon:'layout-dashboard'},alunos:{label:'Alunos',icon:'users'},'aluno-perfil':{label:'Perfil do aluno',icon:'user-round'},agenda:{label:'Agenda',icon:'calendar-days'},avaliacoes:{label:'Avaliações',icon:'clipboard-check'},financeiro:{label:'Financeiro',icon:'wallet-cards'},recados:{label:'Recados',icon:'message-square'},'lista-espera':{label:'Lista de espera',icon:'list-ordered'},perfil:{label:'Meu perfil',icon:'user-round-cog'},master:{label:'Administração',icon:'shield'}};
+    const valid=FINAL_TITLES[view]?view:'dashboard';
+    if(W.state)W.state.currentView=valid;
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    const target=document.getElementById(`view-${valid}`);target?.classList.add('active');
+    document.querySelectorAll('#mainNav button[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===valid));
+    const title=FINAL_TITLES[valid];const pageTitle=document.getElementById('pageTitle');
+    if(title&&pageTitle)pageTitle.innerHTML=`<i data-lucide="${esc(title.icon)}"></i><span>${esc(title.label)}</span>`;
+    W.refreshIcons?.();
+    const render=W.renderCurrentView;
+    if(typeof render==='function'){
+      Promise.resolve(render(valid)).then(()=>{if(valid==='agenda')keepAvailabilityClosed();if(valid==='aluno-perfil')ensurePdfButton();translateVisibleStatuses(document.body);}).catch(e=>{console.error('[Router]',e);W.showError?.(e.message||'Erro ao carregar a página.');});
+    }
+  };
+
+  /* If the final current-view router still holds an older route table,
+     recreate it using current window render functions dynamically. */
+  W.renderCurrentView=async function(view){
+    const map={dashboard:'renderDashboard',alunos:'renderStudents','aluno-perfil':'renderStudentProfileView',agenda:'renderAgenda',avaliacoes:'renderEvaluations',financeiro:'renderFinance',recados:'renderMessages','lista-espera':'renderWaitlist',perfil:'renderProfile',master:'renderMaster'};
+    const fn=W[map[view]||'renderDashboard'];
+    if(typeof fn!=='function')throw new Error(`Tela "${view}" não possui um renderizador ativo.`);
+    const result=await fn();
+    if(view==='agenda')keepAvailabilityClosed();
+    if(view==='aluno-perfil')ensurePdfButton();
+    translateVisibleStatuses(document.body);
+    return result;
+  };
+
+  /* Re-wire PDF button after every profile refresh without modifying any
+     other profile section. */
+  const watchProfile=setInterval(()=>{if(document.getElementById('studentProfileContent')?.querySelector('.v3-student-hero'))ensurePdfButton();},1000);
+  setTimeout(()=>clearInterval(watchProfile),120000);
+
+  window.addEventListener('load',()=>{wireLoginActions();keepAvailabilityClosed();ensurePdfButton();translateVisibleStatuses(document.body);});
+
+  W.__legadoFinal15=true;
 })();
 </script>
 
