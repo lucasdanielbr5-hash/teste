@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
 
   <title>Legado Que Ensina · Gestão Psicopedagógica</title>
 
@@ -10699,6 +10702,7 @@ body.legado-v4-modal-open{overflow:hidden}
     if(data?.error) throw new Error(String(data.error));
     return data;
   }
+  window.legadoMasterInvoke = invoke;
 
   function expiredScreenEnhance(){
     const screen=document.getElementById('expiredScreen'); if(!screen)return;
@@ -12603,6 +12607,296 @@ body.legado-v4-modal-open{overflow:hidden}
 })();
 </script>
 
+
+<script id="legado-final10">
+(function(){
+  'use strict';
+  const W=window;
+  const esc=W.escapeHtml || (v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])));
+  const uid=()=>W.state?.user?.id||null;
+  const sb=()=>W.supabaseClient;
+  const table={
+    students:'students',
+    appointments:'appointments',
+    evaluations:'evaluations',
+    messages:'messages',
+    payments:'payments',
+    finance: W.V3Core?.TABLE?.finance || W.TABLES?.finance || W.TABLE?.finance || 'finance_entries'
+  };
+  const refresh=()=>W.refreshIcons?.();
+  const showErr=m=>W.showError?.(m);
+  const showOk=m=>W.showSuccess?.(m);
+  const statusPt=v=>({scheduled:'Agendado',confirmed:'Confirmado',in_progress:'Em andamento',completed:'Concluído',cancelled:'Cancelado',canceled:'Cancelado',pending:'Pendente',draft:'Rascunho',paid:'Pago',overdue:'Em atraso',courtesy:'Cortesia'})[String(v||'').toLowerCase()]||String(v||'');
+  const studentName=s=>String(s?.name||s?.full_name||s?.nome||'Aluno');
+  const fmtDate=v=>{try{return v?new Date(v).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'}):'—'}catch(_){return '—'}};
+  const money=v=>{try{return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}catch(_){return 'R$ 0,00'}};
+  const dateOnly=v=>String(v||'').slice(0,10);
+
+  /* =========================================================
+     RESPONSIVIDADE GLOBAL — telefone, tablet e desktop
+  ========================================================= */
+  if(!document.getElementById('legado-final10-responsive')){
+    const css=document.createElement('style');
+    css.id='legado-final10-responsive';
+    css.textContent=`
+      html,body{width:100%;max-width:100%;overflow-x:hidden}
+      body{min-width:0}
+      .app,.main,.content,.view,#dashboardContent,#alunosContent,#agendaContent,#avaliacoesContent,#financeiroContent,#recadosContent,#waitlistContent,#perfilContent,#masterContent,#studentProfileContent{min-width:0;max-width:100%}
+      .content{overflow-x:hidden}
+      .card,.v3-panel,.f8-card,.f8-page,.saas-panel-box,.mpro-panel,.mpro-shell,.f8-history,.v4-history,.f9-eval-models,.f8-slots,.f8-table,.saas-table{max-width:100%;min-width:0}
+      .f8-table,.saas-table,.mpro-table{overflow-x:auto;-webkit-overflow-scrolling:touch}
+      .f8-tr,.saas-tr,.mpro-row{min-width:0}
+      .f8-tr>*,.saas-tr>*,.mpro-row>*{min-width:0;overflow-wrap:anywhere;word-break:break-word}
+      .f8-history-item,.v4-history-item{min-width:0}
+      .f8-history-main,.v4-history-main{min-width:0;overflow:hidden}
+      .f8-history-main h3,.v4-history-main h3,.f9-eval-model-main h3,.legado-message-card h3{overflow-wrap:anywhere;word-break:break-word;white-space:normal}
+      .f8-history-main p,.v4-history-main p,.legado-message-card p{overflow-wrap:anywhere;word-break:break-word;white-space:pre-wrap}
+      .v3-student-ref,.f8-history-tags,.f4-eval-preview,.f9-eval-meta,.f9-eval-history-actions{max-width:100%;overflow-wrap:anywhere;word-break:break-word}
+      .v3-student-ref{display:inline-flex!important;align-items:center;gap:5px;white-space:normal!important;overflow:hidden}
+      .v3-student-ref svg{flex:0 0 auto}
+      .f8-head,.f8-card-head,.v3-panel-head,.saas-box-head,.saas-drawer-head,.mpro-hero,.mpro-panel-head{min-width:0}
+      .f8-head>*,.f8-card-head>*,.v3-panel-head>*,.saas-box-head>*,.saas-drawer-head>*,.mpro-hero>*,.mpro-panel-head>*{min-width:0}
+      .f8-head-actions,.f8-actions,.f8-modal-actions,.f8-fin-filters,.f8-filterbar,.v3-form-actions,.f9-upcoming-actions,.saas-drawer-actions,.saas-filterbar{display:flex;flex-wrap:wrap;gap:8px}
+      .f8-head-actions .btn,.f8-actions .btn,.v3-form-actions .btn,.f9-upcoming-actions .btn{max-width:100%}
+      .f9-history10-name{display:flex;align-items:flex-start;gap:7px;max-width:100%;min-width:0;margin:5px 0 6px;padding:7px 9px;border-radius:11px;background:#f5f9f7;border:1px solid #e0ebe4;color:#3f5e50;font-size:11px;line-height:1.4;overflow-wrap:anywhere;word-break:break-word}
+      .f9-history10-name svg{width:14px;height:14px;flex:0 0 auto;margin-top:1px}
+      .f9-history10-name span{min-width:0;white-space:normal;overflow-wrap:anywhere;word-break:break-word}
+      .f10-whatsapp-icon{width:16px;height:16px;display:inline-block;vertical-align:middle;flex:0 0 auto}
+      .f10-master-agenda-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(280px,.75fr);gap:14px}
+      .f10-master-agenda-list{display:grid;gap:9px}
+      .f10-master-agenda-item{display:grid;grid-template-columns:70px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px;border:1px solid #e0e9e4;border-radius:14px;background:#fff}
+      .f10-master-agenda-date{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px;border-radius:12px;background:#edf5f0;color:#477363}
+      .f10-master-agenda-date strong{font-size:19px;line-height:1}
+      .f10-master-agenda-date span{margin-top:4px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+      .f10-master-agenda-main{min-width:0}
+      .f10-master-agenda-main strong{display:block;overflow-wrap:anywhere;word-break:break-word}
+      .f10-master-agenda-main span{display:block;margin-top:4px;color:#77857e;font-size:10px;line-height:1.45}
+      .f10-master-agenda-status{white-space:nowrap}
+      @media(max-width:1100px){.f10-master-agenda-grid{grid-template-columns:1fr}.mpro-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.saas-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+      @media(max-width:850px){
+        .topbar{padding:0 16px}.content{padding:18px 14px 28px}
+        .form-grid,.form-grid.two,.v3-form-grid,.v4-grid,.saas-grid2{grid-template-columns:1fr!important}
+        .f8-head,.f8-card-head,.v3-panel-head,.mpro-hero,.saas-box-head{flex-direction:column;align-items:stretch}
+        .f8-head-actions,.f8-head-actions .btn,.saas-filterbar input,.saas-filterbar select,.mpro-filter-box input,.mpro-filter-box select{width:100%}
+        .f8-table .f8-tr.head{display:none}.f8-table .f8-tr{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:12px}.f8-table .f8-tr>div:nth-child(6){grid-column:1/-1}
+        .saas-table .saas-tr.head{display:none}.saas-table .saas-tr{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:13px}.saas-table .saas-tr>*:last-child{grid-column:1/-1}
+        .mpro-kpis,.saas-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+        .reports-columns,.rz-grid-main,.rz-grid-bottom,.saas-columns,.mpro-layout-main,.mpro-fin-grid{grid-template-columns:1fr!important}
+        .f10-master-agenda-item{grid-template-columns:58px minmax(0,1fr)}.f10-master-agenda-status{grid-column:2}
+      }
+      @media(max-width:560px){
+        .sidebar{width:58px}.topbar{height:62px}.content{height:calc(100vh - 62px);padding:14px 10px 24px}.page-title{font-size:16px}.user-mini .nav-label{display:none}
+        .stats,.mpro-kpis,.saas-kpis{grid-template-columns:1fr 1fr!important}
+        .f8-kpis,.v3-stats{grid-template-columns:1fr 1fr!important}
+        .f8-history-item,.v4-history-item{grid-template-columns:1fr!important}
+        .f8-history-date,.v4-history-date{padding-bottom:2px}
+        .f8-action,.f8-actions .btn,.f9-upcoming-actions .btn,.v3-form-actions .btn{width:100%;justify-content:center}
+        .legado-message-card{grid-template-columns:40px 1fr!important}.legado-message-card-actions{grid-column:1/-1!important}
+        .v3-tabs,.f8-tabs,.mpro-tabs,.saas-tabs{overflow-x:auto;max-width:100%;-webkit-overflow-scrolling:touch}
+      }
+    `;
+    document.head.appendChild(css);
+  }
+
+  /* =========================================================
+     WHATSAPP — ícone de marca, inclusive na lista de espera
+  ========================================================= */
+  function whatsappSvg(){
+    return '<svg class="f10-whatsapp-icon" viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M19.11 17.24c-.28-.14-1.63-.8-1.88-.89-.25-.09-.43-.14-.61.14-.18.28-.7.89-.86 1.07-.16.18-.32.2-.6.07-.28-.14-1.17-.43-2.22-1.37-.82-.73-1.38-1.62-1.54-1.9-.16-.28-.02-.43.12-.57.12-.12.28-.32.41-.48.14-.16.18-.28.28-.46.09-.18.05-.34-.02-.48-.07-.14-.61-1.47-.84-2.02-.22-.53-.45-.46-.61-.47h-.52c-.18 0-.48.07-.73.34-.25.28-.96.94-.96 2.29s.98 2.66 1.11 2.84c.14.18 1.93 2.95 4.69 4.14.66.28 1.17.45 1.57.58.66.21 1.26.18 1.74.11.53-.08 1.63-.67 1.86-1.32.23-.65.23-1.2.16-1.32-.07-.11-.25-.18-.52-.32z"/><path fill="currentColor" d="M16.02 4C9.38 4 4 9.38 4 16.02c0 2.12.56 4.1 1.54 5.82L4 27.95l6.26-1.5a11.95 11.95 0 0 0 5.76 1.47c6.64 0 12.02-5.38 12.02-12.02S22.66 4 16.02 4zm0 21.92c-1.89 0-3.66-.52-5.17-1.42l-.37-.22-3.71.89.9-3.61-.24-.37a9.9 9.9 0 1 1 8.59 4.73z"/></svg>';
+  }
+  function patchWaitlistWhatsapp(){
+    const root=document.getElementById('waitlistContent');if(!root)return;
+    root.querySelectorAll('a[href*="wa.me"],a[aria-label*="WhatsApp"],a').forEach(a=>{
+      const txt=(a.textContent||'').toLowerCase();
+      if(txt.includes('whatsapp')){
+        if(!a.querySelector('.f10-whatsapp-icon')) a.insertAdjacentHTML('afterbegin',whatsappSvg());
+        a.setAttribute('title','Abrir conversa no WhatsApp');
+      }
+    });
+    refresh();
+  }
+  const baseWait=W.renderWaitlist;
+  if(typeof baseWait==='function' && !baseWait.__final10){
+    const fn=async function(){const r=await baseWait.apply(this,arguments);setTimeout(patchWaitlistWhatsapp,0);return r;};fn.__final10=true;W.renderWaitlist=fn;globalThis.renderWaitlist=fn;
+  }
+
+  /* =========================================================
+     FINANCEIRO — editar também lançamentos antigos (payments)
+  ========================================================= */
+  const baseFinanceOpen=W.f8OpenFinance;
+  async function editLegacyFinance(id,r){
+    const existing=r||null;
+    const modalId='f10LegacyFinanceModal';
+    document.getElementById(modalId)?.remove();
+    const root=document.createElement('div');root.id=modalId;root.className='f8-modal';
+    root.innerHTML=`<div class="f8-modal-card"><div class="f8-modal-head"><div><div class="v3-kicker">FINANCEIRO</div><h2>Editar lançamento</h2><p>Corrija o registro sem precisar criar outro lançamento.</p></div><button type="button" class="icon-button" data-close><i data-lucide="x"></i></button></div><form id="f10LegacyFinanceForm" class="f8-form-grid"><label><span>Aluno</span><input name="student_name" value="${esc(existing?.student_name||'')}" placeholder="Nome do aluno"></label><label><span>Valor *</span><input name="amount" inputmode="decimal" value="${esc(String(existing?.amount??'').replace('.',','))}" required></label><label><span>Data *</span><input name="payment_date" type="date" value="${esc(dateOnly(existing?.competence_date||existing?.payment_date)||dateOnly(new Date()))}" required></label><label><span>Status</span><select name="status"><option value="paid" ${String(existing?.status)==='paid'?'selected':''}>Pago</option><option value="pending" ${String(existing?.status)==='pending'?'selected':''}>Pendente</option><option value="overdue" ${String(existing?.status)==='overdue'?'selected':''}>Em atraso</option><option value="cancelled" ${String(existing?.status)==='cancelled'?'selected':''}>Cancelado</option></select></label><label><span>Forma de pagamento</span><select name="payment_method"><option value="pix" ${existing?.payment_method==='pix'?'selected':''}>Pix</option><option value="cash" ${existing?.payment_method==='cash'?'selected':''}>Dinheiro</option><option value="debit" ${existing?.payment_method==='debit'?'selected':''}>Débito</option><option value="credit_spot" ${existing?.payment_method==='credit_spot'?'selected':''}>Crédito à vista</option><option value="transfer" ${existing?.payment_method==='transfer'?'selected':''}>Transferência</option><option value="boleto" ${existing?.payment_method==='boleto'?'selected':''}>Boleto</option><option value="" ${!existing?.payment_method?'selected':''}>Não informado</option></select></label><label class="full"><span>Descrição / observação</span><textarea name="description" rows="4">${esc(existing?.description||existing?.payment_notes||'')}</textarea></label><div class="f8-modal-actions full"><button type="button" class="btn btn-outline" data-close>Cancelar</button><button class="btn btn-primary" type="submit"><i data-lucide="save"></i>Salvar alterações</button></div></form></div>`;
+    document.body.appendChild(root);refresh();
+    const close=()=>root.remove();root.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',close));
+    root.addEventListener('click',e=>{if(e.target===root)close();});
+    root.querySelector('#f10LegacyFinanceForm').addEventListener('submit',async e=>{
+      e.preventDefault();const btn=e.currentTarget.querySelector('button[type=submit]');btn.disabled=true;
+      try{
+        const fd=new FormData(e.currentTarget);
+        const raw=String(fd.get('amount')||'').replace(/\./g,'').replace(',','.');const amount=Number(raw);if(!(amount>0))throw new Error('Informe um valor maior que zero.');
+        const payload={amount,payment_date:String(fd.get('payment_date')),status:String(fd.get('status')),payment_method:String(fd.get('payment_method')||'')||null,payment_notes:String(fd.get('description')||'').trim()||null,description:String(fd.get('description')||'').trim()||null,student_name:String(fd.get('student_name')||'').trim()||null,updated_at:new Date().toISOString()};
+        let res=await sb().from(table.payments).update(payload).eq('id',existing.legacy_payment_id).eq('user_id',uid());
+        if(res.error && /column .*description/i.test(res.error.message||'')){
+          delete payload.description;res=await sb().from(table.payments).update(payload).eq('id',existing.legacy_payment_id).eq('user_id',uid());
+        }
+        if(res.error)throw res.error;close();showOk('Lançamento atualizado.');await W.renderFinance?.();
+      }catch(err){showErr('Não foi possível editar o lançamento: '+(err.message||err));}finally{btn.disabled=false;}
+    });
+  }
+  if(typeof baseFinanceOpen==='function'){
+    W.f8OpenFinance=async function(existingId=null){
+      if(existingId){const entries=await W.loadFinance?.() || []; const r=entries.find(e=>String(e.id)===String(existingId));if(r?.legacy)return editLegacyFinance(existingId,r);}
+      return baseFinanceOpen.apply(this,arguments);
+    };
+  }
+
+  /* =========================================================
+     AVALIAÇÕES — histórico com quebra, nome dentro do padrão
+  ========================================================= */
+  function renderEvalHistory10(list,students){
+    if(!list.length)return `<div class="f8-empty"><i data-lucide="clipboard-list"></i><strong>Nenhuma aplicação registrada.</strong><span>As aplicações realizadas aparecerão aqui.</span></div>`;
+    return `<div class="v4-history">${list.map(e=>{
+      const s=students.get(String(e.student_id));
+      const st=String(e.status||'draft').toLowerCase();
+      const raw=e.assessment_data&&typeof e.assessment_data==='object'?e.assessment_data:{};
+      const preview=Object.entries(raw).filter(([,v])=>v!==null&&v!==undefined&&String(v).trim()!=='').slice(0,3).map(([k,v])=>`<div><span>${esc(String(k).replace(/_/g,' '))}</span><strong>${esc(Array.isArray(v)?v.join(', '):String(v))}</strong></div>`).join('');
+      return `<article class="v4-history-item f10-eval-history-item"><div class="v4-history-date"><strong>${esc(fmtDate(e.evaluation_date||e.date))}</strong><span>${esc(statusPt(st)||'Registro')}</span></div><div class="v4-history-main"><div class="v4-inline-tags"><span class="v3-tag">${esc(e.type||'Avaliação')}</span></div>${s?`<div class="f9-history10-name"><i data-lucide="user-round"></i><span>${esc(studentName(s))}</span></div>`:''}<h3>${esc(e.title||e.type||'Avaliação')}</h3><p>${esc(e.summary||e.notes||'Sem síntese registrada. Clique em editar para revisar a aplicação.')}</p>${preview?`<div class="f4-eval-preview">${preview}</div>`:''}<div class="f9-eval-history-actions"><button type="button" class="btn btn-outline btn-sm" onclick="event.stopPropagation();v3EditEvaluation('${esc(e.id)}')"><i data-lucide="pencil"></i>Editar aplicação</button><button type="button" class="btn btn-danger btn-sm" onclick="event.stopPropagation();v3DeleteEvaluation('${esc(e.id)}')"><i data-lucide="trash-2"></i>Excluir</button></div></div></article>`;
+    }).join('')}</div>`;
+  }
+  W.renderEvaluations=async function(){
+    const c=document.getElementById('avaliacoesContent');if(!c)return;
+    c.innerHTML='<div class="v3-loading"><i data-lucide="loader-circle"></i><span>Carregando avaliações...</span></div>';refresh();
+    try{
+      const [list,students]=await Promise.all([
+        W.selectSafe?.(table.evaluations,{filters:{user_id:uid()},order:'evaluation_date',ascending:false,limit:500})||[],
+        W.selectSafe?.(table.students,{filters:{user_id:uid()},order:'name',ascending:true,limit:500})||[]
+      ]);
+      const evals=list||[];const sm=new Map((students||[]).map(s=>[String(s.id),s]));
+      const defs=W.V4_ASSESSMENTS||W.PEDAGOGICAL_ASSESSMENTS||{};
+      const models=Object.entries(defs).map(([name,def])=>`<article class="f9-eval-model"><div class="f9-eval-model-icon"><i data-lucide="clipboard-check"></i></div><div class="f9-eval-model-main"><div class="v3-kicker">PRONTO PARA APLICAÇÃO</div><h3>${esc(name)}</h3><p>${esc(def.objective||def.source||'Instrumento pedagógico de apoio para observação e planejamento.')}</p><div class="f9-eval-meta"><span>${esc(def.area||'Avaliação pedagógica')}</span><span>${esc(def.duration||'Conforme aplicação')}</span><span>${Array.isArray(def.fields)?def.fields.length:0} etapas</span></div></div><button class="btn btn-primary btn-sm" type="button" onclick="V3.assessmentType='${esc(name)}';v4OpenEvaluationModal()"><i data-lucide="play"></i>Aplicar</button></article>`).join('');
+      const done=evals.filter(e=>String(e.status||'').toLowerCase()==='completed').length;
+      const drafts=evals.filter(e=>['draft','pending'].includes(String(e.status||'').toLowerCase())).length;
+      c.innerHTML=`<div class="f8-page"><div class="f8-head"><div><div class="v3-kicker">INVESTIGAÇÃO PEDAGÓGICA</div><h1>Avaliações</h1><p>Instrumentos pedagógicos, aplicação, evidências, síntese e próximos passos.</p></div><div class="f8-head-actions"><button class="btn btn-primary" type="button" onclick="V3.assessmentType='Avaliação personalizada';v4OpenEvaluationModal()"><i data-lucide="clipboard-plus"></i>Aplicar avaliação</button></div></div><div class="v3-stats">${W.statCard?.('clipboard-check','Aplicações',evals.length,'Registros salvos')||''}${W.statCard?.('user-round-check','Alunos avaliados',new Set(evals.map(e=>e.student_id).filter(Boolean)).size,'Com histórico')||''}${W.statCard?.('file-check-2','Concluídas',done,'Aplicações finalizadas')||''}${W.statCard?.('clock-3','Rascunhos',drafts,'Em preenchimento')||''}</div><section class="f8-card"><div class="f8-card-head"><div><h2>Avaliações prontas para aplicar</h2><p>Escolha um instrumento para abrir a aplicação pedagógica completa.</p></div></div><div class="f9-eval-models">${models||'<div class="f8-empty">Nenhum instrumento configurado.</div>'}</div></section><section class="f8-card"><div class="f8-card-head"><div><h2>Histórico das aplicações</h2><p>Todos os registros anteriores continuam disponíveis para editar, revisar ou excluir.</p></div><span class="v3-tag">${evals.length} registro${evals.length===1?'':'s'}</span></div>${renderEvalHistory10(evals,sm)}</section><section class="f8-card"><div class="v3-form-note"><i data-lucide="info"></i><span>Os instrumentos são apoio pedagógico para observar evidências e planejar intervenções. Eles não substituem instrumentos normatizados.</span></div></section></div>`;refresh();
+    }catch(err){c.innerHTML=`<div class="f8-card f8-empty"><i data-lucide="circle-alert"></i><strong>Não foi possível carregar as avaliações.</strong><span>${esc(err.message||err)}</span><button class="btn btn-primary btn-sm" onclick="renderEvaluations()">Tentar novamente</button></div>`;refresh();}
+  };
+  globalThis.renderEvaluations=W.renderEvaluations;
+
+  /* =========================================================
+     RECADOS — Master pode excluir comunicados publicados
+  ========================================================= */
+  async function masterDeleteMessage(id){
+    if(!uid())throw new Error('Sessão indisponível.');
+    if(!W.confirm?.('Excluir este comunicado publicado? Esta ação remove o comunicado para todos os destinatários e não poderá ser desfeita.'))return;
+    let res={error:null};
+    if(typeof W.legadoMasterInvoke==='function'){
+      await W.legadoMasterInvoke('delete_message',{id:String(id)});
+    }else{
+      res=await sb().from(table.messages).delete().eq('id',String(id));
+      if(res.error)throw res.error;
+    }
+    showOk('Comunicado excluído.');await W.renderMessages?.();
+  }
+  W.masterDeleteMessage=masterDeleteMessage;
+
+  const baseMessages=W.renderMessages;
+  if(typeof baseMessages==='function' && !baseMessages.__final10){
+    const fn=async function(){
+      if(typeof W.isMaster==='function' && W.isMaster()){
+        const c=document.getElementById('recadosContent');if(!c)return;
+        c.innerHTML='<div class="v3-loading"><i data-lucide="loader-circle"></i><span>Carregando comunicados...</span></div>';refresh();
+        try{
+          let rows=[];
+          if(typeof W.legadoMasterInvoke==='function'){
+            const secure=await W.legadoMasterInvoke('get_messages');
+            rows=secure?.messages||[];
+          }else{
+            const {data,error}=await sb().from(table.messages).select('*').eq('target_all',true).order('created_at',{ascending:false}).limit(200);
+            if(error)throw error;
+            rows=data||[];
+          }
+          const cards=rows.length?rows.map(r=>`<article class="legado-message-card"><div class="legado-message-card-icon"><i data-lucide="megaphone"></i></div><div><div class="legado-message-meta"><span class="tag">${esc(r.type||'Comunicado')}</span><span class="date">${esc(fmtDate(r.created_at))}</span></div><h3>${esc(r.title||'Comunicado')}</h3><p>${esc(r.message||'')}</p></div><div class="legado-message-card-actions"><button class="btn btn-danger btn-sm" type="button" onclick="masterDeleteMessage('${esc(r.id)}')"><i data-lucide="trash-2"></i>Excluir</button></div></article>`).join(''):`<div class="legado-message-empty"><div class="legado-message-empty-icon"><i data-lucide="inbox"></i></div><strong>Nenhum comunicado publicado</strong><span>Quando você publicar um novo comunicado, ele aparecerá aqui.</span></div>`;
+          c.innerHTML=pageShell('COMUNICAÇÃO','Recados','Central de comunicados publicados para os professores.',`<button class="btn btn-primary" type="button" onclick="v3OpenMessageEditor()"><i data-lucide="plus"></i>Novo comunicado</button>`) + `<div class="v3-panel"><div class="v3-panel-head"><div><h2>Comunicados publicados</h2><p>Exclua um comunicado que foi lançado por engano. A exclusão é definitiva.</p></div><span class="v3-tag">${rows.length} publicado${rows.length===1?'':'s'}</span></div><div class="legado-message-grid">${cards}</div></div>`;refresh();
+        }catch(e){c.innerHTML=`<div class="v3-panel"><div class="v3-empty"><strong>Não foi possível carregar os comunicados.</strong><span>${esc(e.message||e)}</span><button class="btn btn-primary btn-sm" onclick="renderMessages()">Tentar novamente</button></div></div>`;refresh();}
+        return;
+      }
+      return baseMessages.apply(this,arguments);
+    };
+    fn.__final10=true;W.renderMessages=fn;globalThis.renderMessages=fn;
+  }
+
+  /* =========================================================
+     MASTER — usa a mesma Agenda moderna do profissional
+     + painel de agenda no centro administrativo
+  ========================================================= */
+  async function renderMasterAgenda10(container){
+    try{
+      const sbc=sb(); if(!sbc||!uid())throw new Error('Sessão indisponível.');
+      const {data,error}=await sbc.from(table.appointments).select('*').order('appointment_date',{ascending:true}).order('appointment_time',{ascending:true}).limit(200);
+      if(error)throw error;
+      const rows=(data||[]).filter(a=>!['cancelled','canceled','completed'].includes(String(a.status||'').toLowerCase())).slice(0,12);
+      container.innerHTML=`<section class="saas-panel-box"><div class="saas-box-head"><div><span>AGENDA DA OPERAÇÃO</span><h2>Próximos atendimentos</h2><p>Visualização consolidada com a mesma linguagem da nova Agenda.</p></div><button class="saas-secondary" type="button" onclick="window.renderMaster?.()"><i data-lucide="refresh-cw"></i>Atualizar</button></div><div class="f10-master-agenda-grid"><div class="f10-master-agenda-list">${rows.length?rows.map(a=>{const d=dateOnly(a.appointment_date||a.date);const day=d?d.slice(8,10):'—';const mon=d?new Date(`${d}T12:00:00`).toLocaleDateString('pt-BR',{month:'short'}).replace('.',''):'—';const tm=String(a.appointment_time||a.start_time||a.time||'').slice(0,5)||'—';return `<div class="f10-master-agenda-item"><div class="f10-master-agenda-date"><strong>${esc(day)}</strong><span>${esc(mon)}</span></div><div class="f10-master-agenda-main"><strong>${esc(a.student_name||a.aluno_nome||'Aluno')}</strong><span>${esc(tm)} · ${esc(a.type||a.service||'Atendimento')}</span></div><span class="v3-tag f10-master-agenda-status">${esc(statusPt(a.status||'scheduled'))}</span></div>`}).join(''):`<div class="f8-empty"><i data-lucide="calendar-off"></i><strong>Nenhum próximo atendimento encontrado.</strong><span>A agenda da conta profissional continua disponível no menu Agenda.</span></div>`}</div><aside class="f8-card"><div class="f8-card-head"><div><h3>Agenda profissional</h3><p>A mesma tela moderna usada pelos professores.</p></div></div><button class="btn btn-primary" type="button" onclick="window.navigate('agenda')"><i data-lucide="calendar-days"></i>Abrir Agenda completa</button></aside></div></section>`;refresh();
+    }catch(e){container.innerHTML=`<section class="saas-panel-box"><div class="saas-error"><i data-lucide="calendar-x"></i><strong>Não foi possível carregar a agenda consolidada.</strong><span>${esc(e.message||e)}</span></div></section>`;refresh();}
+  }
+  const baseMaster=W.renderMaster;
+  if(typeof baseMaster==='function'){
+    W.renderMaster=async function(){
+      const result=await baseMaster.apply(this,arguments);
+      try{
+        const c=document.getElementById('masterContent');if(!c)return result;
+        // keep the existing master interface intact, but add a modern agenda section once.
+        if(!c.querySelector('#f10MasterAgenda')){
+          const host=document.createElement('div');host.id='f10MasterAgenda';host.style.marginTop='16px';c.appendChild(host);await renderMasterAgenda10(host);
+        }
+      }catch(e){console.warn('[FINAL10] master agenda',e)}
+      refresh();return result;
+    };
+    globalThis.renderMaster=W.renderMaster;
+  }
+
+  /* =========================================================
+     NAVEGAÇÃO FINAL — impede retorno às versões antigas
+  ========================================================= */
+  const modern={
+    agenda:()=>W.renderAgenda?.(),
+    avaliacoes:()=>W.renderEvaluations?.(),
+    financeiro:()=>W.renderFinance?.(),
+    recados:()=>W.renderMessages?.(),
+    'aluno-perfil':()=>W.renderStudentProfileView?.(),
+    alunos:()=>W.renderStudents?.(),
+    perfil:()=>W.renderProfile?.(),
+    master:()=>W.renderMaster?.(),
+    dashboard:()=>W.renderDashboard?.(),
+    'lista-espera':()=>W.renderWaitlist?.()
+  };
+  W.renderCurrentView=async function(view){
+    const fn=modern[view]||modern.dashboard;
+    if(typeof fn!=='function')throw new Error(`A tela ${view} não possui renderizador.`);
+    return await fn();
+  };
+  W.navigate=function(view){
+    const valid=['dashboard','alunos','aluno-perfil','agenda','avaliacoes','financeiro','recados','lista-espera','perfil','master'];
+    const target=valid.includes(view)?view:'dashboard';
+    if(W.state?.accessLocked && !(typeof W.isMaster==='function'&&W.isMaster())){W.showExpiredScreen?.();return;}
+    if(W.state)W.state.currentView=target;
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById(`view-${target}`)?.classList.add('active');
+    document.querySelectorAll('#mainNav button[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===target));
+    const title=W.viewTitles?.[target];if(title&&document.getElementById('pageTitle'))document.getElementById('pageTitle').innerHTML=`<i data-lucide="${esc(title.icon)}"></i><span>${esc(title.label)}</span>`;
+    refresh();
+    Promise.resolve(modern[target]?.()).catch(err=>{console.error('[FINAL10] navegação',err);showErr(err.message||'Não foi possível carregar esta tela.');});
+  };
+  globalThis.navigate=W.navigate;
+  globalThis.renderCurrentView=W.renderCurrentView;
+
+  /* Reaplica ícones WhatsApp depois de qualquer navegação e impede overflow residual. */
+  setTimeout(()=>{patchWaitlistWhatsapp();refresh();},0);
+})();
+</script>
+
 </body></html>`;win.document.write(html);win.document.close();}catch(err){window.showError?.('Não foi possível preparar a impressão: '+(err.message||err));}};
 
   window.renderFinance=async function(){
@@ -13058,6 +13352,288 @@ body.legado-v4-modal-open{overflow:hidden}
 })();
 </script>
 
+
+<script id="legado-final10">
+(function(){
+  'use strict';
+  const W=window;
+  const esc=W.escapeHtml || (v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])));
+  const uid=()=>W.state?.user?.id||null;
+  const sb=()=>W.supabaseClient;
+  const table={
+    students:'students',
+    appointments:'appointments',
+    evaluations:'evaluations',
+    messages:'messages',
+    payments:'payments',
+    finance: W.V3Core?.TABLE?.finance || W.TABLES?.finance || W.TABLE?.finance || 'finance_entries'
+  };
+  const refresh=()=>W.refreshIcons?.();
+  const showErr=m=>W.showError?.(m);
+  const showOk=m=>W.showSuccess?.(m);
+  const statusPt=v=>({scheduled:'Agendado',confirmed:'Confirmado',in_progress:'Em andamento',completed:'Concluído',cancelled:'Cancelado',canceled:'Cancelado',pending:'Pendente',draft:'Rascunho',paid:'Pago',overdue:'Em atraso',courtesy:'Cortesia'})[String(v||'').toLowerCase()]||String(v||'');
+  const studentName=s=>String(s?.name||s?.full_name||s?.nome||'Aluno');
+  const fmtDate=v=>{try{return v?new Date(v).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'}):'—'}catch(_){return '—'}};
+  const money=v=>{try{return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}catch(_){return 'R$ 0,00'}};
+  const dateOnly=v=>String(v||'').slice(0,10);
+
+  /* =========================================================
+     RESPONSIVIDADE GLOBAL — telefone, tablet e desktop
+  ========================================================= */
+  if(!document.getElementById('legado-final10-responsive')){
+    const css=document.createElement('style');
+    css.id='legado-final10-responsive';
+    css.textContent=`
+      html,body{width:100%;max-width:100%;overflow-x:hidden}
+      body{min-width:0}
+      .app,.main,.content,.view,#dashboardContent,#alunosContent,#agendaContent,#avaliacoesContent,#financeiroContent,#recadosContent,#waitlistContent,#perfilContent,#masterContent,#studentProfileContent{min-width:0;max-width:100%}
+      .content{overflow-x:hidden}
+      .card,.v3-panel,.f8-card,.f8-page,.saas-panel-box,.mpro-panel,.mpro-shell,.f8-history,.v4-history,.f9-eval-models,.f8-slots,.f8-table,.saas-table{max-width:100%;min-width:0}
+      .f8-table,.saas-table,.mpro-table{overflow-x:auto;-webkit-overflow-scrolling:touch}
+      .f8-tr,.saas-tr,.mpro-row{min-width:0}
+      .f8-tr>*,.saas-tr>*,.mpro-row>*{min-width:0;overflow-wrap:anywhere;word-break:break-word}
+      .f8-history-item,.v4-history-item{min-width:0}
+      .f8-history-main,.v4-history-main{min-width:0;overflow:hidden}
+      .f8-history-main h3,.v4-history-main h3,.f9-eval-model-main h3,.legado-message-card h3{overflow-wrap:anywhere;word-break:break-word;white-space:normal}
+      .f8-history-main p,.v4-history-main p,.legado-message-card p{overflow-wrap:anywhere;word-break:break-word;white-space:pre-wrap}
+      .v3-student-ref,.f8-history-tags,.f4-eval-preview,.f9-eval-meta,.f9-eval-history-actions{max-width:100%;overflow-wrap:anywhere;word-break:break-word}
+      .v3-student-ref{display:inline-flex!important;align-items:center;gap:5px;white-space:normal!important;overflow:hidden}
+      .v3-student-ref svg{flex:0 0 auto}
+      .f8-head,.f8-card-head,.v3-panel-head,.saas-box-head,.saas-drawer-head,.mpro-hero,.mpro-panel-head{min-width:0}
+      .f8-head>*,.f8-card-head>*,.v3-panel-head>*,.saas-box-head>*,.saas-drawer-head>*,.mpro-hero>*,.mpro-panel-head>*{min-width:0}
+      .f8-head-actions,.f8-actions,.f8-modal-actions,.f8-fin-filters,.f8-filterbar,.v3-form-actions,.f9-upcoming-actions,.saas-drawer-actions,.saas-filterbar{display:flex;flex-wrap:wrap;gap:8px}
+      .f8-head-actions .btn,.f8-actions .btn,.v3-form-actions .btn,.f9-upcoming-actions .btn{max-width:100%}
+      .f9-history10-name{display:flex;align-items:flex-start;gap:7px;max-width:100%;min-width:0;margin:5px 0 6px;padding:7px 9px;border-radius:11px;background:#f5f9f7;border:1px solid #e0ebe4;color:#3f5e50;font-size:11px;line-height:1.4;overflow-wrap:anywhere;word-break:break-word}
+      .f9-history10-name svg{width:14px;height:14px;flex:0 0 auto;margin-top:1px}
+      .f9-history10-name span{min-width:0;white-space:normal;overflow-wrap:anywhere;word-break:break-word}
+      .f10-whatsapp-icon{width:16px;height:16px;display:inline-block;vertical-align:middle;flex:0 0 auto}
+      .f10-master-agenda-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(280px,.75fr);gap:14px}
+      .f10-master-agenda-list{display:grid;gap:9px}
+      .f10-master-agenda-item{display:grid;grid-template-columns:70px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px;border:1px solid #e0e9e4;border-radius:14px;background:#fff}
+      .f10-master-agenda-date{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px;border-radius:12px;background:#edf5f0;color:#477363}
+      .f10-master-agenda-date strong{font-size:19px;line-height:1}
+      .f10-master-agenda-date span{margin-top:4px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+      .f10-master-agenda-main{min-width:0}
+      .f10-master-agenda-main strong{display:block;overflow-wrap:anywhere;word-break:break-word}
+      .f10-master-agenda-main span{display:block;margin-top:4px;color:#77857e;font-size:10px;line-height:1.45}
+      .f10-master-agenda-status{white-space:nowrap}
+      @media(max-width:1100px){.f10-master-agenda-grid{grid-template-columns:1fr}.mpro-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.saas-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+      @media(max-width:850px){
+        .topbar{padding:0 16px}.content{padding:18px 14px 28px}
+        .form-grid,.form-grid.two,.v3-form-grid,.v4-grid,.saas-grid2{grid-template-columns:1fr!important}
+        .f8-head,.f8-card-head,.v3-panel-head,.mpro-hero,.saas-box-head{flex-direction:column;align-items:stretch}
+        .f8-head-actions,.f8-head-actions .btn,.saas-filterbar input,.saas-filterbar select,.mpro-filter-box input,.mpro-filter-box select{width:100%}
+        .f8-table .f8-tr.head{display:none}.f8-table .f8-tr{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:12px}.f8-table .f8-tr>div:nth-child(6){grid-column:1/-1}
+        .saas-table .saas-tr.head{display:none}.saas-table .saas-tr{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:13px}.saas-table .saas-tr>*:last-child{grid-column:1/-1}
+        .mpro-kpis,.saas-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+        .reports-columns,.rz-grid-main,.rz-grid-bottom,.saas-columns,.mpro-layout-main,.mpro-fin-grid{grid-template-columns:1fr!important}
+        .f10-master-agenda-item{grid-template-columns:58px minmax(0,1fr)}.f10-master-agenda-status{grid-column:2}
+      }
+      @media(max-width:560px){
+        .sidebar{width:58px}.topbar{height:62px}.content{height:calc(100vh - 62px);padding:14px 10px 24px}.page-title{font-size:16px}.user-mini .nav-label{display:none}
+        .stats,.mpro-kpis,.saas-kpis{grid-template-columns:1fr 1fr!important}
+        .f8-kpis,.v3-stats{grid-template-columns:1fr 1fr!important}
+        .f8-history-item,.v4-history-item{grid-template-columns:1fr!important}
+        .f8-history-date,.v4-history-date{padding-bottom:2px}
+        .f8-action,.f8-actions .btn,.f9-upcoming-actions .btn,.v3-form-actions .btn{width:100%;justify-content:center}
+        .legado-message-card{grid-template-columns:40px 1fr!important}.legado-message-card-actions{grid-column:1/-1!important}
+        .v3-tabs,.f8-tabs,.mpro-tabs,.saas-tabs{overflow-x:auto;max-width:100%;-webkit-overflow-scrolling:touch}
+      }
+    `;
+    document.head.appendChild(css);
+  }
+
+  /* =========================================================
+     WHATSAPP — ícone de marca, inclusive na lista de espera
+  ========================================================= */
+  function whatsappSvg(){
+    return '<svg class="f10-whatsapp-icon" viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M19.11 17.24c-.28-.14-1.63-.8-1.88-.89-.25-.09-.43-.14-.61.14-.18.28-.7.89-.86 1.07-.16.18-.32.2-.6.07-.28-.14-1.17-.43-2.22-1.37-.82-.73-1.38-1.62-1.54-1.9-.16-.28-.02-.43.12-.57.12-.12.28-.32.41-.48.14-.16.18-.28.28-.46.09-.18.05-.34-.02-.48-.07-.14-.61-1.47-.84-2.02-.22-.53-.45-.46-.61-.47h-.52c-.18 0-.48.07-.73.34-.25.28-.96.94-.96 2.29s.98 2.66 1.11 2.84c.14.18 1.93 2.95 4.69 4.14.66.28 1.17.45 1.57.58.66.21 1.26.18 1.74.11.53-.08 1.63-.67 1.86-1.32.23-.65.23-1.2.16-1.32-.07-.11-.25-.18-.52-.32z"/><path fill="currentColor" d="M16.02 4C9.38 4 4 9.38 4 16.02c0 2.12.56 4.1 1.54 5.82L4 27.95l6.26-1.5a11.95 11.95 0 0 0 5.76 1.47c6.64 0 12.02-5.38 12.02-12.02S22.66 4 16.02 4zm0 21.92c-1.89 0-3.66-.52-5.17-1.42l-.37-.22-3.71.89.9-3.61-.24-.37a9.9 9.9 0 1 1 8.59 4.73z"/></svg>';
+  }
+  function patchWaitlistWhatsapp(){
+    const root=document.getElementById('waitlistContent');if(!root)return;
+    root.querySelectorAll('a[href*="wa.me"],a[aria-label*="WhatsApp"],a').forEach(a=>{
+      const txt=(a.textContent||'').toLowerCase();
+      if(txt.includes('whatsapp')){
+        if(!a.querySelector('.f10-whatsapp-icon')) a.insertAdjacentHTML('afterbegin',whatsappSvg());
+        a.setAttribute('title','Abrir conversa no WhatsApp');
+      }
+    });
+    refresh();
+  }
+  const baseWait=W.renderWaitlist;
+  if(typeof baseWait==='function' && !baseWait.__final10){
+    const fn=async function(){const r=await baseWait.apply(this,arguments);setTimeout(patchWaitlistWhatsapp,0);return r;};fn.__final10=true;W.renderWaitlist=fn;globalThis.renderWaitlist=fn;
+  }
+
+  /* =========================================================
+     FINANCEIRO — editar também lançamentos antigos (payments)
+  ========================================================= */
+  const baseFinanceOpen=W.f8OpenFinance;
+  async function editLegacyFinance(id,r){
+    const existing=r||null;
+    const modalId='f10LegacyFinanceModal';
+    document.getElementById(modalId)?.remove();
+    const root=document.createElement('div');root.id=modalId;root.className='f8-modal';
+    root.innerHTML=`<div class="f8-modal-card"><div class="f8-modal-head"><div><div class="v3-kicker">FINANCEIRO</div><h2>Editar lançamento</h2><p>Corrija o registro sem precisar criar outro lançamento.</p></div><button type="button" class="icon-button" data-close><i data-lucide="x"></i></button></div><form id="f10LegacyFinanceForm" class="f8-form-grid"><label><span>Aluno</span><input name="student_name" value="${esc(existing?.student_name||'')}" placeholder="Nome do aluno"></label><label><span>Valor *</span><input name="amount" inputmode="decimal" value="${esc(String(existing?.amount??'').replace('.',','))}" required></label><label><span>Data *</span><input name="payment_date" type="date" value="${esc(dateOnly(existing?.competence_date||existing?.payment_date)||dateOnly(new Date()))}" required></label><label><span>Status</span><select name="status"><option value="paid" ${String(existing?.status)==='paid'?'selected':''}>Pago</option><option value="pending" ${String(existing?.status)==='pending'?'selected':''}>Pendente</option><option value="overdue" ${String(existing?.status)==='overdue'?'selected':''}>Em atraso</option><option value="cancelled" ${String(existing?.status)==='cancelled'?'selected':''}>Cancelado</option></select></label><label><span>Forma de pagamento</span><select name="payment_method"><option value="pix" ${existing?.payment_method==='pix'?'selected':''}>Pix</option><option value="cash" ${existing?.payment_method==='cash'?'selected':''}>Dinheiro</option><option value="debit" ${existing?.payment_method==='debit'?'selected':''}>Débito</option><option value="credit_spot" ${existing?.payment_method==='credit_spot'?'selected':''}>Crédito à vista</option><option value="transfer" ${existing?.payment_method==='transfer'?'selected':''}>Transferência</option><option value="boleto" ${existing?.payment_method==='boleto'?'selected':''}>Boleto</option><option value="" ${!existing?.payment_method?'selected':''}>Não informado</option></select></label><label class="full"><span>Descrição / observação</span><textarea name="description" rows="4">${esc(existing?.description||existing?.payment_notes||'')}</textarea></label><div class="f8-modal-actions full"><button type="button" class="btn btn-outline" data-close>Cancelar</button><button class="btn btn-primary" type="submit"><i data-lucide="save"></i>Salvar alterações</button></div></form></div>`;
+    document.body.appendChild(root);refresh();
+    const close=()=>root.remove();root.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',close));
+    root.addEventListener('click',e=>{if(e.target===root)close();});
+    root.querySelector('#f10LegacyFinanceForm').addEventListener('submit',async e=>{
+      e.preventDefault();const btn=e.currentTarget.querySelector('button[type=submit]');btn.disabled=true;
+      try{
+        const fd=new FormData(e.currentTarget);
+        const raw=String(fd.get('amount')||'').replace(/\./g,'').replace(',','.');const amount=Number(raw);if(!(amount>0))throw new Error('Informe um valor maior que zero.');
+        const payload={amount,payment_date:String(fd.get('payment_date')),status:String(fd.get('status')),payment_method:String(fd.get('payment_method')||'')||null,payment_notes:String(fd.get('description')||'').trim()||null,description:String(fd.get('description')||'').trim()||null,student_name:String(fd.get('student_name')||'').trim()||null,updated_at:new Date().toISOString()};
+        let res=await sb().from(table.payments).update(payload).eq('id',existing.legacy_payment_id).eq('user_id',uid());
+        if(res.error && /column .*description/i.test(res.error.message||'')){
+          delete payload.description;res=await sb().from(table.payments).update(payload).eq('id',existing.legacy_payment_id).eq('user_id',uid());
+        }
+        if(res.error)throw res.error;close();showOk('Lançamento atualizado.');await W.renderFinance?.();
+      }catch(err){showErr('Não foi possível editar o lançamento: '+(err.message||err));}finally{btn.disabled=false;}
+    });
+  }
+  if(typeof baseFinanceOpen==='function'){
+    W.f8OpenFinance=async function(existingId=null){
+      if(existingId){const entries=await W.loadFinance?.() || []; const r=entries.find(e=>String(e.id)===String(existingId));if(r?.legacy)return editLegacyFinance(existingId,r);}
+      return baseFinanceOpen.apply(this,arguments);
+    };
+  }
+
+  /* =========================================================
+     AVALIAÇÕES — histórico com quebra, nome dentro do padrão
+  ========================================================= */
+  function renderEvalHistory10(list,students){
+    if(!list.length)return `<div class="f8-empty"><i data-lucide="clipboard-list"></i><strong>Nenhuma aplicação registrada.</strong><span>As aplicações realizadas aparecerão aqui.</span></div>`;
+    return `<div class="v4-history">${list.map(e=>{
+      const s=students.get(String(e.student_id));
+      const st=String(e.status||'draft').toLowerCase();
+      const raw=e.assessment_data&&typeof e.assessment_data==='object'?e.assessment_data:{};
+      const preview=Object.entries(raw).filter(([,v])=>v!==null&&v!==undefined&&String(v).trim()!=='').slice(0,3).map(([k,v])=>`<div><span>${esc(String(k).replace(/_/g,' '))}</span><strong>${esc(Array.isArray(v)?v.join(', '):String(v))}</strong></div>`).join('');
+      return `<article class="v4-history-item f10-eval-history-item"><div class="v4-history-date"><strong>${esc(fmtDate(e.evaluation_date||e.date))}</strong><span>${esc(statusPt(st)||'Registro')}</span></div><div class="v4-history-main"><div class="v4-inline-tags"><span class="v3-tag">${esc(e.type||'Avaliação')}</span></div>${s?`<div class="f9-history10-name"><i data-lucide="user-round"></i><span>${esc(studentName(s))}</span></div>`:''}<h3>${esc(e.title||e.type||'Avaliação')}</h3><p>${esc(e.summary||e.notes||'Sem síntese registrada. Clique em editar para revisar a aplicação.')}</p>${preview?`<div class="f4-eval-preview">${preview}</div>`:''}<div class="f9-eval-history-actions"><button type="button" class="btn btn-outline btn-sm" onclick="event.stopPropagation();v3EditEvaluation('${esc(e.id)}')"><i data-lucide="pencil"></i>Editar aplicação</button><button type="button" class="btn btn-danger btn-sm" onclick="event.stopPropagation();v3DeleteEvaluation('${esc(e.id)}')"><i data-lucide="trash-2"></i>Excluir</button></div></div></article>`;
+    }).join('')}</div>`;
+  }
+  W.renderEvaluations=async function(){
+    const c=document.getElementById('avaliacoesContent');if(!c)return;
+    c.innerHTML='<div class="v3-loading"><i data-lucide="loader-circle"></i><span>Carregando avaliações...</span></div>';refresh();
+    try{
+      const [list,students]=await Promise.all([
+        W.selectSafe?.(table.evaluations,{filters:{user_id:uid()},order:'evaluation_date',ascending:false,limit:500})||[],
+        W.selectSafe?.(table.students,{filters:{user_id:uid()},order:'name',ascending:true,limit:500})||[]
+      ]);
+      const evals=list||[];const sm=new Map((students||[]).map(s=>[String(s.id),s]));
+      const defs=W.V4_ASSESSMENTS||W.PEDAGOGICAL_ASSESSMENTS||{};
+      const models=Object.entries(defs).map(([name,def])=>`<article class="f9-eval-model"><div class="f9-eval-model-icon"><i data-lucide="clipboard-check"></i></div><div class="f9-eval-model-main"><div class="v3-kicker">PRONTO PARA APLICAÇÃO</div><h3>${esc(name)}</h3><p>${esc(def.objective||def.source||'Instrumento pedagógico de apoio para observação e planejamento.')}</p><div class="f9-eval-meta"><span>${esc(def.area||'Avaliação pedagógica')}</span><span>${esc(def.duration||'Conforme aplicação')}</span><span>${Array.isArray(def.fields)?def.fields.length:0} etapas</span></div></div><button class="btn btn-primary btn-sm" type="button" onclick="V3.assessmentType='${esc(name)}';v4OpenEvaluationModal()"><i data-lucide="play"></i>Aplicar</button></article>`).join('');
+      const done=evals.filter(e=>String(e.status||'').toLowerCase()==='completed').length;
+      const drafts=evals.filter(e=>['draft','pending'].includes(String(e.status||'').toLowerCase())).length;
+      c.innerHTML=`<div class="f8-page"><div class="f8-head"><div><div class="v3-kicker">INVESTIGAÇÃO PEDAGÓGICA</div><h1>Avaliações</h1><p>Instrumentos pedagógicos, aplicação, evidências, síntese e próximos passos.</p></div><div class="f8-head-actions"><button class="btn btn-primary" type="button" onclick="V3.assessmentType='Avaliação personalizada';v4OpenEvaluationModal()"><i data-lucide="clipboard-plus"></i>Aplicar avaliação</button></div></div><div class="v3-stats">${W.statCard?.('clipboard-check','Aplicações',evals.length,'Registros salvos')||''}${W.statCard?.('user-round-check','Alunos avaliados',new Set(evals.map(e=>e.student_id).filter(Boolean)).size,'Com histórico')||''}${W.statCard?.('file-check-2','Concluídas',done,'Aplicações finalizadas')||''}${W.statCard?.('clock-3','Rascunhos',drafts,'Em preenchimento')||''}</div><section class="f8-card"><div class="f8-card-head"><div><h2>Avaliações prontas para aplicar</h2><p>Escolha um instrumento para abrir a aplicação pedagógica completa.</p></div></div><div class="f9-eval-models">${models||'<div class="f8-empty">Nenhum instrumento configurado.</div>'}</div></section><section class="f8-card"><div class="f8-card-head"><div><h2>Histórico das aplicações</h2><p>Todos os registros anteriores continuam disponíveis para editar, revisar ou excluir.</p></div><span class="v3-tag">${evals.length} registro${evals.length===1?'':'s'}</span></div>${renderEvalHistory10(evals,sm)}</section><section class="f8-card"><div class="v3-form-note"><i data-lucide="info"></i><span>Os instrumentos são apoio pedagógico para observar evidências e planejar intervenções. Eles não substituem instrumentos normatizados.</span></div></section></div>`;refresh();
+    }catch(err){c.innerHTML=`<div class="f8-card f8-empty"><i data-lucide="circle-alert"></i><strong>Não foi possível carregar as avaliações.</strong><span>${esc(err.message||err)}</span><button class="btn btn-primary btn-sm" onclick="renderEvaluations()">Tentar novamente</button></div>`;refresh();}
+  };
+  globalThis.renderEvaluations=W.renderEvaluations;
+
+  /* =========================================================
+     RECADOS — Master pode excluir comunicados publicados
+  ========================================================= */
+  async function masterDeleteMessage(id){
+    if(!uid())throw new Error('Sessão indisponível.');
+    if(!W.confirm?.('Excluir este comunicado publicado? Esta ação remove o comunicado para todos os destinatários e não poderá ser desfeita.'))return;
+    let res=await sb().from(table.messages).delete().eq('id',String(id));
+    if(res.error && typeof W.legadoMasterInvoke==='function'){
+      try{await W.legadoMasterInvoke('delete_message',{id:String(id)});res={error:null};}catch(e){res={error:e};}
+    }
+    if(res.error)throw res.error;
+    showOk('Comunicado excluído.');await W.renderMessages?.();
+  }
+  W.masterDeleteMessage=masterDeleteMessage;
+
+  const baseMessages=W.renderMessages;
+  if(typeof baseMessages==='function' && !baseMessages.__final10){
+    const fn=async function(){
+      if(typeof W.isMaster==='function' && W.isMaster()){
+        const c=document.getElementById('recadosContent');if(!c)return;
+        c.innerHTML='<div class="v3-loading"><i data-lucide="loader-circle"></i><span>Carregando comunicados...</span></div>';refresh();
+        try{
+          const {data,error}=await sb().from(table.messages).select('*').eq('target_all',true).order('created_at',{ascending:false}).limit(200);
+          if(error)throw error;
+          const rows=data||[];
+          const cards=rows.length?rows.map(r=>`<article class="legado-message-card"><div class="legado-message-card-icon"><i data-lucide="megaphone"></i></div><div><div class="legado-message-meta"><span class="tag">${esc(r.type||'Comunicado')}</span><span class="date">${esc(fmtDate(r.created_at))}</span></div><h3>${esc(r.title||'Comunicado')}</h3><p>${esc(r.message||'')}</p></div><div class="legado-message-card-actions"><button class="btn btn-danger btn-sm" type="button" onclick="masterDeleteMessage('${esc(r.id)}')"><i data-lucide="trash-2"></i>Excluir</button></div></article>`).join(''):`<div class="legado-message-empty"><div class="legado-message-empty-icon"><i data-lucide="inbox"></i></div><strong>Nenhum comunicado publicado</strong><span>Quando você publicar um novo comunicado, ele aparecerá aqui.</span></div>`;
+          c.innerHTML=pageShell('COMUNICAÇÃO','Recados','Central de comunicados publicados para os professores.',`<button class="btn btn-primary" type="button" onclick="v3OpenMessageEditor()"><i data-lucide="plus"></i>Novo comunicado</button>`) + `<div class="v3-panel"><div class="v3-panel-head"><div><h2>Comunicados publicados</h2><p>Exclua um comunicado que foi lançado por engano. A exclusão é definitiva.</p></div><span class="v3-tag">${rows.length} publicado${rows.length===1?'':'s'}</span></div><div class="legado-message-grid">${cards}</div></div>`;refresh();
+        }catch(e){c.innerHTML=`<div class="v3-panel"><div class="v3-empty"><strong>Não foi possível carregar os comunicados.</strong><span>${esc(e.message||e)}</span><button class="btn btn-primary btn-sm" onclick="renderMessages()">Tentar novamente</button></div></div>`;refresh();}
+        return;
+      }
+      return baseMessages.apply(this,arguments);
+    };
+    fn.__final10=true;W.renderMessages=fn;globalThis.renderMessages=fn;
+  }
+
+  /* =========================================================
+     MASTER — usa a mesma Agenda moderna do profissional
+     + painel de agenda no centro administrativo
+  ========================================================= */
+  async function renderMasterAgenda10(container){
+    try{
+      const sbc=sb(); if(!sbc||!uid())throw new Error('Sessão indisponível.');
+      const {data,error}=await sbc.from(table.appointments).select('*').order('appointment_date',{ascending:true}).order('appointment_time',{ascending:true}).limit(200);
+      if(error)throw error;
+      const rows=(data||[]).filter(a=>!['cancelled','canceled','completed'].includes(String(a.status||'').toLowerCase())).slice(0,12);
+      container.innerHTML=`<section class="saas-panel-box"><div class="saas-box-head"><div><span>AGENDA DA OPERAÇÃO</span><h2>Próximos atendimentos</h2><p>Visualização consolidada com a mesma linguagem da nova Agenda.</p></div><button class="saas-secondary" type="button" onclick="window.renderMaster?.()"><i data-lucide="refresh-cw"></i>Atualizar</button></div><div class="f10-master-agenda-grid"><div class="f10-master-agenda-list">${rows.length?rows.map(a=>{const d=dateOnly(a.appointment_date||a.date);const day=d?d.slice(8,10):'—';const mon=d?new Date(`${d}T12:00:00`).toLocaleDateString('pt-BR',{month:'short'}).replace('.',''):'—';const tm=String(a.appointment_time||a.start_time||a.time||'').slice(0,5)||'—';return `<div class="f10-master-agenda-item"><div class="f10-master-agenda-date"><strong>${esc(day)}</strong><span>${esc(mon)}</span></div><div class="f10-master-agenda-main"><strong>${esc(a.student_name||a.aluno_nome||'Aluno')}</strong><span>${esc(tm)} · ${esc(a.type||a.service||'Atendimento')}</span></div><span class="v3-tag f10-master-agenda-status">${esc(statusPt(a.status||'scheduled'))}</span></div>`}).join(''):`<div class="f8-empty"><i data-lucide="calendar-off"></i><strong>Nenhum próximo atendimento encontrado.</strong><span>A agenda da conta profissional continua disponível no menu Agenda.</span></div>`}</div><aside class="f8-card"><div class="f8-card-head"><div><h3>Agenda profissional</h3><p>A mesma tela moderna usada pelos professores.</p></div></div><button class="btn btn-primary" type="button" onclick="window.navigate('agenda')"><i data-lucide="calendar-days"></i>Abrir Agenda completa</button></aside></div></section>`;refresh();
+    }catch(e){container.innerHTML=`<section class="saas-panel-box"><div class="saas-error"><i data-lucide="calendar-x"></i><strong>Não foi possível carregar a agenda consolidada.</strong><span>${esc(e.message||e)}</span></div></section>`;refresh();}
+  }
+  const baseMaster=W.renderMaster;
+  if(typeof baseMaster==='function'){
+    W.renderMaster=async function(){
+      const result=await baseMaster.apply(this,arguments);
+      try{
+        const c=document.getElementById('masterContent');if(!c)return result;
+        // keep the existing master interface intact, but add a modern agenda section once.
+        if(!c.querySelector('#f10MasterAgenda')){
+          const host=document.createElement('div');host.id='f10MasterAgenda';host.style.marginTop='16px';c.appendChild(host);await renderMasterAgenda10(host);
+        }
+      }catch(e){console.warn('[FINAL10] master agenda',e)}
+      refresh();return result;
+    };
+    globalThis.renderMaster=W.renderMaster;
+  }
+
+  /* =========================================================
+     NAVEGAÇÃO FINAL — impede retorno às versões antigas
+  ========================================================= */
+  const modern={
+    agenda:()=>W.renderAgenda?.(),
+    avaliacoes:()=>W.renderEvaluations?.(),
+    financeiro:()=>W.renderFinance?.(),
+    recados:()=>W.renderMessages?.(),
+    'aluno-perfil':()=>W.renderStudentProfileView?.(),
+    alunos:()=>W.renderStudents?.(),
+    perfil:()=>W.renderProfile?.(),
+    master:()=>W.renderMaster?.(),
+    dashboard:()=>W.renderDashboard?.(),
+    'lista-espera':()=>W.renderWaitlist?.()
+  };
+  W.renderCurrentView=async function(view){
+    const fn=modern[view]||modern.dashboard;
+    if(typeof fn!=='function')throw new Error(`A tela ${view} não possui renderizador.`);
+    return await fn();
+  };
+  W.navigate=function(view){
+    const valid=['dashboard','alunos','aluno-perfil','agenda','avaliacoes','financeiro','recados','lista-espera','perfil','master'];
+    const target=valid.includes(view)?view:'dashboard';
+    if(W.state?.accessLocked && !(typeof W.isMaster==='function'&&W.isMaster())){W.showExpiredScreen?.();return;}
+    if(W.state)W.state.currentView=target;
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById(`view-${target}`)?.classList.add('active');
+    document.querySelectorAll('#mainNav button[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===target));
+    const title=W.viewTitles?.[target];if(title&&document.getElementById('pageTitle'))document.getElementById('pageTitle').innerHTML=`<i data-lucide="${esc(title.icon)}"></i><span>${esc(title.label)}</span>`;
+    refresh();
+    Promise.resolve(modern[target]?.()).catch(err=>{console.error('[FINAL10] navegação',err);showErr(err.message||'Não foi possível carregar esta tela.');});
+  };
+  globalThis.navigate=W.navigate;
+  globalThis.renderCurrentView=W.renderCurrentView;
+
+  /* Reaplica ícones WhatsApp depois de qualquer navegação e impede overflow residual. */
+  setTimeout(()=>{patchWaitlistWhatsapp();refresh();},0);
+})();
+</script>
+
 </body></html>`);w.document.close();}catch(err){W.showError?.('Não foi possível imprimir o histórico: '+(err.message||err));}
   };
 
@@ -13326,6 +13902,288 @@ body.legado-v4-modal-open{overflow:hidden}
   };
   globalThis.renderEvaluations=W.renderEvaluations;
   W.__legadoFinal9=true;
+})();
+</script>
+
+
+<script id="legado-final10">
+(function(){
+  'use strict';
+  const W=window;
+  const esc=W.escapeHtml || (v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])));
+  const uid=()=>W.state?.user?.id||null;
+  const sb=()=>W.supabaseClient;
+  const table={
+    students:'students',
+    appointments:'appointments',
+    evaluations:'evaluations',
+    messages:'messages',
+    payments:'payments',
+    finance: W.V3Core?.TABLE?.finance || W.TABLES?.finance || W.TABLE?.finance || 'finance_entries'
+  };
+  const refresh=()=>W.refreshIcons?.();
+  const showErr=m=>W.showError?.(m);
+  const showOk=m=>W.showSuccess?.(m);
+  const statusPt=v=>({scheduled:'Agendado',confirmed:'Confirmado',in_progress:'Em andamento',completed:'Concluído',cancelled:'Cancelado',canceled:'Cancelado',pending:'Pendente',draft:'Rascunho',paid:'Pago',overdue:'Em atraso',courtesy:'Cortesia'})[String(v||'').toLowerCase()]||String(v||'');
+  const studentName=s=>String(s?.name||s?.full_name||s?.nome||'Aluno');
+  const fmtDate=v=>{try{return v?new Date(v).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'}):'—'}catch(_){return '—'}};
+  const money=v=>{try{return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}catch(_){return 'R$ 0,00'}};
+  const dateOnly=v=>String(v||'').slice(0,10);
+
+  /* =========================================================
+     RESPONSIVIDADE GLOBAL — telefone, tablet e desktop
+  ========================================================= */
+  if(!document.getElementById('legado-final10-responsive')){
+    const css=document.createElement('style');
+    css.id='legado-final10-responsive';
+    css.textContent=`
+      html,body{width:100%;max-width:100%;overflow-x:hidden}
+      body{min-width:0}
+      .app,.main,.content,.view,#dashboardContent,#alunosContent,#agendaContent,#avaliacoesContent,#financeiroContent,#recadosContent,#waitlistContent,#perfilContent,#masterContent,#studentProfileContent{min-width:0;max-width:100%}
+      .content{overflow-x:hidden}
+      .card,.v3-panel,.f8-card,.f8-page,.saas-panel-box,.mpro-panel,.mpro-shell,.f8-history,.v4-history,.f9-eval-models,.f8-slots,.f8-table,.saas-table{max-width:100%;min-width:0}
+      .f8-table,.saas-table,.mpro-table{overflow-x:auto;-webkit-overflow-scrolling:touch}
+      .f8-tr,.saas-tr,.mpro-row{min-width:0}
+      .f8-tr>*,.saas-tr>*,.mpro-row>*{min-width:0;overflow-wrap:anywhere;word-break:break-word}
+      .f8-history-item,.v4-history-item{min-width:0}
+      .f8-history-main,.v4-history-main{min-width:0;overflow:hidden}
+      .f8-history-main h3,.v4-history-main h3,.f9-eval-model-main h3,.legado-message-card h3{overflow-wrap:anywhere;word-break:break-word;white-space:normal}
+      .f8-history-main p,.v4-history-main p,.legado-message-card p{overflow-wrap:anywhere;word-break:break-word;white-space:pre-wrap}
+      .v3-student-ref,.f8-history-tags,.f4-eval-preview,.f9-eval-meta,.f9-eval-history-actions{max-width:100%;overflow-wrap:anywhere;word-break:break-word}
+      .v3-student-ref{display:inline-flex!important;align-items:center;gap:5px;white-space:normal!important;overflow:hidden}
+      .v3-student-ref svg{flex:0 0 auto}
+      .f8-head,.f8-card-head,.v3-panel-head,.saas-box-head,.saas-drawer-head,.mpro-hero,.mpro-panel-head{min-width:0}
+      .f8-head>*,.f8-card-head>*,.v3-panel-head>*,.saas-box-head>*,.saas-drawer-head>*,.mpro-hero>*,.mpro-panel-head>*{min-width:0}
+      .f8-head-actions,.f8-actions,.f8-modal-actions,.f8-fin-filters,.f8-filterbar,.v3-form-actions,.f9-upcoming-actions,.saas-drawer-actions,.saas-filterbar{display:flex;flex-wrap:wrap;gap:8px}
+      .f8-head-actions .btn,.f8-actions .btn,.v3-form-actions .btn,.f9-upcoming-actions .btn{max-width:100%}
+      .f9-history10-name{display:flex;align-items:flex-start;gap:7px;max-width:100%;min-width:0;margin:5px 0 6px;padding:7px 9px;border-radius:11px;background:#f5f9f7;border:1px solid #e0ebe4;color:#3f5e50;font-size:11px;line-height:1.4;overflow-wrap:anywhere;word-break:break-word}
+      .f9-history10-name svg{width:14px;height:14px;flex:0 0 auto;margin-top:1px}
+      .f9-history10-name span{min-width:0;white-space:normal;overflow-wrap:anywhere;word-break:break-word}
+      .f10-whatsapp-icon{width:16px;height:16px;display:inline-block;vertical-align:middle;flex:0 0 auto}
+      .f10-master-agenda-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(280px,.75fr);gap:14px}
+      .f10-master-agenda-list{display:grid;gap:9px}
+      .f10-master-agenda-item{display:grid;grid-template-columns:70px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px;border:1px solid #e0e9e4;border-radius:14px;background:#fff}
+      .f10-master-agenda-date{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px;border-radius:12px;background:#edf5f0;color:#477363}
+      .f10-master-agenda-date strong{font-size:19px;line-height:1}
+      .f10-master-agenda-date span{margin-top:4px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+      .f10-master-agenda-main{min-width:0}
+      .f10-master-agenda-main strong{display:block;overflow-wrap:anywhere;word-break:break-word}
+      .f10-master-agenda-main span{display:block;margin-top:4px;color:#77857e;font-size:10px;line-height:1.45}
+      .f10-master-agenda-status{white-space:nowrap}
+      @media(max-width:1100px){.f10-master-agenda-grid{grid-template-columns:1fr}.mpro-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.saas-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+      @media(max-width:850px){
+        .topbar{padding:0 16px}.content{padding:18px 14px 28px}
+        .form-grid,.form-grid.two,.v3-form-grid,.v4-grid,.saas-grid2{grid-template-columns:1fr!important}
+        .f8-head,.f8-card-head,.v3-panel-head,.mpro-hero,.saas-box-head{flex-direction:column;align-items:stretch}
+        .f8-head-actions,.f8-head-actions .btn,.saas-filterbar input,.saas-filterbar select,.mpro-filter-box input,.mpro-filter-box select{width:100%}
+        .f8-table .f8-tr.head{display:none}.f8-table .f8-tr{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:12px}.f8-table .f8-tr>div:nth-child(6){grid-column:1/-1}
+        .saas-table .saas-tr.head{display:none}.saas-table .saas-tr{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:13px}.saas-table .saas-tr>*:last-child{grid-column:1/-1}
+        .mpro-kpis,.saas-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+        .reports-columns,.rz-grid-main,.rz-grid-bottom,.saas-columns,.mpro-layout-main,.mpro-fin-grid{grid-template-columns:1fr!important}
+        .f10-master-agenda-item{grid-template-columns:58px minmax(0,1fr)}.f10-master-agenda-status{grid-column:2}
+      }
+      @media(max-width:560px){
+        .sidebar{width:58px}.topbar{height:62px}.content{height:calc(100vh - 62px);padding:14px 10px 24px}.page-title{font-size:16px}.user-mini .nav-label{display:none}
+        .stats,.mpro-kpis,.saas-kpis{grid-template-columns:1fr 1fr!important}
+        .f8-kpis,.v3-stats{grid-template-columns:1fr 1fr!important}
+        .f8-history-item,.v4-history-item{grid-template-columns:1fr!important}
+        .f8-history-date,.v4-history-date{padding-bottom:2px}
+        .f8-action,.f8-actions .btn,.f9-upcoming-actions .btn,.v3-form-actions .btn{width:100%;justify-content:center}
+        .legado-message-card{grid-template-columns:40px 1fr!important}.legado-message-card-actions{grid-column:1/-1!important}
+        .v3-tabs,.f8-tabs,.mpro-tabs,.saas-tabs{overflow-x:auto;max-width:100%;-webkit-overflow-scrolling:touch}
+      }
+    `;
+    document.head.appendChild(css);
+  }
+
+  /* =========================================================
+     WHATSAPP — ícone de marca, inclusive na lista de espera
+  ========================================================= */
+  function whatsappSvg(){
+    return '<svg class="f10-whatsapp-icon" viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M19.11 17.24c-.28-.14-1.63-.8-1.88-.89-.25-.09-.43-.14-.61.14-.18.28-.7.89-.86 1.07-.16.18-.32.2-.6.07-.28-.14-1.17-.43-2.22-1.37-.82-.73-1.38-1.62-1.54-1.9-.16-.28-.02-.43.12-.57.12-.12.28-.32.41-.48.14-.16.18-.28.28-.46.09-.18.05-.34-.02-.48-.07-.14-.61-1.47-.84-2.02-.22-.53-.45-.46-.61-.47h-.52c-.18 0-.48.07-.73.34-.25.28-.96.94-.96 2.29s.98 2.66 1.11 2.84c.14.18 1.93 2.95 4.69 4.14.66.28 1.17.45 1.57.58.66.21 1.26.18 1.74.11.53-.08 1.63-.67 1.86-1.32.23-.65.23-1.2.16-1.32-.07-.11-.25-.18-.52-.32z"/><path fill="currentColor" d="M16.02 4C9.38 4 4 9.38 4 16.02c0 2.12.56 4.1 1.54 5.82L4 27.95l6.26-1.5a11.95 11.95 0 0 0 5.76 1.47c6.64 0 12.02-5.38 12.02-12.02S22.66 4 16.02 4zm0 21.92c-1.89 0-3.66-.52-5.17-1.42l-.37-.22-3.71.89.9-3.61-.24-.37a9.9 9.9 0 1 1 8.59 4.73z"/></svg>';
+  }
+  function patchWaitlistWhatsapp(){
+    const root=document.getElementById('waitlistContent');if(!root)return;
+    root.querySelectorAll('a[href*="wa.me"],a[aria-label*="WhatsApp"],a').forEach(a=>{
+      const txt=(a.textContent||'').toLowerCase();
+      if(txt.includes('whatsapp')){
+        if(!a.querySelector('.f10-whatsapp-icon')) a.insertAdjacentHTML('afterbegin',whatsappSvg());
+        a.setAttribute('title','Abrir conversa no WhatsApp');
+      }
+    });
+    refresh();
+  }
+  const baseWait=W.renderWaitlist;
+  if(typeof baseWait==='function' && !baseWait.__final10){
+    const fn=async function(){const r=await baseWait.apply(this,arguments);setTimeout(patchWaitlistWhatsapp,0);return r;};fn.__final10=true;W.renderWaitlist=fn;globalThis.renderWaitlist=fn;
+  }
+
+  /* =========================================================
+     FINANCEIRO — editar também lançamentos antigos (payments)
+  ========================================================= */
+  const baseFinanceOpen=W.f8OpenFinance;
+  async function editLegacyFinance(id,r){
+    const existing=r||null;
+    const modalId='f10LegacyFinanceModal';
+    document.getElementById(modalId)?.remove();
+    const root=document.createElement('div');root.id=modalId;root.className='f8-modal';
+    root.innerHTML=`<div class="f8-modal-card"><div class="f8-modal-head"><div><div class="v3-kicker">FINANCEIRO</div><h2>Editar lançamento</h2><p>Corrija o registro sem precisar criar outro lançamento.</p></div><button type="button" class="icon-button" data-close><i data-lucide="x"></i></button></div><form id="f10LegacyFinanceForm" class="f8-form-grid"><label><span>Aluno</span><input name="student_name" value="${esc(existing?.student_name||'')}" placeholder="Nome do aluno"></label><label><span>Valor *</span><input name="amount" inputmode="decimal" value="${esc(String(existing?.amount??'').replace('.',','))}" required></label><label><span>Data *</span><input name="payment_date" type="date" value="${esc(dateOnly(existing?.competence_date||existing?.payment_date)||dateOnly(new Date()))}" required></label><label><span>Status</span><select name="status"><option value="paid" ${String(existing?.status)==='paid'?'selected':''}>Pago</option><option value="pending" ${String(existing?.status)==='pending'?'selected':''}>Pendente</option><option value="overdue" ${String(existing?.status)==='overdue'?'selected':''}>Em atraso</option><option value="cancelled" ${String(existing?.status)==='cancelled'?'selected':''}>Cancelado</option></select></label><label><span>Forma de pagamento</span><select name="payment_method"><option value="pix" ${existing?.payment_method==='pix'?'selected':''}>Pix</option><option value="cash" ${existing?.payment_method==='cash'?'selected':''}>Dinheiro</option><option value="debit" ${existing?.payment_method==='debit'?'selected':''}>Débito</option><option value="credit_spot" ${existing?.payment_method==='credit_spot'?'selected':''}>Crédito à vista</option><option value="transfer" ${existing?.payment_method==='transfer'?'selected':''}>Transferência</option><option value="boleto" ${existing?.payment_method==='boleto'?'selected':''}>Boleto</option><option value="" ${!existing?.payment_method?'selected':''}>Não informado</option></select></label><label class="full"><span>Descrição / observação</span><textarea name="description" rows="4">${esc(existing?.description||existing?.payment_notes||'')}</textarea></label><div class="f8-modal-actions full"><button type="button" class="btn btn-outline" data-close>Cancelar</button><button class="btn btn-primary" type="submit"><i data-lucide="save"></i>Salvar alterações</button></div></form></div>`;
+    document.body.appendChild(root);refresh();
+    const close=()=>root.remove();root.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',close));
+    root.addEventListener('click',e=>{if(e.target===root)close();});
+    root.querySelector('#f10LegacyFinanceForm').addEventListener('submit',async e=>{
+      e.preventDefault();const btn=e.currentTarget.querySelector('button[type=submit]');btn.disabled=true;
+      try{
+        const fd=new FormData(e.currentTarget);
+        const raw=String(fd.get('amount')||'').replace(/\./g,'').replace(',','.');const amount=Number(raw);if(!(amount>0))throw new Error('Informe um valor maior que zero.');
+        const payload={amount,payment_date:String(fd.get('payment_date')),status:String(fd.get('status')),payment_method:String(fd.get('payment_method')||'')||null,payment_notes:String(fd.get('description')||'').trim()||null,description:String(fd.get('description')||'').trim()||null,student_name:String(fd.get('student_name')||'').trim()||null,updated_at:new Date().toISOString()};
+        let res=await sb().from(table.payments).update(payload).eq('id',existing.legacy_payment_id).eq('user_id',uid());
+        if(res.error && /column .*description/i.test(res.error.message||'')){
+          delete payload.description;res=await sb().from(table.payments).update(payload).eq('id',existing.legacy_payment_id).eq('user_id',uid());
+        }
+        if(res.error)throw res.error;close();showOk('Lançamento atualizado.');await W.renderFinance?.();
+      }catch(err){showErr('Não foi possível editar o lançamento: '+(err.message||err));}finally{btn.disabled=false;}
+    });
+  }
+  if(typeof baseFinanceOpen==='function'){
+    W.f8OpenFinance=async function(existingId=null){
+      if(existingId){const entries=await W.loadFinance?.() || []; const r=entries.find(e=>String(e.id)===String(existingId));if(r?.legacy)return editLegacyFinance(existingId,r);}
+      return baseFinanceOpen.apply(this,arguments);
+    };
+  }
+
+  /* =========================================================
+     AVALIAÇÕES — histórico com quebra, nome dentro do padrão
+  ========================================================= */
+  function renderEvalHistory10(list,students){
+    if(!list.length)return `<div class="f8-empty"><i data-lucide="clipboard-list"></i><strong>Nenhuma aplicação registrada.</strong><span>As aplicações realizadas aparecerão aqui.</span></div>`;
+    return `<div class="v4-history">${list.map(e=>{
+      const s=students.get(String(e.student_id));
+      const st=String(e.status||'draft').toLowerCase();
+      const raw=e.assessment_data&&typeof e.assessment_data==='object'?e.assessment_data:{};
+      const preview=Object.entries(raw).filter(([,v])=>v!==null&&v!==undefined&&String(v).trim()!=='').slice(0,3).map(([k,v])=>`<div><span>${esc(String(k).replace(/_/g,' '))}</span><strong>${esc(Array.isArray(v)?v.join(', '):String(v))}</strong></div>`).join('');
+      return `<article class="v4-history-item f10-eval-history-item"><div class="v4-history-date"><strong>${esc(fmtDate(e.evaluation_date||e.date))}</strong><span>${esc(statusPt(st)||'Registro')}</span></div><div class="v4-history-main"><div class="v4-inline-tags"><span class="v3-tag">${esc(e.type||'Avaliação')}</span></div>${s?`<div class="f9-history10-name"><i data-lucide="user-round"></i><span>${esc(studentName(s))}</span></div>`:''}<h3>${esc(e.title||e.type||'Avaliação')}</h3><p>${esc(e.summary||e.notes||'Sem síntese registrada. Clique em editar para revisar a aplicação.')}</p>${preview?`<div class="f4-eval-preview">${preview}</div>`:''}<div class="f9-eval-history-actions"><button type="button" class="btn btn-outline btn-sm" onclick="event.stopPropagation();v3EditEvaluation('${esc(e.id)}')"><i data-lucide="pencil"></i>Editar aplicação</button><button type="button" class="btn btn-danger btn-sm" onclick="event.stopPropagation();v3DeleteEvaluation('${esc(e.id)}')"><i data-lucide="trash-2"></i>Excluir</button></div></div></article>`;
+    }).join('')}</div>`;
+  }
+  W.renderEvaluations=async function(){
+    const c=document.getElementById('avaliacoesContent');if(!c)return;
+    c.innerHTML='<div class="v3-loading"><i data-lucide="loader-circle"></i><span>Carregando avaliações...</span></div>';refresh();
+    try{
+      const [list,students]=await Promise.all([
+        W.selectSafe?.(table.evaluations,{filters:{user_id:uid()},order:'evaluation_date',ascending:false,limit:500})||[],
+        W.selectSafe?.(table.students,{filters:{user_id:uid()},order:'name',ascending:true,limit:500})||[]
+      ]);
+      const evals=list||[];const sm=new Map((students||[]).map(s=>[String(s.id),s]));
+      const defs=W.V4_ASSESSMENTS||W.PEDAGOGICAL_ASSESSMENTS||{};
+      const models=Object.entries(defs).map(([name,def])=>`<article class="f9-eval-model"><div class="f9-eval-model-icon"><i data-lucide="clipboard-check"></i></div><div class="f9-eval-model-main"><div class="v3-kicker">PRONTO PARA APLICAÇÃO</div><h3>${esc(name)}</h3><p>${esc(def.objective||def.source||'Instrumento pedagógico de apoio para observação e planejamento.')}</p><div class="f9-eval-meta"><span>${esc(def.area||'Avaliação pedagógica')}</span><span>${esc(def.duration||'Conforme aplicação')}</span><span>${Array.isArray(def.fields)?def.fields.length:0} etapas</span></div></div><button class="btn btn-primary btn-sm" type="button" onclick="V3.assessmentType='${esc(name)}';v4OpenEvaluationModal()"><i data-lucide="play"></i>Aplicar</button></article>`).join('');
+      const done=evals.filter(e=>String(e.status||'').toLowerCase()==='completed').length;
+      const drafts=evals.filter(e=>['draft','pending'].includes(String(e.status||'').toLowerCase())).length;
+      c.innerHTML=`<div class="f8-page"><div class="f8-head"><div><div class="v3-kicker">INVESTIGAÇÃO PEDAGÓGICA</div><h1>Avaliações</h1><p>Instrumentos pedagógicos, aplicação, evidências, síntese e próximos passos.</p></div><div class="f8-head-actions"><button class="btn btn-primary" type="button" onclick="V3.assessmentType='Avaliação personalizada';v4OpenEvaluationModal()"><i data-lucide="clipboard-plus"></i>Aplicar avaliação</button></div></div><div class="v3-stats">${W.statCard?.('clipboard-check','Aplicações',evals.length,'Registros salvos')||''}${W.statCard?.('user-round-check','Alunos avaliados',new Set(evals.map(e=>e.student_id).filter(Boolean)).size,'Com histórico')||''}${W.statCard?.('file-check-2','Concluídas',done,'Aplicações finalizadas')||''}${W.statCard?.('clock-3','Rascunhos',drafts,'Em preenchimento')||''}</div><section class="f8-card"><div class="f8-card-head"><div><h2>Avaliações prontas para aplicar</h2><p>Escolha um instrumento para abrir a aplicação pedagógica completa.</p></div></div><div class="f9-eval-models">${models||'<div class="f8-empty">Nenhum instrumento configurado.</div>'}</div></section><section class="f8-card"><div class="f8-card-head"><div><h2>Histórico das aplicações</h2><p>Todos os registros anteriores continuam disponíveis para editar, revisar ou excluir.</p></div><span class="v3-tag">${evals.length} registro${evals.length===1?'':'s'}</span></div>${renderEvalHistory10(evals,sm)}</section><section class="f8-card"><div class="v3-form-note"><i data-lucide="info"></i><span>Os instrumentos são apoio pedagógico para observar evidências e planejar intervenções. Eles não substituem instrumentos normatizados.</span></div></section></div>`;refresh();
+    }catch(err){c.innerHTML=`<div class="f8-card f8-empty"><i data-lucide="circle-alert"></i><strong>Não foi possível carregar as avaliações.</strong><span>${esc(err.message||err)}</span><button class="btn btn-primary btn-sm" onclick="renderEvaluations()">Tentar novamente</button></div>`;refresh();}
+  };
+  globalThis.renderEvaluations=W.renderEvaluations;
+
+  /* =========================================================
+     RECADOS — Master pode excluir comunicados publicados
+  ========================================================= */
+  async function masterDeleteMessage(id){
+    if(!uid())throw new Error('Sessão indisponível.');
+    if(!W.confirm?.('Excluir este comunicado publicado? Esta ação remove o comunicado para todos os destinatários e não poderá ser desfeita.'))return;
+    let res=await sb().from(table.messages).delete().eq('id',String(id));
+    if(res.error && typeof W.legadoMasterInvoke==='function'){
+      try{await W.legadoMasterInvoke('delete_message',{id:String(id)});res={error:null};}catch(e){res={error:e};}
+    }
+    if(res.error)throw res.error;
+    showOk('Comunicado excluído.');await W.renderMessages?.();
+  }
+  W.masterDeleteMessage=masterDeleteMessage;
+
+  const baseMessages=W.renderMessages;
+  if(typeof baseMessages==='function' && !baseMessages.__final10){
+    const fn=async function(){
+      if(typeof W.isMaster==='function' && W.isMaster()){
+        const c=document.getElementById('recadosContent');if(!c)return;
+        c.innerHTML='<div class="v3-loading"><i data-lucide="loader-circle"></i><span>Carregando comunicados...</span></div>';refresh();
+        try{
+          const {data,error}=await sb().from(table.messages).select('*').eq('target_all',true).order('created_at',{ascending:false}).limit(200);
+          if(error)throw error;
+          const rows=data||[];
+          const cards=rows.length?rows.map(r=>`<article class="legado-message-card"><div class="legado-message-card-icon"><i data-lucide="megaphone"></i></div><div><div class="legado-message-meta"><span class="tag">${esc(r.type||'Comunicado')}</span><span class="date">${esc(fmtDate(r.created_at))}</span></div><h3>${esc(r.title||'Comunicado')}</h3><p>${esc(r.message||'')}</p></div><div class="legado-message-card-actions"><button class="btn btn-danger btn-sm" type="button" onclick="masterDeleteMessage('${esc(r.id)}')"><i data-lucide="trash-2"></i>Excluir</button></div></article>`).join(''):`<div class="legado-message-empty"><div class="legado-message-empty-icon"><i data-lucide="inbox"></i></div><strong>Nenhum comunicado publicado</strong><span>Quando você publicar um novo comunicado, ele aparecerá aqui.</span></div>`;
+          c.innerHTML=pageShell('COMUNICAÇÃO','Recados','Central de comunicados publicados para os professores.',`<button class="btn btn-primary" type="button" onclick="v3OpenMessageEditor()"><i data-lucide="plus"></i>Novo comunicado</button>`) + `<div class="v3-panel"><div class="v3-panel-head"><div><h2>Comunicados publicados</h2><p>Exclua um comunicado que foi lançado por engano. A exclusão é definitiva.</p></div><span class="v3-tag">${rows.length} publicado${rows.length===1?'':'s'}</span></div><div class="legado-message-grid">${cards}</div></div>`;refresh();
+        }catch(e){c.innerHTML=`<div class="v3-panel"><div class="v3-empty"><strong>Não foi possível carregar os comunicados.</strong><span>${esc(e.message||e)}</span><button class="btn btn-primary btn-sm" onclick="renderMessages()">Tentar novamente</button></div></div>`;refresh();}
+        return;
+      }
+      return baseMessages.apply(this,arguments);
+    };
+    fn.__final10=true;W.renderMessages=fn;globalThis.renderMessages=fn;
+  }
+
+  /* =========================================================
+     MASTER — usa a mesma Agenda moderna do profissional
+     + painel de agenda no centro administrativo
+  ========================================================= */
+  async function renderMasterAgenda10(container){
+    try{
+      const sbc=sb(); if(!sbc||!uid())throw new Error('Sessão indisponível.');
+      const {data,error}=await sbc.from(table.appointments).select('*').order('appointment_date',{ascending:true}).order('appointment_time',{ascending:true}).limit(200);
+      if(error)throw error;
+      const rows=(data||[]).filter(a=>!['cancelled','canceled','completed'].includes(String(a.status||'').toLowerCase())).slice(0,12);
+      container.innerHTML=`<section class="saas-panel-box"><div class="saas-box-head"><div><span>AGENDA DA OPERAÇÃO</span><h2>Próximos atendimentos</h2><p>Visualização consolidada com a mesma linguagem da nova Agenda.</p></div><button class="saas-secondary" type="button" onclick="window.renderMaster?.()"><i data-lucide="refresh-cw"></i>Atualizar</button></div><div class="f10-master-agenda-grid"><div class="f10-master-agenda-list">${rows.length?rows.map(a=>{const d=dateOnly(a.appointment_date||a.date);const day=d?d.slice(8,10):'—';const mon=d?new Date(`${d}T12:00:00`).toLocaleDateString('pt-BR',{month:'short'}).replace('.',''):'—';const tm=String(a.appointment_time||a.start_time||a.time||'').slice(0,5)||'—';return `<div class="f10-master-agenda-item"><div class="f10-master-agenda-date"><strong>${esc(day)}</strong><span>${esc(mon)}</span></div><div class="f10-master-agenda-main"><strong>${esc(a.student_name||a.aluno_nome||'Aluno')}</strong><span>${esc(tm)} · ${esc(a.type||a.service||'Atendimento')}</span></div><span class="v3-tag f10-master-agenda-status">${esc(statusPt(a.status||'scheduled'))}</span></div>`}).join(''):`<div class="f8-empty"><i data-lucide="calendar-off"></i><strong>Nenhum próximo atendimento encontrado.</strong><span>A agenda da conta profissional continua disponível no menu Agenda.</span></div>`}</div><aside class="f8-card"><div class="f8-card-head"><div><h3>Agenda profissional</h3><p>A mesma tela moderna usada pelos professores.</p></div></div><button class="btn btn-primary" type="button" onclick="window.navigate('agenda')"><i data-lucide="calendar-days"></i>Abrir Agenda completa</button></aside></div></section>`;refresh();
+    }catch(e){container.innerHTML=`<section class="saas-panel-box"><div class="saas-error"><i data-lucide="calendar-x"></i><strong>Não foi possível carregar a agenda consolidada.</strong><span>${esc(e.message||e)}</span></div></section>`;refresh();}
+  }
+  const baseMaster=W.renderMaster;
+  if(typeof baseMaster==='function'){
+    W.renderMaster=async function(){
+      const result=await baseMaster.apply(this,arguments);
+      try{
+        const c=document.getElementById('masterContent');if(!c)return result;
+        // keep the existing master interface intact, but add a modern agenda section once.
+        if(!c.querySelector('#f10MasterAgenda')){
+          const host=document.createElement('div');host.id='f10MasterAgenda';host.style.marginTop='16px';c.appendChild(host);await renderMasterAgenda10(host);
+        }
+      }catch(e){console.warn('[FINAL10] master agenda',e)}
+      refresh();return result;
+    };
+    globalThis.renderMaster=W.renderMaster;
+  }
+
+  /* =========================================================
+     NAVEGAÇÃO FINAL — impede retorno às versões antigas
+  ========================================================= */
+  const modern={
+    agenda:()=>W.renderAgenda?.(),
+    avaliacoes:()=>W.renderEvaluations?.(),
+    financeiro:()=>W.renderFinance?.(),
+    recados:()=>W.renderMessages?.(),
+    'aluno-perfil':()=>W.renderStudentProfileView?.(),
+    alunos:()=>W.renderStudents?.(),
+    perfil:()=>W.renderProfile?.(),
+    master:()=>W.renderMaster?.(),
+    dashboard:()=>W.renderDashboard?.(),
+    'lista-espera':()=>W.renderWaitlist?.()
+  };
+  W.renderCurrentView=async function(view){
+    const fn=modern[view]||modern.dashboard;
+    if(typeof fn!=='function')throw new Error(`A tela ${view} não possui renderizador.`);
+    return await fn();
+  };
+  W.navigate=function(view){
+    const valid=['dashboard','alunos','aluno-perfil','agenda','avaliacoes','financeiro','recados','lista-espera','perfil','master'];
+    const target=valid.includes(view)?view:'dashboard';
+    if(W.state?.accessLocked && !(typeof W.isMaster==='function'&&W.isMaster())){W.showExpiredScreen?.();return;}
+    if(W.state)W.state.currentView=target;
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById(`view-${target}`)?.classList.add('active');
+    document.querySelectorAll('#mainNav button[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===target));
+    const title=W.viewTitles?.[target];if(title&&document.getElementById('pageTitle'))document.getElementById('pageTitle').innerHTML=`<i data-lucide="${esc(title.icon)}"></i><span>${esc(title.label)}</span>`;
+    refresh();
+    Promise.resolve(modern[target]?.()).catch(err=>{console.error('[FINAL10] navegação',err);showErr(err.message||'Não foi possível carregar esta tela.');});
+  };
+  globalThis.navigate=W.navigate;
+  globalThis.renderCurrentView=W.renderCurrentView;
+
+  /* Reaplica ícones WhatsApp depois de qualquer navegação e impede overflow residual. */
+  setTimeout(()=>{patchWaitlistWhatsapp();refresh();},0);
 })();
 </script>
 
