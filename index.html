@@ -11161,7 +11161,7 @@ body.legado-v4-modal-open{overflow:hidden}
     if (!ids.length || !supabaseClient || !state.user) return new Map();
     const { data, error } = await supabaseClient
       .from(READS_TABLE)
-      .select('message_id,read_at,seen_at,dismissed_at,hidden_at')
+      .select('message_id,read_at,seen_at,dismissed_at,hidden_at,deleted_at')
       .eq('user_id',state.user.id)
       .in('message_id',ids);
     if (error) throw error;
@@ -11187,9 +11187,10 @@ body.legado-v4-modal-open{overflow:hidden}
         _seen: Boolean(rs.seen_at),
         _dismissed: Boolean(rs.dismissed_at),
         _hidden: Boolean(rs.hidden_at),
+        _deleted: Boolean(rs.deleted_at),
         _readState: rs
       };
-    });
+    }).filter(row=>!row._deleted);
   }
 
   function announcementKey(id){
@@ -11500,6 +11501,462 @@ body.legado-v4-modal-open{overflow:hidden}
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(init,50),{once:true});
   else setTimeout(init,50);
+})();
+</script>
+
+
+<script id="legado-final-fixes-v2">
+(function(){
+  'use strict';
+
+  const MASTER_EMAIL = 'contato@legadoqueensina.com.br';
+  const PROFILE_TABLE = (window.TABLE && window.TABLE.profiles) || 'profiles';
+  const MSG_TABLE = (window.TABLE && window.TABLE.messages) || 'messages';
+  const READS_TABLE = 'message_reads';
+  const ACCESS_POLL_MS = 8000;
+  let accessTimer = null;
+  let accessRecheckBound = false;
+
+  const esc = (v) => typeof window.escapeHtml === 'function' ? window.escapeHtml(v ?? '') : String(v ?? '');
+  const isMaster = () => {
+    const email = String(window.state?.user?.email || '').toLowerCase();
+    const role = String(window.state?.profile?.role || window.state?.user?.user_metadata?.role || '').toLowerCase();
+    return email === MASTER_EMAIL || Boolean(window.state?.profile?.is_master) || ['master','admin'].includes(role);
+  };
+  const profileActive = (p) => {
+    if (isMaster()) return true;
+    if (!p) return false;
+    if (p.blocked === true) return false;
+    const value = p.access_expires_at || p.plan_expires_at || p.subscription_expires_at || p.expires_at;
+    if (!value) return true;
+    const t = new Date(value).getTime();
+    return Number.isFinite(t) && t >= Date.now();
+  };
+
+  function whatsappSvg(){
+    return '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" style="width:20px;height:20px;fill:currentColor;flex:none"><path d="M12.02 2.1a9.72 9.72 0 0 0-8.4 14.63L2.1 21.7l5.13-1.47a9.72 9.72 0 1 0 4.8-18.13Zm0 17.73a7.96 7.96 0 0 1-4.06-1.11l-.29-.17-3.05.87.9-2.97-.19-.3a7.96 7.96 0 1 1 6.69 3.68Zm4.37-5.96c-.24-.12-1.42-.7-1.64-.78-.22-.08-.38-.12-.54.12-.16.24-.62.78-.76.94-.14.16-.28.18-.52.06-.24-.12-1.03-.38-1.96-1.22-.72-.64-1.2-1.42-1.34-1.66-.14-.24-.01-.37.11-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.3-.74-1.78-.2-.47-.4-.41-.54-.42h-.46c-.16 0-.42.06-.64.3-.22.24-.84.82-.84 2s.86 2.32.98 2.48c.12.16 1.68 2.57 4.07 3.6.57.25 1.01.4 1.35.51.57.18 1.09.15 1.5.09.46-.07 1.42-.58 1.62-1.14.2-.56.2-1.04.14-1.14-.06-.1-.22-.16-.46-.28Z"/></svg>';
+  }
+
+  function ensureWhatsAppButton(){
+    const btn = document.getElementById('expiredContactButton');
+    if (!btn) return;
+    const href = btn.getAttribute('href') || '#';
+    btn.innerHTML = whatsappSvg() + '<span>Falar pelo WhatsApp</span>';
+    btn.style.display = 'inline-flex';
+    btn.style.alignItems = 'center';
+    btn.style.justifyContent = 'center';
+    btn.style.gap = '9px';
+    if (href === '#') btn.title = 'Configure o WhatsApp de suporte na Administração.';
+  }
+
+  function showLockedScreen(profile){
+    if (typeof window.showExpiredScreen === 'function') window.showExpiredScreen();
+    const title=document.querySelector('.expired-title');
+    const text=document.querySelector('.expired-text');
+    if(title) title.textContent='Acesso bloqueado';
+    if(text) text.textContent = profile?.blocked===true
+      ? 'Seu acesso foi bloqueado pela administração. Para regularizar o plano e voltar a utilizar a plataforma, entre em contato pelo WhatsApp.'
+      : 'Seu plano excedeu o prazo de acesso. Para renovar e voltar a utilizar a plataforma, entre em contato pelo WhatsApp.';
+    ensureWhatsAppButton();
+  }
+
+  async function syncAccess(forceShow=true){
+    const st=window.state;
+    if(!st?.user || isMaster()) return true;
+    if(!window.supabaseClient) return false;
+    try{
+      const {data,error}=await window.supabaseClient
+        .from(PROFILE_TABLE)
+        .select('*')
+        .eq('id',st.user.id)
+        .maybeSingle();
+      if(error) throw error;
+      st.profile=data||null;
+      const allowed=profileActive(st.profile);
+      st.accessLocked=!allowed;
+      if(!allowed){
+        showLockedScreen(st.profile);
+        if(typeof window.hideGlobalAnnouncement==='function') window.hideGlobalAnnouncement();
+        return false;
+      }
+      // Quando a administração acabou de liberar a conta, reabre a aplicação imediatamente.
+      if(forceShow && typeof window.showAppScreen==='function') window.showAppScreen();
+      ensureWhatsAppButton();
+      return true;
+    }catch(err){
+      console.warn('[Acesso] Falha na verificação:',err);
+      return false;
+    }
+  }
+
+  function startHardAccessWatcher(){
+    if(accessTimer) clearInterval(accessTimer);
+    accessTimer=setInterval(()=>{ syncAccess(true); },ACCESS_POLL_MS);
+    if(!accessRecheckBound){
+      accessRecheckBound=true;
+      window.addEventListener('focus',()=>syncAccess(true),{passive:true});
+      document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible') syncAccess(true);});
+    }
+    syncAccess(true);
+  }
+
+  /* ---------- STATUS / LIBERAÇÃO DA CONTA MASTER ---------- */
+  function readTeacherFormPayload(form){
+    const fd=new FormData(form);
+    const rawExpiry=String(fd.get('access_expires_at')||'').trim();
+    const expiry=rawExpiry?new Date(`${rawExpiry}T23:59:59`).toISOString():null;
+    const amount=String(fd.get('payment_amount')||'').trim();
+    const planPrice=String(fd.get('plan_price')||'').trim();
+    return {
+      id:String(fd.get('id')||''),
+      blocked:String(fd.get('blocked')||'0')==='1',
+      expiryInput:rawExpiry,
+      profile:{
+        full_name:String(fd.get('full_name')||'').trim(),
+        phone:String(fd.get('phone')||'').trim()||null,
+        specialty:String(fd.get('specialty')||'').trim()||null,
+        services:String(fd.get('services')||'').trim()||null,
+        photo_url:String(fd.get('photo_url')||'').trim()||null,
+        bio:String(fd.get('bio')||'').trim()||null,
+        access_expires_at:expiry,
+        blocked:String(fd.get('blocked')||'0')==='1',
+        plan_name:String(fd.get('plan_name')||'').trim()||null,
+        plan_price:planPrice===''?null:Number(planPrice),
+        payment_status:String(fd.get('payment_status')||'pending'),
+        last_payment_at:fd.get('last_payment_at')||null,
+        payment_method:String(fd.get('payment_method')||'').trim()||null,
+        payment_amount:amount===''?null:Number(amount),
+        payment_notes:String(fd.get('payment_notes')||'').trim()||null
+      },
+      new_password:String(fd.get('new_password')||'')||null
+    };
+  }
+
+  async function secureMasterInvoke(action,payload={}){
+    if(!window.supabaseClient?.functions?.invoke) throw new Error('Supabase Functions não está disponível.');
+    const {data,error}=await window.supabaseClient.functions.invoke('master-admin',{body:{action,...payload}});
+    if(error){
+      let detail='';
+      try{
+        if(error.context && typeof error.context.json==='function'){
+          const body=await error.context.json();
+          detail=body?.error||body?.message||'';
+        }
+      }catch(_){ }
+      throw new Error(detail || error.message || 'Não foi possível comunicar com a Administração segura.');
+    }
+    if(data?.error) throw new Error(String(data.error));
+    return data;
+  }
+
+  async function saveTeacherCapture(event){
+    const form=event.target;
+    if(!form || form.id!=='saasTeacherForm') return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    const btn=form.querySelector('button[type="submit"]');
+    if(btn) btn.disabled=true;
+    try{
+      const fd=new FormData(form);
+      const id=String(fd.get('id')||'').trim();
+      if(!id) throw new Error('Professor não identificado.');
+      const blocked=String(fd.get('blocked')||'0')==='1';
+      const rawExpiry=String(fd.get('access_expires_at')||'').trim();
+      const expiry=rawExpiry?new Date(`${rawExpiry}T23:59:59`).toISOString():null;
+      const amount=String(fd.get('payment_amount')||'').trim();
+      const planPrice=String(fd.get('plan_price')||'').trim();
+      const profile={
+        full_name:String(fd.get('full_name')||'').trim(),
+        phone:String(fd.get('phone')||'').trim()||null,
+        specialty:String(fd.get('specialty')||'').trim()||null,
+        services:String(fd.get('services')||'').trim()||null,
+        photo_url:String(fd.get('photo_url')||'').trim()||null,
+        bio:String(fd.get('bio')||'').trim()||null,
+        access_expires_at:expiry,
+        blocked,
+        plan_name:String(fd.get('plan_name')||'').trim()||null,
+        plan_price:planPrice===''?null:Number(planPrice),
+        payment_status:String(fd.get('payment_status')||'pending'),
+        last_payment_at:fd.get('last_payment_at')||null,
+        payment_method:String(fd.get('payment_method')||'').trim()||null,
+        payment_amount:amount===''?null:Number(amount),
+        payment_notes:String(fd.get('payment_notes')||'').trim()||null
+      };
+      await secureMasterInvoke('update_teacher',{id,profile,new_password:String(fd.get('new_password')||'')||null});
+
+      if(!blocked){
+        const t=expiry?new Date(expiry).getTime():NaN;
+        if(!Number.isFinite(t) || t<Date.now()){
+          await secureMasterInvoke('unblock',{id,days:30});
+        }
+      }
+
+      window.showSuccess?.(blocked
+        ? 'Conta bloqueada. O professor perderá o acesso ao sistema.'
+        : 'Conta liberada. Se o prazo estava vencido, o acesso foi reativado por 30 dias.');
+      window.saasCloseDrawer?.();
+      window.renderMaster?.();
+    }catch(err){
+      window.showError?.(err.message||'Não foi possível atualizar a conta.');
+    }finally{
+      if(btn) btn.disabled=false;
+    }
+  }
+
+  document.addEventListener('submit',saveTeacherCapture,true);
+
+  /* ---------- EDIÇÃO DO ALUNO A PARTIR DO PRONTUÁRIO ---------- */
+  function studentEditorHtml(student){
+    const val=(typeof window.val==='function')?window.val:(obj,...keys)=>{for(const k of keys){if(obj?.[k]!=null&&String(obj[k]).trim()!=='') return obj[k];}return '';};
+    const toDate=(v)=>{if(!v)return '';const d=new Date(v);if(Number.isNaN(d.getTime()))return '';return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
+    return `<div class="modal-header"><div><div class="eyebrow">PRONTUÁRIO</div><h2>Editar cadastro do aluno</h2><p style="margin:4px 0 0;color:#7a8881;font-size:12px">Atualize os dados sem sair do prontuário.</p></div><button class="icon-button" type="button" onclick="closeModal()"><i data-lucide="x"></i></button></div>
+      <form id="legadoProfileStudentForm" class="v3-form">
+        <div class="v3-form-grid">
+          <label><span>Nome completo *</span><input name="name" value="${esc(val(student,'name','full_name','student_name'))}" required></label>
+          <label><span>Data de nascimento</span><input type="date" name="birth_date" value="${esc(toDate(val(student,'birth_date','date_of_birth')))}"></label>
+          <label><span>Telefone</span><input name="phone" value="${esc(val(student,'phone','responsible_phone'))}"></label>
+          <label><span>E-mail</span><input type="email" name="email" value="${esc(student?.email||'')}"></label>
+          <label><span>Responsável</span><input name="responsible_name" value="${esc(val(student,'responsible_name','guardian_name','parent_name'))}"></label>
+          <label><span>CPF</span><input name="cpf" value="${esc(student?.cpf||'')}"></label>
+          <label><span>Status</span><select name="status"><option value="active" ${(!student||student.status==='active')?'selected':''}>Ativo</option><option value="inactive" ${student?.status==='inactive'?'selected':''}>Inativo</option><option value="pending" ${student?.status==='pending'?'selected':''}>Pendente</option></select></label>
+          <label class="full"><span>Observações</span><textarea name="notes" rows="5">${esc(val(student,'notes','observations'))}</textarea></label>
+        </div>
+        <div class="v3-form-actions"><button type="button" class="btn btn-outline" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" type="submit"><i data-lucide="save"></i>Salvar alterações</button></div>
+      </form>`;
+  }
+
+  window.v3ShowStudentEditorFromProfile=async function(){
+    try{
+      const data=await window.v3StudentData?.(window.state.currentStudentId);
+      const student=data?.student || window.state?.selectedStudent;
+      if(!student) throw new Error('Aluno não encontrado.');
+      if(typeof window.openModal!=='function') throw new Error('Editor indisponível.');
+      window.openModal(studentEditorHtml(student));
+      window.refreshIcons?.();
+      const form=document.getElementById('legadoProfileStudentForm');
+      form?.addEventListener('submit',async e=>{
+        e.preventDefault();
+        const btn=form.querySelector('button[type="submit"]');if(btn)btn.disabled=true;
+        try{
+          const fd=new FormData(form);
+          const payload={
+            user_id:window.state.user.id,
+            name:String(fd.get('name')||'').trim(),
+            full_name:String(fd.get('name')||'').trim(),
+            birth_date:fd.get('birth_date')||null,
+            phone:String(fd.get('phone')||'').trim()||null,
+            email:String(fd.get('email')||'').trim()||null,
+            responsible_name:String(fd.get('responsible_name')||'').trim()||null,
+            cpf:String(fd.get('cpf')||'').trim()||null,
+            status:String(fd.get('status')||'active'),
+            notes:String(fd.get('notes')||'').trim()||null
+          };
+          if(!payload.name) throw new Error('Informe o nome do aluno.');
+          await window.updateSafe?.(window.TABLE?.students || 'students',student.id,payload);
+          const fresh=await window.v3LoadStudents?.();
+          const updated=(fresh||[]).find(x=>String(x.id)===String(student.id));
+          window.state.selectedStudent=updated||payload;
+          window.closeModal?.();
+          window.showSuccess?.('Perfil do aluno atualizado.');
+          await window.renderStudentProfileView?.();
+        }catch(err){window.showError?.(err.message||'Não foi possível atualizar o aluno.');}
+        finally{if(btn)btn.disabled=false;}
+      });
+    }catch(err){window.showError?.(err.message||'Não foi possível abrir o editor do aluno.');}
+  };
+  window.openEditStudentModal=async function(id){
+    const students=window.studentsState?.data?.length?window.studentsState.data:await window.v3LoadStudents?.();
+    const student=(students||[]).find(x=>String(x.id)===String(id));
+    if(!student) return window.showError?.('Aluno não encontrado.');
+    window.openModal(studentEditorHtml(student));
+    window.refreshIcons?.();
+    const form=document.getElementById('legadoProfileStudentForm');
+    form?.addEventListener('submit',async e=>{
+      e.preventDefault();
+      try{
+        const fd=new FormData(form);
+        const payload={user_id:window.state.user.id,name:String(fd.get('name')||'').trim(),full_name:String(fd.get('name')||'').trim(),birth_date:fd.get('birth_date')||null,phone:String(fd.get('phone')||'').trim()||null,email:String(fd.get('email')||'').trim()||null,responsible_name:String(fd.get('responsible_name')||'').trim()||null,cpf:String(fd.get('cpf')||'').trim()||null,status:String(fd.get('status')||'active'),notes:String(fd.get('notes')||'').trim()||null};
+        if(!payload.name) throw new Error('Informe o nome do aluno.');
+        await window.updateSafe?.(window.TABLE?.students || 'students',student.id,payload);
+        window.closeModal?.(); window.showSuccess?.('Aluno atualizado.'); await window.renderStudents?.();
+      }catch(err){window.showError?.(err.message||'Não foi possível atualizar o aluno.');}
+    });
+  };
+
+  window.v3ShowStudentEditorFromProfile=async function(){
+    try{
+      const st=window.state||{};
+      const id=st.currentStudentId;
+      if(!id) throw new Error('Aluno não selecionado.');
+      const table=window.V3Core?.TABLE?.students || window.TABLE?.students || 'students';
+      const {data:student,error}=await window.supabaseClient.from(table).select('*').eq('id',id).eq('user_id',st.user.id).maybeSingle();
+      if(error) throw error;
+      if(!student) throw new Error('Aluno não encontrado.');
+      const value=(...keys)=>{for(const k of keys){if(student?.[k]!==undefined&&student?.[k]!==null&&String(student[k]).trim()!=='')return student[k];}return '';};
+      const dateInput=v=>{if(!v)return '';const d=new Date(v);if(Number.isNaN(d.getTime()))return '';return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
+      openModal(`<div class="modal-header"><div><div class="eyebrow">PRONTUÁRIO DO ALUNO</div><h2>Editar perfil</h2><p style="margin:4px 0 0;color:#7a8881;font-size:12px">Altere os dados sem sair do prontuário.</p></div><button class="icon-button" type="button" onclick="closeModal()"><i data-lucide="x"></i></button></div><form id="legadoProfileStudentForm" class="v3-form"><div class="v3-form-grid"><label><span>Nome completo *</span><input name="name" value="${esc(value('name','full_name','student_name'))}" required></label><label><span>Data de nascimento</span><input type="date" name="birth_date" value="${esc(dateInput(value('birth_date','date_of_birth')))}"></label><label><span>Telefone</span><input name="phone" value="${esc(value('phone','responsible_phone'))}"></label><label><span>E-mail</span><input type="email" name="email" value="${esc(student.email||'')}"></label><label><span>Responsável</span><input name="responsible_name" value="${esc(value('responsible_name','guardian_name','parent_name'))}"></label><label><span>CPF</span><input name="cpf" value="${esc(student.cpf||'')}"></label><label><span>Status</span><select name="status"><option value="active" ${student.status!=='inactive'&&student.status!=='pending'?'selected':''}>Ativo</option><option value="inactive" ${student.status==='inactive'?'selected':''}>Inativo</option><option value="pending" ${student.status==='pending'?'selected':''}>Pendente</option></select></label><label class="full"><span>Observações</span><textarea name="notes" rows="5">${esc(value('notes','observations'))}</textarea></label></div><div class="v3-form-actions"><button type="button" class="btn btn-outline" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" type="submit"><i data-lucide="save"></i>Salvar alterações</button></div></form>`);
+      window.refreshIcons?.();
+      const form=document.getElementById('legadoProfileStudentForm');
+      form?.addEventListener('submit',async e=>{
+        e.preventDefault();
+        const btn=form.querySelector('button[type="submit"]');if(btn)btn.disabled=true;
+        try{
+          const fd=new FormData(form);
+          const payload={
+            user_id:st.user.id,
+            name:String(fd.get('name')||'').trim(),
+            full_name:String(fd.get('name')||'').trim(),
+            birth_date:fd.get('birth_date')||null,
+            phone:String(fd.get('phone')||'').trim()||null,
+            email:String(fd.get('email')||'').trim()||null,
+            responsible_name:String(fd.get('responsible_name')||'').trim()||null,
+            cpf:String(fd.get('cpf')||'').trim()||null,
+            status:String(fd.get('status')||'active'),
+            notes:String(fd.get('notes')||'').trim()||null
+          };
+          if(!payload.name) throw new Error('Informe o nome do aluno.');
+          const {error:saveError}=await window.supabaseClient.from(table).update(payload).eq('id',id).eq('user_id',st.user.id);
+          if(saveError) throw saveError;
+          const {data:fresh,error:freshError}=await window.supabaseClient.from(table).select('*').eq('id',id).eq('user_id',st.user.id).maybeSingle();
+          if(freshError) throw freshError;
+          st.selectedStudent=fresh||payload;
+          window.closeModal?.();
+          window.showSuccess?.('Perfil do aluno atualizado.');
+          await window.renderStudentProfileView?.();
+        }catch(err){window.showError?.(err.message||'Não foi possível atualizar o perfil do aluno.');}
+        finally{if(btn)btn.disabled=false;}
+      });
+    }catch(err){window.showError?.(err.message||'Não foi possível abrir o editor do aluno.');}
+  };
+
+  /* ---------- VISUAL DOS NOMES / HISTÓRICO ---------- */
+  function injectUiCss(){
+    if(document.getElementById('legado-v2-ui-css')) return;
+    const style=document.createElement('style');style.id='legado-v2-ui-css';style.textContent=`
+      .v3-history-item,.v3-history-content,.v3-inline-tags{min-width:0}
+      .v3-history-content strong{display:block;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;word-break:normal;}
+      .v3-history-content p{overflow-wrap:anywhere;word-break:break-word;}
+      .v3-student-hero .v3-hero-left>div:last-child{min-width:0}
+      .v3-student-hero h1{min-width:0;max-width:min(720px,100%);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+      .expired-btn span{display:inline-block;line-height:1.2}
+      .saas-access-box{border:1px solid #e1eae5}
+      .saas-access-box strong{font-weight:800}
+    `;document.head.appendChild(style);
+  }
+
+  /* ---------- EXCLUSÃO DEFINITIVA SOMENTE DA CAIXA INDIVIDUAL ---------- */
+  async function upsertRead(messageId,patch){
+    if(!window.supabaseClient||!window.state?.user) throw new Error('Sessão indisponível.');
+    const payload={message_id:String(messageId),user_id:window.state.user.id,...patch};
+    const {error}=await window.supabaseClient.from(READS_TABLE).upsert(payload,{onConflict:'message_id,user_id'});
+    if(error) throw error;
+  }
+  window.v3DeleteMessagePermanently=async function(id){
+    const ok=window.confirm?.('Excluir este recado definitivamente da sua conta? Ele não será apagado para os demais professores.') ?? true;
+    if(!ok) return;
+    try{
+      await upsertRead(id,{deleted_at:new Date().toISOString(),hidden_at:new Date().toISOString()});
+      window.showSuccess?.('Recado excluído da sua conta.');
+      await window.renderMessages?.();
+    }catch(err){window.showError?.(err.message||'Não foi possível excluir o recado.');}
+  };
+
+  // Reescreve a renderização de recados para incluir exclusão definitiva e ocultar os excluídos.
+  const originalLoadMessages=window.loadMessagesForUser;
+  if(typeof originalLoadMessages==='function'){
+    window.loadMessagesForUser=async function(){
+      const rows=await originalLoadMessages.apply(this,arguments);
+      return (rows||[]).filter(r=>!r._deleted);
+    };
+  }
+
+  // Quando disponível, a implementação atual já usa message_reads. Apenas enriquecemos o botão da lixeira.
+  function refreshTrashDeleteButtons(){
+    document.querySelectorAll('#recadosContent .legado-message-card.in-trash').forEach(card=>{
+      const trash=card.querySelector('.legado-message-card-actions');
+      if(!trash || trash.querySelector('.legado-delete-permanent')) return;
+      const id=(trash.querySelector('[onclick*="v3RestoreMessage"]')?.getAttribute('onclick')||'').match(/'([^']+)'/i)?.[1] || null;
+      if(!id) return;
+      const button=document.createElement('button');
+      button.type='button';button.className='legado-delete-permanent legado-trash';button.title='Excluir definitivamente';button.setAttribute('aria-label','Excluir definitivamente');
+      button.innerHTML='<i data-lucide="trash-2"></i>';
+      button.onclick=()=>window.v3DeleteMessagePermanently(id);
+      trash.appendChild(button);
+    });
+    window.refreshIcons?.();
+  }
+
+  if(typeof window.renderMessages==='function'){
+    const renderMessagesBase=window.renderMessages;
+    window.renderMessages=async function(){await renderMessagesBase.apply(this,arguments);setTimeout(refreshTrashDeleteButtons,0);};
+  }
+
+  // Reforça o ícone de WhatsApp sempre que a tela for exibida.
+  const oldExpired=window.showExpiredScreen;
+  if(typeof oldExpired==='function'&&!oldExpired.__legadoV2){
+    const wrapped=function(){oldExpired.apply(this,arguments);setTimeout(ensureWhatsAppButton,0);};
+    wrapped.__legadoV2=true;window.showExpiredScreen=wrapped;
+  }
+
+  // Corrige visualização da situação: “Liberado” só quando está realmente dentro do prazo.
+  function normalizeMasterStatus(){
+    document.querySelectorAll('.saas-teacher-card').forEach(card=>{
+      const badge=card.querySelector('.saas-badge.bad,.saas-badge.warn,.saas-badge.good');
+      if(!badge) return;
+      const text=badge.textContent||'';
+      if(/Liberado|Ativo/i.test(text)){
+        // A fonte segura continuará sendo o estado calculado pelo backend; não altera registros aqui.
+      }
+    });
+  }
+
+  injectUiCss();
+  startHardAccessWatcher();
+  setTimeout(ensureWhatsAppButton,100);
+  setTimeout(refreshTrashDeleteButtons,300);
+  setTimeout(normalizeMasterStatus,500);
+})();
+</script>
+
+
+<script id="legado-final-v3-hardening">
+(function(){
+  'use strict';
+  const READS='message_reads';
+  const MASTER_EMAIL='contato@legadoqueensina.com.br';
+  const secure=async(action,payload={})=>{
+    const sb=window.supabaseClient;
+    if(!sb?.functions?.invoke) throw new Error('Supabase Functions não está disponível.');
+    const {data,error}=await sb.functions.invoke('master-admin',{body:{action,...payload}});
+    if(error){let detail='';try{if(error.context?.json){const b=await error.context.json();detail=b?.error||b?.message||'';}}catch(_){ }throw new Error(detail||error.message||'Erro na Administração segura.');}
+    if(data?.error)throw new Error(String(data.error));
+    return data;
+  };
+  const isMaster=()=>String(window.state?.user?.email||'').toLowerCase()===MASTER_EMAIL||Boolean(window.state?.profile?.is_master)||['master','admin'].includes(String(window.state?.profile?.role||'').toLowerCase());
+  window.v3DeleteMessagePermanently=async function(id){
+    if(!window.state?.user||isMaster())return;
+    if(!(window.confirm?.('Excluir este recado definitivamente da sua conta? Ele não será apagado para os outros professores.')??true))return;
+    try{
+      const {error}=await window.supabaseClient.from(READS).upsert({message_id:String(id),user_id:window.state.user.id,hidden_at:new Date().toISOString(),deleted_at:new Date().toISOString(),read_at:new Date().toISOString(),seen_at:new Date().toISOString(),dismissed_at:new Date().toISOString()},{onConflict:'message_id,user_id'});
+      if(error)throw error;
+      window.showSuccess?.('Recado excluído da sua conta.');
+      await window.renderMessages?.();
+    }catch(e){window.showError?.(e.message||'Não foi possível excluir o recado.');}
+  };
+  function addDeleteButtons(){
+    document.querySelectorAll('#recadosContent .legado-message-card.in-trash').forEach(card=>{
+      const actions=card.querySelector('.legado-message-card-actions');
+      if(!actions||actions.querySelector('.legado-delete-permanent'))return;
+      const restore=actions.querySelector('[onclick*="v3RestoreMessage"]');
+      const m=(restore?.getAttribute('onclick')||'').match(/v3RestoreMessage\('([^']+)'\)/);
+      if(!m)return;
+      const b=document.createElement('button');b.type='button';b.className='legado-delete-permanent legado-trash';b.title='Excluir definitivamente';b.setAttribute('aria-label','Excluir definitivamente');b.innerHTML='<i data-lucide="trash-2"></i>';b.onclick=()=>window.v3DeleteMessagePermanently(m[1]);actions.appendChild(b);
+    });
+    window.refreshIcons?.();
+  }
+  window.addEventListener('load',()=>setTimeout(addDeleteButtons,300));
+  const obs=new MutationObserver(()=>addDeleteButtons());
+  obs.observe(document.body,{childList:true,subtree:true});
 })();
 </script>
 
