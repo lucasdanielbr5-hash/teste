@@ -10388,5 +10388,227 @@ body.legado-v4-modal-open{overflow:hidden}
 })();
 </script>
 
+<!-- ============================================================
+     ADMIN MASTER PRO · CENTRAL DE OPERAÇÕES
+     Última camada: substitui a apresentação simples da Administração
+     sem remover o restante do sistema.
+     ============================================================ -->
+<script>
+(function(){
+  const escM = v => escapeHtml(v == null ? '' : v);
+  const asDate = v => v ? new Date(v) : null;
+  const dateM = v => { const d=asDate(v); return d && !Number.isNaN(d.getTime()) ? d.toLocaleDateString('pt-BR') : '—'; };
+  const moneyM = v => formatCurrency(Number(v || 0));
+  const roleM = p => String(p?.role || '').toLowerCase();
+  const masterM = p => Boolean(p?.is_master || roleM(p)==='master' || roleM(p)==='admin' || String(p?.email||'').toLowerCase() === 'contato@legadoqueensina.com.br');
+  const teacherM = p => !masterM(p);
+  const accessM = p => {
+    if (p?.blocked) return {key:'blocked',label:'Bloqueado',tone:'bad'};
+    const d=asDate(p?.access_expires_at);
+    if (!d) return {key:'active',label:'Sem vencimento',tone:'good'};
+    const diff=Math.ceil((d.getTime()-Date.now())/86400000);
+    if (diff < 0) return {key:'expired',label:'Acesso vencido',tone:'bad'};
+    if (diff <= 7) return {key:'attention',label:diff===0?'Vence hoje':`Vence em ${diff} dia${diff===1?'':'s'}`,tone:'warn'};
+    return {key:'active',label:`Ativo · ${diff} dias`,tone:'good'};
+  };
+  const visibleText = p => [p?.full_name,p?.name,p?.email,p?.phone,p?.specialty,p?.services,p?.role].filter(Boolean).join(' ').toLowerCase();
+  const icons = () => { try{ if(window.refreshIcons) window.refreshIcons(); else if(window.lucide) lucide.createIcons(); }catch(_){} };
+  const root = () => document.getElementById('masterContent');
+
+  async function getProfilesMaster(){
+    if(!window.supabaseClient || !state?.user) throw new Error('Sessão não disponível.');
+    const {data,error}=await window.supabaseClient.from('profiles').select('*').order('full_name',{ascending:true}).limit(1000);
+    if(error) throw error;
+    return data||[];
+  }
+
+  async function getSupportNumber(){
+    try{
+      const r=await window.supabaseClient.from('platform_settings').select('value').eq('key','support_whatsapp').maybeSingle();
+      return r.error ? '' : (r.data?.value||'');
+    }catch(_){ return ''; }
+  }
+
+  function stat(icon,label,value,hint,tone=''){
+    return `<div class="mpro-kpi ${tone}"><div class="mpro-kpi-icon"><i data-lucide="${escM(icon)}"></i></div><div><span>${escM(label)}</span><strong>${escM(value)}</strong><small>${escM(hint)}</small></div></div>`;
+  }
+
+  function teacherCard(p){
+    const a=accessM(p), name=p?.full_name||p?.name||p?.email||'Professor sem nome';
+    const initials=getUserInitials(name).slice(0,2).toUpperCase();
+    const renewal = a.key==='expired'||a.key==='blocked' ? 'regularizar acesso' : a.key==='attention' ? 'acompanhar vencimento' : 'acesso regular';
+    return `<article class="mpro-teacher-card" data-id="${escM(p.id)}" data-search="${escM(visibleText(p))}" data-access="${escM(a.key)}">
+      <div class="mpro-teacher-head">
+        <div class="mpro-avatar">${p?.photo_url?`<img src="${escM(p.photo_url)}" alt="Foto de ${escM(name)}">`:`<span>${escM(initials)}</span>`}</div>
+        <div class="mpro-teacher-id"><h3>${escM(name)}</h3><p>${escM(p?.email||'E-mail não informado')}</p><div class="mpro-role-row"><span class="mpro-role">${escM(p?.role||'professor')}</span><span class="mpro-status ${a.tone}">${escM(a.label)}</span></div></div>
+        <button class="mpro-icon-btn" type="button" onclick="mproOpenTeacher('${escM(p.id)}')" title="Abrir cadastro"><i data-lucide="panel-right-open"></i></button>
+      </div>
+      <div class="mpro-profile-strip"><div><small>Especialidade</small><strong>${escM(p?.specialty||'Não informada')}</strong></div><div><small>Atende</small><strong>${escM(p?.services||'Não informado')}</strong></div><div><small>Último pagamento</small><strong>${p?.last_payment_at?dateM(p.last_payment_at):'Não registrado'}</strong></div><div><small>Valor</small><strong>${p?.payment_amount!=null?moneyM(p.payment_amount):'—'}</strong></div></div>
+      <div class="mpro-card-actions"><span><i data-lucide="circle-check"></i>${escM(renewal)}</span><div><button class="mpro-light-btn" onclick="mproQuickExtend('${escM(p.id)}')"><i data-lucide="calendar-plus"></i>+30 dias</button><button class="mpro-primary-btn" onclick="mproOpenTeacher('${escM(p.id)}')"><i data-lucide="settings-2"></i>Gerenciar</button></div></div>
+    </article>`;
+  }
+
+  function teacherEditor(p){
+    const name=p?.full_name||p?.name||p?.email||'';
+    return `<div class="mpro-drawer-backdrop" id="mproDrawer" onclick="mproCloseTeacher(event)"><aside class="mpro-drawer" onclick="event.stopPropagation()">
+      <div class="mpro-drawer-head"><div><span>CADASTRO DO PROFESSOR</span><h2>${escM(name||'Professor')}</h2><p>${escM(p?.email||'')}</p></div><button class="mpro-icon-btn" onclick="mproCloseTeacher()"><i data-lucide="x"></i></button></div>
+      <form id="mproTeacherForm" data-id="${escM(p.id)}" class="mpro-form">
+        <div class="mpro-form-section"><div class="mpro-form-section-title"><i data-lucide="user-round"></i><span>Perfil profissional</span></div><div class="mpro-grid-2">
+          <label><span>Nome completo</span><input name="full_name" value="${escM(p?.full_name||p?.name||'')}" required></label>
+          <label><span>Telefone</span><input name="phone" value="${escM(p?.phone||'')}" placeholder="(43) 99999-9999"></label>
+          <label><span>Especialidade</span><input name="specialty" value="${escM(p?.specialty||'')}" placeholder="Psicopedagogia, reforço... "></label>
+          <label><span>O que atende</span><input name="services" value="${escM(p?.services||'')}" placeholder="Leitura, escrita, matemática... "></label>
+          <label><span>Função</span><select name="role"><option value="professional" ${roleM(p)==='professional'?'selected':''}>Professor</option><option value="teacher" ${roleM(p)==='teacher'?'selected':''}>Professor (alternativo)</option><option value="coordinator" ${roleM(p)==='coordinator'?'selected':''}>Coordenador</option></select></label>
+          <label><span>Foto por URL</span><input name="photo_url" value="${escM(p?.photo_url||'')}" placeholder="https://..."></label>
+          <label class="full"><span>Apresentação profissional</span><textarea name="bio" rows="4" placeholder="Resumo profissional...">${escM(p?.bio||'')}</textarea></label>
+        </div></div>
+        <div class="mpro-form-section"><div class="mpro-form-section-title"><i data-lucide="shield-check"></i><span>Acesso à plataforma</span></div><div class="mpro-grid-2">
+          <label><span>Vencimento</span><input type="date" name="access_expires_at" value="${escM(p?.access_expires_at?toInputDate(p.access_expires_at):'')}"></label>
+          <label class="mpro-check"><input type="checkbox" name="blocked" ${p?.blocked?'checked':''}><span>Bloquear acesso imediatamente</span></label>
+        </div><div class="mpro-access-summary"><div><small>Status atual</small><strong>${escM(accessM(p).label)}</strong></div><div><small>Última atualização</small><strong>${p?.updated_at?dateM(p.updated_at):'—'}</strong></div></div></div>
+        <div class="mpro-form-section"><div class="mpro-form-section-title"><i data-lucide="wallet-cards"></i><span>Financeiro do professor</span></div><div class="mpro-grid-2">
+          <label><span>Data do último pagamento</span><input type="date" name="last_payment_at" value="${escM(p?.last_payment_at?toInputDate(p.last_payment_at):'')}"></label>
+          <label><span>Valor pago</span><input type="number" step="0.01" min="0" name="payment_amount" value="${escM(p?.payment_amount??'')}"></label>
+          <label><span>Forma de pagamento</span><select name="payment_method"><option value="">Selecionar</option>${['PIX','Transferência','Cartão','Dinheiro','Boleto','Outro'].map(x=>`<option value="${escM(x)}" ${p?.payment_method===x?'selected':''}>${escM(x)}</option>`).join('')}</select></label>
+          <label class="full"><span>Observação financeira</span><textarea name="payment_notes" rows="3">${escM(p?.payment_notes||'')}</textarea></label>
+        </div></div>
+        <div class="mpro-drawer-actions"><button type="button" class="mpro-light-btn" onclick="mproCloseTeacher()">Cancelar</button><button type="submit" class="mpro-primary-btn"><i data-lucide="save"></i>Salvar alterações</button></div>
+      </form>
+    </aside></div>`;
+  }
+
+  window.mproOpenTeacher=async function(id){
+    try{
+      const profiles=await getProfilesMaster();
+      const p=profiles.find(x=>String(x.id)===String(id));
+      if(!p) throw new Error('Professor não encontrado ou não visível para a conta Master.');
+      const c=root(); c.insertAdjacentHTML('beforeend',teacherEditor(p)); icons();
+      const f=document.getElementById('mproTeacherForm');
+      f.onsubmit=async e=>{
+        e.preventDefault();
+        const btn=f.querySelector('button[type="submit"]');btn?.classList.add('is-loading');
+        try{
+          const fd=new FormData(f);
+          const amt=String(fd.get('payment_amount')??'').trim();
+          const payload={
+            full_name:String(fd.get('full_name')||'').trim(),
+            phone:String(fd.get('phone')||'').trim()||null,
+            specialty:String(fd.get('specialty')||'').trim()||null,
+            services:String(fd.get('services')||'').trim()||null,
+            role:String(fd.get('role')||'professional').trim()||'professional',
+            photo_url:String(fd.get('photo_url')||'').trim()||null,
+            bio:String(fd.get('bio')||'').trim()||null,
+            access_expires_at:fd.get('access_expires_at')?new Date(`${fd.get('access_expires_at')}T23:59:59`).toISOString():null,
+            blocked:fd.get('blocked')==='on',
+            last_payment_at:fd.get('last_payment_at')||null,
+            payment_amount:amt!==''?Number(amt):null,
+            payment_method:String(fd.get('payment_method')||'').trim()||null,
+            payment_notes:String(fd.get('payment_notes')||'').trim()||null
+          };
+          if(!payload.full_name) throw new Error('Informe o nome completo.');
+          if(payload.payment_amount!=null && (!Number.isFinite(payload.payment_amount)||payload.payment_amount<0)) throw new Error('Valor de pagamento inválido.');
+          const {error}=await window.supabaseClient.from('profiles').update(payload).eq('id',id);
+          if(error) throw error;
+          window.showSuccess?.('Cadastro do professor atualizado.');
+          mproCloseTeacher();
+          await window.renderMaster?.();
+        }catch(err){ window.showError?.(err.message||'Não foi possível salvar o professor.'); }
+        finally{ btn?.classList.remove('is-loading'); }
+      };
+    }catch(err){ window.showError?.(err.message||'Não foi possível abrir o cadastro.'); }
+  };
+  window.mproCloseTeacher=function(ev){ if(ev && ev.target!==ev.currentTarget) return; document.getElementById('mproDrawer')?.remove(); };
+  window.mproQuickExtend=async function(id){
+    try{
+      const {data:p,error}=await window.supabaseClient.from('profiles').select('id,access_expires_at,blocked').eq('id',id).maybeSingle();
+      if(error) throw error; if(!p) throw new Error('Professor não encontrado.');
+      const base=p.access_expires_at && new Date(p.access_expires_at).getTime()>Date.now()?new Date(p.access_expires_at):new Date();
+      base.setDate(base.getDate()+30);
+      const r=await window.supabaseClient.from('profiles').update({access_expires_at:base.toISOString(),blocked:false}).eq('id',id);
+      if(r.error) throw r.error; window.showSuccess?.('Acesso prorrogado por 30 dias.'); await window.renderMaster?.();
+    }catch(err){ window.showError?.(err.message||'Não foi possível prorrogar o acesso.'); }
+  };
+
+  window.renderMaster=async function(){
+    const c=root(); if(!c) return;
+    if(typeof window.isMasterUser==='function' && !window.isMasterUser()){
+      c.innerHTML='<div class="mpro-lock"><i data-lucide="shield-off"></i><h2>Acesso restrito</h2><p>Esta central é exclusiva da conta Master.</p></div>'; icons(); return;
+    }
+    c.innerHTML=`<div class="mpro-shell">
+      <header class="mpro-hero"><div><span class="mpro-eyebrow"><i data-lucide="shield"></i> CENTRAL MASTER</span><h1>Administração</h1><p>Controle a operação da plataforma, profissionais, acessos, pagamentos e comunicação em um único centro de gestão.</p></div><div class="mpro-hero-actions"><button class="mpro-light-btn dark" onclick="renderMaster()"><i data-lucide="refresh-cw"></i>Atualizar</button><button class="mpro-primary-btn" onclick="v3OpenMessageEditor()"><i data-lucide="megaphone"></i>Novo comunicado</button></div></header>
+      <nav class="mpro-tabs" role="tablist"><button class="active" data-tab="overview"><i data-lucide="layout-dashboard"></i>Visão geral</button><button data-tab="teachers"><i data-lucide="users-round"></i>Professores</button><button data-tab="finance"><i data-lucide="wallet-cards"></i>Financeiro</button><button data-tab="operations"><i data-lucide="activity"></i>Operação</button></nav>
+      <section id="mproOverview" class="mpro-tab-panel active"></section><section id="mproTeachers" class="mpro-tab-panel"></section><section id="mproFinance" class="mpro-tab-panel"></section><section id="mproOperations" class="mpro-tab-panel"></section>
+    </div>`;
+    icons();
+    let profiles=[];
+    try{ profiles=await getProfilesMaster(); }
+    catch(err){
+      c.querySelector('#mproOverview').innerHTML=`<div class="mpro-alert bad"><i data-lucide="database-zap"></i><div><strong>Não foi possível ler os perfis.</strong><span>${escM(err.message||err)}</span><p>Isso pode ser uma política RLS impedindo a conta Master de enxergar a tabela <code>profiles</code>. A interface continua disponível, mas os dados precisam estar acessíveis ao papel Master.</p></div></div>`;
+      c.querySelector('#mproTeachers').innerHTML=c.querySelector('#mproOverview').innerHTML;
+      c.querySelector('#mproFinance').innerHTML=''; c.querySelector('#mproOperations').innerHTML=''; bindTabs(); icons(); return;
+    }
+    const teachers=profiles.filter(teacherM), masters=profiles.filter(masterM), now=Date.now();
+    const states=teachers.map(p=>accessM(p));
+    const active=states.filter(x=>x.key==='active').length, attention=states.filter(x=>x.key==='attention').length, expired=states.filter(x=>x.key==='expired').length, blocked=states.filter(x=>x.key==='blocked').length;
+    const withPay=teachers.filter(p=>p.last_payment_at).length;
+    const totalPaid=teachers.reduce((s,p)=>s+Number(p.payment_amount||0),0);
+    const support=await getSupportNumber();
+
+    c.querySelector('#mproOverview').innerHTML=`
+      <div class="mpro-kpis">${stat('users-round','Professores',teachers.length,'Perfis não Master')}${stat('shield-check','Ativos',active,'Acesso regular','good')}${stat('clock-3','Atenção',attention,'Vencem em até 7 dias','warn')}${stat('triangle-alert','Vencidos',expired,'Precisam regularizar','bad')}${stat('lock-keyhole','Bloqueados',blocked,'Bloqueio manual','bad')}${stat('wallet-cards','Pagamentos',withPay,`Total registrado ${moneyM(totalPaid)}`)}</div>
+      <div class="mpro-layout-main">
+        <section class="mpro-panel"><div class="mpro-panel-head"><div><span>ACESSO E OPERAÇÃO</span><h2>Mapa da plataforma</h2><p>Use esta visão para descobrir rapidamente onde precisa agir.</p></div></div><div class="mpro-action-grid">
+          <button onclick="document.querySelector('[data-tab=teachers]').click()"><span class="good"><i data-lucide="users"></i></span><div><strong>Gerenciar professores</strong><small>${teachers.length} cadastro${teachers.length===1?'':'s'} visível${teachers.length===1?'':'is'}</small></div><i data-lucide="arrow-up-right"></i></button>
+          <button onclick="document.querySelector('[data-tab=teachers]').click()"><span class="warn"><i data-lucide="calendar-clock"></i></span><div><strong>Regularizar acessos</strong><small>${attention+expired+blocked} professor${attention+expired+blocked===1?'':'es'} precisa${attention+expired+blocked===1?'':'m'} de atenção</small></div><i data-lucide="arrow-up-right"></i></button>
+          <button onclick="document.querySelector('[data-tab=finance]').click()"><span><i data-lucide="wallet"></i></span><div><strong>Conferir pagamentos</strong><small>${withPay} lançamento${withPay===1?'':'s'} no cadastro Master</small></div><i data-lucide="arrow-up-right"></i></button>
+          <button onclick="v3OpenMessageEditor()"><span><i data-lucide="megaphone"></i></span><div><strong>Enviar comunicado</strong><small>Mensagem para os usuários</small></div><i data-lucide="arrow-up-right"></i></button>
+        </div></section>
+        <aside class="mpro-panel mpro-side"><div class="mpro-panel-head"><div><span>SUPORTE</span><h2>Canal de atendimento</h2></div></div><div class="mpro-support-number">${support?`<strong>${escM(support)}</strong><span>Número ativo no sistema</span>`:`<strong>Não configurado</strong><span>Cadastre o WhatsApp usado no suporte</span>`}</div><form id="mproSupportForm"><label>WhatsApp com DDI<input name="whatsapp" value="${escM(support)}" placeholder="5543999999999" inputmode="numeric"></label><button class="mpro-primary-btn" type="submit"><i data-lucide="save"></i>Salvar suporte</button></form></aside>
+      </div>
+      <section class="mpro-panel"><div class="mpro-panel-head"><div><span>VISIBILIDADE</span><h2>Diagnóstico de cadastros</h2><p>Evita confundir “nenhum professor” com “professores não visíveis pela política do banco”.</p></div></div><div class="mpro-diagnostic"><div><strong>${escM(profiles.length)}</strong><span>linhas de profiles visíveis</span></div><div><strong>${escM(teachers.length)}</strong><span>classificadas como professor</span></div><div><strong>${escM(masters.length)}</strong><span>perfis Master/Admin</span></div><div class="${profiles.length<=1?'warn':''}"><strong>${profiles.length<=1?'Verificar RLS':'OK'}</strong><span>${profiles.length<=1?'A consulta retornou somente a conta atual ou quase nada.':'A Master enxerga múltiplos perfis.'}</span></div></div>${teachers.length===0?`<div class="mpro-alert warn"><i data-lucide="user-x"></i><div><strong>Nenhum professor foi identificado nesta consulta.</strong><span>O sistema não vai inventar cadastros. Para um professor aparecer aqui, é necessário existir um perfil correspondente na tabela <code>profiles</code> e a conta Master precisa ter permissão de leitura desse registro.</span></div></div>`:''}</section>
+    `;
+
+    c.querySelector('#mproTeachers').innerHTML=`<section class="mpro-panel"><div class="mpro-panel-head mpro-teachers-toolbar"><div><span>GESTÃO DE USUÁRIOS</span><h2>Professores e acessos</h2><p>Abra qualquer cadastro para administrar perfil profissional, validade, bloqueio e pagamento.</p></div><div class="mpro-filter-box"><input id="mproSearch" placeholder="Buscar nome, e-mail, especialidade..."><select id="mproAccessFilter"><option value="all">Todos os acessos</option><option value="active">Ativos</option><option value="attention">Atenção</option><option value="expired">Vencidos</option><option value="blocked">Bloqueados</option></select></div></div><div id="mproTeacherGrid" class="mpro-teacher-grid">${teachers.length?teachers.map(teacherCard).join(''):`<div class="mpro-big-empty"><div><i data-lucide="users-round"></i></div><h3>Nenhum professor visível</h3><p>${profiles.length<=1?'A consulta de profiles está muito restrita para a conta Master ou ainda não existem perfis profissionais.':'Não há perfis profissionais além da conta Master/Admin.'}</p><button class="mpro-light-btn" onclick="renderMaster()"><i data-lucide="refresh-cw"></i>Reconsultar</button></div>`}</div></section>`;
+
+    c.querySelector('#mproFinance').innerHTML=`<div class="mpro-fin-grid"><section class="mpro-panel"><div class="mpro-panel-head"><div><span>FINANCEIRO MASTER</span><h2>Recebimentos dos professores</h2><p>Resumo do que está registrado diretamente nos perfis.</p></div></div><div class="mpro-fin-summary"><div><small>Total registrado</small><strong>${moneyM(totalPaid)}</strong></div><div><small>Com pagamento</small><strong>${withPay}</strong></div><div><small>Sem pagamento registrado</small><strong>${Math.max(0,teachers.length-withPay)}</strong></div></div><div class="mpro-table">${teachers.length?teachers.map(p=>`<div class="mpro-row"><div>${escM(p.full_name||p.name||p.email||'Professor')}<small>${escM(p.payment_method||'Forma não informada')}</small></div><strong>${p.payment_amount!=null?moneyM(p.payment_amount):'—'}</strong><span>${p.last_payment_at?dateM(p.last_payment_at):'Pendente de registro'}</span><button class="mpro-light-btn" onclick="mproOpenTeacher('${escM(p.id)}')">Abrir</button></div>`).join(''):`<div class="mpro-big-empty compact"><i data-lucide="wallet-cards"></i><h3>Sem lançamentos</h3><p>Os pagamentos são registrados dentro do cadastro de cada professor.</p></div>`}</div></section><section class="mpro-panel"><div class="mpro-panel-head"><div><span>POLÍTICA DE USO</span><h2>Rotina financeira</h2></div></div><div class="mpro-checklist"><div><i data-lucide="check-circle-2"></i><span>Registrar data real do pagamento</span></div><div><i data-lucide="check-circle-2"></i><span>Registrar forma e valor do pagamento</span></div><div><i data-lucide="check-circle-2"></i><span>Usar o vencimento para controlar acesso</span></div><div><i data-lucide="check-circle-2"></i><span>Manter observação do comprovante</span></div></div></section></div>`;
+
+    c.querySelector('#mproOperations').innerHTML=`<div class="mpro-fin-grid"><section class="mpro-panel"><div class="mpro-panel-head"><div><span>CONTROLE</span><h2>Regras de acesso</h2><p>Indicadores calculados a partir do cadastro atual.</p></div></div><div class="mpro-rule-list"><div><span>Professores ativos</span><strong>${active}</strong></div><div><span>Vencendo em até 7 dias</span><strong>${attention}</strong></div><div><span>Vencidos</span><strong>${expired}</strong></div><div><span>Bloqueados manualmente</span><strong>${blocked}</strong></div></div></section><section class="mpro-panel"><div class="mpro-panel-head"><div><span>FLUXO</span><h2>Como administrar um professor</h2></div></div><div class="mpro-timeline"><div><b>01</b><div><strong>Abrir cadastro</strong><span>Revise dados profissionais, telefone e especialidade.</span></div></div><div><b>02</b><div><strong>Definir acesso</strong><span>Use o vencimento e o bloqueio manual quando necessário.</span></div></div><div><b>03</b><div><strong>Registrar pagamento</strong><span>Informe valor, data, forma e observação.</span></div></div><div><b>04</b><div><strong>Salvar e acompanhar</strong><span>Os indicadores da Central Master são recalculados.</span></div></div></div></section></div>`;
+
+    bindTabs();
+    c.querySelector('#mproSearch')?.addEventListener('input',applyTeacherFilter);
+    c.querySelector('#mproAccessFilter')?.addEventListener('change',applyTeacherFilter);
+    c.querySelector('#mproSupportForm')?.addEventListener('submit',async e=>{
+      e.preventDefault(); const btn=e.currentTarget.querySelector('button');btn?.classList.add('is-loading');
+      try{ const n=String(new FormData(e.currentTarget).get('whatsapp')||'').replace(/\D/g,''); if(n.length<10) throw new Error('Informe um WhatsApp válido com DDI.'); const r=await window.supabaseClient.from('platform_settings').upsert({key:'support_whatsapp',value:n,updated_by:state.user.id},{onConflict:'key'}); if(r.error) throw r.error; try{APP_CONFIG.whatsappNumber=n;updateExpiredContactLink?.();}catch(_){} window.showSuccess?.('WhatsApp de suporte atualizado.'); }
+      catch(err){window.showError?.(err.message||'Não foi possível salvar o suporte.');} finally{btn?.classList.remove('is-loading');}
+    });
+    icons();
+  };
+
+  function bindTabs(){
+    document.querySelectorAll('.mpro-tabs [data-tab]').forEach(btn=>{
+      btn.onclick=()=>{
+        document.querySelectorAll('.mpro-tabs [data-tab]').forEach(x=>x.classList.toggle('active',x===btn));
+        document.querySelectorAll('.mpro-tab-panel').forEach(x=>x.classList.toggle('active',x.id==='mpro'+btn.dataset.tab.charAt(0).toUpperCase()+btn.dataset.tab.slice(1)));
+        icons();
+      };
+    });
+  }
+  function applyTeacherFilter(){
+    const q=String(document.getElementById('mproSearch')?.value||'').trim().toLowerCase();
+    const f=String(document.getElementById('mproAccessFilter')?.value||'all');
+    document.querySelectorAll('#mproTeacherGrid .mpro-teacher-card').forEach(card=>{
+      const okText=!q||String(card.dataset.search||'').includes(q); const okF=f==='all'||card.dataset.access===f; card.style.display=okText&&okF?'':'none';
+    });
+  }
+})();
+</script>
+<style>
+  .mpro-shell{display:grid;gap:16px;max-width:1450px;margin:0 auto;padding-bottom:30px}.mpro-hero{display:flex;justify-content:space-between;gap:24px;padding:26px 28px;border-radius:22px;background:linear-gradient(135deg,#18362c 0%,#2e604e 58%,#5f8f7a 100%);color:#fff;box-shadow:0 18px 45px rgba(31,57,47,.16)}.mpro-eyebrow{display:inline-flex;align-items:center;gap:6px;font-size:9px;font-weight:800;letter-spacing:.16em;opacity:.72}.mpro-hero h1{margin:6px 0 8px;font-size:30px;letter-spacing:-.035em}.mpro-hero p{max-width:760px;margin:0;color:rgba(255,255,255,.77);font-size:12px;line-height:1.6}.mpro-hero-actions{display:flex;align-items:flex-start;gap:8px;flex-wrap:wrap}.mpro-tabs{display:flex;gap:6px;padding:6px;border:1px solid #dfe8e3;border-radius:16px;background:#fff;box-shadow:0 4px 14px rgba(25,50,39,.04);overflow:auto}.mpro-tabs button{border:0;background:transparent;border-radius:11px;padding:10px 13px;display:inline-flex;align-items:center;gap:7px;color:#718078;font:700 11px Inter,Arial,sans-serif;white-space:nowrap;cursor:pointer}.mpro-tabs button.active{background:#eaf3ee;color:#477363}.mpro-tab-panel{display:none;gap:16px}.mpro-tab-panel.active{display:grid}.mpro-kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:11px}.mpro-kpi{display:flex;gap:10px;align-items:center;padding:14px;border:1px solid #e2ebe6;border-radius:16px;background:#fff;box-shadow:0 3px 14px rgba(30,50,40,.035)}.mpro-kpi-icon{width:37px;height:37px;display:grid;place-items:center;border-radius:11px;background:#edf5f0;color:#547968;flex:none}.mpro-kpi.warn .mpro-kpi-icon{background:#fff5e5;color:#a2722e}.mpro-kpi.bad .mpro-kpi-icon{background:#fff0f0;color:#a65454}.mpro-kpi span{display:block;color:#7a8881;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.07em}.mpro-kpi strong{display:block;margin-top:2px;font-size:21px;color:#273931}.mpro-kpi small{display:block;margin-top:2px;color:#9aa5a0;font-size:8px}.mpro-layout-main{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(290px,.85fr);gap:16px}.mpro-panel{border:1px solid #e2ebe6;background:#fff;border-radius:19px;padding:18px;box-shadow:0 4px 18px rgba(30,50,40,.035)}.mpro-panel-head{display:flex;justify-content:space-between;gap:14px;margin-bottom:14px}.mpro-panel-head>div>span{font-size:8px;font-weight:800;color:#7a8a82;letter-spacing:.13em}.mpro-panel-head h2{margin:3px 0 3px;font-size:16px;color:#34443c}.mpro-panel-head p{margin:0;color:#8a9791;font-size:10px;line-height:1.55}.mpro-action-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.mpro-action-grid button{display:grid;grid-template-columns:36px 1fr 16px;align-items:center;gap:10px;text-align:left;border:1px solid #e6ede9;background:#fbfdfc;border-radius:14px;padding:12px;cursor:pointer}.mpro-action-grid button:hover{background:#f5faf7;border-color:#cfe1d7}.mpro-action-grid button>span{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:#edf5f0;color:#557b69}.mpro-action-grid button>span.warn{background:#fff5e5;color:#a2722e}.mpro-action-grid strong{display:block;color:#45554d;font-size:11px}.mpro-action-grid small{display:block;margin-top:2px;color:#8d9993;font-size:9px}.mpro-support-number{padding:13px;border-radius:13px;background:#f5faf7;margin-bottom:12px}.mpro-support-number strong{display:block;font-size:14px;color:#41574c}.mpro-support-number span{display:block;margin-top:3px;font-size:9px;color:#87958e}.mpro-support-number+form{display:grid;gap:9px}.mpro-support-number+form label{display:grid;gap:5px;font-size:9px;font-weight:800;color:#69776f}.mpro-support-number+form input,.mpro-filter-box input,.mpro-filter-box select{width:100%;min-height:37px;border:1px solid #dfe8e3;border-radius:10px;background:#fff;padding:8px 10px;outline:0;color:#42524a;font:500 10px Inter,Arial,sans-serif}.mpro-support-number+form input:focus,.mpro-filter-box input:focus,.mpro-filter-box select:focus{border-color:#8eb2a3;box-shadow:0 0 0 3px rgba(95,143,122,.08)}.mpro-primary-btn,.mpro-light-btn{min-height:36px;display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:10px;padding:8px 12px;border:0;font:800 10px Inter,Arial,sans-serif;cursor:pointer}.mpro-primary-btn{background:#5f8f7a;color:#fff}.mpro-primary-btn:hover{background:#477363}.mpro-light-btn{background:#f2f6f4;color:#4d6157;border:1px solid #dfe7e3}.mpro-light-btn:hover{background:#e9f1ed}.mpro-light-btn.dark{background:rgba(255,255,255,.11);color:#fff;border-color:rgba(255,255,255,.18)}.mpro-diagnostic{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.mpro-diagnostic>div{padding:13px;border:1px solid #e7eeea;border-radius:13px;background:#fafcfb}.mpro-diagnostic strong{display:block;font-size:18px;color:#33453c}.mpro-diagnostic span{display:block;margin-top:3px;font-size:9px;color:#8a9791;line-height:1.4}.mpro-diagnostic>div.warn{background:#fff9ef;border-color:#f1dfbf}.mpro-alert{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:13px;margin-top:13px}.mpro-alert.good{background:#eef8f1;color:#53735f}.mpro-alert.warn{background:#fff8eb;color:#986e32}.mpro-alert.bad{background:#fff1f1;color:#9d5555}.mpro-alert>i{width:17px;flex:none;margin-top:1px}.mpro-alert strong{display:block;font-size:10px;color:inherit}.mpro-alert span,.mpro-alert p{display:block;margin:3px 0 0;font-size:9px;line-height:1.5;color:#6d7772}.mpro-alert p{margin-top:7px}.mpro-alert code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:8px}.mpro-teachers-toolbar{align-items:end}.mpro-filter-box{display:grid;grid-template-columns:240px 170px;gap:7px}.mpro-teacher-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.mpro-teacher-card{padding:14px;border:1px solid #e4ebe7;border-radius:16px;background:#fbfdfc;transition:.18s ease}.mpro-teacher-card:hover{transform:translateY(-2px);border-color:#d1e0d8;box-shadow:0 11px 28px rgba(28,58,44,.06)}.mpro-teacher-head{display:flex;gap:10px;align-items:flex-start}.mpro-avatar{width:46px;height:46px;border-radius:14px;background:#edf5f0;color:#4d7562;display:grid;place-items:center;overflow:hidden;flex:none;font-weight:800;font-size:12px}.mpro-avatar img{width:100%;height:100%;object-fit:cover}.mpro-teacher-id{min-width:0;flex:1}.mpro-teacher-id h3{margin:2px 0 3px;font-size:13px;color:#34443d}.mpro-teacher-id p{margin:0;font-size:9px;color:#87928d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mpro-role-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}.mpro-role,.mpro-status{display:inline-flex;padding:4px 7px;border-radius:999px;font-size:8px;font-weight:800}.mpro-role{background:#f1f5f3;color:#69766f}.mpro-status.good{background:#eaf5ee;color:#47745a}.mpro-status.warn{background:#fff4df;color:#9a6d2f}.mpro-status.bad{background:#fff0f0;color:#a25050}.mpro-icon-btn{width:32px;height:32px;display:grid;place-items:center;border-radius:9px;border:1px solid #e0e8e4;background:#fff;color:#617169;cursor:pointer}.mpro-icon-btn:hover{background:#f3f7f5}.mpro-profile-strip{display:grid;grid-template-columns:1.2fr 1.2fr 1fr .8fr;gap:8px;margin:13px 0;padding:10px;background:#f7faf8;border-radius:12px}.mpro-profile-strip small{display:block;color:#8d9993;font-size:7px;text-transform:uppercase;font-weight:800}.mpro-profile-strip strong{display:block;margin-top:3px;color:#53645c;font-size:9px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mpro-card-actions{display:flex;align-items:center;justify-content:space-between;gap:8px}.mpro-card-actions>span{display:flex;align-items:center;gap:5px;color:#7e8c85;font-size:9px}.mpro-card-actions>span svg{width:13px}.mpro-card-actions>div{display:flex;gap:6px}.mpro-big-empty{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;text-align:center;padding:40px 20px;border:1px dashed #d9e4de;border-radius:16px;background:#fbfdfc}.mpro-big-empty>div{width:48px;height:48px;display:grid;place-items:center;border-radius:15px;background:#edf5f0;color:#5f8f7a}.mpro-big-empty>i{width:30px;height:30px;color:#6c8779}.mpro-big-empty h3{margin:11px 0 3px;color:#4c5c54;font-size:14px}.mpro-big-empty p{max-width:600px;margin:0 0 12px;color:#89958f;font-size:10px;line-height:1.55}.mpro-fin-grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(280px,.85fr);gap:16px}.mpro-fin-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:13px}.mpro-fin-summary>div{padding:13px;border-radius:12px;background:#f7faf8}.mpro-fin-summary small{display:block;color:#89958f;font-size:8px}.mpro-fin-summary strong{display:block;margin-top:4px;font-size:18px;color:#3e5148}.mpro-table{display:grid;gap:1px;border-top:1px solid #e9efeb}.mpro-row{display:grid;grid-template-columns:1.5fr 120px 160px 70px;align-items:center;gap:10px;padding:11px 3px;border-bottom:1px solid #e9efeb;font-size:10px}.mpro-row small{display:block;color:#8f9a94;margin-top:2px;font-size:8px}.mpro-row>strong{text-align:right;color:#41564a}.mpro-row>span{color:#7d8a83}.mpro-checklist{display:grid;gap:9px}.mpro-checklist>div{display:flex;align-items:center;gap:8px;padding:10px;border-radius:11px;background:#f7faf8;color:#66756d;font-size:9px}.mpro-checklist svg{width:14px;color:#5d8c72}.mpro-rule-list{display:grid;gap:7px}.mpro-rule-list>div{display:flex;align-items:center;justify-content:space-between;padding:11px 12px;border-radius:11px;background:#f7faf8}.mpro-rule-list span{font-size:10px;color:#6f7d76}.mpro-rule-list strong{font-size:14px;color:#3f5148}.mpro-timeline{display:grid;gap:11px}.mpro-timeline>div{display:grid;grid-template-columns:29px 1fr;gap:9px;align-items:start}.mpro-timeline b{width:29px;height:29px;display:grid;place-items:center;border-radius:9px;background:#edf5f0;color:#4f7964;font-size:8px}.mpro-timeline strong{display:block;font-size:10px;color:#4e5f57}.mpro-timeline span{display:block;margin-top:2px;color:#88958f;font-size:9px;line-height:1.45}.mpro-drawer-backdrop{position:fixed;inset:0;z-index:9500;background:rgba(18,30,25,.42);display:flex;justify-content:flex-end}.mpro-drawer{width:min(620px,96vw);height:100%;overflow:auto;background:#fff;box-shadow:-18px 0 50px rgba(17,29,24,.18);padding:20px}.mpro-drawer-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding-bottom:15px;margin-bottom:12px;border-bottom:1px solid #e7eeea}.mpro-drawer-head>div>span{font-size:8px;font-weight:800;letter-spacing:.13em;color:#788880}.mpro-drawer-head h2{margin:5px 0 3px;font-size:20px;color:#2f4037}.mpro-drawer-head p{margin:0;color:#8a9791;font-size:9px}.mpro-form{display:grid;gap:12px}.mpro-form-section{border:1px solid #e3ebe6;border-radius:15px;padding:14px}.mpro-form-section-title{display:flex;align-items:center;gap:7px;margin-bottom:11px;color:#52655c;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em}.mpro-form-section-title svg{width:14px}.mpro-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.mpro-grid-2 label{display:grid;gap:5px}.mpro-grid-2 label.full{grid-column:1/-1}.mpro-grid-2 label>span{font-size:9px;color:#69776f;font-weight:800}.mpro-grid-2 input,.mpro-grid-2 select,.mpro-grid-2 textarea{width:100%;border:1px solid #dfe7e3;border-radius:10px;padding:9px;background:#fff;outline:0;font:500 10px Inter,Arial,sans-serif;color:#405049}.mpro-grid-2 textarea{resize:vertical;line-height:1.45}.mpro-check{display:flex!important;align-items:center;gap:7px;align-self:end;padding:10px;border-radius:10px;background:#fff6f6;color:#9a5555!important}.mpro-check input{width:auto}.mpro-access-summary{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}.mpro-access-summary>div{padding:10px;border-radius:10px;background:#f7faf8}.mpro-access-summary small{display:block;font-size:7px;color:#8a9690;text-transform:uppercase}.mpro-access-summary strong{display:block;margin-top:3px;font-size:10px;color:#56675f}.mpro-drawer-actions{display:flex;justify-content:flex-end;gap:8px;padding:3px 0 10px}.mpro-lock{min-height:330px;display:grid;place-items:center;text-align:center;padding:30px}.mpro-lock svg{width:40px;height:40px;color:#789087}.mpro-lock h2{margin:4px 0;color:#405249}.mpro-lock p{margin:0;color:#8a9690;font-size:11px}.mpro-teacher-card.is-hidden{display:none}
+  @media(max-width:1150px){.mpro-kpis{grid-template-columns:repeat(3,1fr)}.mpro-teacher-grid{grid-template-columns:1fr}.mpro-filter-box{grid-template-columns:1fr 160px}}
+  @media(max-width:850px){.mpro-layout-main,.mpro-fin-grid{grid-template-columns:1fr}.mpro-diagnostic{grid-template-columns:repeat(2,1fr)}.mpro-hero{flex-direction:column}.mpro-grid-2{grid-template-columns:1fr}.mpro-grid-2 label.full{grid-column:auto}}
+  @media(max-width:600px){.mpro-kpis{grid-template-columns:1fr 1fr}.mpro-action-grid{grid-template-columns:1fr}.mpro-fin-summary,.mpro-diagnostic{grid-template-columns:1fr}.mpro-filter-box{grid-template-columns:1fr}.mpro-profile-strip{grid-template-columns:1fr 1fr}.mpro-row{grid-template-columns:1fr 90px}.mpro-row>span{grid-column:1}.mpro-row>button{grid-column:2;grid-row:1 / span 2}.mpro-card-actions{align-items:flex-start;flex-direction:column}.mpro-card-actions>div{width:100%}.mpro-card-actions button{flex:1}}
+</style>
+
 </body>
 </html>
