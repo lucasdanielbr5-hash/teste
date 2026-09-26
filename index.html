@@ -10909,5 +10909,599 @@ body.legado-v4-modal-open{overflow:hidden}
 @media(max-width:600px){.saas-kpis{grid-template-columns:1fr 1fr}.saas-quick-grid{grid-template-columns:1fr}.saas-card-actions{flex-direction:column}.saas-card-actions .saas-primary,.saas-card-actions .saas-secondary{width:100%;flex:auto}.saas-access-row{grid-template-columns:36px 1fr}.saas-access-row button{grid-column:2;justify-self:start}.saas-hero{padding:22px}.saas-hero h1{font-size:25px}}
 </style>
 
+<script id="legado-access-messages-patch">
+(function(){
+  'use strict';
+
+  const MASTER_EMAIL = 'contato@legadoqueensina.com.br';
+  const TABLE = window.V3Core?.TABLE || window.TABLE || {};
+  const MSG_TABLE = TABLE.messages || 'messages';
+  const PROFILE_TABLE = TABLE.profiles || 'profiles';
+  const READS_TABLE = 'message_reads';
+  const POLL_MS = 10000;
+
+  let accessWatchTimer = null;
+  let messagePollTimer = null;
+  let messageChannel = null;
+  let currentAnnouncementId = null;
+  let currentAnnouncement = null;
+  let noticeBusy = false;
+  let showTrash = false;
+
+  const q = (selector, root=document) => root.querySelector(selector);
+  const esc = value => typeof window.escapeHtml === 'function' ? window.escapeHtml(value ?? '') : String(value ?? '');
+  const isMaster = () => {
+    const email = String(state.user?.email || '').toLowerCase();
+    return email === MASTER_EMAIL ||
+      Boolean(state.profile?.is_master) ||
+      ['master','admin'].includes(String(state.profile?.role || '').toLowerCase()) ||
+      ['master','admin'].includes(String(state.user?.user_metadata?.role || '').toLowerCase());
+  };
+
+  function activeAccess(profile) {
+    if (isMaster()) return true;
+    if (!profile) return false;
+    if (profile.blocked === true) return false;
+    const expires = profile.access_expires_at || profile.plan_expires_at || profile.subscription_expires_at || profile.expires_at;
+    if (!expires) return true;
+    const date = new Date(expires);
+    return Number.isFinite(date.getTime()) && date.getTime() >= Date.now();
+  }
+
+  function expiredReason(profile) {
+    if (profile?.blocked === true) return 'blocked';
+    if (profile?.access_expires_at || profile?.plan_expires_at || profile?.subscription_expires_at || profile?.expires_at) return 'expired';
+    return 'unknown';
+  }
+
+  function applyExpiredMessage(profile) {
+    const title = document.querySelector('.expired-title');
+    const text = document.querySelector('.expired-text');
+    const button = document.getElementById('expiredContactButton');
+    const reason = expiredReason(profile);
+    if (title) title.textContent = 'Seu acesso está bloqueado';
+    if (text) {
+      text.textContent = reason === 'blocked'
+        ? 'Seu plano excedeu o prazo de acesso ou o acesso foi bloqueado pela administração. Entre em contato pelo WhatsApp para regularizar seu acesso.'
+        : 'Seu plano excedeu o prazo de acesso. Entre em contato pelo WhatsApp para renovar e continuar utilizando a plataforma.';
+    }
+    if (button) {
+      let url = '#';
+      try {
+        if (typeof window.getWhatsAppUrl === 'function') {
+          url = window.getWhatsAppUrl('Olá! Meu acesso ao Legado Que Ensina foi bloqueado/excedeu o prazo. Gostaria de regularizar meu plano.');
+        }
+      } catch (_) {}
+      button.href = url;
+      button.textContent = url !== '#' ? 'Falar com o suporte no WhatsApp' : 'Configurar WhatsApp de suporte';
+    }
+  }
+
+  async function loadProfileForAccess() {
+    if (!window.supabaseClient || !state.user) return null;
+    const { data, error } = await supabaseClient
+      .from(PROFILE_TABLE)
+      .select('*')
+      .eq('id', state.user.id)
+      .maybeSingle();
+    if (error) throw error;
+    state.profile = data || null;
+    if (typeof window.updateUserHeader === 'function') window.updateUserHeader();
+    return state.profile;
+  }
+
+  async function enforceAccess(showMessages=true) {
+    if (!state.user) return false;
+    if (isMaster()) {
+      state.accessLocked = false;
+      if (showMessages && typeof window.showAppScreen === 'function') window.showAppScreen();
+      return true;
+    }
+    try {
+      const profile = await loadProfileForAccess();
+      const allowed = activeAccess(profile);
+      state.accessLocked = !allowed;
+      if (!allowed) {
+        applyExpiredMessage(profile);
+        if (typeof window.showExpiredScreen === 'function') window.showExpiredScreen();
+        if (typeof window.hideGlobalAnnouncement === 'function') window.hideGlobalAnnouncement();
+        return false;
+      }
+      if (showMessages && typeof window.showAppScreen === 'function') window.showAppScreen();
+      return true;
+    } catch (error) {
+      console.error('[Acesso] Falha ao verificar acesso:', error);
+      // Não abre o app quando a verificação segura falha.
+      state.accessLocked = true;
+      applyExpiredMessage(state.profile || {});
+      if (typeof window.showExpiredScreen === 'function') window.showExpiredScreen();
+      return false;
+    }
+  }
+
+  // Substitui a finalização de autenticação para conferir bloqueio/vencimento
+  // sempre, inclusive quando o professor já tinha uma sessão aberta.
+  window.finishAuthentication = async function(){
+    if (!state.user && state.session?.user) state.user = state.session.user;
+    if (!state.user) {
+      if (typeof window.showLoginScreen === 'function') window.showLoginScreen();
+      return;
+    }
+
+    const allowed = await enforceAccess(false);
+    if (!allowed) return;
+
+    state.accessLocked = false;
+    try {
+      if (typeof window.loadSupportNumber === 'function') await window.loadSupportNumber();
+    } catch (_) {}
+    if (typeof window.updateExpiredContactLink === 'function') window.updateExpiredContactLink();
+    if (typeof window.updateUserHeader === 'function') window.updateUserHeader();
+    if (typeof window.updateMasterMenu === 'function') window.updateMasterMenu();
+    if (typeof window.showAppScreen === 'function') window.showAppScreen();
+    if (typeof window.navigate === 'function') window.navigate(state.currentView || 'dashboard');
+    if (!isMaster()) {
+      await initMessagesCenter();
+    }
+  };
+
+  function startAccessWatch(){
+    if (accessWatchTimer) clearInterval(accessWatchTimer);
+    accessWatchTimer = setInterval(() => {
+      if (!state.user || isMaster()) return;
+      enforceAccess(true).then(allowed => {
+        if (allowed) initMessagesCenter();
+      }).catch(console.error);
+    }, POLL_MS);
+
+    const recheck = () => {
+      if (!state.user || isMaster()) return;
+      enforceAccess(true).then(allowed => {
+        if (allowed) initMessagesCenter();
+      }).catch(console.error);
+    };
+    window.removeEventListener('focus', recheck);
+    window.addEventListener('focus', recheck, { passive:true });
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') recheck();
+    });
+  }
+
+  function ensureNoticeCss(){
+    if (document.getElementById('legado-messages-ux-css')) return;
+    const style = document.createElement('style');
+    style.id = 'legado-messages-ux-css';
+    style.textContent = `
+      #legadoGlobalAnnouncement{position:fixed;top:82px;left:50%;transform:translateX(-50%);width:min(820px,calc(100vw - 34px));z-index:8800;display:none}
+      #legadoGlobalAnnouncement.show{display:block;animation:legadoNoticeIn .28s ease-out}
+      .legado-notice{display:grid;grid-template-columns:46px minmax(0,1fr) auto;gap:14px;align-items:start;padding:16px 17px;border:1px solid #cfe0d7;border-radius:18px;background:rgba(255,255,255,.98);box-shadow:0 18px 50px rgba(30,55,44,.16);backdrop-filter:blur(12px)}
+      .legado-notice-icon{width:46px;height:46px;display:grid;place-items:center;border-radius:14px;background:#eaf4ee;color:#477363}
+      .legado-notice-icon svg{width:22px;height:22px}
+      .legado-notice-kicker{font-size:9px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;color:#6d867a;margin-bottom:4px}
+      .legado-notice h3{margin:0;color:#24342d;font-size:15px;line-height:1.35}
+      .legado-notice p{margin:5px 0 10px;color:#617169;font-size:12px;line-height:1.55;white-space:pre-wrap}
+      .legado-notice-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+      .legado-notice-close{width:34px;height:34px;border:0;border-radius:10px;background:#f3f6f4;color:#68766f;display:grid;place-items:center;cursor:pointer}
+      .legado-notice-close:hover{background:#eaf0ed;color:#30473c}
+      .legado-message-page-hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;margin-bottom:16px;padding:22px;border-radius:22px;border:1px solid #dfe9e3;background:linear-gradient(135deg,#f5faf7 0%,#ffffff 58%,#eef5f9 100%);box-shadow:0 8px 28px rgba(28,55,44,.045)}
+      .legado-message-hero-copy{display:flex;gap:14px;align-items:flex-start}
+      .legado-message-hero-icon{width:54px;height:54px;flex:0 0 54px;display:grid;place-items:center;border-radius:17px;background:#dfeee6;color:#4f7b68}
+      .legado-message-hero-icon svg{width:24px;height:24px}
+      .legado-message-hero-copy h2{margin:0;color:#263a31;font-size:21px;letter-spacing:-.03em}
+      .legado-message-hero-copy p{margin:5px 0 0;color:#738179;font-size:12px;line-height:1.55}
+      .legado-message-count{display:flex;gap:10px;align-items:center;padding:12px 14px;border-radius:14px;background:#fff;border:1px solid #e3ebe6}
+      .legado-message-count strong{font-size:18px;color:#3e6654}
+      .legado-message-count span{font-size:10px;color:#7a8881;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+      .legado-message-grid{display:grid;gap:12px}
+      .legado-message-tabs{display:flex;gap:7px;margin:0 0 12px;padding:5px;border:1px solid #e0e8e3;border-radius:14px;background:#f5f8f6;max-width:max-content}.legado-message-tabs button{display:inline-flex;align-items:center;gap:7px;border:0;background:transparent;border-radius:10px;padding:9px 12px;color:#718078;font-size:10px;font-weight:700;cursor:pointer}.legado-message-tabs button.active{background:#fff;color:#3f6654;box-shadow:0 2px 8px rgba(25,45,37,.06)}.legado-message-tabs button svg{width:14px;height:14px}.legado-message-tabs button b{font-size:9px;padding:2px 6px;border-radius:999px;background:#e9f1ec;color:#5b7769}.legado-message-card.in-trash{background:#fcfbfb;border-color:#e9e2e2}.legado-message-card.in-trash .legado-message-card-icon{background:#f5eeee;color:#936f6f}
+      .legado-message-card{position:relative;display:grid;grid-template-columns:50px minmax(0,1fr) auto;gap:14px;padding:17px;border:1px solid #e4ebe7;border-radius:18px;background:#fff;transition:.2s ease;overflow:hidden}
+      .legado-message-card:hover{transform:translateY(-1px);border-color:#d0dfd7;box-shadow:0 10px 28px rgba(32,59,49,.07)}
+      .legado-message-card.unread{border-color:#bcd4c7;box-shadow:0 6px 22px rgba(71,115,99,.08)}
+      .legado-message-card.unread:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:#5f8f7a}
+      .legado-message-card-icon{width:50px;height:50px;display:grid;place-items:center;border-radius:15px;background:#edf5f0;color:#547a68}
+      .legado-message-card-icon svg{width:22px;height:22px}
+      .legado-message-meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:6px}
+      .legado-message-meta .tag{padding:4px 7px;border-radius:999px;background:#edf5f0;color:#527965;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+      .legado-message-meta .date{font-size:9px;color:#8a9690}
+      .legado-message-card h3{margin:0;color:#2e3e37;font-size:14px}
+      .legado-message-card p{margin:7px 0 0;color:#63716a;font-size:12px;line-height:1.65;white-space:pre-wrap}
+      .legado-message-card-actions{display:flex;align-items:flex-start;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+      .legado-message-state{font-size:9px;font-weight:800;padding:5px 8px;border-radius:999px;background:#f4f6f5;color:#7d8983}
+      .legado-message-state.new{background:#eaf4ee;color:#477363}
+      .legado-trash{width:34px;height:34px;display:grid;place-items:center;border:1px solid #e5ebe8;border-radius:10px;background:#fff;color:#8b6d6d;cursor:pointer}
+      .legado-trash:hover{background:#fff2f2;border-color:#ecd4d4;color:#b85b5b}
+      .legado-read{border:1px solid #dbe6e0!important}
+      .legado-message-empty{display:grid;place-items:center;text-align:center;padding:46px 22px;border:1px dashed #d8e3dd;border-radius:18px;background:#fbfdfc}
+      .legado-message-empty-icon{width:54px;height:54px;display:grid;place-items:center;border-radius:17px;background:#eff5f2;color:#769184;margin-bottom:10px}
+      .legado-message-empty strong{font-size:13px;color:#52635a}
+      .legado-message-empty span{margin-top:4px;color:#8a9690;font-size:11px}
+      .legado-message-compose{margin-top:16px;padding:18px;border-radius:18px;border:1px solid #e1ebe5;background:#fbfdfc}
+      .legado-message-compose h3{margin:0;font-size:15px;color:#35483f}
+      .legado-message-compose p{margin:5px 0 12px;font-size:11px;color:#7b8982}
+      @keyframes legadoNoticeIn{from{opacity:0;transform:translate(-50%,-8px)}to{opacity:1;transform:translate(-50%,0)}}
+      @media(max-width:700px){#legadoGlobalAnnouncement{top:70px;width:calc(100vw - 22px)}.legado-notice{grid-template-columns:42px 1fr auto;padding:13px}.legado-notice-icon{width:42px;height:42px}.legado-message-page-hero{grid-template-columns:1fr}.legado-message-card{grid-template-columns:44px 1fr}.legado-message-card-icon{width:44px;height:44px}.legado-message-card-actions{grid-column:2;justify-content:flex-start}.legado-message-count{justify-self:start}}
+      @media(prefers-reduced-motion:reduce){#legadoGlobalAnnouncement.show,.legado-message-card{animation:none;transition:none}}
+    `;
+    document.head.appendChild(style);
+  }
+
+  function ensureNoticeNode(){
+    let node = document.getElementById('legadoGlobalAnnouncement');
+    if (!node) {
+      node = document.createElement('div');
+      node.id = 'legadoGlobalAnnouncement';
+      document.body.appendChild(node);
+    }
+    return node;
+  }
+
+  function hideAnnouncement(){
+    const node = document.getElementById('legadoGlobalAnnouncement');
+    if (node) {
+      node.classList.remove('show');
+      node.style.display = 'none';
+    }
+    currentAnnouncementId = null;
+    currentAnnouncement = null;
+  }
+  window.hideGlobalAnnouncement = hideAnnouncement;
+
+  async function upsertReadState(messageId, patch={}){
+    if (!supabaseClient || !state.user || !messageId) return;
+    const payload = {
+      message_id: messageId,
+      user_id: state.user.id,
+      ...patch
+    };
+    const { error } = await supabaseClient.from(READS_TABLE).upsert(payload,{onConflict:'message_id,user_id'});
+    if (error) throw error;
+  }
+
+  async function getReadStates(ids){
+    if (!ids.length || !supabaseClient || !state.user) return new Map();
+    const { data, error } = await supabaseClient
+      .from(READS_TABLE)
+      .select('message_id,read_at,seen_at,dismissed_at,hidden_at')
+      .eq('user_id',state.user.id)
+      .in('message_id',ids);
+    if (error) throw error;
+    return new Map((data||[]).map(r=>[String(r.message_id),r]));
+  }
+
+  async function loadMessagesForUser(){
+    if (!supabaseClient || !state.user) return [];
+    const { data, error } = await supabaseClient
+      .from(MSG_TABLE)
+      .select('*')
+      .or(`target_all.eq.true,user_id.eq.${state.user.id}`)
+      .order('created_at',{ascending:false})
+      .limit(200);
+    if (error) throw error;
+    const rows = data || [];
+    const states = await getReadStates(rows.map(r=>String(r.id)));
+    return rows.map(row=>{
+      const rs = states.get(String(row.id)) || {};
+      return {
+        ...row,
+        _read: Boolean(rs.read_at) || Boolean(row.read),
+        _seen: Boolean(rs.seen_at),
+        _dismissed: Boolean(rs.dismissed_at),
+        _hidden: Boolean(rs.hidden_at),
+        _readState: rs
+      };
+    });
+  }
+
+  function announcementKey(id){
+    return `legado_notice_dismissed:${state.user?.id || 'guest'}:${id}`;
+  }
+
+  async function showAnnouncement(row){
+    if (isMaster() || !row || row._dismissed || row._hidden) return;
+    currentAnnouncementId = String(row.id);
+    currentAnnouncement = row;
+    const node = ensureNoticeNode();
+    node.innerHTML = `<div class="legado-notice">
+      <div class="legado-notice-icon"><i data-lucide="megaphone"></i></div>
+      <div>
+        <div class="legado-notice-kicker">Novo recado da administração</div>
+        <h3>${esc(row.title || 'Novo comunicado')}</h3>
+        <p>${esc(row.message || '')}</p>
+        <div class="legado-notice-actions">
+          <button class="btn btn-primary btn-sm" type="button" data-ann-read="${esc(row.id)}"><i data-lucide="book-open-check"></i>Ler recado</button>
+          <span class="legado-message-state new">Novo</span>
+        </div>
+      </div>
+      <button class="legado-notice-close" type="button" aria-label="Fechar novo recado" title="Fechar" data-ann-close="${esc(row.id)}"><i data-lucide="x"></i></button>
+    </div>`;
+    node.style.display = 'block';
+    node.classList.add('show');
+    if (typeof window.refreshIcons === 'function') window.refreshIcons();
+
+    node.querySelector('[data-ann-close]')?.addEventListener('click', async ()=>{
+      if (noticeBusy) return;
+      noticeBusy = true;
+      try {
+        await upsertReadState(String(row.id),{
+          read_at:new Date().toISOString(),
+          seen_at:new Date().toISOString(),
+          dismissed_at:new Date().toISOString()
+        });
+        try { localStorage.setItem(announcementKey(String(row.id)),'1'); } catch(_){}
+        hideAnnouncement();
+        await refreshMessageBadgeAndPage();
+      } catch (e) {
+        if (typeof window.showError === 'function') window.showError('Não foi possível fechar o recado: '+(e.message||e));
+      } finally { noticeBusy=false; }
+    });
+
+    node.querySelector('[data-ann-read]')?.addEventListener('click', async ()=>{
+      if (noticeBusy) return;
+      noticeBusy = true;
+      try {
+        await upsertReadState(String(row.id),{
+          read_at:new Date().toISOString(),
+          seen_at:new Date().toISOString(),
+          dismissed_at:new Date().toISOString()
+        });
+        try { localStorage.setItem(announcementKey(String(row.id)),'1'); } catch(_){}
+        hideAnnouncement();
+        if (typeof window.navigate === 'function') window.navigate('recados');
+        await refreshMessageBadgeAndPage();
+      } catch (e) {
+        if (typeof window.showError === 'function') window.showError('Não foi possível abrir o recado: '+(e.message||e));
+      } finally { noticeBusy=false; }
+    });
+  }
+
+  async function checkForNewAnnouncement(force=false){
+    if (isMaster() || !state.user || !supabaseClient || state.accessLocked) return;
+    try {
+      const rows = await loadMessagesForUser();
+      const candidate = rows.find(r => r.target_all === true && !r._dismissed && !r._hidden);
+      if (!candidate) {
+        if (force) hideAnnouncement();
+        return;
+      }
+      if (!force && currentAnnouncementId === String(candidate.id)) return;
+      await showAnnouncement(candidate);
+    } catch (error) {
+      console.warn('[Recados] Não foi possível verificar novo recado:',error);
+    }
+  }
+
+  async function refreshMessageBadgeAndPage(){
+    try {
+      const rows = await loadMessagesForUser();
+      const unread = rows.filter(r=>!r._read && !r._hidden).length;
+      const badge = document.getElementById('recadosBadge');
+      if (badge) {
+        badge.textContent = String(unread);
+        badge.style.display = unread ? '' : 'none';
+      }
+      return rows;
+    } catch(e) { return []; }
+  }
+
+  window.v3ReadMessage = async function(id){
+    try {
+      await upsertReadState(String(id),{
+        read_at:new Date().toISOString(),
+        seen_at:new Date().toISOString()
+      });
+      if (typeof window.showSuccess === 'function') window.showSuccess('Recado marcado como lido.');
+      if (currentAnnouncementId === String(id)) hideAnnouncement();
+      await window.renderMessages();
+      await refreshMessageBadgeAndPage();
+    } catch(error){
+      if (typeof window.showError === 'function') window.showError(error.message||'Não foi possível marcar o recado como lido.');
+    }
+  };
+
+  window.v3RestoreMessage = async function(id){
+    if (!state.user || isMaster()) return;
+    try {
+      await upsertReadState(String(id),{hidden_at:null});
+      if (typeof window.showSuccess === 'function') window.showSuccess('Recado restaurado para a sua caixa de entrada.');
+      showTrash = true;
+      await window.renderMessages();
+    } catch(error){
+      if (typeof window.showError === 'function') window.showError(error.message||'Não foi possível restaurar o recado.');
+    }
+  };
+
+  window.v3HideMessage = async function(id){
+    if (!state.user || isMaster()) return;
+    const ok = window.confirm ? window.confirm('Colocar este recado na lixeira? Ele ficará oculto somente para você.') : true;
+    if (!ok) return;
+    try {
+      await upsertReadState(String(id),{
+        read_at:new Date().toISOString(),
+        seen_at:new Date().toISOString(),
+        hidden_at:new Date().toISOString()
+      });
+      if (currentAnnouncementId === String(id)) hideAnnouncement();
+      if (typeof window.showSuccess === 'function') window.showSuccess('Recado movido para a lixeira.');
+      await window.renderMessages();
+      await refreshMessageBadgeAndPage();
+    } catch(error){
+      if (typeof window.showError === 'function') window.showError(error.message||'Não foi possível mover o recado para a lixeira.');
+    }
+  };
+
+  window.renderMessages = async function(){
+    const c = document.getElementById('recadosContent');
+    if (!c) return;
+    if (!state.user) { c.innerHTML = ''; return; }
+    c.innerHTML = `<div class="v3-panel"><div class="v3-loading"><i data-lucide="loader-circle"></i><span>Carregando recados...</span></div></div>`;
+    if (typeof window.refreshIcons === 'function') window.refreshIcons();
+    try {
+      const rows = await loadMessagesForUser();
+      const admin = isMaster();
+      const inbox = rows.filter(r=>!r._hidden);
+      const trash = rows.filter(r=>r._hidden);
+      const list = showTrash && !admin ? trash : inbox;
+      const unread = inbox.filter(r=>!r._read).length;
+      const dateText = value => {
+        try { return value ? new Date(value).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—'; } catch(_) { return '—'; }
+      };
+      const cards = list.map(r=>`<article class="legado-message-card ${r._read?'':'unread'} ${r._hidden?'in-trash':''}">
+        <div class="legado-message-card-icon"><i data-lucide="${r._hidden?'trash-2':(r._read?'mail-open':'mail')}"></i></div>
+        <div>
+          <div class="legado-message-meta"><span class="tag">${esc(r.type || 'Comunicado')}</span><span class="date">${esc(dateText(r.created_at))}</span>${!r._read&&!r._hidden?'<span class="legado-message-state new">Novo</span>':''}${r._hidden?'<span class="legado-message-state">Na lixeira</span>':''}</div>
+          <h3>${esc(r.title || 'Recado')}</h3>
+          <p>${esc(r.message || '')}</p>
+        </div>
+        <div class="legado-message-card-actions">
+          ${!r._hidden && !r._read && !admin ? `<button class="btn btn-outline btn-sm legado-read" type="button" onclick="v3ReadMessage('${esc(r.id)}')"><i data-lucide="check-check"></i>Marcar como lido</button>` : ''}
+          ${!r._hidden && !admin ? `<button class="legado-trash" type="button" title="Mover para a lixeira" aria-label="Mover recado para a lixeira" onclick="v3HideMessage('${esc(r.id)}')"><i data-lucide="trash-2"></i></button>` : ''}
+          ${r._hidden && !admin ? `<button class="btn btn-soft btn-sm" type="button" onclick="v3RestoreMessage('${esc(r.id)}')"><i data-lucide="rotate-ccw"></i>Restaurar</button>` : ''}
+          ${r._read && !r._hidden && !admin ? '<span class="legado-message-state">Lido</span>' : ''}
+        </div>
+      </article>`).join('');
+
+      const intro = admin
+        ? 'Publique comunicados para todos os professores. Cada professor controla sua própria leitura.'
+        : 'Comunicados da administração, com aviso no topo, leitura individual e lixeira pessoal.';
+      const action = admin ? `<button class="btn btn-primary" type="button" onclick="v3OpenMessageEditor()"><i data-lucide="plus"></i>Novo comunicado</button>` : '';
+      const body = cards || `<div class="legado-message-empty"><div class="legado-message-empty-icon"><i data-lucide="${showTrash?'trash-2':'inbox'}"></i></div><strong>${showTrash?'A lixeira está vazia':'Nenhum recado disponível'}</strong><span>${showTrash?'Recados removidos ficam guardados aqui somente para você.':'Quando a administração publicar um novo comunicado, ele aparecerá aqui e também no topo do sistema.'}</span></div>`;
+      const tabs = !admin ? `<div class="legado-message-tabs"><button type="button" class="${showTrash?'':'active'}" onclick="window.__legadoMessageTrash(false)"><i data-lucide="inbox"></i>Entrada <b>${inbox.length}</b></button><button type="button" class="${showTrash?'active':''}" onclick="window.__legadoMessageTrash(true)"><i data-lucide="trash-2"></i>Lixeira <b>${trash.length}</b></button></div>` : '';
+
+      c.innerHTML = pageShell('COMUNICAÇÃO','Recados',intro,action)
+        + `<div class="legado-message-page-hero">
+            <div class="legado-message-hero-copy"><div class="legado-message-hero-icon"><i data-lucide="megaphone"></i></div><div><h2>${showTrash && !admin ? 'Lixeira de recados' : 'Central de recados'}</h2><p>${showTrash && !admin ? 'Recados nesta área ficam ocultos da sua caixa de entrada, sem apagar a comunicação para os demais professores.':'Leia os comunicados, marque como lidos e mantenha a sua caixa organizada.'}</p></div></div>
+            <div class="legado-message-count"><strong>${showTrash && !admin ? trash.length : unread}</strong><span>${showTrash && !admin ? (trash.length===1?'na lixeira':'na lixeira') : (unread===1?'não lido':'não lidos')}</span></div>
+          </div>
+          ${tabs}
+          <div class="v3-panel">
+            <div class="v3-panel-head"><div><h2>${showTrash && !admin ? 'Recados arquivados na lixeira' : (admin?'Comunicados publicados':'Sua caixa de recados')}</h2><p>${admin?'Os professores recebem o novo comunicado no topo do sistema.':showTrash?'Você pode restaurar qualquer recado retirado da entrada.':'O botão de lixeira remove o recado somente da sua visualização.'}</p></div></div>
+            <div class="legado-message-grid">${body}</div>
+          </div>`;
+      if (!admin && !showTrash) checkForNewAnnouncement(false);
+      if (typeof window.refreshIcons === 'function') window.refreshIcons();
+      await refreshMessageBadgeAndPage();
+    } catch (error) {
+      c.innerHTML = `<div class="v3-panel"><div class="v3-empty"><div class="v3-empty-icon"><i data-lucide="circle-alert"></i></div><strong>Não foi possível carregar os recados.</strong><span>${esc(error.message||'Verifique a conexão com o Supabase.')}</span><button class="btn btn-primary btn-sm" type="button" onclick="renderMessages()">Tentar novamente</button></div></div>`;
+      if (typeof window.refreshIcons === 'function') window.refreshIcons();
+    }
+  };
+  window.__legadoMessageTrash = function(value){ showTrash=Boolean(value); window.renderMessages(); };
+
+  // Mantém a publicação Master, mas adiciona a marcação de criação e o fluxo novo.
+  const originalMessageEditor = window.v3OpenMessageEditor;
+  window.v3OpenMessageEditor = function(){
+    if (!isMaster()) return;
+    const c = document.getElementById('recadosContent');
+    if (!c) return;
+    const old = document.getElementById('v3MessageEditor');
+    if (old) old.remove();
+    const holder = document.createElement('section');
+    holder.className = 'v3-panel legado-message-compose';
+    holder.id = 'v3MessageEditor';
+    holder.innerHTML = `<div class="v3-editor-head"><div><div class="v3-kicker">ADMINISTRAÇÃO</div><h3>Novo comunicado</h3><p>Todos os professores receberão o aviso no topo do sistema e na Central de recados.</p></div><button class="icon-button" onclick="v3CloseInline('v3MessageEditor')"><i data-lucide="x"></i></button></div><form id="v3MessageForm" class="v3-form"><div class="v3-form-grid"><label><span>Título *</span><input name="title" maxlength="120" required placeholder="Ex.: Aviso sobre a mensalidade"></label><label><span>Tipo</span><select name="type"><option>Comunicado</option><option>Aviso</option><option>Atualização</option><option>Importante</option></select></label><label class="full"><span>Mensagem *</span><textarea name="message" rows="7" maxlength="3000" required placeholder="Escreva o comunicado que os professores receberão..."></textarea></label></div><div class="v3-form-actions"><button class="btn btn-outline" type="button" onclick="v3CloseInline('v3MessageEditor')">Cancelar</button><button class="btn btn-primary" type="submit"><i data-lucide="send"></i>Publicar para todos</button></div></form>`;
+    c.insertBefore(holder,c.children[1]||null);
+    if (typeof window.refreshIcons === 'function') window.refreshIcons();
+    document.getElementById('v3MessageForm')?.addEventListener('submit',async e=>{
+      e.preventDefault();
+      const btn = e.currentTarget.querySelector('button[type="submit"]');
+      try {
+        btn?.classList.add('is-loading');
+        const fd = new FormData(e.currentTarget);
+        const title = String(fd.get('title')||'').trim();
+        const message = String(fd.get('message')||'').trim();
+        if (!title || !message) throw new Error('Preencha o título e a mensagem.');
+        const { error } = await supabaseClient.from(MSG_TABLE).insert({
+          user_id: state.user.id,
+          target_all: true,
+          title,
+          type: String(fd.get('type')||'Comunicado'),
+          message,
+          read: false
+        });
+        if (error) throw error;
+        holder.remove();
+        if (typeof window.showSuccess === 'function') window.showSuccess('Novo comunicado publicado para todos os professores.');
+        await renderMessages();
+      } catch(error){
+        if (typeof window.showError === 'function') window.showError(error.message||'Não foi possível publicar o comunicado.');
+      } finally { btn?.classList.remove('is-loading'); }
+    });
+  };
+  window.openMessageModal = window.v3OpenMessageEditor;
+
+  async function initMessagesCenter(){
+    if (!state.user || isMaster() || state.accessLocked) return;
+    ensureNoticeCss();
+    ensureNoticeNode();
+    await refreshMessageBadgeAndPage();
+    await checkForNewAnnouncement(false);
+
+    if (messagePollTimer) clearInterval(messagePollTimer);
+    messagePollTimer = setInterval(()=>{
+      if (!state.user || isMaster() || state.accessLocked) return;
+      checkForNewAnnouncement(false);
+      refreshMessageBadgeAndPage();
+    }, POLL_MS);
+
+    if (supabaseClient && typeof supabaseClient.channel === 'function' && !messageChannel) {
+      try {
+        messageChannel = supabaseClient
+          .channel('legado-messages-live')
+          .on('postgres_changes',{event:'INSERT',schema:'public',table:MSG_TABLE},payload=>{
+            if (state.user && !isMaster() && payload?.new?.target_all === true) {
+              checkForNewAnnouncement(true);
+              refreshMessageBadgeAndPage();
+            }
+          })
+          .subscribe();
+      } catch(error) { console.warn('[Recados] Realtime indisponível:',error); }
+    }
+  }
+
+  // O menu/tela é impedido quando o acesso foi bloqueado.
+  const originalNavigate = window.navigate;
+  window.navigate = function(view){
+    if (state.accessLocked && !isMaster()) {
+      if (typeof window.showExpiredScreen === 'function') {
+        applyExpiredMessage(state.profile || {});
+        window.showExpiredScreen();
+      }
+      return;
+    }
+    return typeof originalNavigate === 'function' ? originalNavigate(view) : undefined;
+  };
+
+  // Reinstala o listener de autenticação com a checagem contínua de acesso.
+  if (supabaseClient) {
+    supabaseClient.auth.onAuthStateChange(async (event, session)=>{
+      state.session = session;
+      state.user = session?.user || null;
+      if (event === 'SIGNED_OUT') {
+        state.profile = null;
+        state.accessLocked = false;
+        hideAnnouncement();
+        if (typeof window.showLoginScreen === 'function') window.showLoginScreen();
+        return;
+      }
+      if (state.user && ['SIGNED_IN','TOKEN_REFRESHED','USER_UPDATED'].includes(event)) {
+        await window.finishAuthentication();
+      }
+    });
+  }
+
+  ensureNoticeCss();
+  startAccessWatch();
+
+  // Inicialização após todos os scripts do arquivo estarem disponíveis.
+  const init = async ()=>{
+    if (!state.user) return;
+    const allowed = await enforceAccess(true);
+    if (allowed && !isMaster()) await initMessagesCenter();
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(init,50),{once:true});
+  else setTimeout(init,50);
+})();
+</script>
+
 </body>
 </html>
