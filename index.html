@@ -11168,7 +11168,7 @@ body.legado-v4-modal-open{overflow:hidden}
     if (!ids.length || !supabaseClient || !state.user) return new Map();
     const { data, error } = await supabaseClient
       .from(READS_TABLE)
-      .select('message_id,read_at,seen_at,dismissed_at,hidden_at,deleted_at')
+      .select('message_id,read_at,seen_at,dismissed_at,hidden_at')
       .eq('user_id',state.user.id)
       .in('message_id',ids);
     if (error) throw error;
@@ -11194,7 +11194,7 @@ body.legado-v4-modal-open{overflow:hidden}
         _seen: Boolean(rs.seen_at),
         _dismissed: Boolean(rs.dismissed_at),
         _hidden: Boolean(rs.hidden_at),
-        _deleted: Boolean(rs.deleted_at),
+        _deleted: false,
         _readState: rs
       };
     }).filter(row=>!row._deleted);
@@ -11851,7 +11851,7 @@ body.legado-v4-modal-open{overflow:hidden}
     const ok=window.confirm?.('Excluir este recado definitivamente da sua conta? Ele não será apagado para os demais professores.') ?? true;
     if(!ok) return;
     try{
-      await upsertRead(id,{deleted_at:new Date().toISOString(),hidden_at:new Date().toISOString()});
+      await upsertRead(id,{hidden_at:new Date().toISOString()});
       window.showSuccess?.('Recado excluído da sua conta.');
       await window.renderMessages?.();
     }catch(err){window.showError?.(err.message||'Não foi possível excluir o recado.');}
@@ -11918,6 +11918,313 @@ body.legado-v4-modal-open{overflow:hidden}
 
 <!-- FINAL-5: removido observer recursivo que causava travamento do navegador -->
 
+
+
+<!-- FINAL-6: correções de interface, status, financeiro e recados -->
+<script id="legado-final-fixes-v6">
+(function(){
+  'use strict';
+
+  const sb = window.supabaseClient;
+  const state = window.state || {};
+  const TABLE = window.TABLE || {};
+  const FINANCE_TABLE = TABLE.finance || 'financial_entries';
+  const PAYMENTS_TABLE = TABLE.payments || 'payments';
+  const STUDENTS_TABLE = TABLE.students || 'students';
+
+  const esc = v => typeof window.escapeHtml === 'function' ? window.escapeHtml(v ?? '') : String(v ?? '').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[m]));
+  const money = v => typeof window.formatCurrency === 'function' ? window.formatCurrency(Number(v||0)) : `R$ ${Number(v||0).toFixed(2).replace('.',',')}`;
+  const dateOnly = v => String(v||'').slice(0,10);
+  const userId = () => window.state?.user?.id || null;
+
+  function statusPt(value){
+    const key = String(value ?? '').trim().toLowerCase();
+    return ({
+      scheduled:'Agendado',
+      confirmed:'Confirmado',
+      in_progress:'Em andamento',
+      completed:'Concluído',
+      cancelled:'Cancelado',
+      canceled:'Cancelado',
+      pending:'Pendente',
+      overdue:'Em atraso',
+      paid:'Pago',
+      received:'Recebido',
+      draft:'Rascunho',
+      absent:'Faltou',
+      present:'Presente',
+      waiting:'Aguardando',
+      contacted:'Contato realizado'
+    })[key] || value || '—';
+  }
+  window.legadoStatusPt = statusPt;
+  window.statusLabel = statusPt;
+
+  function normalizeVisibleStatuses(root=document){
+    const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+    const nodes=[]; let n;
+    while((n=walker.nextNode())) nodes.push(n);
+    nodes.forEach(node=>{
+      const p=node.parentElement;
+      if(!p || /^(SCRIPT|STYLE|TEXTAREA|INPUT|OPTION)$/i.test(p.tagName)) return;
+      const original=node.nodeValue || '';
+      const replaced=original
+        .replace(/\bSCHEDULED\b/gi,'Agendado')
+        .replace(/\bCOMPLETED\b/gi,'Concluído')
+        .replace(/\bPENDING\b/gi,'Pendente')
+        .replace(/\bOVERDUE\b/gi,'Em atraso')
+        .replace(/\bCANCELLED\b/gi,'Cancelado')
+        .replace(/\bCANCELED\b/gi,'Cancelado')
+        .replace(/\bCONFIRMED\b/gi,'Confirmado')
+        .replace(/\bDRAFT\b/gi,'Rascunho');
+      if(replaced!==original) node.nodeValue=replaced;
+    });
+  }
+
+  function scheduleStatusFix(){
+    [80,280,700,1400].forEach(ms=>setTimeout(()=>normalizeVisibleStatuses(),ms));
+  }
+
+  /* ------------------------------------------------------------
+     FINANCEIRO NOVO
+  ------------------------------------------------------------ */
+  function monthKey(date){
+    const d=date instanceof Date?date:new Date(`${dateOnly(date)}T12:00:00`);
+    if(!Number.isFinite(d.getTime())) return '';
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  }
+  function monthLabel(key){
+    const [y,m]=String(key).split('-').map(Number);
+    const d=new Date(y,m-1,1);
+    return d.toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+  }
+  function methodLabel(v){
+    return ({pix:'Pix',cash:'Dinheiro',debit:'Débito',credit_spot:'Crédito à vista',credit_installment:'Crédito parcelado',transfer:'Transferência',boleto:'Boleto',card:'Cartão'})[String(v||'').toLowerCase()] || (v||'Não informado');
+  }
+  function financeDate(v){
+    const d=dateOnly(v);
+    return d ? new Date(`${d}T12:00:00`).toLocaleDateString('pt-BR') : '—';
+  }
+  function financeStatusClass(v){
+    const k=String(v||'pending').toLowerCase();
+    return ['paid','pending','overdue','cancelled','completed'].includes(k)?k:'pending';
+  }
+  async function loadFinanceV6(){
+    if(!sb || !userId()) return [];
+    const [{data:entries,error:entryError},{data:payments,error:paymentError}]=await Promise.all([
+      sb.from(FINANCE_TABLE).select('*').eq('user_id',userId()).order('competence_date',{ascending:false}).limit(3000),
+      sb.from(PAYMENTS_TABLE).select('*').eq('user_id',userId()).order('payment_date',{ascending:false}).limit(2000)
+    ]);
+    if(entryError && !String(entryError.message||'').toLowerCase().includes('does not exist')) throw entryError;
+    if(paymentError) throw paymentError;
+    const normalized=(entries||[]).map(e=>({
+      ...e,
+      legacy:false,
+      kind:e.kind||e.type||'income',
+      status:e.status||'pending',
+      competence_date:e.competence_date||e.entry_date||e.payment_date,
+      student_name:e.student_name||null
+    }));
+    const legacy=(payments||[])
+      .filter(p=>!normalized.some(e=>String(e.legacy_payment_id||'')===String(p.id)))
+      .map(p=>({
+        id:`legacy-${p.id}`,
+        legacy:true,
+        legacy_payment_id:p.id,
+        kind:'income',
+        amount:Number(p.amount||p.value||0),
+        status:p.status||'paid',
+        competence_date:p.payment_date||p.date,
+        due_date:p.payment_date||p.date,
+        description:p.description||p.student_name||'Recebimento',
+        payment_method:p.method||p.payment_method||'',
+        student_id:p.student_id||null,
+        student_name:p.student_name||null,
+        installment_total:1,
+        installment_number:1
+      }));
+    return [...normalized,...legacy];
+  }
+
+  function financeChart(entries, selectedKey){
+    const months=[];
+    const [yy,mm]=String(selectedKey).split('-').map(Number);
+    const base=new Date(yy,mm-1,1);
+    for(let i=5;i>=0;i--){
+      const d=new Date(base.getFullYear(),base.getMonth()-i,1);
+      months.push(monthKey(d));
+    }
+    const data=months.map(k=>{
+      const rows=entries.filter(e=>monthKey(e.competence_date||e.payment_date)===k);
+      return {label:new Date(`${k}-01T12:00:00`).toLocaleDateString('pt-BR',{month:'short'}).replace('.',''),
+        income:rows.filter(e=>e.kind!=='expense'&&e.status==='paid').reduce((s,e)=>s+Number(e.amount||0),0),
+        expense:rows.filter(e=>e.kind==='expense'&&e.status==='paid').reduce((s,e)=>s+Number(e.amount||0),0)};
+    });
+    const max=Math.max(1,...data.flatMap(x=>[x.income,x.expense]));
+    return `<div class="v6-fin-chart">${data.map(x=>`<div class="v6-chart-col"><div class="v6-chart-bars"><div class="v6-bar income" style="height:${Math.max(4,Math.round(x.income/max*150))}px" title="Recebido: ${esc(money(x.income))}"></div><div class="v6-bar expense" style="height:${Math.max(4,Math.round(x.expense/max*150))}px" title="Despesas: ${esc(money(x.expense))}"></div></div><strong>${esc(x.label)}</strong><small>${esc(money(x.income))}</small></div>`).join('')}</div><div class="v6-fin-legend"><span><i class="income"></i>Recebido</span><span><i class="expense"></i>Despesas</span></div>`;
+  }
+
+  window.v6DeleteFinanceEntry=async function(id,group,legacyPaymentId){
+    if(!sb||!userId()) return;
+    const allGroup=group && String(group).trim();
+    let question='Excluir este lançamento? Esta ação não poderá ser desfeita.';
+    if(allGroup) question='Este lançamento possui parcelas. Excluir somente esta parcela ou todas as parcelas deste lançamento?\n\nOK = todas\nCancelar = somente esta';
+    const whole=allGroup ? window.confirm(question) : window.confirm(question);
+    try{
+      if(legacyPaymentId){
+        const {error}=await sb.from(PAYMENTS_TABLE).delete().eq('id',legacyPaymentId).eq('user_id',userId());
+        if(error) throw error;
+      }else if(allGroup && whole){
+        const {error}=await sb.from(FINANCE_TABLE).delete().eq('user_id',userId()).eq('installment_group',group);
+        if(error) throw error;
+      }else{
+        const {error}=await sb.from(FINANCE_TABLE).delete().eq('user_id',userId()).eq('id',id);
+        if(error) throw error;
+      }
+      window.showSuccess?.('Lançamento excluído do Financeiro.');
+      await window.renderFinance?.();
+    }catch(err){ window.showError?.('Não foi possível excluir o lançamento: '+(err.message||err)); }
+  };
+
+  window.renderFinance=async function(){
+    const c=document.getElementById('financeiroContent'); if(!c) return;
+    const month=new Date(window.V3?.financeMonth instanceof Date?window.V3.financeMonth:new Date());
+    const key=monthKey(month);
+    c.innerHTML=`
+      <div class="v6-fin-page">
+        <div class="v6-fin-header">
+          <div><div class="v6-eyebrow">GESTÃO FINANCEIRA</div><h1>Financeiro</h1><p>Uma visão clara do que você lançou, recebeu, ainda precisa receber e pagou.</p></div>
+          <button class="btn btn-primary" type="button" onclick="openPaymentModal()"><i data-lucide="plus"></i>Novo lançamento</button>
+        </div>
+        <div class="v6-fin-how"><div class="v6-how-icon"><i data-lucide="circle-help"></i></div><div><strong>Como organizar este mês</strong><span>1. Lance a cobrança ou despesa. 2. Deixe como <b>Pendente</b> até receber. 3. Ao receber, use <b>Registrar pagamento</b>. 4. Se lançar errado, use <b>Excluir</b> na linha correspondente.</span></div></div>
+        <div class="v6-monthbar"><button class="icon-button" type="button" onclick="window.V3.financeMonth=new Date(${month.getFullYear()},${month.getMonth()-1},1);renderFinance()"><i data-lucide="chevron-left"></i></button><div><span>PERÍODO</span><strong id="v6FinanceMonthLabel">${esc(monthLabel(key))}</strong></div><button class="icon-button" type="button" onclick="window.V3.financeMonth=new Date(${month.getFullYear()},${month.getMonth()+1},1);renderFinance()"><i data-lucide="chevron-right"></i></button><button class="btn btn-outline btn-sm" type="button" onclick="window.V3.financeMonth=new Date();renderFinance()">Mês atual</button></div>
+        <div id="v6FinKpis" class="v6-fin-kpis"></div>
+        <div class="v6-fin-grid-top"><section class="v6-fin-card"><div class="v6-fin-card-head"><div><h2>Evolução</h2><span>Recebimentos e despesas pagas nos últimos 6 meses</span></div></div><div id="v6FinChart"></div></section><section class="v6-fin-card"><div class="v6-fin-card-head"><div><h2>A receber</h2><span>Contas que ainda precisam de atenção</span></div></div><div id="v6FinPending"></div></section></div>
+        <section class="v6-fin-card v6-fin-accounts"><div class="v6-fin-card-head v6-fin-accounts-head"><div><h2>Contas e pagamentos</h2><span>Consulte, registre, exclua e acompanhe cada lançamento.</span></div><div class="v6-fin-filters"><input id="v6FinSearch" placeholder="Buscar aluno ou descrição..."><select id="v6FinStatus"><option value="all">Todos os status</option><option value="pending">Pendente</option><option value="paid">Pago</option><option value="overdue">Em atraso</option></select><select id="v6FinKind"><option value="all">Receitas e despesas</option><option value="income">Receitas</option><option value="expense">Despesas</option></select></div></div><div id="v6FinRows"></div></section>
+      </div>`;
+    window.refreshIcons?.();
+    try{
+      const entries=await loadFinanceV6();
+      const current=entries.filter(e=>monthKey(e.competence_date||e.payment_date)===key);
+      const income=current.filter(e=>e.kind!=='expense');
+      const expenses=current.filter(e=>e.kind==='expense');
+      const received=income.filter(e=>e.status==='paid').reduce((s,e)=>s+Number(e.amount||0),0);
+      const receivable=income.filter(e=>!['paid','cancelled'].includes(String(e.status||'').toLowerCase())).reduce((s,e)=>s+Number(e.amount||0),0);
+      const spent=expenses.filter(e=>e.status==='paid').reduce((s,e)=>s+Number(e.amount||0),0);
+      const result=received-spent;
+      const kpis=[['arrow-down-left','Recebido',money(received),'Pagamentos confirmados', 'positive'],['clock-3','A receber',money(receivable),'Pendências do período','warning'],['arrow-up-right','Despesas',money(spent),'Saídas já pagas','neutral'],['scale','Resultado',money(result),result>=0?'Recebimentos menos despesas':'Despesas acima dos recebimentos',result<0?'negative':'positive']];
+      document.getElementById('v6FinKpis').innerHTML=kpis.map(k=>`<div class="v6-fin-kpi ${k[4]}"><div class="v6-kpi-icon"><i data-lucide="${k[0]}"></i></div><div><span>${esc(k[1])}</span><strong>${esc(k[2])}</strong><small>${esc(k[3])}</small></div></div>`).join('');
+      document.getElementById('v6FinChart').innerHTML=financeChart(entries,key);
+      const pendMap=new Map();
+      income.filter(e=>!['paid','cancelled'].includes(String(e.status||''))).forEach(e=>{const k=String(e.student_id||e.student_name||e.id);const row=pendMap.get(k)||{name:e.student_name||'Sem aluno',amount:0,count:0};row.amount+=Number(e.amount||0);row.count++;pendMap.set(k,row);});
+      const pend=[...pendMap.values()].sort((a,b)=>b.amount-a.amount).slice(0,8);
+      document.getElementById('v6FinPending').innerHTML=pend.length?`<div class="v6-pending-list">${pend.map(p=>`<div class="v6-pending-row"><div><strong>${esc(p.name)}</strong><span>${p.count} lançamento${p.count===1?'':'s'} pendente${p.count===1?'':'s'}</span></div><b>${esc(money(p.amount))}</b></div>`).join('')}</div><div class="v6-pending-total"><span>Total a receber</span><strong>${esc(money(receivable))}</strong></div>`:`<div class="v6-fin-empty"><i data-lucide="badge-check"></i><strong>Nenhuma pendência neste período.</strong><span>Os recebimentos pagos aparecem nas contas abaixo.</span></div>`;
+      const renderRows=()=>{
+        const q=String(document.getElementById('v6FinSearch')?.value||'').trim().toLowerCase();
+        const st=String(document.getElementById('v6FinStatus')?.value||'all');
+        const kind=String(document.getElementById('v6FinKind')?.value||'all');
+        const list=current.filter(e=>{const text=[e.student_name,e.description,methodLabel(e.payment_method)].join(' ').toLowerCase();return (!q||text.includes(q))&&(st==='all'||String(e.status||'')===st)&&(kind==='all'||(e.kind||'income')===kind);});
+        document.getElementById('v6FinRows').innerHTML=list.length?`<div class="v6-account-table"><div class="v6-account-head"><span>Data</span><span>Conta / aluno</span><span>Tipo</span><span>Valor</span><span>Situação</span><span>Ações</span></div>${list.map(e=>{const paid=e.status==='paid'; const cls=financeStatusClass(e.status); const group=e.installment_group?String(e.installment_group):''; const installment=Number(e.installment_total||1)>1?`<small>Parcela ${e.installment_number||1}/${e.installment_total}</small>`:''; return `<div class="v6-account-row"><div><strong>${esc(financeDate(e.competence_date||e.payment_date))}</strong>${e.due_date&&dateOnly(e.due_date)!==dateOnly(e.competence_date)?`<small>Venc. ${esc(financeDate(e.due_date))}</small>`:''}</div><div class="v6-account-main"><strong>${esc(e.student_name||e.description||'Lançamento')}</strong>${e.student_name&&e.description?`<span>${esc(e.description)}</span>`:''}${installment}</div><div><span class="v6-kind ${e.kind==='expense'?'expense':'income'}">${e.kind==='expense'?'Despesa':'Receita'}</span>${e.payment_method?`<small>${esc(methodLabel(e.payment_method))}</small>`:''}</div><div><strong>${esc(money(e.amount))}</strong></div><div><span class="status-pill ${cls}">${esc(statusPt(e.status))}</span>${paid&&e.paid_at?`<small>Pago em ${esc(financeDate(e.paid_at))}</small>`:''}</div><div class="v6-account-actions">${e.kind!=='expense'&&!paid&&!e.legacy?`<button class="v6-action primary" type="button" onclick="legadoMarkFinancePaidWithMethod('${esc(e.id)}')"><i data-lucide="circle-check"></i>Registrar</button>`:''}<button class="v6-action danger" type="button" title="Excluir lançamento" onclick="v6DeleteFinanceEntry('${esc(e.id)}','${esc(group)}','${esc(e.legacy_payment_id||'')}')"><i data-lucide="trash-2"></i>Excluir</button></div></div>`}).join('')}</div>`:`<div class="v6-fin-empty"><i data-lucide="receipt"></i><strong>Nenhum lançamento encontrado.</strong><span>Altere os filtros ou use “Novo lançamento” para registrar a primeira conta.</span></div>`;
+        window.refreshIcons?.();
+        normalizeVisibleStatuses(document.getElementById('v6FinRows'));
+      };
+      renderRows();
+      document.getElementById('v6FinSearch')?.addEventListener('input',renderRows);
+      document.getElementById('v6FinStatus')?.addEventListener('change',renderRows);
+      document.getElementById('v6FinKind')?.addEventListener('change',renderRows);
+      window.refreshIcons?.();
+    }catch(err){
+      c.innerHTML=`<div class="v6-fin-error"><i data-lucide="circle-alert"></i><strong>Não foi possível carregar o Financeiro.</strong><span>${esc(err.message||err)}</span><button class="btn btn-primary btn-sm" type="button" onclick="renderFinance()">Tentar novamente</button></div>`;
+      window.refreshIcons?.();
+    }
+    scheduleStatusFix();
+  };
+
+  /* ------------------------------------------------------------
+     RECADOS: usa hidden_at como exclusão pessoal e não depende de deleted_at
+  ------------------------------------------------------------ */
+  window.v6DeleteMessage=async function(id){
+    if(!sb||!userId()||!id) return;
+    const ok=window.confirm?.('Excluir este recado da sua conta? Ele continuará disponível para os demais professores.') ?? true;
+    if(!ok) return;
+    try{
+      const {error}=await sb.from('message_reads').upsert({message_id:String(id),user_id:userId(),hidden_at:new Date().toISOString()},{onConflict:'message_id,user_id'});
+      if(error) throw error;
+      window.showSuccess?.('Recado movido para a lixeira.');
+      window.__legadoMessageTrash?.(false);
+      await window.renderMessages?.();
+    }catch(err){ window.showError?.('Não foi possível excluir o recado: '+(err.message||err)); }
+  };
+
+  /* Se o módulo anterior renderizar um botão simples de lixeira, substituímos por um botão visível. */
+  function enhanceMessageButtons(){
+    document.querySelectorAll('#recadosContent .legado-message-card').forEach(card=>{
+      const onclicks=Array.from(card.querySelectorAll('[onclick]')).map(x=>x.getAttribute('onclick')||'');
+      const match=onclicks.map(x=>x.match(/(?:v3ReadMessage|v3RestoreMessage)\(['"]([^'"]+)['"]\)/)).find(Boolean);
+      const id=match?.[1];
+      if(!id) return;
+      const actions=card.querySelector('.legado-message-card-actions');
+      if(!actions) return;
+      if(!card.classList.contains('in-trash')){
+        if(!actions.querySelector('.v6-msg-delete')){
+          const b=document.createElement('button'); b.type='button'; b.className='legado-trash v6-msg-delete'; b.title='Excluir recado'; b.innerHTML='<i data-lucide="trash-2"></i><span>Excluir</span>'; b.onclick=()=>window.v6DeleteMessage(id); actions.appendChild(b);
+        }
+      }
+    });
+    window.refreshIcons?.();
+  }
+  const oldRenderMessages=window.renderMessages;
+  if(typeof oldRenderMessages==='function' && !oldRenderMessages.__v6Wrapped){
+    const wrapped=async function(){ await oldRenderMessages.apply(this,arguments); setTimeout(enhanceMessageButtons,30); scheduleStatusFix(); };
+    wrapped.__v6Wrapped=true; window.renderMessages=wrapped;
+  }
+
+  /* ------------------------------------------------------------
+     STATUS / NAVEGAÇÃO
+  ------------------------------------------------------------ */
+  const oldNavigate=window.navigate;
+  if(typeof oldNavigate==='function' && !oldNavigate.__v6Wrapped){
+    const wrapped=function(){ const result=oldNavigate.apply(this,arguments); scheduleStatusFix(); setTimeout(enhanceMessageButtons,350); return result; };
+    wrapped.__v6Wrapped=true; window.navigate=wrapped;
+  }
+  scheduleStatusFix();
+
+  /* CSS */
+  if(!document.getElementById('legado-v6-final-css')){
+    const style=document.createElement('style');
+    style.id='legado-v6-final-css';
+    style.textContent=`
+      .v6-fin-page{padding-bottom:34px}
+      .v6-fin-header{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:16px}
+      .v6-fin-header h1{margin:2px 0 6px;color:#263a32;font-size:28px;letter-spacing:-.035em}
+      .v6-fin-header p{margin:0;color:#748178;font-size:12px;line-height:1.55;max-width:700px}
+      .v6-eyebrow{font-size:9px;font-weight:800;letter-spacing:.14em;color:#6b8c7c;text-transform:uppercase}
+      .v6-fin-how{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border:1px solid #dfe9e3;border-radius:16px;background:#f6faf7;margin-bottom:16px;color:#64736b}
+      .v6-how-icon{width:34px;height:34px;flex:0 0 34px;display:grid;place-items:center;border-radius:10px;background:#e2efe8;color:#5f8f7a}
+      .v6-fin-how strong{display:block;color:#3d5047;font-size:12px;margin-bottom:3px}
+      .v6-fin-how span{font-size:11px;line-height:1.55}
+      .v6-monthbar{display:flex;align-items:center;gap:9px;margin-bottom:16px;padding:10px 12px;border:1px solid #e2eae6;border-radius:14px;background:#fff;width:max-content;max-width:100%}
+      .v6-monthbar>div{min-width:190px;text-align:center}.v6-monthbar>div span{display:block;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:#93a098;font-weight:800}.v6-monthbar>div strong{display:block;margin-top:2px;font-size:14px;color:#3b4e45;white-space:nowrap}
+      .v6-fin-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
+      .v6-fin-kpi{display:flex;gap:11px;align-items:center;padding:15px;border:1px solid #e1e9e5;border-radius:16px;background:#fff;box-shadow:0 3px 14px rgba(35,55,46,.035)}
+      .v6-kpi-icon{width:38px;height:38px;flex:0 0 38px;display:grid;place-items:center;border-radius:12px;background:#edf4ef;color:#557b68}.v6-fin-kpi.warning .v6-kpi-icon{background:#fff4e6;color:#b7792f}.v6-fin-kpi.negative .v6-kpi-icon{background:#fff0f0;color:#b85b5b}
+      .v6-fin-kpi span,.v6-fin-kpi small{display:block}.v6-fin-kpi span{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#809089}.v6-fin-kpi strong{display:block;margin:4px 0 2px;color:#2f4038;font-size:18px}.v6-fin-kpi small{color:#87938d;font-size:9px;line-height:1.35}
+      .v6-fin-grid-top{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(320px,.9fr);gap:16px;margin-bottom:16px}
+      .v6-fin-card{border:1px solid #e0e8e3;border-radius:18px;background:#fff;padding:17px;box-shadow:0 4px 18px rgba(32,55,44,.035);min-width:0}
+      .v6-fin-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:13px}.v6-fin-card-head h2{margin:0;color:#35483f;font-size:15px;white-space:nowrap}.v6-fin-card-head span{display:block;margin-top:4px;color:#89958f;font-size:10px;line-height:1.45}
+      .v6-fin-chart{height:190px;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));align-items:end;gap:10px;padding:6px 3px 0}.v6-chart-col{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;min-width:0;height:100%}.v6-chart-bars{height:156px;display:flex;align-items:flex-end;gap:4px}.v6-bar{width:11px;border-radius:7px 7px 2px 2px}.v6-bar.income{background:#6f9c86}.v6-bar.expense{background:#c9938a}.v6-chart-col strong{margin-top:7px;font-size:9px;color:#5c6b63}.v6-chart-col small{margin-top:3px;font-size:7px;color:#98a29d;white-space:nowrap}.v6-fin-legend{display:flex;justify-content:center;gap:18px;margin-top:10px;color:#7c8983;font-size:9px}.v6-fin-legend span{display:flex;gap:6px;align-items:center}.v6-fin-legend i{width:9px;height:9px;border-radius:3px;display:inline-block}.v6-fin-legend i.income{background:#6f9c86}.v6-fin-legend i.expense{background:#c9938a}
+      .v6-pending-list{display:grid;gap:8px}.v6-pending-row{display:flex;justify-content:space-between;gap:12px;padding:10px 11px;border:1px solid #e7edea;border-radius:11px;background:#fafcfb}.v6-pending-row strong{display:block;font-size:11px;color:#4a5c53;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:230px}.v6-pending-row span{display:block;margin-top:3px;font-size:9px;color:#909b96}.v6-pending-row b{font-size:12px;color:#3c5e4d;white-space:nowrap}.v6-pending-total{display:flex;justify-content:space-between;gap:12px;margin-top:11px;padding-top:11px;border-top:1px solid #e7edea}.v6-pending-total span{font-size:10px;color:#77857e}.v6-pending-total strong{font-size:16px;color:#34483e}
+      .v6-fin-accounts{padding-bottom:8px}.v6-fin-accounts-head{align-items:flex-end}.v6-fin-filters{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}.v6-fin-filters input,.v6-fin-filters select{height:36px;padding:8px 10px;border:1px solid #dce5e1;border-radius:10px;background:#fff;color:#44544c;font:inherit;font-size:10px;outline:none}.v6-fin-filters input{width:220px}.v6-fin-filters input:focus,.v6-fin-filters select:focus{border-color:#87a897;box-shadow:0 0 0 3px rgba(95,143,122,.08)}
+      .v6-account-table{width:100%;overflow:auto}.v6-account-head,.v6-account-row{display:grid;grid-template-columns:100px minmax(180px,1.8fr) 110px 100px 135px 150px;gap:12px;align-items:center;min-width:820px}.v6-account-head{padding:9px 10px;border-bottom:1px solid #e5ece8;color:#85918b;font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.08em}.v6-account-row{padding:12px 10px;border-bottom:1px solid #eef2ef}.v6-account-row:last-child{border-bottom:0}.v6-account-row>div{min-width:0}.v6-account-row strong{display:block;color:#46584f;font-size:11px;overflow:hidden;text-overflow:ellipsis}.v6-account-row small{display:block;margin-top:4px;color:#909b96;font-size:8px}.v6-account-main span{display:block;margin-top:4px;color:#849089;font-size:9px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.v6-kind{display:inline-flex;padding:4px 7px;border-radius:999px;font-size:8px;font-weight:800}.v6-kind.income{background:#edf6f0;color:#547765}.v6-kind.expense{background:#fff0f0;color:#9d6a6a}.v6-account-actions{display:flex;gap:6px;flex-wrap:wrap}.v6-action{display:inline-flex;align-items:center;gap:5px;min-height:30px;padding:6px 8px;border-radius:9px;border:1px solid #dfe7e3;background:#fff;font-size:9px;font-weight:800;cursor:pointer}.v6-action svg{width:13px;height:13px}.v6-action.primary{color:#4d765f;background:#eff6f1}.v6-action.danger{color:#9d6868;background:#fff5f5;border-color:#efdede}.v6-action.danger:hover{background:#ffeded}.v6-fin-empty,.v6-fin-error{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;padding:34px 20px;color:#7e8b84}.v6-fin-empty svg,.v6-fin-error svg{width:28px;height:28px}.v6-fin-empty strong,.v6-fin-error strong{font-size:13px;color:#52635b}.v6-fin-empty span,.v6-fin-error span{max-width:540px;font-size:10px;line-height:1.5}
+      .v6-msg-delete{min-height:32px;padding:6px 9px!important;display:inline-flex!important;align-items:center;gap:5px}.v6-msg-delete span{font-size:9px}.legado-message-card-actions{min-width:0}
+      @media(max-width:1050px){.v6-fin-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.v6-fin-grid-top{grid-template-columns:1fr}.v6-fin-accounts-head{align-items:flex-start;flex-direction:column}.v6-fin-filters{width:100%;justify-content:flex-start}.v6-fin-filters input{flex:1;min-width:180px}}
+      @media(max-width:650px){.v6-fin-header{flex-direction:column}.v6-fin-header .btn{width:100%}.v6-fin-kpis{grid-template-columns:1fr}.v6-monthbar{width:100%;justify-content:center}.v6-monthbar>div{min-width:0;flex:1}.v6-fin-filters{display:grid;grid-template-columns:1fr 1fr;width:100%}.v6-fin-filters input{grid-column:1/-1;width:auto}.v6-fin-card{padding:14px}.v6-fin-card-head h2{font-size:14px}.v6-fin-chart{gap:5px}.v6-bar{width:8px}.v6-account-table{margin:0 -3px}.v6-account-head,.v6-account-row{grid-template-columns:90px minmax(175px,1.5fr) 85px 95px 115px 140px;min-width:770px}}
+    `;
+    document.head.appendChild(style);
+  }
+
+})();
+</script>
 
 </body>
 </html>
