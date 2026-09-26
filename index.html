@@ -10610,5 +10610,288 @@ body.legado-v4-modal-open{overflow:hidden}
   @media(max-width:600px){.mpro-kpis{grid-template-columns:1fr 1fr}.mpro-action-grid{grid-template-columns:1fr}.mpro-fin-summary,.mpro-diagnostic{grid-template-columns:1fr}.mpro-filter-box{grid-template-columns:1fr}.mpro-profile-strip{grid-template-columns:1fr 1fr}.mpro-row{grid-template-columns:1fr 90px}.mpro-row>span{grid-column:1}.mpro-row>button{grid-column:2;grid-row:1 / span 2}.mpro-card-actions{align-items:flex-start;flex-direction:column}.mpro-card-actions>div{width:100%}.mpro-card-actions button{flex:1}}
 </style>
 
+
+<!-- ============================================================
+     MASTER SAAS — CADASTRO AUTH + PERFIS + ACESSO + PAGAMENTO
+     Camada final: substitui a administração somente-HTML por um
+     fluxo seguro via Supabase Edge Function.
+     ============================================================ -->
+<script>
+(function(){
+  'use strict';
+  const FN_NAME='master-admin';
+  const MASTER_EMAIL='contato@legadoqueensina.com.br';
+
+  function masterClient(){ return window.supabaseClient||null; }
+  function masterUser(){ return window.state?.user||null; }
+  function isMaster(){
+    const u=masterUser();
+    const p=window.state?.profile||{};
+    return !!(u && (
+      String(u.email||'').toLowerCase()===MASTER_EMAIL ||
+      p.is_master===true || String(p.role||'').toLowerCase()==='master' ||
+      String(p.role||'').toLowerCase()==='admin' ||
+      String(u.user_metadata?.role||'').toLowerCase()==='master'
+    ));
+  }
+  function escM(v){
+    return String(v??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;');
+  }
+  function moneyM(v){
+    return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number(v||0)||0);
+  }
+  function dateOnlyM(v){
+    if(!v)return '';
+    const d=new Date(v); if(Number.isNaN(d.getTime()))return '';
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+  function dateBR(v){
+    if(!v)return '—'; const d=new Date(v); if(Number.isNaN(d.getTime()))return '—';
+    return d.toLocaleDateString('pt-BR');
+  }
+  function accessStateM(row){
+    if(row?.blocked) return {key:'blocked',label:'Bloqueado manualmente'};
+    if(row?.access_expires_at){
+      const t=new Date(row.access_expires_at).getTime();
+      if(Number.isFinite(t) && t<Date.now()) return {key:'expired',label:'Acesso vencido'};
+      if(Number.isFinite(t)){
+        const days=Math.max(0,Math.ceil((t-Date.now())/86400000));
+        return days<=7?{key:'attention',label:days===0?'Vence hoje':`Vence em ${days} dia${days===1?'':'s'}`}:{key:'active',label:`Ativo · ${days} dias`};
+      }
+    }
+    return {key:'active',label:'Ativo · sem vencimento'};
+  }
+  function paymentStateM(row){
+    return String(row?.payment_status|| (row?.last_payment_at?'paid':'pending')).toLowerCase();
+  }
+  async function invoke(action,payload={}){
+    const sb=masterClient();
+    if(!sb) throw new Error('Supabase não está disponível.');
+    const {data,error}=await sb.functions.invoke(FN_NAME,{body:{action,...payload}});
+    if(error) throw new Error(error.message||'Erro ao chamar a administração segura.');
+    if(data?.error) throw new Error(data.error);
+    return data;
+  }
+  async function ensureEdgeFunction(){
+    return !!masterClient()?.functions?.invoke;
+  }
+
+  function expiredScreenEnhance(){
+    const screen=document.getElementById('expiredScreen'); if(!screen)return;
+    const card=screen.querySelector('.expired-card'); if(!card)return;
+    if(document.getElementById('legadoExpiredAccessBox'))return;
+    const box=document.createElement('div');
+    box.id='legadoExpiredAccessBox';
+    box.style.cssText='margin:0 0 18px;padding:14px 15px;border:1px solid #eadfdc;border-radius:14px;background:#fff8f6;color:#6e5b56;text-align:left;font-size:12px;line-height:1.55;';
+    box.innerHTML='<strong style="display:block;color:#6b4a43;margin-bottom:3px">Acesso encerrado</strong><span>O prazo definido pela administração terminou. O sistema permanece indisponível até que a conta seja renovada ou liberada.</span>';
+    const btn=document.getElementById('expiredContactButton');
+    btn?.parentElement?.insertBefore(box,btn);
+  }
+  const oldShowExpired=window.showExpiredScreen;
+  if(typeof oldShowExpired==='function'&&!oldShowExpired.__saas){
+    const fn=function(){ oldShowExpired.apply(this,arguments); expiredScreenEnhance(); if(typeof window.updateExpiredContactLink==='function')window.updateExpiredContactLink(); };
+    fn.__saas=true; window.showExpiredScreen=fn;
+  }
+
+  async function checkAccessNow(){
+    const s=window.state||{};
+    if(!s.user||isMaster())return true;
+    try{
+      if(typeof window.loadUserProfile==='function') await window.loadUserProfile();
+      const p=window.state?.profile||{};
+      const expiry=p.access_expires_at?new Date(p.access_expires_at).getTime():null;
+      if(p.blocked===true || (Number.isFinite(expiry)&&expiry<Date.now())){
+        window.showExpiredScreen?.();
+        return false;
+      }
+      return true;
+    }catch(e){
+      console.warn('[Acesso] Não foi possível revalidar agora:',e);
+      return true;
+    }
+  }
+  setInterval(()=>{ if(window.state?.user&&!isMaster()&&window.state?.currentView!=='master') checkAccessNow(); },60000);
+
+  function statM(icon,label,value,sub,kind=''){
+    return `<div class="saas-kpi ${kind}"><div class="saas-kpi-icon"><i data-lucide="${escM(icon)}"></i></div><div><span>${escM(label)}</span><strong>${escM(value)}</strong><small>${escM(sub)}</small></div></div>`;
+  }
+  function emptyM(title,text,button=''){
+    return `<div class="saas-empty"><div class="saas-empty-icon"><i data-lucide="inbox"></i></div><h3>${escM(title)}</h3><p>${escM(text)}</p>${button}</div>`;
+  }
+  function roleLabel(row){
+    const r=String(row?.role||'professional').toLowerCase();
+    if(['master','admin'].includes(r)||row?.is_master)return 'Master';
+    if(r==='coordinator')return 'Coordenador';
+    return 'Professor';
+  }
+
+  function teacherCardM(r){
+    const a=accessStateM(r); const ps=paymentStateM(r);
+    const paymentLabel=ps==='paid'?'Pago':ps==='courtesy'?'Cortesia':ps==='overdue'?'Em atraso':'Pendente';
+    const paymentClass=ps==='paid'?'good':ps==='courtesy'?'info':ps==='overdue'?'bad':'warn';
+    const exp=r.access_expires_at?dateBR(r.access_expires_at):'Sem vencimento';
+    const searchable=[r.full_name,r.name,r.email,r.phone,r.specialty,r.services].join(' ').toLowerCase();
+    return `<article class="saas-teacher-card" data-search="${escM(searchable)}" data-access="${escM(a.key)}" data-payment="${escM(ps)}">
+      <div class="saas-teacher-top">
+        <div class="saas-avatar">${r.photo_url?`<img src="${escM(r.photo_url)}" alt="">`:`<span>${escM(String(r.full_name||r.email||'P').split(/\s+/).map(x=>x[0]).slice(0,2).join('').toUpperCase())}</span>`}</div>
+        <div class="saas-teacher-id"><h3>${escM(r.full_name||r.name||'Professor sem nome')}</h3><p>${escM(r.email||'E-mail não informado')}</p><div class="saas-badges"><span class="saas-badge neutral">${escM(roleLabel(r))}</span><span class="saas-badge ${a.key==='active'?'good':a.key==='attention'?'warn':'bad'}">${escM(a.label)}</span><span class="saas-badge ${paymentClass}">Pagamento: ${escM(paymentLabel)}</span></div></div>
+        <button class="saas-icon" type="button" title="Abrir cadastro" onclick="window.saasOpenTeacher('${escM(r.id)}')"><i data-lucide="external-link"></i></button>
+      </div>
+      <div class="saas-facts"><div><small>Acesso</small><strong>${escM(exp)}</strong></div><div><small>Último pagamento</small><strong>${r.last_payment_at?escM(dateBR(r.last_payment_at)):'Não registrado'}</strong></div><div><small>Valor</small><strong>${r.payment_amount!=null?escM(moneyM(r.payment_amount)):'—'}</strong></div><div><small>Especialidade</small><strong>${escM(r.specialty||'Não informada')}</strong></div></div>
+      <div class="saas-card-actions"><button class="saas-secondary" type="button" onclick="window.saasSetAccess('${escM(r.id)}',30)"><i data-lucide="calendar-plus"></i>+30 dias</button><button class="saas-secondary" type="button" onclick="window.saasSetPayment('${escM(r.id)}')"><i data-lucide="receipt"></i>Pagamento</button><button class="saas-primary" type="button" onclick="window.saasOpenTeacher('${escM(r.id)}')"><i data-lucide="settings-2"></i>Gerenciar conta</button></div>
+    </article>`;
+  }
+
+  function teacherDrawerM(r){
+    const p=r||{}; const a=accessStateM(p); const pay=paymentStateM(p);
+    return `<div class="saas-drawer-backdrop" id="saasDrawer" data-close-drawer><aside class="saas-drawer" onclick="event.stopPropagation()">
+      <header class="saas-drawer-head"><div><span>GESTÃO DE CONTA</span><h2>${escM(p.full_name||p.email||'Professor')}</h2><p>${escM(p.email||'')}</p></div><button class="saas-icon" type="button" onclick="window.saasCloseDrawer()"><i data-lucide="x"></i></button></header>
+      <form id="saasTeacherForm" class="saas-form">
+        <input type="hidden" name="id" value="${escM(p.id||'')}">
+        <section class="saas-section"><div class="saas-section-title"><i data-lucide="user-round"></i>Perfil profissional</div><div class="saas-grid2">
+          <label><span>Nome completo</span><input name="full_name" value="${escM(p.full_name||p.name||'')}" required></label>
+          <label><span>E-mail de acesso</span><input name="email" value="${escM(p.email||'')}" type="email" readonly></label>
+          <label><span>Telefone</span><input name="phone" value="${escM(p.phone||'')}"></label>
+          <label><span>Especialidade</span><input name="specialty" value="${escM(p.specialty||'')}"></label>
+          <label><span>O que atende</span><input name="services" value="${escM(p.services||'')}"></label>
+          <label><span>Foto por URL</span><input name="photo_url" value="${escM(p.photo_url||'')}"></label>
+          <label class="full"><span>Apresentação</span><textarea name="bio" rows="3">${escM(p.bio||'')}</textarea></label>
+        </div></section>
+        <section class="saas-section"><div class="saas-section-title"><i data-lucide="calendar-clock"></i>Acesso ao sistema</div><div class="saas-grid2">
+          <label><span>Vencimento</span><input name="access_expires_at" type="date" value="${escM(dateOnlyM(p.access_expires_at))}"></label>
+          <label><span>Situação</span><select name="blocked"><option value="0" ${!p.blocked?'selected':''}>Liberado</option><option value="1" ${p.blocked?'selected':''}>Bloqueado</option></select></label>
+        </div><div class="saas-access-box"><strong>${escM(a.label)}</strong><span>${p.access_expires_at?'Vencimento em '+dateBR(p.access_expires_at):'Sem vencimento definido'}</span></div></section>
+        <section class="saas-section"><div class="saas-section-title"><i data-lucide="wallet-cards"></i>Plano e pagamento</div><div class="saas-grid2">
+          <label><span>Nome do plano</span><input name="plan_name" value="${escM(p.plan_name||'')}" placeholder="Ex.: Plano Mensal"></label>
+          <label><span>Valor do plano</span><input name="plan_price" type="number" min="0" step="0.01" value="${escM(p.plan_price??'')}" placeholder="0,00"></label>
+          <label><span>Status do pagamento</span><select name="payment_status"><option value="pending" ${pay==='pending'?'selected':''}>Pendente</option><option value="paid" ${pay==='paid'?'selected':''}>Pago</option><option value="overdue" ${pay==='overdue'?'selected':''}>Em atraso</option><option value="courtesy" ${pay==='courtesy'?'selected':''}>Cortesia</option></select></label>
+          <label><span>Data do pagamento</span><input name="last_payment_at" type="date" value="${escM(dateOnlyM(p.last_payment_at))}"></label>
+          <label><span>Forma de pagamento</span><select name="payment_method"><option value="">Selecionar</option>${['PIX','Transferência','Cartão','Dinheiro','Boleto','Outro'].map(x=>`<option value="${escM(x)}" ${p.payment_method===x?'selected':''}>${escM(x)}</option>`).join('')}</select></label>
+          <label><span>Valor pago</span><input name="payment_amount" type="number" min="0" step="0.01" value="${escM(p.payment_amount??'')}"></label>
+          <label class="full"><span>Observação financeira</span><textarea name="payment_notes" rows="3">${escM(p.payment_notes||'')}</textarea></label>
+        </div></section>
+        <section class="saas-section"><div class="saas-section-title"><i data-lucide="lock-keyhole"></i>Credenciais</div><div class="saas-grid2">
+          <label><span>Nova senha (opcional)</span><input name="new_password" type="password" minlength="6" placeholder="Deixe em branco para manter"></label>
+          <div class="saas-credential-note"><i data-lucide="info"></i><span>O professor usa o e-mail acima para entrar. A senha só muda quando você preencher este campo.</span></div>
+        </div></section>
+        <div class="saas-drawer-actions"><button type="button" class="saas-secondary" onclick="window.saasCloseDrawer()">Cancelar</button><button class="saas-primary" type="submit"><i data-lucide="save"></i>Salvar conta</button></div>
+      </form>
+    </aside></div>`;
+  }
+
+  async function showTeacherById(id){
+    const data=await invoke('get_users',{include_blocked:true});
+    const row=(data.users||[]).find(x=>String(x.id)===String(id));
+    if(!row) throw new Error('Professor não encontrado.');
+    document.body.insertAdjacentHTML('beforeend',teacherDrawerM(row));
+    window.lucide?.createIcons();
+    document.getElementById('saasTeacherForm').onsubmit=async e=>{
+      e.preventDefault(); const btn=e.currentTarget.querySelector('button[type="submit"]');btn.disabled=true;
+      try{
+        const fd=new FormData(e.currentTarget);
+        const amt=String(fd.get('payment_amount')||'').trim();
+        const planPrice=String(fd.get('plan_price')||'').trim();
+        await invoke('update_teacher',{
+          id:String(fd.get('id')),
+          profile:{full_name:String(fd.get('full_name')||'').trim(),phone:String(fd.get('phone')||'').trim()||null,specialty:String(fd.get('specialty')||'').trim()||null,services:String(fd.get('services')||'').trim()||null,photo_url:String(fd.get('photo_url')||'').trim()||null,bio:String(fd.get('bio')||'').trim()||null,access_expires_at:fd.get('access_expires_at')?new Date(`${fd.get('access_expires_at')}T23:59:59`).toISOString():null,blocked:String(fd.get('blocked'))==='1',plan_name:String(fd.get('plan_name')||'').trim()||null,plan_price:planPrice===''?null:Number(planPrice),payment_status:String(fd.get('payment_status')||'pending'),last_payment_at:fd.get('last_payment_at')||null,payment_method:String(fd.get('payment_method')||'').trim()||null,payment_amount:amt===''?null:Number(amt),payment_notes:String(fd.get('payment_notes')||'').trim()||null},new_password:String(fd.get('new_password')||'')||null
+        });
+        window.showSuccess?.('Conta do professor atualizada.'); window.saasCloseDrawer(); window.renderMaster?.();
+      }catch(err){window.showError?.(err.message||'Não foi possível salvar a conta.');}finally{btn.disabled=false;}
+    };
+  }
+
+  window.saasCloseDrawer=function(){document.getElementById('saasDrawer')?.remove();};
+  window.saasOpenTeacher=async function(id){try{await showTeacherById(id);}catch(e){window.showError?.(e.message||'Não foi possível abrir a conta.');}};
+  window.saasSetAccess=async function(id,days){try{await invoke('set_access',{id,days:Number(days||30),mode:'extend'});window.showSuccess?.(`Acesso prorrogado por ${days} dias.`);window.renderMaster?.();}catch(e){window.showError?.(e.message||'Não foi possível alterar o acesso.');}};
+  window.saasSetPayment=async function(id){try{
+    const data=await invoke('get_users',{include_blocked:true}); const p=(data.users||[]).find(x=>String(x.id)===String(id)); if(!p)throw new Error('Professor não encontrado.');
+    const html=`<div class="saas-payment-modal" id="saasPaymentModal"><div class="saas-payment-card"><div class="saas-drawer-head"><div><span>FINANCEIRO</span><h2>Registrar pagamento</h2><p>${escM(p.full_name||p.email)}</p></div><button class="saas-icon" onclick="document.getElementById('saasPaymentModal')?.remove()"><i data-lucide="x"></i></button></div><form id="saasPaymentForm" class="saas-form"><div class="saas-grid2"><label><span>Status</span><select name="payment_status"><option value="paid">Pago</option><option value="pending">Pendente</option><option value="overdue">Em atraso</option><option value="courtesy">Cortesia</option></select></label><label><span>Data</span><input name="last_payment_at" type="date" value="${escM(dateOnlyM(new Date()))}"></label><label><span>Valor</span><input name="payment_amount" type="number" min="0" step="0.01" value="${escM(p.payment_amount??'')}"></label><label><span>Forma</span><select name="payment_method"><option value="PIX">PIX</option><option value="Transferência">Transferência</option><option value="Cartão">Cartão</option><option value="Dinheiro">Dinheiro</option><option value="Boleto">Boleto</option><option value="Outro">Outro</option></select></label><label class="full"><span>Observação</span><textarea name="payment_notes" rows="3" placeholder="Ex.: mensalidade outubro, comprovante...">${escM(p.payment_notes||'')}</textarea></label></div><div class="saas-drawer-actions"><button type="button" class="saas-secondary" onclick="document.getElementById('saasPaymentModal')?.remove()">Cancelar</button><button class="saas-primary" type="submit">Salvar pagamento</button></div></form></div></div>`;
+    document.body.insertAdjacentHTML('beforeend',html);window.lucide?.createIcons();
+    document.getElementById('saasPaymentForm').onsubmit=async e=>{e.preventDefault();try{const fd=new FormData(e.currentTarget);await invoke('update_teacher',{id:String(id),profile:{payment_status:String(fd.get('payment_status')),last_payment_at:fd.get('last_payment_at')||null,payment_amount:fd.get('payment_amount')===''?null:Number(fd.get('payment_amount')),payment_method:String(fd.get('payment_method')||'').trim()||null,payment_notes:String(fd.get('payment_notes')||'').trim()||null}});document.getElementById('saasPaymentModal')?.remove();window.showSuccess?.('Pagamento atualizado.');window.renderMaster?.();}catch(err){window.showError?.(err.message||'Não foi possível registrar o pagamento.');}};
+  }catch(e){window.showError?.(e.message||'Não foi possível abrir o pagamento.');}};
+
+  function bindSaasTabs(root){
+    root.querySelectorAll('.saas-tab').forEach(btn=>btn.onclick=()=>{
+      root.querySelectorAll('.saas-tab').forEach(x=>x.classList.toggle('active',x===btn));
+      root.querySelectorAll('.saas-panel').forEach(x=>x.classList.toggle('active',x.id===`saas-panel-${btn.dataset.tab}`));
+    });
+  }
+  function renderSaasTeachers(root,users){
+    const grid=root.querySelector('#saasTeacherGrid');
+    if(!grid)return;
+    const q=String(root.querySelector('#saasSearch')?.value||'').trim().toLowerCase();
+    const access=String(root.querySelector('#saasAccess')?.value||'all');
+    const payment=String(root.querySelector('#saasPayment')?.value||'all');
+    const list=users.filter(r=>{
+      const a=accessStateM(r),p=paymentStateM(r); const text=[r.full_name,r.email,r.phone,r.specialty,r.services].join(' ').toLowerCase();
+      return (!q||text.includes(q))&&(access==='all'||a.key===access)&&(payment==='all'||p===payment);
+    });
+    grid.innerHTML=list.length?list.map(teacherCardM).join(''):emptyM('Nenhuma conta encontrada','Experimente mudar os filtros ou sincronizar as contas do Supabase.');
+    window.lucide?.createIcons();
+  }
+
+  function teacherCreateModal(){
+    const root=document.createElement('div'); root.id='saasCreateModal'; root.className='saas-payment-modal';
+    root.innerHTML=`<div class="saas-payment-card saas-create-card"><div class="saas-drawer-head"><div><span>NOVO ACESSO</span><h2>Cadastrar professor</h2><p>Crie o login no Supabase Auth e já deixe a conta pronta para uso.</p></div><button class="saas-icon" type="button" onclick="document.getElementById('saasCreateModal')?.remove()"><i data-lucide="x"></i></button></div><form id="saasCreateForm" class="saas-form"><section class="saas-section"><div class="saas-section-title"><i data-lucide="user-plus"></i>Dados de acesso</div><div class="saas-grid2"><label><span>Nome completo *</span><input name="full_name" required></label><label><span>E-mail de acesso *</span><input name="email" type="email" required></label><label><span>Senha inicial *</span><input name="password" type="password" minlength="6" required></label><label><span>Telefone</span><input name="phone"></label><label><span>Especialidade</span><input name="specialty" placeholder="Psicopedagogia, reforço..." ></label><label><span>O que atende</span><input name="services" placeholder="Leitura, escrita, matemática..." ></label></div></section><section class="saas-section"><div class="saas-section-title"><i data-lucide="calendar-range"></i>Direito de uso</div><div class="saas-grid2"><label><span>Definir por</span><select name="access_mode"><option value="days">Quantidade de dias</option><option value="date">Data fixa de vencimento</option><option value="none">Sem vencimento</option></select></label><label id="saasDaysField"><span>Quantidade de dias</span><input name="access_days" type="number" min="1" value="30"></label><label id="saasDateField" style="display:none"><span>Vencimento</span><input name="access_expires_at" type="date"></label><label><span>Plano</span><input name="plan_name" placeholder="Ex.: Mensal"></label><label><span>Valor do plano</span><input name="plan_price" type="number" min="0" step="0.01" placeholder="0,00"></label></div></section><section class="saas-section"><div class="saas-section-title"><i data-lucide="receipt"></i>Pagamento inicial</div><div class="saas-grid2"><label><span>Status</span><select name="payment_status"><option value="pending">Pendente</option><option value="paid">Pago</option><option value="courtesy">Cortesia</option></select></label><label><span>Data do pagamento</span><input name="last_payment_at" type="date" value="${escM(dateOnlyM(new Date()))}"></label><label><span>Forma</span><select name="payment_method"><option value="">Não informado</option><option value="PIX">PIX</option><option value="Transferência">Transferência</option><option value="Cartão">Cartão</option><option value="Dinheiro">Dinheiro</option><option value="Boleto">Boleto</option><option value="Outro">Outro</option></select></label><label><span>Valor recebido</span><input name="payment_amount" type="number" min="0" step="0.01" placeholder="0,00"></label><label class="full"><span>Observação</span><textarea name="payment_notes" rows="3" placeholder="Ex.: primeiro pagamento, plano promocional..."></textarea></label></div></section><div class="saas-drawer-actions"><button type="button" class="saas-secondary" onclick="document.getElementById('saasCreateModal')?.remove()">Cancelar</button><button class="saas-primary" type="submit"><i data-lucide="user-plus"></i>Criar conta e liberar acesso</button></div></form></div>`;
+    document.body.appendChild(root);window.lucide?.createIcons();
+    const mode=root.querySelector('[name=access_mode]'); mode.onchange=()=>{root.querySelector('#saasDaysField').style.display=mode.value==='days'?'':'none';root.querySelector('#saasDateField').style.display=mode.value==='date'?'':'none';};
+    root.querySelector('#saasCreateForm').onsubmit=async e=>{e.preventDefault();const btn=e.currentTarget.querySelector('button[type=submit]');btn.disabled=true;try{const fd=new FormData(e.currentTarget);const data=await invoke('create_teacher',{email:String(fd.get('email')||'').trim().toLowerCase(),password:String(fd.get('password')||''),full_name:String(fd.get('full_name')||'').trim(),phone:String(fd.get('phone')||'').trim()||null,specialty:String(fd.get('specialty')||'').trim()||null,services:String(fd.get('services')||'').trim()||null,access_mode:String(fd.get('access_mode')),access_days:Number(fd.get('access_days')||0),access_expires_at:String(fd.get('access_expires_at')||'')||null,plan_name:String(fd.get('plan_name')||'').trim()||null,plan_price:fd.get('plan_price')===''?null:Number(fd.get('plan_price')),payment_status:String(fd.get('payment_status')),last_payment_at:fd.get('last_payment_at')||null,payment_method:String(fd.get('payment_method')||'').trim()||null,payment_amount:fd.get('payment_amount')===''?null:Number(fd.get('payment_amount')),payment_notes:String(fd.get('payment_notes')||'').trim()||null});document.getElementById('saasCreateModal')?.remove();window.showSuccess?.(`Conta criada para ${data.user?.email||'o professor'}.`);window.renderMaster?.();}catch(err){window.showError?.(err.message||'Não foi possível criar a conta.');}finally{btn.disabled=false;}};
+  }
+  window.saasCreateTeacher=teacherCreateModal;
+
+  window.saasSync=async function(){try{const data=await invoke('sync_profiles');window.showSuccess?.(`${data.created||0} perfis criados e ${data.already||0} já existentes foram sincronizados.`);window.renderMaster?.();}catch(e){window.showError?.(e.message||'Não foi possível sincronizar as contas.');}};
+
+  window.renderMaster=async function(){
+    const c=document.getElementById('masterContent'); if(!c)return;
+    if(!isMaster()){c.innerHTML='<div class="saas-lock"><i data-lucide="shield-off"></i><h2>Acesso restrito</h2><p>Esta área é exclusiva da conta Master.</p></div>';window.lucide?.createIcons();return;}
+    c.innerHTML=`<div class="saas-shell"><header class="saas-hero"><div><span class="saas-eyebrow"><i data-lucide="shield-check"></i> CENTRAL MASTER</span><h1>Administração da plataforma</h1><p>Crie professores, controle o tempo de uso, acompanhe pagamentos e faça a conta parar automaticamente quando o prazo terminar.</p></div><div class="saas-hero-actions"><button class="saas-light-dark" onclick="window.saasSync()"><i data-lucide="refresh-cw"></i>Sincronizar contas</button><button class="saas-primary" onclick="window.saasCreateTeacher()"><i data-lucide="user-plus"></i>Novo professor</button></div></header><nav class="saas-tabs"><button class="saas-tab active" data-tab="overview"><i data-lucide="layout-dashboard"></i>Visão geral</button><button class="saas-tab" data-tab="teachers"><i data-lucide="users-round"></i>Contas</button><button class="saas-tab" data-tab="finance"><i data-lucide="wallet-cards"></i>Pagamentos</button><button class="saas-tab" data-tab="access"><i data-lucide="calendar-clock"></i>Acesso e vencimentos</button></nav><section id="saas-panel-overview" class="saas-panel active"></section><section id="saas-panel-teachers" class="saas-panel"></section><section id="saas-panel-finance" class="saas-panel"></section><section id="saas-panel-access" class="saas-panel"></section></div>`;
+    window.lucide?.createIcons(); bindSaasTabs(c);
+    try{
+      if(!(await ensureEdgeFunction()))throw new Error('A Edge Function master-admin ainda não está instalada no Supabase.');
+      const data=await invoke('get_users',{include_blocked:true}); const users=(data.users||[]).filter(r=>!r.is_master&&!['master','admin'].includes(String(r.role||'').toLowerCase()));
+      const all=users; const now=Date.now();
+      const active=all.filter(r=>accessStateM(r).key==='active').length, attention=all.filter(r=>accessStateM(r).key==='attention').length, expired=all.filter(r=>accessStateM(r).key==='expired').length, blocked=all.filter(r=>accessStateM(r).key==='blocked').length;
+      const paid=all.filter(r=>paymentStateM(r)==='paid').length,pending=all.filter(r=>paymentStateM(r)==='pending').length,total=all.reduce((s,r)=>s+Number(r.payment_amount||0),0);
+      c.querySelector('#saas-panel-overview').innerHTML=`<div class="saas-kpis">${statM('users-round','Professores',all.length,'Contas Auth + perfis sincronizados')}${statM('shield-check','Ativos',active,'Dentro do prazo','good')}${statM('clock-3','Vencendo',attention,'Próximos 7 dias','warn')}${statM('triangle-alert','Vencidos',expired,'Acesso já encerrado','bad')}${statM('lock-keyhole','Bloqueados',blocked,'Bloqueio manual','bad')}${statM('wallet-cards','Pagamentos',paid,`Total registrado ${moneyM(total)}`,'info')}</div><div class="saas-columns"><section class="saas-panel-box"><div class="saas-box-head"><div><span>FLUXO MASTER</span><h2>O que você consegue fazer</h2><p>A operação inteira fica dentro desta central.</p></div></div><div class="saas-quick-grid"><button onclick="window.saasCreateTeacher()"><i data-lucide="user-plus"></i><strong>Criar professor</strong><small>Gera e-mail, senha e perfil</small></button><button onclick="document.querySelector('.saas-tab[data-tab=teachers]').click()"><i data-lucide="users"></i><strong>Ver todas as contas</strong><small>${all.length} contas sincronizadas</small></button><button onclick="document.querySelector('.saas-tab[data-tab=finance]').click()"><i data-lucide="receipt"></i><strong>Conferir pagamentos</strong><small>${pending} pendentes · ${paid} pagos</small></button><button onclick="document.querySelector('.saas-tab[data-tab=access]').click()"><i data-lucide="calendar-clock"></i><strong>Controlar vencimentos</strong><small>${expired+attention} precisam de acompanhamento</small></button></div></section><aside class="saas-panel-box"><div class="saas-box-head"><div><span>REGRA DO SISTEMA</span><h2>Quando o prazo acaba</h2></div></div><div class="saas-rule"><div><i data-lucide="lock"></i><div><strong>Acesso interrompido</strong><span>O professor não entra no painel normal.</span></div></div><div><i data-lucide="message-circle"></i><div><strong>Tela de suporte</strong><span>Ele recebe uma página para contatar o suporte.</span></div></div></div><form id="saasSupportForm" class="saas-support-form"><label>WhatsApp do suporte com DDI<input name="whatsapp" placeholder="5543999999999"></label><button class="saas-primary" type="submit"><i data-lucide="save"></i>Salvar suporte</button></form></aside></div>`;
+      c.querySelector('#saas-panel-teachers').innerHTML=`<section class="saas-panel-box"><div class="saas-box-head"><div><span>ACESSOS</span><h2>Contas de professores</h2><p>Contas encontradas no Supabase Auth e relacionadas aos perfis aparecem aqui. Use “Sincronizar contas” sempre que criar alguém diretamente no Auth.</p></div><button class="saas-primary" onclick="window.saasCreateTeacher()"><i data-lucide="user-plus"></i>Novo professor</button></div><div class="saas-filterbar"><input id="saasSearch" placeholder="Buscar nome, e-mail, especialidade..."><select id="saasAccess"><option value="all">Todos os acessos</option><option value="active">Ativos</option><option value="attention">Vencendo</option><option value="expired">Vencidos</option><option value="blocked">Bloqueados</option></select><select id="saasPayment"><option value="all">Todos pagamentos</option><option value="paid">Pagos</option><option value="pending">Pendentes</option><option value="overdue">Em atraso</option><option value="courtesy">Cortesia</option></select></div><div id="saasTeacherGrid" class="saas-teacher-grid">${users.length?users.map(teacherCardM).join(''):emptyM('Nenhum professor visível','Use “Sincronizar contas” para importar contas já criadas no Supabase Auth ou crie o primeiro professor aqui.',`<button class="saas-primary" onclick="window.saasSync()">Sincronizar contas</button>`)}</div></section>`;
+      c.querySelector('#saas-panel-finance').innerHTML=`<section class="saas-panel-box"><div class="saas-box-head"><div><span>FINANCEIRO</span><h2>Pagamento pelo uso da plataforma</h2><p>Este financeiro é independente do financeiro dos alunos. Aqui você controla o que cada professor paga para utilizar o sistema.</p></div></div><div class="saas-fin-summary"><div><small>Recebido registrado</small><strong>${moneyM(total)}</strong></div><div><small>Pagamentos confirmados</small><strong>${paid}</strong></div><div><small>Pendentes</small><strong>${pending}</strong></div></div><div class="saas-table"><div class="saas-tr head"><span>Professor</span><span>Plano</span><span>Status</span><span>Último pagamento</span><span>Valor</span><span>Ação</span></div>${users.map(r=>`<div class="saas-tr"><div><strong>${escM(r.full_name||r.email)}</strong><small>${escM(r.email||'')}</small></div><span>${escM(r.plan_name||'—')}</span><span><b class="saas-badge ${paymentStateM(r)==='paid'?'good':paymentStateM(r)==='pending'?'warn':'bad'}">${paymentStateM(r)==='paid'?'Pago':paymentStateM(r)==='courtesy'?'Cortesia':paymentStateM(r)==='overdue'?'Em atraso':'Pendente'}</b></span><span>${r.last_payment_at?escM(dateBR(r.last_payment_at)):'—'}</span><strong>${r.payment_amount!=null?escM(moneyM(r.payment_amount)):'—'}</strong><button class="saas-secondary" onclick="window.saasSetPayment('${escM(r.id)}')">Registrar</button></div>`).join('')||emptyM('Sem pagamentos','Nenhuma conta cadastrada.')}</div></section>`;
+      const soon=users.filter(r=>['attention','expired','blocked'].includes(accessStateM(r).key)).sort((a,b)=>{const ta=a.access_expires_at?new Date(a.access_expires_at).getTime():Infinity,tb=b.access_expires_at?new Date(b.access_expires_at).getTime():Infinity;return ta-tb;});
+      c.querySelector('#saas-panel-access').innerHTML=`<div class="saas-columns"><section class="saas-panel-box"><div class="saas-box-head"><div><span>VENCIMENTOS</span><h2>Quem precisa de ação</h2><p>O sistema calcula a situação pelo vencimento e pelo bloqueio manual.</p></div></div><div class="saas-access-list">${soon.length?soon.map(r=>`<div class="saas-access-row"><div class="saas-avatar mini">${r.photo_url?`<img src="${escM(r.photo_url)}">`:`<span>${escM(String(r.full_name||'P').split(/\s+/).map(x=>x[0]).slice(0,2).join('').toUpperCase())}</span>`}</div><div><strong>${escM(r.full_name||r.email)}</strong><span>${escM(accessStateM(r).label)} · ${r.access_expires_at?escM(dateBR(r.access_expires_at)):'sem prazo'}</span></div><button class="saas-primary" onclick="window.saasOpenTeacher('${escM(r.id)}')">Gerenciar</button></div>`).join(''):emptyM('Tudo em dia','Nenhuma conta vencendo, vencida ou bloqueada neste momento.')}</div></section><aside class="saas-panel-box"><div class="saas-box-head"><div><span>AÇÃO RÁPIDA</span><h2>Prorrogar acesso</h2><p>Abra uma conta e use +30 dias para estender a partir do vencimento atual.</p></div></div><div class="saas-rule"><div><i data-lucide="calendar-plus"></i><div><strong>Extensão inteligente</strong><span>Se ainda estiver ativo, soma os dias ao vencimento atual. Se estiver vencido, começa a contar de hoje.</span></div></div></div></aside></div>`;
+      c.querySelector('#saasSearch')?.addEventListener('input',()=>renderSaasTeachers(c,users)); c.querySelector('#saasAccess')?.addEventListener('change',()=>renderSaasTeachers(c,users)); c.querySelector('#saasPayment')?.addEventListener('change',()=>renderSaasTeachers(c,users));
+      try{const sp=await invoke('get_support');const sf=c.querySelector('#saasSupportForm input[name=whatsapp]');if(sf)sf.value=sp.whatsapp||'';}catch(_){ }
+      c.querySelector('#saasSupportForm')?.addEventListener('submit',async e=>{e.preventDefault();try{const n=String(new FormData(e.currentTarget).get('whatsapp')||'').replace(/\D/g,'');const r=await invoke('set_support',{whatsapp:n});try{if(typeof APP_CONFIG!=='undefined')APP_CONFIG.whatsappNumber=r.whatsapp;}catch(_){} window.updateExpiredContactLink?.();window.showSuccess?.('WhatsApp de suporte atualizado.');}catch(err){window.showError?.(err.message||'Não foi possível salvar o suporte.');}});
+      window.lucide?.createIcons();
+    }catch(err){
+      c.innerHTML=`<div class="saas-panel-box"><div class="saas-error"><i data-lucide="database-zap"></i><h2>Administração ainda não está conectada ao módulo seguro de contas.</h2><p>${escM(err.message||err)}</p><div class="saas-error-actions"><button class="saas-primary" onclick="window.renderMaster()">Tentar novamente</button><button class="saas-secondary" onclick="window.saasShowSetup()">Ver instruções</button></div></div></div>`;
+      window.lucide?.createIcons();
+    }
+  };
+
+  window.saasShowSetup=function(){
+    const modal=document.createElement('div');modal.className='saas-payment-modal';modal.id='saasSetupModal';
+    modal.innerHTML=`<div class="saas-payment-card"><div class="saas-drawer-head"><div><span>CONFIGURAÇÃO ÚNICA</span><h2>Ativar o cadastro de professores</h2><p>A interface já está pronta. Falta publicar a Edge Function e a migration do banco.</p></div><button class="saas-icon" onclick="this.closest('#saasSetupModal')?.remove()"><i data-lucide="x"></i></button></div><div class="saas-setup"><div><b>1.</b><span>Execute <code>supabase_master_saas.sql</code> no SQL Editor do Supabase.</span></div><div><b>2.</b><span>Publique a função <code>supabase/functions/master-admin/index.ts</code>.</span></div><div><b>3.</b><span>Defina os secrets <code>SUPABASE_URL</code> e <code>SUPABASE_SERVICE_ROLE_KEY</code> na Edge Function.</span></div><div><b>4.</b><span>Depois clique em “Sincronizar contas”. As contas que já existem no Auth serão trazidas para a Administração.</span></div></div><div class="saas-drawer-actions"><button class="saas-primary" onclick="this.closest('#saasSetupModal')?.remove()">Entendi</button></div></div>`;
+    document.body.appendChild(modal);window.lucide?.createIcons();
+  };
+
+  // Reforça a expiração logo após autenticar, inclusive para sessões já abertas.
+  const originalFinish=window.finishAuthentication;
+  if(typeof originalFinish==='function'&&!originalFinish.__saas){
+    const finish=async function(){await originalFinish.apply(this,arguments);await checkAccessNow();};
+    finish.__saas=true;window.finishAuthentication=finish;
+  }
+
+  // Expõe diagnóstico simples para o console sem credenciais sensíveis.
+  window.legadoSaasHealth=async function(){
+    try{const r=await invoke('health');console.log('[Legado SaaS]',r);return r;}catch(e){console.error('[Legado SaaS]',e);throw e;}
+  };
+})();
+</script>
+<style id="legado-saas-master-css">
+.saas-shell{display:grid;gap:16px;max-width:1480px;margin:0 auto;padding-bottom:36px}.saas-hero{display:flex;justify-content:space-between;gap:24px;padding:28px 30px;border-radius:24px;background:linear-gradient(135deg,#163329 0%,#2b5c4a 58%,#5f8f7a 100%);color:#fff;box-shadow:0 20px 55px rgba(26,51,41,.16)}.saas-eyebrow{display:inline-flex;align-items:center;gap:7px;font-size:9px;font-weight:800;letter-spacing:.16em;opacity:.74}.saas-hero h1{margin:7px 0 8px;font-size:31px;letter-spacing:-.04em}.saas-hero p{max-width:760px;margin:0;color:rgba(255,255,255,.74);font-size:11px;line-height:1.6}.saas-hero-actions{display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap}.saas-tabs{display:flex;gap:5px;padding:6px;border:1px solid #e2eae5;border-radius:14px;background:#fff;box-shadow:0 5px 18px rgba(30,50,40,.04)}.saas-tab{display:inline-flex;align-items:center;gap:7px;border:0;background:transparent;color:#718078;border-radius:10px;padding:10px 13px;font:800 10px Inter,Arial,sans-serif;cursor:pointer}.saas-tab.active{background:#edf5f0;color:#426854}.saas-panel{display:none}.saas-panel.active{display:block}.saas-kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}.saas-kpi{display:flex;gap:10px;align-items:center;padding:14px;border:1px solid #e3ebe6;border-radius:15px;background:#fff}.saas-kpi-icon{width:36px;height:36px;display:grid;place-items:center;border-radius:11px;background:#edf5f0;color:#527763}.saas-kpi.warn .saas-kpi-icon{background:#fff5e4;color:#9a6c2f}.saas-kpi.bad .saas-kpi-icon{background:#fff0f0;color:#a45151}.saas-kpi.info .saas-kpi-icon{background:#eef4fa;color:#587a9a}.saas-kpi span,.saas-kpi small{display:block;color:#87938d;font-size:8px}.saas-kpi strong{display:block;margin-top:2px;color:#34463d;font-size:19px}.saas-columns{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(300px,.8fr);gap:16px;margin-top:16px}.saas-panel-box{padding:17px;border:1px solid #e2eae5;border-radius:18px;background:#fff;box-shadow:0 5px 18px rgba(28,54,42,.035)}.saas-box-head{display:flex;justify-content:space-between;gap:10px;margin-bottom:13px}.saas-box-head span,.saas-section-title{font-size:8px;font-weight:800;letter-spacing:.12em;color:#7d8b84}.saas-box-head h2{margin:4px 0 3px;font-size:15px;color:#384941}.saas-box-head p{margin:0;color:#8a9690;font-size:10px;line-height:1.5}.saas-quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.saas-quick-grid button{display:grid;grid-template-columns:32px 1fr;gap:8px;align-items:center;text-align:left;border:1px solid #e6ede9;background:#f9fcfa;border-radius:13px;padding:11px;cursor:pointer}.saas-quick-grid button:hover{background:#f2f8f4;border-color:#d2e2d9}.saas-quick-grid button>i{grid-row:1/span 2;width:32px;height:32px;display:grid;place-items:center;border-radius:9px;background:#eaf4ee;color:#527863}.saas-quick-grid strong{font-size:10px;color:#4c5c54}.saas-quick-grid small{font-size:8px;color:#8a9690}.saas-rule{display:grid;gap:8px}.saas-rule>div{display:flex;gap:9px;padding:11px;border-radius:12px;background:#f7faf8}.saas-rule>div>i{width:17px;color:#527a64;flex:none;margin-top:1px}.saas-rule strong{display:block;font-size:10px;color:#53635b}.saas-rule span{display:block;margin-top:2px;color:#8a9690;font-size:9px;line-height:1.4}.saas-full{width:100%;margin-top:10px}.saas-filterbar{display:grid;grid-template-columns:minmax(0,1.7fr) 190px 190px;gap:8px;margin-bottom:12px}.saas-filterbar input,.saas-filterbar select{min-height:39px;border:1px solid #dfe8e3;border-radius:10px;background:#fbfdfc;padding:8px 11px;outline:0;font:500 10px Inter,Arial,sans-serif;color:#475950}.saas-teacher-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.saas-teacher-card{padding:14px;border:1px solid #e2eae5;border-radius:16px;background:#fcfefd}.saas-teacher-top{display:flex;gap:10px;align-items:flex-start}.saas-avatar{width:48px;height:48px;display:grid;place-items:center;overflow:hidden;border-radius:14px;background:#edf5f0;color:#567866;flex:none;font-size:12px;font-weight:800}.saas-avatar img{width:100%;height:100%;object-fit:cover}.saas-avatar.mini{width:36px;height:36px;border-radius:10px}.saas-teacher-id{min-width:0;flex:1}.saas-teacher-id h3{margin:2px 0 3px;font-size:13px;color:#384941}.saas-teacher-id p{margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:9px;color:#8a9690}.saas-badges{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}.saas-badge{display:inline-flex;align-items:center;border-radius:999px;padding:4px 7px;font-size:8px;font-weight:800}.saas-badge.neutral{background:#f1f4f2;color:#6c7872}.saas-badge.good{background:#eaf5ee;color:#47755b}.saas-badge.warn{background:#fff4df;color:#9b6e30}.saas-badge.bad{background:#fff0f0;color:#a45151}.saas-badge.info{background:#eef5fb;color:#557895}.saas-icon{width:32px;height:32px;display:grid;place-items:center;border:1px solid #e0e8e3;border-radius:9px;background:#fff;color:#68776f;cursor:pointer}.saas-icon:hover{background:#f3f7f5}.saas-facts{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:13px 0;padding:10px;border-radius:12px;background:#f7faf8}.saas-facts small{display:block;font-size:7px;text-transform:uppercase;font-weight:800;color:#8b9791}.saas-facts strong{display:block;margin-top:3px;color:#58675f;font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.saas-card-actions,.saas-drawer-actions{display:flex;gap:7px;justify-content:flex-end;flex-wrap:wrap}.saas-primary,.saas-secondary,.saas-light-dark{min-height:36px;display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:10px;padding:8px 12px;border:0;font:800 10px Inter,Arial,sans-serif;cursor:pointer}.saas-primary{background:#5f8f7a;color:#fff}.saas-primary:hover{background:#477363}.saas-secondary{background:#f3f7f5;color:#4d6258;border:1px solid #dfe7e3}.saas-secondary:hover{background:#eaf1ed}.saas-light-dark{background:rgba(255,255,255,.11);border:1px solid rgba(255,255,255,.18);color:#fff}.saas-card-actions .saas-secondary,.saas-card-actions .saas-primary{flex:1}.saas-fin-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:13px}.saas-fin-summary>div{padding:13px;border-radius:12px;background:#f7faf8}.saas-fin-summary small{display:block;color:#8b9691;font-size:8px}.saas-fin-summary strong{display:block;margin-top:4px;color:#3f5149;font-size:18px}.saas-table{display:grid;gap:1px;border-top:1px solid #e7eee9}.saas-tr{display:grid;grid-template-columns:1.45fr 130px 110px 140px 110px 100px;align-items:center;gap:9px;padding:11px 3px;border-bottom:1px solid #e8eee9;font-size:9px;color:#7a8881}.saas-tr.head{font-size:8px;font-weight:800;text-transform:uppercase;color:#87948d}.saas-tr strong{color:#52635a}.saas-tr small{display:block;margin-top:2px;color:#909b96;font-size:8px}.saas-access-list{display:grid;gap:7px}.saas-access-row{display:grid;grid-template-columns:36px 1fr auto;gap:9px;align-items:center;padding:10px;border-radius:12px;background:#f8fbf9}.saas-access-row strong{display:block;font-size:10px;color:#52615a}.saas-access-row span{display:block;margin-top:3px;font-size:8px;color:#8a9690}.saas-empty{display:flex;flex-direction:column;align-items:center;text-align:center;padding:42px 20px;border:1px dashed #d8e4dd;border-radius:16px;background:#fbfdfc}.saas-empty-icon{width:46px;height:46px;display:grid;place-items:center;border-radius:14px;background:#edf5f0;color:#5a7e68}.saas-empty h3{margin:11px 0 4px;font-size:14px;color:#4a5b53}.saas-empty p{max-width:650px;margin:0 0 12px;font-size:10px;line-height:1.55;color:#89958f}.saas-drawer-backdrop,.saas-payment-modal{position:fixed;inset:0;z-index:9800;background:rgba(18,30,25,.45);display:flex;justify-content:flex-end}.saas-payment-modal{justify-content:center;align-items:center;padding:20px}.saas-drawer{width:min(660px,96vw);height:100%;overflow:auto;padding:20px;background:#fff;box-shadow:-18px 0 55px rgba(18,31,25,.18)}.saas-payment-card{width:min(720px,96vw);max-height:92vh;overflow:auto;padding:20px;border-radius:18px;background:#fff;box-shadow:0 22px 70px rgba(18,31,25,.2)}.saas-drawer-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:13px;padding-bottom:13px;border-bottom:1px solid #e7eee9}.saas-drawer-head>div>span{font-size:8px;font-weight:800;letter-spacing:.13em;color:#7d8b84}.saas-drawer-head h2{margin:5px 0 3px;font-size:20px;color:#33443b}.saas-drawer-head p{margin:0;font-size:9px;color:#8a9690}.saas-form{display:grid;gap:11px}.saas-section{padding:13px;border:1px solid #e1eae5;border-radius:15px}.saas-section-title{display:flex;align-items:center;gap:6px;margin-bottom:11px}.saas-section-title svg{width:14px;color:#567763}.saas-grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.saas-grid2 label{display:grid;gap:5px}.saas-grid2 label.full{grid-column:1/-1}.saas-grid2 label>span{font-size:9px;font-weight:800;color:#68776f}.saas-grid2 input,.saas-grid2 select,.saas-grid2 textarea{width:100%;border:1px solid #dfe7e3;border-radius:10px;background:#fff;padding:9px;outline:0;font:500 10px Inter,Arial,sans-serif;color:#425249}.saas-grid2 textarea{resize:vertical}.saas-grid2 input:focus,.saas-grid2 select:focus,.saas-grid2 textarea:focus{border-color:#8eb2a3;box-shadow:0 0 0 3px rgba(95,143,122,.08)}.saas-access-box{display:grid;gap:3px;margin-top:9px;padding:10px;border-radius:10px;background:#f7faf8}.saas-access-box strong{font-size:10px;color:#4f6358}.saas-access-box span{font-size:8px;color:#88958f}.saas-credential-note{display:flex;align-items:flex-start;gap:7px;padding:10px;border-radius:10px;background:#f7faf8;color:#7b8982;font-size:9px;line-height:1.4}.saas-credential-note svg{width:14px;flex:none}.saas-lock{min-height:320px;display:grid;place-items:center;text-align:center;padding:30px}.saas-lock svg{width:42px;color:#70847a}.saas-lock h2{margin:4px 0;color:#44564d}.saas-lock p{margin:0;color:#8b9690;font-size:10px}.saas-error{display:flex;flex-direction:column;align-items:center;text-align:center;padding:42px 25px}.saas-error>i{width:40px;height:40px;color:#a66949}.saas-error h2{max-width:650px;margin:10px 0 5px;font-size:16px;color:#4a554f}.saas-error p{max-width:760px;margin:0;color:#8a9490;font-size:10px;line-height:1.55}.saas-error-actions{display:flex;gap:8px;margin-top:15px}.saas-setup{display:grid;gap:9px}.saas-setup>div{display:flex;gap:8px;padding:10px;border-radius:11px;background:#f7faf8;color:#68776f;font-size:10px;line-height:1.45}.saas-setup b{color:#557965}.saas-setup code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9px;color:#496257}.saas-create-card{width:min(860px,96vw)}
+@media(max-width:1200px){.saas-kpis{grid-template-columns:repeat(3,1fr)}.saas-teacher-grid{grid-template-columns:1fr}.saas-filterbar{grid-template-columns:1fr 180px 180px}.saas-columns{grid-template-columns:1fr}}
+@media(max-width:800px){.saas-hero{flex-direction:column}.saas-filterbar{grid-template-columns:1fr}.saas-grid2{grid-template-columns:1fr}.saas-grid2 label.full{grid-column:auto}.saas-fin-summary{grid-template-columns:1fr}.saas-tr{grid-template-columns:1.3fr 100px 100px}.saas-tr:nth-child(1n)>span:nth-child(2),.saas-tr:nth-child(1n)>span:nth-child(4),.saas-tr:nth-child(1n)>strong:nth-child(5){display:none}.saas-tr:nth-child(1n)>button:nth-child(6){grid-column:3}.saas-tabs{overflow:auto}.saas-tab{white-space:nowrap}}
+@media(max-width:600px){.saas-kpis{grid-template-columns:1fr 1fr}.saas-quick-grid{grid-template-columns:1fr}.saas-card-actions{flex-direction:column}.saas-card-actions .saas-primary,.saas-card-actions .saas-secondary{width:100%;flex:auto}.saas-access-row{grid-template-columns:36px 1fr}.saas-access-row button{grid-column:2;justify-self:start}.saas-hero{padding:22px}.saas-hero h1{font-size:25px}}
+</style>
+
 </body>
 </html>
