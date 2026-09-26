@@ -3771,6 +3771,7 @@
     editingId: null,
     data: []
   };
+  window.studentsState = studentsState;
 
 
   /* ============================================================
@@ -9287,8 +9288,9 @@ document.head.appendChild(s);}
   window.v4OpenEvaluationModal=async function(existing=null){
     try{
       if(!window.state?.user) await window.ensureSession?.();
-      if(!window.studentsState?.data?.length) await window.v3LoadStudents?.();
-      const students=window.studentsState?.data||[];
+      let students=Array.isArray(window.studentsState?.data)?window.studentsState.data:[];
+      if(!students.length && typeof window.v3LoadStudents==='function') students=await window.v3LoadStudents();
+      if(!students.length && Array.isArray(window.state?.students)) students=window.state.students;
       if(!students.length) throw new Error('Cadastre pelo menos um aluno antes de aplicar uma avaliação.');
       const type=(existing?.type&&V4_ASSESSMENTS[existing.type])?existing.type:(V4_ASSESSMENTS[window.V3?.assessmentType]?window.V3.assessmentType:'Leitura e compreensão');
       const def=V4_ASSESSMENTS[type]||V4_ASSESSMENTS['Avaliação personalizada'];
@@ -9371,8 +9373,10 @@ document.head.appendChild(s);}
   async function safeSelectAppointments(){try{return await window.selectSafe(appTable(),{filters:{user_id:window.state.user.id},limit:1000});}catch(e){throw e;}}
   window.v4OpenAppointmentModal=async function(date=todayV4(),time='',studentId=''){
     try{
-      if(!window.studentsState?.data?.length) await window.v3LoadStudents?.();
-      const students=window.studentsState?.data||[]; if(!students.length)throw new Error('Cadastre um aluno antes de agendar.');
+      let students=Array.isArray(window.studentsState?.data)?window.studentsState.data:[];
+      if(!students.length && typeof window.v3LoadStudents==='function') students=await window.v3LoadStudents();
+      if(!students.length && Array.isArray(window.state?.students)) students=window.state.students;
+      if(!students.length)throw new Error('Cadastre um aluno antes de agendar.');
       let root=elV4('legadoAppointmentModal'); if(!root){root=document.createElement('div');root.id='legadoAppointmentModal';root.className='legado-v4-modal';root.hidden=true;root.innerHTML='<div class="legado-v4-backdrop" data-close-app></div><section class="legado-v4-dialog" role="dialog" aria-modal="true"><div id="legadoAppointmentModalBody"></div></section>';document.body.appendChild(root);root.addEventListener('click',e=>{if(e.target?.matches?.('[data-close-app]'))window.v4CloseAppointmentModal();});}
       root.hidden=false;document.body.classList.add('legado-v4-modal-open');
       const body=elV4('legadoAppointmentModalBody');
