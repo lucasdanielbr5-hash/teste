@@ -11915,46 +11915,9 @@ body.legado-v4-modal-open{overflow:hidden}
 </script>
 
 
-<script id="legado-final-v3-hardening">
-(function(){
-  'use strict';
-  const READS='message_reads';
-  const MASTER_EMAIL='contato@legadoqueensina.com.br';
-  const secure=async(action,payload={})=>{
-    const sb=window.supabaseClient;
-    if(!sb?.functions?.invoke) throw new Error('Supabase Functions não está disponível.');
-    const {data,error}=await sb.functions.invoke('master-admin',{body:{action,...payload}});
-    if(error){let detail='';try{if(error.context?.json){const b=await error.context.json();detail=b?.error||b?.message||'';}}catch(_){ }throw new Error(detail||error.message||'Erro na Administração segura.');}
-    if(data?.error)throw new Error(String(data.error));
-    return data;
-  };
-  const isMaster=()=>String(window.state?.user?.email||'').toLowerCase()===MASTER_EMAIL||Boolean(window.state?.profile?.is_master)||['master','admin'].includes(String(window.state?.profile?.role||'').toLowerCase());
-  window.v3DeleteMessagePermanently=async function(id){
-    if(!window.state?.user||isMaster())return;
-    if(!(window.confirm?.('Excluir este recado definitivamente da sua conta? Ele não será apagado para os outros professores.')??true))return;
-    try{
-      const {error}=await window.supabaseClient.from(READS).upsert({message_id:String(id),user_id:window.state.user.id,hidden_at:new Date().toISOString(),deleted_at:new Date().toISOString(),read_at:new Date().toISOString(),seen_at:new Date().toISOString(),dismissed_at:new Date().toISOString()},{onConflict:'message_id,user_id'});
-      if(error)throw error;
-      window.showSuccess?.('Recado excluído da sua conta.');
-      await window.renderMessages?.();
-    }catch(e){window.showError?.(e.message||'Não foi possível excluir o recado.');}
-  };
-  function addDeleteButtons(){
-    document.querySelectorAll('#recadosContent .legado-message-card.in-trash').forEach(card=>{
-      const actions=card.querySelector('.legado-message-card-actions');
-      if(!actions||actions.querySelector('.legado-delete-permanent'))return;
-      const restore=actions.querySelector('[onclick*="v3RestoreMessage"]');
-      const m=(restore?.getAttribute('onclick')||'').match(/v3RestoreMessage\('([^']+)'\)/);
-      if(!m)return;
-      const b=document.createElement('button');b.type='button';b.className='legado-delete-permanent legado-trash';b.title='Excluir definitivamente';b.setAttribute('aria-label','Excluir definitivamente');b.innerHTML='<i data-lucide="trash-2"></i>';b.onclick=()=>window.v3DeleteMessagePermanently(m[1]);actions.appendChild(b);
-    });
-    window.refreshIcons?.();
-  }
-  window.addEventListener('load',()=>setTimeout(addDeleteButtons,300));
-  const obs=new MutationObserver(()=>addDeleteButtons());
-  obs.observe(document.body,{childList:true,subtree:true});
-})();
-</script>
+
+<!-- FINAL-5: removido observer recursivo que causava travamento do navegador -->
+
 
 </body>
 </html>
