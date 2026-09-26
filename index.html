@@ -9013,5 +9013,444 @@ document.head.appendChild(s);}
 })();
 </script>
 
+<script id="legado-v4-improvements">
+(function(){
+  'use strict';
+
+  const escV4 = (v)=> typeof window.escapeHtml==='function' ? window.escapeHtml(v==null?'':String(v)) : String(v==null?'':v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#039;','"':'&quot;'}[c]));
+  const elV4 = (id)=>document.getElementById(id);
+  const todayV4 = ()=> typeof window.todayInputDate==='function' ? window.todayInputDate() : new Date().toISOString().slice(0,10);
+  const fmtV4 = (s)=>{ const d=new Date(String(s||'').length<=10?`${s}T12:00:00`:s); return Number.isNaN(d.getTime())?'—':d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'}); };
+  const safeStatus = (s)=>({draft:'Rascunho',completed:'Concluída',pending:'Pendente',cancelled:'Cancelada',scheduled:'Agendado'}[String(s||'').toLowerCase()]||String(s||'Registro'));
+  const table = ()=>window.V3Core?.TABLE?.evaluations || window.TABLE?.evaluations || 'evaluations';
+  const waitTable = ()=>window.V3Core?.TABLE?.waitlist || window.TABLE?.waitlist || 'waitlist';
+  const appTable = ()=>window.V3Core?.TABLE?.appointments || window.TABLE?.appointments || 'appointments';
+
+  function ensureEvalModal(){
+    let root=elV4('legadoEvaluationModal');
+    if(root) return root;
+    root=document.createElement('div');
+    root.id='legadoEvaluationModal';
+    root.className='legado-v4-modal';
+    root.hidden=true;
+    root.innerHTML='<div class="legado-v4-backdrop" data-close-eval></div><section class="legado-v4-dialog" role="dialog" aria-modal="true" aria-labelledby="legadoEvalModalTitle"><div id="legadoEvaluationModalBody"></div></section>';
+    document.body.appendChild(root);
+    root.addEventListener('click',e=>{ if(e.target?.matches?.('[data-close-eval]')) window.v4CloseEvaluationModal(); });
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!root.hidden)window.v4CloseEvaluationModal();});
+    return root;
+  }
+
+  function openEvalShell(){ const r=ensureEvalModal(); r.hidden=false; document.body.classList.add('legado-v4-modal-open'); return elV4('legadoEvaluationModalBody'); }
+  window.v4CloseEvaluationModal=function(){ const r=elV4('legadoEvaluationModal'); if(!r)return; r.hidden=true; document.body.classList.remove('legado-v4-modal-open'); };
+
+  // Avaliações por título: cada modelo se comporta como um roteiro de aplicação do professor.
+  const V4_ASSESSMENTS={
+    'Alfabetização e consciência fonológica':{
+      area:'Alfabetização',
+      objective:'Observar como o aluno relaciona fala e escrita, segmenta palavras e percebe unidades sonoras durante uma tarefa curta e mediada.',
+      duration:'40–50 min',
+      materials:'Cartões com imagens e palavras, letras móveis, lápis, folha de registro e pequeno texto adequado ao nível do aluno.',
+      steps:['Acolhimento e explicação do desafio','Rima e identificação de som inicial/final','Segmentação oral de palavras','Montagem de palavras com letras móveis','Leitura de palavras e pequena frase','Registro escrito individual e conversa final'],
+      fields:[
+        {k:'objetivo_aula',l:'Objetivo da aplicação',t:'text',d:'Qual habilidade você pretende observar nesta aplicação?',def:'Identificar evidências do nível atual de consciência fonológica e relação fonema-grafema.'},
+        {k:'habilidade_foco',l:'Habilidade/foco',t:'multi',o:['Rimas','Aliteração','Identificação de sílabas','Identificação de fonema inicial','Segmentação oral','Correspondência fonema-grafema','Leitura de palavras'],},
+        {k:'materiais',l:'Materiais utilizados',t:'text',def:'Cartões, letras móveis, folha, lápis e texto curto.'},
+        {k:'atividade',l:'Atividade aplicada / comandos utilizados',t:'long',def:'Descreva as palavras, imagens, cartões e comandos que foram usados.'},
+        {k:'etapas',l:'Como o aluno realizou',t:'long',def:'Registre o que aconteceu em cada etapa, incluindo ajudas, recusas, autocorreções e estratégias.'},
+        {k:'resultado',l:'Resultado observado',t:'single',o:['Realizou com autonomia','Realizou com pistas leves','Realizou com mediação frequente','Ainda não realizou a habilidade'],},
+        {k:'evidencias',l:'Evidências objetivas',t:'long',def:'Anote exemplos reais de respostas, acertos, erros e autocorreções.'},
+        {k:'erros_estrategias',l:'Erros e estratégias usadas',t:'long'},
+        {k:'feedback',l:'Feedback dado ao aluno',t:'long',def:'Ex.: “Você percebeu o som inicial sozinho. Vamos treinar a segmentação das palavras.”'},
+        {k:'proximo_passo',l:'Próximo plano de aula',t:'long',def:'Defina a próxima atividade e a habilidade que será retomada.'},
+      ]
+    },
+    'Leitura e compreensão':{
+      area:'Leitura',objective:'Verificar fluência, estratégias de leitura e compreensão a partir de um texto curto, com perguntas literais e inferenciais.',duration:'40–50 min',materials:'Texto narrativo ou informativo adequado à idade, marcador, perguntas impressas e folha de registro.',steps:['Antecipação pelo título','Leitura silenciosa ou oral','Retomada de trechos','Perguntas de localização','Perguntas de inferência e relação com conhecimentos prévios','Síntese oral do texto'],
+      fields:[
+        {k:'texto',l:'Texto e nível utilizado',t:'long',def:'Informe o título, gênero, extensão aproximada e adaptações feitas.'},
+        {k:'fluencia',l:'Fluência durante a leitura',t:'single',o:['Ritmo e pausas adequados','Algumas hesitações, sem perder o sentido','Leitura palavra a palavra','Necessitou de apoio frequente']},
+        {k:'estrategias',l:'Estratégias observadas',t:'multi',o:['Relê trecho','Usa contexto','Observa partes da palavra','Faz antecipações','Autocorrige','Pede confirmação']},
+        {k:'compreensao',l:'Compreensão demonstrada',t:'multi',o:['Localiza informação explícita','Explica com suas palavras','Faz inferência simples','Identifica ideia principal','Relaciona texto e experiência']},
+        {k:'atividade',l:'Atividade/perguntas aplicadas',t:'long'},
+        {k:'evidencias',l:'Evidências das respostas',t:'long',def:'Registre respostas relevantes, não apenas “acertou/errou”.'},
+        {k:'resultado',l:'Nível de realização',t:'single',o:['Autônomo','Autônomo com pequenas pistas','Com mediação','Não realizou ainda']},
+        {k:'feedback',l:'Feedback formativo',t:'long'},
+        {k:'proximo_passo',l:'Próximo plano de aula',t:'long'},
+      ]
+    },
+    'Escrita e ortografia':{
+      area:'Escrita',objective:'Observar como o aluno registra palavras e frases, segmenta, revisa e utiliza convenções ortográficas em uma proposta contextualizada.',duration:'45–50 min',materials:'Imagem ou situação disparadora, folha, lápis, quadro de apoio e referência ortográfica quando prevista.',steps:['Apresentação da situação','Planejamento oral','Produção individual','Releitura','Autocorreção com apoio','Conversa sobre escolhas de escrita'],
+      fields:[
+        {k:'proposta',l:'Proposta de escrita',t:'long',def:'Descreva o contexto e o gênero solicitado.'},
+        {k:'hipotese',l:'Aspecto do sistema de escrita observado',t:'single',o:['Ainda em construção','Correspondências parciais','Predominantemente alfabética','Alfabética com oscilações','Em consolidação ortográfica']},
+        {k:'aspectos',l:'Aspectos observados',t:'multi',o:['Correspondência fonema-grafema','Segmentação','Ortografia','Pontuação','Coesão','Organização textual','Releitura/autocorreção']},
+        {k:'atividade',l:'Atividade aplicada',t:'long'},
+        {k:'evidencias',l:'Evidências da produção',t:'long'},
+        {k:'autocorrecao',l:'Como revisou o próprio texto',t:'long'},
+        {k:'resultado',l:'Nível de autonomia',t:'single',o:['Autônomo','Com lembretes','Com mediação','Não revisou']},
+        {k:'feedback',l:'Feedback formativo',t:'long'},
+        {k:'proximo_passo',l:'Próximo plano de aula',t:'long'},
+      ]
+    },
+    'Produção textual':{
+      area:'Produção textual',objective:'Observar planejamento, organização de ideias, desenvolvimento e revisão de um pequeno texto com finalidade definida.',duration:'50–60 min',materials:'Imagem, quadrinhos ou tema gerador, folha de planejamento, folha final e checklist de revisão.',steps:['Leitura da proposta','Levantamento de ideias','Planejamento do texto','Escrita da primeira versão','Revisão orientada','Versão final'],
+      fields:[
+        {k:'genero',l:'Gênero e finalidade',t:'text',def:'Ex.: narrativa curta para acompanhar uma ilustração.'},
+        {k:'planejamento',l:'Planejamento das ideias',t:'long'},
+        {k:'producao',l:'Texto / amostra produzida',t:'long'},
+        {k:'criterios',l:'Critérios observados',t:'multi',o:['Adequação ao tema','Sequência lógica','Vocabulário','Coesão','Pontuação','Ortografia','Revisão']},
+        {k:'atividade',l:'Comandos e apoios utilizados',t:'long'},
+        {k:'evidencias',l:'Evidências objetivas',t:'long'},
+        {k:'resultado',l:'Resultado da produção',t:'single',o:['Cumpriu a proposta com autonomia','Cumpriu com apoio','Cumpriu parcialmente','Ainda necessita de modelo/estrutura']},
+        {k:'feedback',l:'Feedback formativo',t:'long'},
+        {k:'proximo_passo',l:'Próxima proposta de escrita',t:'long'},
+      ]
+    },
+    'Matemática e resolução de problemas':{
+      area:'Matemática',objective:'Observar compreensão do problema, escolha de estratégia, representação, cálculo e verificação do resultado.',duration:'45–55 min',materials:'Situações-problema impressas, material concreto opcional, folha quadriculada e lápis.',steps:['Leitura compartilhada','Identificação de dados e pergunta','Escolha de estratégia','Resolução','Explicação do raciocínio','Verificação'],
+      fields:[
+        {k:'conteudo',l:'Conteúdo matemático',t:'multi',o:['Números','Adição/subtração','Multiplicação/divisão','Frações','Grandezas e medidas','Geometria','Sistema monetário']},
+        {k:'problema',l:'Situação-problema aplicada',t:'long'},
+        {k:'estrategia',l:'Estratégia escolhida',t:'multi',o:['Desenho/esquema','Material concreto','Cálculo mental','Algoritmo','Tabela/organização de dados','Estimativa'],},
+        {k:'raciocinio',l:'Raciocínio demonstrado',t:'long'},
+        {k:'erros',l:'Erros, ajustes e autocorreções',t:'long'},
+        {k:'resultado',l:'Autonomia na resolução',t:'single',o:['Autônomo e explica','Resolve com pequenas pistas','Precisa de mediação','Ainda não inicia sozinho']},
+        {k:'evidencias',l:'Evidências objetivas',t:'long'},
+        {k:'feedback',l:'Feedback formativo',t:'long'},
+        {k:'proximo_passo',l:'Próximo plano de aula',t:'long'},
+      ]
+    },
+    'Raciocínio lógico':{
+      area:'Raciocínio lógico',objective:'Observar identificação de padrões, relações, comparação de estratégias e justificativa de respostas.',duration:'35–45 min',materials:'Sequências, blocos, cartões, desafios visuais e folha de registro.',steps:['Apresentação do desafio','Tentativa livre','Pedido de explicação da estratégia','Variação do desafio','Revisão da solução'],
+      fields:[
+        {k:'habilidades',l:'Habilidades observadas',t:'multi',o:['Classificação','Seriação','Sequenciação','Padrões','Relações espaciais','Inferência','Justificativa']},
+        {k:'desafio',l:'Desafio aplicado',t:'long'},
+        {k:'estrategia',l:'Estratégia utilizada',t:'long'},
+        {k:'variacao',l:'Variação ou contraexemplo',t:'long',def:'Altere uma condição e observe se o aluno adapta o raciocínio.'},
+        {k:'resultado',l:'Resultado',t:'single',o:['Resolve e explica','Resolve com pista','Resolve com mediação','Ainda não resolve']},
+        {k:'evidencias',l:'Evidências objetivas',t:'long'},
+        {k:'feedback',l:'Feedback formativo',t:'long'},
+        {k:'proximo_passo',l:'Próximo plano de aula',t:'long'},
+      ]
+    },
+    'Atenção, planejamento e autorregulação':{
+      area:'Funções de estudo',objective:'Observar como o aluno inicia, mantém e conclui uma tarefa, planeja passos, lida com distrações e revisa o que fez.',duration:'40–50 min',materials:'Atividade acadêmica curta, checklist, timer visual e materiais organizados.',steps:['Apresentação do objetivo','Planejamento dos passos','Execução individual','Pausa/retomada combinada','Checklist final','Autoavaliação'],
+      fields:[
+        {k:'planejamento',l:'Antes de começar',t:'single',o:['Planeja sozinho','Planeja após orientação','Precisa de modelo','Não consegue iniciar sem mediação']},
+        {k:'manutencao',l:'Durante a tarefa',t:'multi',o:['Mantém o objetivo','Retoma após distração','Organiza materiais','Pede ajuda adequadamente','Conclui no tempo combinado']},
+        {k:'estrategias',l:'Estratégias de autorregulação',t:'multi',o:['Checklist','Autoinstrução','Pausa combinada','Cronômetro visual','Revisão','Divisão em etapas']},
+        {k:'tarefa',l:'Tarefa aplicada',t:'long'},
+        {k:'evidencias',l:'Evidências observadas',t:'long'},
+        {k:'resultado',l:'Nível de autonomia',t:'single',o:['Autônomo','Com lembretes leves','Com mediação frequente','Abandona/evita a tarefa']},
+        {k:'feedback',l:'Feedback formativo',t:'long'},
+        {k:'proximo_passo',l:'Próximo plano de aula',t:'long'},
+      ]
+    },
+    'Memória e estratégias de aprendizagem':{
+      area:'Aprender a aprender',objective:'Observar estratégias usadas para registrar, recuperar e explicar informações em uma atividade curta.',duration:'35–45 min',materials:'Lista curta de palavras/imagens, pequeno conteúdo escolar, cartões e folha de estratégias.',steps:['Apresentação do conteúdo','Primeira tentativa de recordação','Ensino explícito de uma estratégia','Nova tentativa','Reflexão sobre a estratégia'],
+      fields:[
+        {k:'conteudo',l:'Conteúdo apresentado',t:'long'},
+        {k:'estrategias',l:'Estratégias utilizadas',t:'multi',o:['Repetição','Agrupamento','Associação','Visualização','Palavra-chave','Anotação','Explicação com próprias palavras']},
+        {k:'atividade',l:'Atividade aplicada',t:'long'},
+        {k:'recordacao',l:'O que conseguiu recuperar',t:'long'},
+        {k:'estrategia_ensinada',l:'Estratégia ensinada pelo professor',t:'long'},
+        {k:'resultado',l:'Resposta à estratégia ensinada',t:'single',o:['Utilizou espontaneamente','Utilizou com lembrete','Utilizou com mediação','Não utilizou ainda']},
+        {k:'evidencias',l:'Evidências objetivas',t:'long'},
+        {k:'feedback',l:'Feedback formativo',t:'long'},
+        {k:'proximo_passo',l:'Próximo plano de aula',t:'long'},
+      ]
+    },
+    'Observação pedagógica geral':{
+      area:'Observação',objective:'Registrar uma situação real de aprendizagem com foco em participação, estratégias, comunicação e resposta às intervenções do professor.',duration:'30–50 min',materials:'A atividade regular do dia e folha de observação.',steps:['Definição do foco','Aplicação da atividade','Observação sem interromper','Intervenção pedagógica pontual','Registro da resposta','Síntese e próximo passo'],
+      fields:[
+        {k:'contexto',l:'Contexto da atividade',t:'long'},
+        {k:'participacao',l:'Participação',t:'single',o:['Muito envolvido','Envolvido com apoio','Oscilante','Pouco envolvido']},
+        {k:'interacao',l:'Interações relevantes',t:'multi',o:['Explica o raciocínio','Escuta feedback','Solicita ajuda','Colabora','Persistente diante do erro']},
+        {k:'estrategias',l:'Estratégias percebidas',t:'multi',o:['Planeja','Testa hipóteses','Revisa','Autocorrige','Busca pistas','Muda de estratégia']},
+        {k:'intervencao',l:'Intervenção do professor e resposta do aluno',t:'long'},
+        {k:'evidencias',l:'Registro descritivo',t:'long'},
+        {k:'resultado',l:'Síntese',t:'single',o:['Desempenho consistente','Desempenho oscilante','Necessita de apoio sistemático','Necessita ampliar evidências']},
+        {k:'feedback',l:'Feedback formativo',t:'long'},
+        {k:'proximo_passo',l:'Próxima intervenção/aula',t:'long'},
+      ]
+    },
+    'Avaliação personalizada':{
+      area:'Personalizada',objective:'Criar uma avaliação própria com objetivo explícito, atividade aplicada e critérios observáveis.',duration:'Definida pelo professor',materials:'Definidos pelo professor',steps:['Definir objetivo','Planejar atividade','Aplicar','Coletar evidências','Analisar','Planejar próxima intervenção'],
+      fields:[
+        {k:'objetivo_aula',l:'Objetivo de aprendizagem',t:'long'},
+        {k:'habilidade_foco',l:'Habilidade/competência',t:'text'},
+        {k:'materiais',l:'Materiais',t:'long'},
+        {k:'atividade',l:'Atividade aplicada',t:'long'},
+        {k:'etapas',l:'Etapas da aplicação',t:'long'},
+        {k:'criterios',l:'Critérios de sucesso',t:'long'},
+        {k:'resultado',l:'Resultado',t:'single',o:['Atingiu o objetivo','Atingiu parcialmente','Necessita de apoio','Ainda não demonstrou']},
+        {k:'evidencias',l:'Evidências coletadas',t:'long'},
+        {k:'feedback',l:'Feedback formativo',t:'long'},
+        {k:'proximo_passo',l:'Próxima aula / intervenção',t:'long'},
+      ]
+    }
+  };
+  V4_ASSESSMENTS['Anamnese pedagógica']={
+    area:'Contexto de aprendizagem',objective:'Levantar informações pedagógicas relevantes sobre a história escolar, rotina de estudos, potencialidades, dificuldades percebidas e objetivos da família e do aluno.',duration:'30–45 min',materials:'Roteiro de entrevista, histórico escolar quando disponível e espaço para registro.',steps:['Acolhimento e objetivo da conversa','Histórico de aprendizagem','Rotina e hábitos de estudo','Potencialidades e interesses','Dificuldades percebidas e estratégias já tentadas','Definição dos focos iniciais'],
+    fields:[
+      {k:'motivo',l:'Motivo principal da procura',t:'long',def:'O que levou a família/aluno a procurar acompanhamento?'} ,
+      {k:'historico_escolar',l:'Histórico escolar e de aprendizagem',t:'long'},
+      {k:'rotina',l:'Rotina de estudos e hábitos',t:'long'},
+      {k:'potencialidades',l:'Potencialidades e interesses',t:'long'},
+      {k:'dificuldades',l:'Dificuldades percebidas',t:'long'},
+      {k:'estrategias_tentadas',l:'Estratégias já tentadas pela família/escola',t:'long'},
+      {k:'atividade_inicial',l:'Atividade/observação inicial planejada',t:'long',def:'Defina uma atividade simples para observar diretamente a queixa relatada.'},
+      {k:'evidencias',l:'Evidências iniciais',t:'long'},
+      {k:'resultado',l:'Síntese do encontro',t:'single',o:['Foco inicial bem definido','Foco definido com necessidade de mais dados','Necessita ampliar informações','Necessita articulação com escola/família']},
+      {k:'proximo_passo',l:'Próximo plano de ação',t:'long',def:'Indique a primeira habilidade e a atividade que serão observadas/trabalhadas.'}
+    ]
+  };
+  const ACTIVITY_SUGGESTIONS={
+    'Alfabetização e consciência fonológica':'Sugestão: apresente 6 imagens em pares de rima, peça o som inicial de 6 palavras e, depois, monte 4 palavras com letras móveis. Finalize com a leitura de 2 frases curtas.',
+    'Leitura e compreensão':'Sugestão: use um texto curto adequado ao aluno; antes da leitura peça uma hipótese pelo título, depois faça 3 perguntas explícitas, 2 inferenciais e peça uma síntese oral em 2 ou 3 frases.',
+    'Escrita e ortografia':'Sugestão: proponha uma cena ilustrada e peça 5 a 8 frases. Ao final, entregue um checklist simples para releitura de separação de palavras, pontuação e ortografia de palavras-alvo.',
+    'Produção textual':'Sugestão: apresente uma sequência de 3 imagens e peça uma narrativa curta com começo, desenvolvimento e final. Faça planejamento em tópicos, primeira versão e revisão guiada.',
+    'Matemática e resolução de problemas':'Sugestão: apresente 3 situações-problema do conteúdo trabalhado, solicitando que o aluno destaque dados, diga o que precisa descobrir, escolha uma estratégia e explique como verificou a resposta.',
+    'Raciocínio lógico':'Sugestão: aplique uma sequência de padrões, uma tarefa de classificação e um desafio de regra. Peça sempre “como você descobriu?” e altere uma condição para observar adaptação.',
+    'Atenção, planejamento e autorregulação':'Sugestão: aplique uma tarefa acadêmica curta dividida em 4 passos. Antes de iniciar, peça que o aluno monte um checklist; ao final, faça uma autoavaliação sobre planejamento, distrações e conclusão.',
+    'Memória e estratégias de aprendizagem':'Sugestão: apresente 8 itens relacionados a um conteúdo escolar, permita 1 minuto de estudo, peça recordação, ensine uma estratégia de agrupamento/associação e repita a tarefa para comparar a estratégia utilizada.',
+    'Observação pedagógica geral':'Sugestão: escolha uma atividade real do atendimento e observe primeiro sem intervir. Depois ofereça uma pista ou modelo pontual e registre se o aluno modifica a estratégia e retoma a tarefa.',
+    'Avaliação personalizada':'Sugestão: escreva uma tarefa diretamente alinhada ao objetivo de aprendizagem, defina o que conta como sucesso antes da aplicação e registre exemplos de resposta para sustentar a análise.',
+    'Anamnese pedagógica':'Sugestão: realize uma entrevista estruturada e termine com uma pequena tarefa de observação diretamente relacionada à principal queixa de aprendizagem.'
+  };
+  const SUCCESS_CRITERIA={
+    'Alfabetização e consciência fonológica':'Identifica e manipula sons com redução progressiva de pistas e explica parte da estratégia utilizada.',
+    'Leitura e compreensão':'Lê o texto compatível com seu nível e responde usando informações do texto, inclusive em ao menos uma pergunta inferencial.',
+    'Escrita e ortografia':'Produz registro compreensível, segmenta palavras e revisa pelo menos um aspecto com autonomia crescente.',
+    'Produção textual':'Mantém a proposta, organiza ideias em sequência e realiza pelo menos uma revisão significativa.',
+    'Matemática e resolução de problemas':'Identifica a pergunta, escolhe estratégia adequada, resolve e consegue explicar ou verificar o raciocínio.',
+    'Raciocínio lógico':'Identifica a regra/padrão e justifica sua escolha, adaptando a estratégia quando a condição muda.',
+    'Atenção, planejamento e autorregulação':'Planeja os passos, mantém-se na tarefa e retoma o objetivo usando ao menos uma estratégia de autorregulação.',
+    'Memória e estratégias de aprendizagem':'Usa uma estratégia explícita para organizar ou recuperar informação e consegue explicar qual estratégia ajudou.',
+    'Observação pedagógica geral':'Demonstra participação compatível com a proposta, utiliza estratégias observáveis e responde às intervenções do professor.',
+    'Avaliação personalizada':'O critério deve ser definido antes da aplicação e descrito de forma observável e verificável.',
+    'Anamnese pedagógica':'As informações devem produzir um foco inicial claro e verificável para a observação e o planejamento das próximas aulas.'
+  };
+  Object.entries(V4_ASSESSMENTS).forEach(([name,def])=>{
+    const activity=def.fields.find(f=>['atividade','tarefa','proposta','problema','desafio'].includes(f.k));
+    if(activity && !activity.def)activity.def=ACTIVITY_SUGGESTIONS[name];
+    if(!def.fields.some(f=>f.k==='criterios_sucesso'))def.fields.splice(Math.max(1,def.fields.length-2),0,{k:'criterios_sucesso',l:'Critérios de sucesso',t:'long',def:SUCCESS_CRITERIA[name]});
+    if(!def.fields.some(f=>f.k==='nivel_ajuda'))def.fields.splice(Math.max(1,def.fields.length-1),0,{k:'nivel_ajuda',l:'Nível de ajuda necessário',t:'single',o:['Sem ajuda','Pistas verbais pontuais','Modelagem/ajuda moderada','Mediação intensa']});
+  });
+  window.V4_ASSESSMENTS=V4_ASSESSMENTS;
+  window.PEDAGOGICAL_ASSESSMENTS=V4_ASSESSMENTS;
+  if(window.V3) window.V3.assessmentType='Alfabetização e consciência fonológica';
+
+  function renderFieldV4(f,data){
+    const v=data?.[f.k];
+    if(f.t==='single') return `<div class="v4-field"><label>${escV4(f.l)}</label><div class="v4-options">${(f.o||[]).map(o=>`<label class="v4-option"><input type="radio" name="assess_${escV4(f.k)}" value="${escV4(o)}" ${String(v||'')===String(o)?'checked':''}><span>${escV4(o)}</span></label>`).join('')}</div></div>`;
+    if(f.t==='multi') { const vals=Array.isArray(v)?v:[]; return `<div class="v4-field"><label>${escV4(f.l)}</label><div class="v4-options">${(f.o||[]).map(o=>`<label class="v4-option"><input type="checkbox" name="assess_${escV4(f.k)}" value="${escV4(o)}" ${vals.includes(o)?'checked':''}><span>${escV4(o)}</span></label>`).join('')}</div></div>`; }
+    const placeholder=f.def||'';
+    return `<div class="v4-field full"><label>${escV4(f.l)}</label><textarea name="assess_${escV4(f.k)}" rows="${f.t==='text'?3:5}" placeholder="${escV4(placeholder)}">${escV4(v||'')}</textarea></div>`;
+  }
+
+  function collectFieldsV4(form,fields){
+    const data={};
+    fields.forEach(f=>{
+      if(f.t==='single'){data[f.k]=form.querySelector(`input[name="assess_${CSS.escape(f.k)}"]:checked`)?.value||'';}
+      else if(f.t==='multi'){data[f.k]=Array.from(form.querySelectorAll(`input[name="assess_${CSS.escape(f.k)}"]:checked`)).map(x=>x.value);}
+      else data[f.k]=form.querySelector(`[name="assess_${CSS.escape(f.k)}"]`)?.value?.trim()||'';
+    });
+    return data;
+  }
+
+  function humanDetailsV4(data,fields){
+    return fields.map(f=>{ const v=data?.[f.k]; if(v==null||v===''||(Array.isArray(v)&&!v.length)) return ''; return `<div class="v4-detail"><span>${escV4(f.l)}</span><strong>${escV4(Array.isArray(v)?v.join(', '):v)}</strong></div>`; }).filter(Boolean).join('');
+  }
+
+  async function loadEvalRowV4(id){
+    if(!window.selectSafe||!window.state?.user) throw new Error('Sessão não disponível.');
+    const rows=await window.selectSafe(table(),{filters:{user_id:window.state.user.id},limit:500});
+    return rows.find(x=>String(x.id)===String(id));
+  }
+
+  async function saveEvalV4(payload,existingId){
+    const tableName=table();
+    if(existingId) return window.updateSafe(tableName,existingId,payload);
+    try { return await window.insertSafe(tableName,payload); }
+    catch(first){
+      // Compatibilidade com instalações que ainda não têm assessment_data.
+      if(/assessment_data|schema cache|column/i.test(String(first?.message||''))){
+        const fallback={...payload};
+        delete fallback.assessment_data;
+        return await window.insertSafe(tableName,fallback);
+      }
+      throw first;
+    }
+  }
+
+  window.v4OpenEvaluationModal=async function(existing=null){
+    try{
+      if(!window.state?.user) await window.ensureSession?.();
+      if(!window.studentsState?.data?.length) await window.v3LoadStudents?.();
+      const students=window.studentsState?.data||[];
+      if(!students.length) throw new Error('Cadastre pelo menos um aluno antes de aplicar uma avaliação.');
+      const type=(existing?.type&&V4_ASSESSMENTS[existing.type])?existing.type:(V4_ASSESSMENTS[window.V3?.assessmentType]?window.V3.assessmentType:'Leitura e compreensão');
+      const def=V4_ASSESSMENTS[type]||V4_ASSESSMENTS['Avaliação personalizada'];
+      const data=existing?.assessment_data||{};
+      const body=openEvalShell();
+      body.innerHTML=`<div class="v4-modal-header"><div><div class="v3-kicker">${existing?'EDITAR AVALIAÇÃO':'APLICAR AVALIAÇÃO'}</div><h2 id="legadoEvalModalTitle">${escV4(type)}</h2><p>${escV4(def.objective)}</p></div><button class="icon-button" type="button" aria-label="Fechar" onclick="v4CloseEvaluationModal()"><i data-lucide="x"></i></button></div>
+        <div class="v4-eval-context"><div><span>Área</span><strong>${escV4(def.area)}</strong></div><div><span>Duração sugerida</span><strong>${escV4(def.duration)}</strong></div><div><span>Materiais-base</span><strong>${escV4(def.materials)}</strong></div></div>
+        <div class="v4-steps">${def.steps.map((x,i)=>`<span><b>${i+1}</b>${escV4(x)}</span>`).join('')}</div>
+        <form id="v4EvaluationForm" class="v4-form"><div class="v4-grid"><label><span>Aluno *</span><select name="student_id" required><option value="">Selecione o aluno</option>${students.map(s=>`<option value="${escV4(s.id)}" ${String(existing?.student_id||'')===String(s.id)?'selected':''}>${escV4(s.name||s.full_name)}</option>`).join('')}</select></label><label><span>Modelo</span><select name="type" id="v4EvaluationType">${Object.keys(V4_ASSESSMENTS).map(n=>`<option value="${escV4(n)}" ${n===type?'selected':''}>${escV4(n)}</option>`).join('')}</select></label><label><span>Data *</span><input type="date" name="evaluation_date" value="${escV4(existing?.evaluation_date||todayV4())}" required></label><label><span>Status</span><select name="status"><option value="draft" ${existing?.status!=='completed'?'selected':''}>Rascunho</option><option value="completed" ${existing?.status==='completed'?'selected':''}>Concluída</option></select></label><label class="full"><span>Título da aplicação</span><input name="title" value="${escV4(existing?.title||type)}" required placeholder="Ex.: Leitura de texto narrativo — turma/nível"></label></div>
+          <div class="v4-plan"><div><span class="v3-kicker">PLANO DA APLICAÇÃO</span><h3 id="v4TypeHeading">${escV4(type)}</h3></div><div class="v4-source"><b>Objetivo</b><span id="v4Objective">${escV4(def.objective)}</span></div></div>
+          <div id="v4AssessmentFields" class="v4-grid">${def.fields.map(f=>renderFieldV4(f,data)).join('')}</div>
+          <div class="v4-grid"><div class="v4-field full"><label>Síntese pedagógica</label><textarea name="summary" rows="6" placeholder="Organize a leitura do que aconteceu: potencialidades, dificuldades, respostas às intervenções e significado pedagógico das evidências.">${escV4(existing?.summary||'')}</textarea></div><div class="v4-field full"><label>Registro para a próxima aula</label><textarea name="next_lesson" rows="5" placeholder="Deixe definido o próximo foco, atividade e grau de mediação previsto.">${escV4(data?.proximo_passo||existing?.next_lesson||'')}</textarea></div></div>
+          <div class="v4-actions"><button type="button" class="btn btn-outline" onclick="v4CloseEvaluationModal()">Cancelar</button>${existing?`<button type="button" class="btn btn-danger" onclick="v3DeleteEvaluation('${escV4(existing.id)}')">Excluir</button>`:''}<button class="btn btn-primary" type="submit"><i data-lucide="save"></i>${existing?'Salvar alterações':'Salvar aplicação'}</button></div>
+        </form>`;
+      window.refreshIcons?.();
+      const typeSelect=elV4('v4EvaluationType');
+      const fieldBox=elV4('v4AssessmentFields');
+      typeSelect.onchange=()=>{ const next=typeSelect.value,nd=V4_ASSESSMENTS[next]; fieldBox.innerHTML=nd.fields.map(f=>renderFieldV4(f,{})).join(''); elV4('v4TypeHeading').textContent=next; elV4('v4Objective').textContent=nd.objective; window.refreshIcons?.(); };
+      elV4('v4EvaluationForm').onsubmit=async ev=>{
+        ev.preventDefault();
+        const btn=ev.currentTarget.querySelector('button[type="submit"]'); btn?.classList.add('is-loading');
+        try{
+          const fd=new FormData(ev.currentTarget); const st=students.find(s=>String(s.id)===String(fd.get('student_id'))); if(!st)throw new Error('Selecione o aluno.');
+          const currentType=String(fd.get('type')); const currentDef=V4_ASSESSMENTS[currentType]; const structured=collectFieldsV4(ev.currentTarget,currentDef.fields); structured.next_lesson=String(fd.get('next_lesson')||structured.proximo_passo||'').trim();
+          const notes=currentDef.fields.map(f=>{const v=structured[f.k];return v==null||v===''||(Array.isArray(v)&&!v.length)?'':`${f.l}: ${Array.isArray(v)?v.join(', '):v}`;}).filter(Boolean).join('\n');
+          const payload={user_id:window.state.user.id,student_id:st.id,student_name:st.name||st.full_name,evaluation_date:String(fd.get('evaluation_date')||todayV4()),type:currentType,title:String(fd.get('title')||currentType).trim(),status:String(fd.get('status')||'draft'),summary:String(fd.get('summary')||'').trim()||null,notes:notes||null,assessment_data:structured};
+          await saveEvalV4(payload,existing?.id);
+          window.showSuccess?.(existing?'Avaliação atualizada e vinculada ao prontuário.':'Avaliação aplicada e vinculada ao prontuário.');
+          window.v4CloseEvaluationModal();
+          if(window.state?.currentView==='aluno-perfil') await window.v3RenderStudentProfileFast?.(); else await window.renderEvaluations?.();
+        }catch(err){ window.showError?.('Não foi possível salvar a avaliação: '+(err?.message||err)); }
+        finally{btn?.classList.remove('is-loading');}
+      };
+      setTimeout(()=>elV4('v4EvaluationForm')?.querySelector('select[name="student_id"]')?.focus(),50);
+    }catch(err){window.showError?.(err?.message||'Não foi possível abrir a avaliação.');}
+  };
+
+  // Toda abertura/edit passa a usar o popup.
+  window.v3OpenEvaluationEditor=window.v4OpenEvaluationModal;
+  window.openNewEvaluationModal=window.v4OpenEvaluationModal;
+  window.v3EditEvaluation=async function(id){ try{ const row=await loadEvalRowV4(id); if(!row)throw new Error('Avaliação não encontrada.'); await window.v4OpenEvaluationModal(row); }catch(e){window.showError?.(e.message||'Não foi possível abrir a avaliação.');} };
+  window.v3OpenEvaluationFromStudent=window.v3EditEvaluation;
+  window.openEditEvaluationModal=window.v3EditEvaluation;
+
+  window.v3DeleteEvaluation=async function(id){
+    if(!window.confirm('Excluir esta avaliação? Essa ação não poderá ser desfeita.'))return;
+    try{ const r=await window.supabaseClient.from(table()).delete().eq('id',id).eq('user_id',window.state.user.id); if(r.error)throw r.error; window.v4CloseEvaluationModal(); window.showSuccess?.('Avaliação excluída.'); if(window.state.currentView==='aluno-perfil')await window.v3RenderStudentProfileFast?.(); else await window.renderEvaluations?.(); }catch(e){window.showError?.(e.message||'Não foi possível excluir a avaliação.');}
+  };
+
+  function renderEvaluationHistoryV4(evals){
+    if(!evals.length) return `<div class="v4-empty"><i data-lucide="clipboard-list"></i><strong>Nenhuma aplicação registrada</strong><span>Os modelos ficam prontos para uso. Ao aplicar uma avaliação, ela aparecerá aqui e no prontuário do aluno.</span></div>`;
+    return `<div class="v4-history">${evals.map(e=>{const def=V4_ASSESSMENTS[e.type], raw=e.assessment_data||{}; const preview=def?humanDetailsV4(raw,def.fields).split('</div>').slice(0,3).join('</div>'):' '; return `<article class="v4-history-item" onclick="v3EditEvaluation('${escV4(e.id)}')"><div class="v4-history-date"><strong>${escV4(fmtV4(e.evaluation_date))}</strong><span>${escV4(safeStatus(e.status))}</span></div><div class="v4-history-main"><div class="v4-inline-tags"><span class="v3-tag">${escV4(e.type||'Avaliação')}</span>${e.student_name?`<span class="v3-student-ref"><i data-lucide="user-round"></i>${escV4(e.student_name)}</span>`:''}</div><h3>${escV4(e.title||e.type||'Avaliação')}</h3><p>${escV4(e.summary||'Sem síntese registrada. Clique para abrir a aplicação.')}</p>${preview?`<div class="v4-history-preview">${preview}</div>`:''}<div class="v4-history-actions"><button type="button" class="btn btn-outline btn-sm" onclick="event.stopPropagation();v3EditEvaluation('${escV4(e.id)}')">Abrir avaliação</button><button type="button" class="btn btn-danger btn-sm" onclick="event.stopPropagation();v3DeleteEvaluation('${escV4(e.id)}')">Excluir</button></div></div></article>`;}).join('')}</div>`;
+  }
+
+  window.renderEvaluations=async function(){
+    const c=elV4('avaliacoesContent'); if(!c)return;
+    c.innerHTML='<div class="v3-loading"><i data-lucide="loader-circle"></i><span>Carregando instrumentos e histórico...</span></div>'; window.refreshIcons?.();
+    try{
+      const [evals]=await Promise.all([window.selectSafe(table(),{filters:{user_id:window.state.user.id},order:'evaluation_date',ascending:false,limit:500}),window.v3LoadStudents?.()]);
+      const list=evals||[];
+      const models=Object.entries(V4_ASSESSMENTS).map(([name,def])=>`<article class="v4-model"><div class="v4-model-icon"><i data-lucide="clipboard-check"></i></div><div class="v4-model-main"><div class="v3-kicker">AVALIAÇÃO APLICADA PELO PROFESSOR</div><h3>${escV4(name)}</h3><p>${escV4(def.objective)}</p><div class="v4-model-meta"><span>${escV4(def.area)}</span><span>${escV4(def.duration)}</span><span>${def.fields.length} campos</span></div></div><button class="btn btn-primary btn-sm" type="button" onclick="V3.assessmentType='${escV4(name)}';v4OpenEvaluationModal()"><i data-lucide="play"></i>Aplicar</button></article>`).join('');
+      c.innerHTML=`<div class="v3-head"><div><div class="v3-kicker">INVESTIGAÇÃO PEDAGÓGICA</div><h1>Avaliações</h1><p>Roteiros prontos para o professor aplicar, registrar evidências e transformar o resultado no próximo plano de aula.</p></div><button class="btn btn-primary" type="button" onclick="V3.assessmentType='Alfabetização e consciência fonológica';v4OpenEvaluationModal()"><i data-lucide="clipboard-plus"></i>Aplicar avaliação</button></div>
+        <div class="v3-stats">${window.statCard?.('clipboard-check','Aplicações',list.length,'Registros salvos')||''}${window.statCard?.('user-round-check','Alunos avaliados',new Set(list.map(e=>e.student_id).filter(Boolean)).size,'Com histórico')||''}${window.statCard?.('file-check-2','Concluídas',list.filter(e=>e.status==='completed').length,'Aplicações finalizadas')||''}${window.statCard?.('clock-3','Rascunhos',list.filter(e=>e.status!=='completed').length,'Em preenchimento')||''}</div>
+        <div class="v3-panel"><div class="v3-panel-head"><div><h2>Instrumentos prontos para aplicação</h2><p>Cada título possui objetivo, atividade, critérios observáveis, registro e próximo plano de aula.</p></div></div><div class="v4-model-list">${models}</div></div>
+        <div class="v3-panel"><div class="v3-panel-head"><div><h2>Histórico das aplicações</h2><p>Clique em qualquer registro para abrir a avaliação em popup.</p></div></div>${renderEvaluationHistoryV4(list)}</div>
+        <div class="v3-panel"><div class="v3-form-note"><i data-lucide="info"></i><span>Os modelos são instrumentos pedagógicos de apoio. Eles registram evidências de aprendizagem e orientam o planejamento docente; não substituem instrumentos normatizados ou avaliações diagnósticas especializadas.</span></div></div>`;
+      window.refreshIcons?.();
+    }catch(e){ c.innerHTML=`<div class="v4-empty"><i data-lucide="circle-alert"></i><strong>Não foi possível carregar as avaliações.</strong><span>${escV4(e.message||e)}</span><button class="btn btn-primary btn-sm" onclick="renderEvaluations()">Tentar novamente</button></div>`;window.refreshIcons?.(); }
+  };
+
+  // Histórico do aluno: mesma experiência de popup, sem navegar de tela.
+  window.renderStudentEvaluationsInProfile=async function(d,b){
+    const evals=d?.evaluations||[];
+    const history=evals.length?renderEvaluationHistoryV4(evals):'<div class="v4-empty"><i data-lucide="clipboard-list"></i><strong>Nenhuma avaliação vinculada</strong><span>Aplique uma avaliação pelo módulo Avaliações para alimentar o histórico deste aluno.</span></div>';
+    b.innerHTML=`<div class="v3-panel"><div class="v3-panel-head"><div><h2>Histórico de avaliações aplicadas</h2><p>O histórico fica ligado ao aluno e cada registro abre a aplicação completa em popup.</p></div><span class="v3-tag">${evals.length} registro${evals.length===1?'':'s'}</span></div>${history}</div><div class="v3-form-actions"><button class="btn btn-primary" type="button" onclick="V3.assessmentType='Leitura e compreensão';v4OpenEvaluationModal()"><i data-lucide="clipboard-plus"></i>Aplicar nova avaliação</button></div>`;
+    window.refreshIcons?.();
+  };
+
+  // Agenda mais resiliente: agendamento por aluno e por horário, sempre em popup.
+  async function safeSelectAppointments(){try{return await window.selectSafe(appTable(),{filters:{user_id:window.state.user.id},limit:1000});}catch(e){throw e;}}
+  window.v4OpenAppointmentModal=async function(date=todayV4(),time='',studentId=''){
+    try{
+      if(!window.studentsState?.data?.length) await window.v3LoadStudents?.();
+      const students=window.studentsState?.data||[]; if(!students.length)throw new Error('Cadastre um aluno antes de agendar.');
+      let root=elV4('legadoAppointmentModal'); if(!root){root=document.createElement('div');root.id='legadoAppointmentModal';root.className='legado-v4-modal';root.hidden=true;root.innerHTML='<div class="legado-v4-backdrop" data-close-app></div><section class="legado-v4-dialog" role="dialog" aria-modal="true"><div id="legadoAppointmentModalBody"></div></section>';document.body.appendChild(root);root.addEventListener('click',e=>{if(e.target?.matches?.('[data-close-app]'))window.v4CloseAppointmentModal();});}
+      root.hidden=false;document.body.classList.add('legado-v4-modal-open');
+      const body=elV4('legadoAppointmentModalBody');
+      body.innerHTML=`<div class="v4-modal-header"><div><div class="v3-kicker">AGENDA</div><h2>Agendar atendimento</h2><p>Escolha o aluno, a data, o horário e a duração. O registro fica vinculado ao prontuário.</p></div><button class="icon-button" type="button" onclick="v4CloseAppointmentModal()"><i data-lucide="x"></i></button></div><form id="v4AppointmentForm" class="v4-form"><div class="v4-grid"><label><span>Aluno *</span><select name="student_id" required><option value="">Selecione o aluno</option>${students.map(s=>`<option value="${escV4(s.id)}" ${String(studentId)===String(s.id)?'selected':''}>${escV4(s.name||s.full_name)}</option>`).join('')}</select></label><label><span>Data *</span><input type="date" name="appointment_date" value="${escV4(date)}" required></label><label><span>Horário *</span><input type="time" name="appointment_time" value="${escV4(time)}" required></label><label><span>Duração</span><select name="duration"><option value="30">30 min</option><option value="45">45 min</option><option value="50">50 min</option><option value="60" selected>60 min</option><option value="90">90 min</option></select></label><label><span>Tipo</span><select name="type"><option>Atendimento psicopedagógico</option><option>Avaliação pedagógica</option><option>Devolutiva</option><option>Reunião com família</option><option>Reunião com escola</option></select></label><label><span>Status</span><select name="status"><option value="scheduled">Agendado</option><option value="completed">Concluído</option><option value="cancelled">Cancelado</option></select></label><label class="full"><span>Observações</span><textarea name="notes" rows="4" placeholder="Objetivo do encontro, atividade planejada, observações para a sessão... "></textarea></label></div><div class="v4-actions"><button type="button" class="btn btn-outline" onclick="v4CloseAppointmentModal()">Cancelar</button><button class="btn btn-primary" type="submit"><i data-lucide="calendar-plus"></i>Agendar atendimento</button></div></form>`;
+      window.refreshIcons?.();
+      elV4('v4AppointmentForm').onsubmit=async ev=>{ev.preventDefault();const btn=ev.currentTarget.querySelector('button[type="submit"]');btn?.classList.add('is-loading');try{const fd=new FormData(ev.currentTarget);const sid=String(fd.get('student_id'));const st=students.find(s=>String(s.id)===sid);if(!st)throw new Error('Selecione o aluno.');const t=String(fd.get('appointment_time')||'');const dur=Number(fd.get('duration')||60);const startMin=(Number(t.slice(0,2))*60+Number(t.slice(3,5)));if(!/^\d{2}:\d{2}$/.test(t)||Number.isNaN(startMin))throw new Error('Informe um horário válido.');const endMin=startMin+dur;if(endMin>24*60)throw new Error('O atendimento ultrapassa o fim do dia.');const rows=await window.selectSafe(appTable(),{filters:{user_id:window.state.user.id,appointment_date:String(fd.get('appointment_date'))},limit:500});const conflict=(rows||[]).some(a=>{if(['cancelled','canceled'].includes(String(a.status||'').toLowerCase()))return false;const raw=String(a.appointment_time||a.start_time||a.time||'').slice(0,5);if(!/^\d{2}:\d{2}$/.test(raw))return false;const am=Number(raw.slice(0,2))*60+Number(raw.slice(3,5));const ad=Number(a.duration||60);return startMin<am+ad&&endMin>am;});if(conflict)throw new Error('Este horário conflita com outro atendimento. Escolha outro horário.');const payload={user_id:window.state.user.id,student_id:st.id,student_name:st.name||st.full_name,appointment_date:String(fd.get('appointment_date')),appointment_time:t,duration:dur,type:String(fd.get('type')),status:String(fd.get('status')),notes:String(fd.get('notes')||'').trim()||null};await window.insertSafe(appTable(),payload);window.showSuccess?.(`${st.name||st.full_name} foi agendado para ${fmtV4(fd.get('appointment_date'))} às ${t}.`);window.v4CloseAppointmentModal();if(window.V3){window.V3.agendaSelected=String(fd.get('appointment_date'));const d=new Date(`${fd.get('appointment_date')}T12:00:00`);window.V3.agendaMonth=new Date(d.getFullYear(),d.getMonth(),1);}await window.renderAgenda?.();}catch(e){window.showError?.('Não foi possível agendar: '+(e.message||e));}finally{btn?.classList.remove('is-loading');}};
+    }catch(e){window.showError?.(e.message||'Não foi possível abrir a agenda.');}
+  };
+  window.v4CloseAppointmentModal=function(){const r=elV4('legadoAppointmentModal');if(r)r.hidden=true;document.body.classList.remove('legado-v4-modal-open');};
+  window.v3OpenAppointmentEditor=window.v4OpenAppointmentModal;
+  window.openNewAppointmentModal=window.v4OpenAppointmentModal;
+
+  // Lista de espera: payload compatível e edição/conversão sem colunas inventadas.
+  window.v4OpenWaitlistModal=async function(existing=null){
+    const rootId='legadoWaitlistModal';let root=elV4(rootId);if(!root){root=document.createElement('div');root.id=rootId;root.className='legado-v4-modal';root.hidden=true;root.innerHTML='<div class="legado-v4-backdrop" data-close-wait></div><section class="legado-v4-dialog"><div id="legadoWaitlistModalBody"></div></section>';document.body.appendChild(root);root.addEventListener('click',e=>{if(e.target?.matches?.('[data-close-wait]'))window.v4CloseWaitlistModal();});}
+    root.hidden=false;document.body.classList.add('legado-v4-modal-open');const notesRaw=String(existing?.notes||'');const fm=notesRaw.match(/^Contato da família:\s*(.+?)(?:\n|$)/i);const family=fm?.[1]||'';const notes=notesRaw.replace(/^Contato da família:\s*.+?(?:\n|$)/i,'').trim();const body=elV4('legadoWaitlistModalBody');
+    body.innerHTML=`<div class="v4-modal-header"><div><div class="v3-kicker">LISTA DE ESPERA</div><h2>${existing?'Editar interessado':'Adicionar interessado'}</h2><p>Guarde o contexto da procura para não perder o vínculo com a futura vaga.</p></div><button class="icon-button" type="button" onclick="v4CloseWaitlistModal()"><i data-lucide="x"></i></button></div><form id="v4WaitForm" class="v4-form"><div class="v4-grid"><label><span>Nome *</span><input name="name" required value="${escV4(existing?.name||'')}"></label><label><span>WhatsApp / telefone *</span><input name="phone" required value="${escV4(existing?.phone||'')}"></label><label><span>Contato da família</span><input name="family_contact" value="${escV4(family)}"></label><label><span>Área / motivo</span><input name="area" value="${escV4(existing?.area||'')}" placeholder="Ex.: alfabetização, matemática, acompanhamento escolar"></label><label><span>Prioridade</span><select name="priority"><option value="baixa" ${existing?.priority==='baixa'?'selected':''}>Baixa</option><option value="media" ${!existing?.priority||existing?.priority==='media'?'selected':''}>Média</option><option value="alta" ${existing?.priority==='alta'?'selected':''}>Alta</option></select></label><label><span>Status</span><select name="status"><option value="waiting" ${!existing?.status||existing?.status==='waiting'?'selected':''}>Aguardando</option><option value="contacted" ${existing?.status==='contacted'?'selected':''}>Contatado</option><option value="cancelled" ${existing?.status==='cancelled'?'selected':''}>Encerrado</option></select></label><label class="full"><span>Contexto contado pela família</span><textarea name="notes" rows="7" placeholder="Necessidades relatadas, série, dificuldades, disponibilidade, origem do contato e observações.">${escV4(notes)}</textarea></label></div><div class="v4-actions"><button type="button" class="btn btn-outline" onclick="v4CloseWaitlistModal()">Cancelar</button><button class="btn btn-primary" type="submit">Salvar interessado</button></div></form>`;window.refreshIcons?.();
+    elV4('v4WaitForm').onsubmit=async ev=>{ev.preventDefault();try{const fd=new FormData(ev.currentTarget);const familyV=String(fd.get('family_contact')||'').trim();const notesBase=String(fd.get('notes')||'').trim();const allNotes=familyV?(notesBase?`Contato da família: ${familyV}\n${notesBase}`:`Contato da família: ${familyV}`):notesBase;const payload={user_id:window.state.user.id,name:String(fd.get('name')||'').trim(),phone:String(fd.get('phone')||'').trim(),area:String(fd.get('area')||'').trim()||null,priority:String(fd.get('priority')||'media'),status:String(fd.get('status')||'waiting'),notes:allNotes||null};if(!payload.name)throw new Error('Informe o nome.');if(!payload.phone)throw new Error('Informe o telefone.');if(existing)await window.updateSafe(waitTable(),existing.id,payload);else await window.insertSafe(waitTable(),payload);window.showSuccess?.(existing?'Interessado atualizado.':'Interessado adicionado à lista de espera.');window.v4CloseWaitlistModal();await window.renderWaitlist?.();}catch(e){window.showError?.(e.message||'Não foi possível salvar o interessado.');}};
+  };
+  window.v4CloseWaitlistModal=function(){const r=elV4('legadoWaitlistModal');if(r)r.hidden=true;document.body.classList.remove('legado-v4-modal-open');};
+  window.v3OpenWaitlistEditor=window.v4OpenWaitlistModal;
+  window.v3EditWaitlist=async function(id){try{const rows=await window.selectSafe(waitTable(),{filters:{user_id:window.state.user.id},limit:500});const row=rows.find(x=>String(x.id)===String(id));if(!row)throw new Error('Interessado não encontrado.');await window.v4OpenWaitlistModal(row);}catch(e){window.showError?.(e.message);}};
+  window.v3ConvertWaitlist=async function(id){try{const rows=await window.selectSafe(waitTable(),{filters:{user_id:window.state.user.id},limit:500});const row=rows.find(x=>String(x.id)===String(id));if(!row)throw new Error('Interessado não encontrado.');if(!window.confirm(`Incluir ${row.name} na lista de alunos?`))return;const familyMatch=String(row.notes||'').match(/^Contato da família:\s*(.+?)(?:\n|$)/i);const payload={user_id:window.state.user.id,name:row.name,full_name:row.name,phone:row.phone||null,responsible_name:familyMatch?.[1]?.trim()||null,notes:row.notes||null,status:'active'};await window.insertSafe(window.V3Core?.TABLE?.students||window.TABLE?.students||'students',payload);await window.updateSafe(waitTable(),row.id,{status:'converted'});window.showSuccess?.(`${row.name} foi incluído nos alunos.`);await window.renderWaitlist?.();}catch(e){window.showError?.('Não foi possível converter: '+(e.message||e));}};
+
+  // Novo renderizador de espera: botão e fluxo sempre funcionais.
+  const oldWait=window.renderWaitlist;
+  window.renderWaitlist=async function(){
+    const c=elV4('waitlistContent');if(!c)return;
+    try{
+      if(!window.state?.user) await window.ensureSession?.();
+      const rows=await window.selectSafe(waitTable(),{filters:{user_id:window.state.user.id},order:'created_at',ascending:false,limit:500});
+      const active=(rows||[]).filter(r=>!['converted','cancelled'].includes(String(r.status||'waiting').toLowerCase()));
+      const closed=(rows||[]).filter(r=>['converted','cancelled'].includes(String(r.status||'').toLowerCase()));
+      const cards=active.map(r=>{const msg=`Olá! Surgiu uma possibilidade de atendimento no Legado que Ensina. Gostaria de conversar sobre um horário disponível para ${r.name}?`;const family=String(r.notes||'').match(/^Contato da família:\s*(.+?)(?:\n|$)/i)?.[1]||'—';const ctx=String(r.notes||'').replace(/^Contato da família:\s*.+?(?:\n|$)/i,'').trim()||'—';return `<article class="v3-wait-card"><div class="v3-student-top"><div class="v3-avatar"><i data-lucide="user"></i></div><div class="v3-student-ident"><h3>${escV4(r.name)}</h3><span>${escV4(r.area||'Área não informada')} · prioridade ${escV4(r.priority||'media')}</span></div><span class="v3-tag">${escV4(r.status==='contacted'?'Contatado':'Aguardando')}</span></div><div class="v3-wait-meta"><div><b>Família</b>${escV4(family)}</div><div><b>WhatsApp</b>${escV4(r.phone||'—')}</div><div><b>Contexto</b>${escV4(ctx)}</div></div><div class="v3-form-actions"><a class="btn btn-soft btn-sm" target="_blank" rel="noopener" href="${escV4(typeof window.waLink==='function'?window.waLink(r.phone,msg):'#')}" onclick="v3MarkWaitContacted('${escV4(r.id)}')"><i data-lucide="message-circle"></i>WhatsApp</a><button class="btn btn-primary btn-sm" type="button" onclick="v3ConvertWaitlist('${escV4(r.id)}')"><i data-lucide="user-plus"></i>Incluir nos alunos</button><button class="btn btn-outline btn-sm" type="button" onclick="v3EditWaitlist('${escV4(r.id)}')"><i data-lucide="pencil"></i>Editar</button></div></article>`;}).join('');
+      c.innerHTML=`<div class="v3-head"><div><div class="v3-kicker">ATENDIMENTO</div><h1>Lista de espera</h1><p>Organize interessados, contexto familiar e conversão em aluno sem perder histórico.</p></div><button class="btn btn-primary" type="button" onclick="v4OpenWaitlistModal()"><i data-lucide="user-plus"></i>Adicionar interessado</button></div><div class="v3-stats">${window.statCard?.('users-round','Interessados ativos',active.length,'Na fila')||''}${window.statCard?.('message-circle','Contatados',rows.filter(r=>r.status==='contacted').length,'Contato realizado')||''}${window.statCard?.('user-round-plus','Convertidos',rows.filter(r=>r.status==='converted').length,'Viraram alunos')||''}${window.statCard?.('archive','Encerrados',rows.filter(r=>r.status==='cancelled').length,'Sem continuidade')||''}</div><div class="v3-panel"><div class="v3-panel-head"><div><h2>Fila atual</h2><p>Clique em Editar para atualizar o interessado sem sair da página.</p></div></div>${cards?`<div class="v3-wait-grid">${cards}</div>`:'<div class="v4-empty"><i data-lucide="inbox"></i><strong>A fila está vazia</strong><span>Cadastre um interessado para começar.</span></div>'}</div>${closed.length?`<div class="v3-panel"><div class="v3-panel-head"><div><h2>Histórico encerrado</h2><p>Conversões e encerramentos ficam registrados.</p></div></div><div class="v3-history-list">${closed.slice(0,100).map(r=>`<article class="v3-history-item"><div class="v3-history-date">${escV4(fmtV4(r.updated_at||r.created_at))}</div><div class="v3-history-content"><strong>${escV4(r.name)}</strong><p>${escV4(r.status==='converted'?'Convertido para alunos.':'Atendimento encerrado.')}</p></div></article>`).join('')}</div></div>`:''}`;
+      window.refreshIcons?.();
+    }catch(e){c.innerHTML=`<div class="v4-empty"><i data-lucide="circle-alert"></i><strong>Não foi possível carregar a lista de espera.</strong><span>${escV4(e.message||e)}</span><button class="btn btn-primary btn-sm" onclick="renderWaitlist()">Tentar novamente</button></div>`;window.refreshIcons?.();}
+  };
+
+
+  // No prontuário, a aba Atendimentos ganha agendamento direto do aluno.
+  const previousStudentSection=window.v3RenderStudentSection;
+  if(typeof previousStudentSection==='function' && !previousStudentSection.__v4ProfileSchedule){
+    const wrappedStudentSection=async function(d){
+      const result=await previousStudentSection(d);
+      if(window.V3?.studentSection==='appointments'){
+        const b=document.getElementById('v3StudentSectionBody');
+        if(b && !b.querySelector('.v4-profile-schedule')){
+          const appointments=(d?.appointments||[]).slice().sort((a,b)=>String(a.appointment_date||'').localeCompare(String(b.appointment_date||'')));
+          const upcoming=appointments.filter(a=>!['cancelled','canceled','completed'].includes(String(a.status||'').toLowerCase())).slice(0,8);
+          const html=`<div class="v3-panel v4-profile-schedule"><div class="v3-panel-head"><div><h2>Agenda do aluno</h2><p>Agende diretamente para ${escV4(d?.student?.name||d?.student?.full_name||'este aluno')} sem precisar procurá-lo novamente.</p></div><button class="btn btn-primary btn-sm" type="button" onclick="v4OpenAppointmentModal('${todayV4()}','', '${escV4(d?.student?.id||window.state?.currentStudentId||'')}')"><i data-lucide="calendar-plus"></i>Agendar horário</button></div>${upcoming.length?`<div class="v4-upcoming-list">${upcoming.map(a=>`<div class="v4-upcoming-item"><div><strong>${escV4(fmtV4(a.appointment_date))}</strong><span>${escV4(String(a.appointment_time||a.start_time||a.time||'').slice(0,5)||'Horário não informado')} · ${escV4(a.type||'Atendimento')}</span></div><span class="v3-tag">${escV4(safeStatus(a.status||'scheduled'))}</span></div>`).join('')}</div>`:'<div class="v4-profile-empty">Nenhum atendimento futuro programado para este aluno.</div>'}</div>`;
+          b.insertAdjacentHTML('afterbegin',html);window.refreshIcons?.();
+        }
+      }
+      return result;
+    };
+    wrappedStudentSection.__v4ProfileSchedule=true;
+    window.v3RenderStudentSection=wrappedStudentSection;
+  }
+
+  // Pequena robustez no perfil: se avaliações estiverem na tela, reabre sempre por popup.
+  window.__legadoV4Ready=true;
+})();
+</script>
+<style id="legado-v4-css">
+body.legado-v4-modal-open{overflow:hidden}
+.legado-v4-modal{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:22px;box-sizing:border-box}.legado-v4-modal[hidden]{display:none}.legado-v4-backdrop{position:absolute;inset:0;background:rgba(20,30,26,.56);backdrop-filter:blur(5px)}
+.legado-v4-dialog{position:relative;z-index:1;width:min(1080px,96vw);max-height:94vh;overflow:auto;border:1px solid #dce6e0;border-radius:24px;background:#fff;box-shadow:0 30px 90px rgba(18,33,27,.26);animation:v4ModalIn .18s ease-out}.legado-v4-dialog::-webkit-scrollbar{width:10px}.legado-v4-dialog::-webkit-scrollbar-thumb{background:#cbd8d1;border-radius:20px}
+.v4-modal-header{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;padding:24px 26px 18px;border-bottom:1px solid #e7eee9;position:sticky;top:0;background:rgba(255,255,255,.97);backdrop-filter:blur(8px);z-index:3}.v4-modal-header h2{margin:2px 0 6px;font-size:25px;letter-spacing:-.035em}.v4-modal-header p{margin:0;max-width:760px;color:#6f7d75;line-height:1.55;font-size:12px}
+.v4-eval-context{display:grid;grid-template-columns:1fr 1fr 2fr;gap:10px;padding:16px 26px;background:#f7faf8;border-bottom:1px solid #e7eee9}.v4-eval-context div{padding:12px;border:1px solid #e0e9e4;border-radius:13px;background:#fff}.v4-eval-context span,.v4-plan .v3-kicker{display:block;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#7e8c84}.v4-eval-context strong{display:block;margin-top:5px;font-size:11px;color:#41534a;line-height:1.45}
+.v4-steps{display:flex;gap:8px;overflow:auto;padding:14px 26px;border-bottom:1px solid #edf1ee}.v4-steps span{display:flex;align-items:center;gap:7px;white-space:nowrap;border:1px solid #e1e8e4;border-radius:999px;padding:7px 9px;color:#617067;font-size:10px;background:#fbfcfb}.v4-steps b{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#edf4ef;color:#547a68;font-size:9px}
+.v4-form{padding:22px 26px 26px}.v4-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.v4-grid label,.v4-field{display:flex;flex-direction:column;gap:7px}.v4-grid label.full,.v4-field.full{grid-column:1/-1}.v4-grid label>span,.v4-field>label{font-size:11px;font-weight:800;color:#52635a}.v4-grid input,.v4-grid select,.v4-grid textarea,.v4-field textarea{width:100%;box-sizing:border-box;border:1px solid #dce6e0;border-radius:11px;background:#fff;padding:11px 12px;color:#26352e;font:inherit;font-size:12px;outline:none}.v4-grid input:focus,.v4-grid select:focus,.v4-grid textarea:focus,.v4-field textarea:focus{border-color:#86a795;box-shadow:0 0 0 3px rgba(84,122,104,.10)}
+.v4-plan{margin:18px 0 10px;padding:14px;border:1px solid #e1eae4;border-radius:16px;background:#f7faf8}.v4-plan h3{margin:4px 0 2px;font-size:16px}.v4-source{margin-top:10px;display:flex;gap:7px;flex-wrap:wrap;font-size:11px;color:#617067}.v4-source b{color:#41534a}.v4-source span{line-height:1.5}.v4-options{display:grid;grid-template-columns:1fr 1fr;gap:7px}.v4-option{display:flex!important;flex-direction:row!important;align-items:flex-start;gap:7px;padding:9px;border:1px solid #e0e7e3;border-radius:10px;background:#fbfcfb;cursor:pointer}.v4-option input{width:auto!important;margin-top:2px;accent-color:#547a68}.v4-option span{font-size:10px!important;font-weight:600!important;color:#596860!important;line-height:1.35}
+.v4-actions{display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap;margin-top:18px;padding-top:15px;border-top:1px solid #e7eee9}.v4-model-list{display:grid;gap:10px}.v4-model{display:grid;grid-template-columns:44px 1fr auto;gap:13px;align-items:start;padding:15px;border:1px solid #e1e8e4;border-radius:16px;background:#fcfdfc}.v4-model:hover{border-color:#cddbd3;box-shadow:0 8px 24px rgba(24,42,34,.05)}.v4-model-icon{width:44px;height:44px;border-radius:12px;background:#edf4ef;color:#547a68;display:grid;place-items:center}.v4-model-main h3{margin:2px 0 5px;font-size:14px}.v4-model-main p{margin:0;color:#708078;font-size:11px;line-height:1.5}.v4-model-meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}.v4-model-meta span{border:1px solid #e1e8e4;border-radius:999px;padding:4px 7px;background:#fff;color:#69776f;font-size:9px;font-weight:700}
+.v4-history{display:grid;gap:10px}.v4-history-item{display:grid;grid-template-columns:105px 1fr;gap:18px;padding:15px;border:1px solid #e1e8e4;border-radius:15px;background:#fff;cursor:pointer}.v4-history-item:hover{border-color:#cddbd3;box-shadow:0 8px 22px rgba(24,42,34,.05);transform:translateY(-1px)}.v4-history-date strong{display:block;font-size:13px}.v4-history-date span{display:block;margin-top:4px;font-size:9px;color:#7a8880}.v4-history-main h3{margin:6px 0 5px;font-size:14px}.v4-history-main p{margin:0;color:#6f7c75;font-size:11px;line-height:1.5}.v4-history-preview{display:grid;gap:5px;grid-template-columns:1fr 1fr;margin-top:10px}.v4-detail{padding:8px;border-radius:9px;background:#f7faf8}.v4-detail span{display:block;font-size:8px;text-transform:uppercase;letter-spacing:.05em;font-weight:800;color:#839087}.v4-detail strong{display:block;margin-top:3px;font-size:10px;color:#536159;line-height:1.35;font-weight:700}.v4-history-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.v4-upcoming-list{display:grid;gap:8px}.v4-upcoming-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 12px;border:1px solid #e3e9e5;border-radius:11px;background:#fbfcfb}.v4-upcoming-item strong,.v4-upcoming-item span{display:block}.v4-upcoming-item>div>span{font-size:10px;color:#718078;margin-top:3px}.v4-profile-empty{padding:22px;border:1px dashed #d9e3dd;border-radius:12px;text-align:center;color:#7b8881;font-size:11px}.v4-empty{padding:42px 20px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px;color:#7a8880}.v4-empty svg{width:30px;height:30px}.v4-empty strong{font-size:14px;color:#52635a}.v4-empty span{max-width:560px;font-size:11px;line-height:1.5}
+@keyframes v4ModalIn{from{opacity:0;transform:translateY(8px) scale(.99)}to{opacity:1;transform:none}}
+@media(max-width:780px){.legado-v4-modal{padding:8px}.legado-v4-dialog{width:100%;max-height:96vh;border-radius:18px}.v4-modal-header,.v4-form{padding-left:16px;padding-right:16px}.v4-eval-context{grid-template-columns:1fr;padding-left:16px;padding-right:16px}.v4-steps{padding-left:16px;padding-right:16px}.v4-grid,.v4-options{grid-template-columns:1fr}.v4-history-item{grid-template-columns:1fr;gap:8px}.v4-history-preview{grid-template-columns:1fr}.v4-model{grid-template-columns:40px 1fr}.v4-model>.btn{grid-column:2;justify-self:start}.v4-modal-header h2{font-size:21px}}
+</style>
+
 </body>
 </html>
