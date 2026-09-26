@@ -1813,7 +1813,8 @@
   }
 
   function $$(selector, root = document) {
-    return Array.from(root.querySelectorAll(selector));
+    const scope = typeof root === 'string' ? document.querySelector(root) : root;
+    return scope && typeof scope.querySelectorAll === 'function' ? Array.from(scope.querySelectorAll(selector)) : [];
   }
 
   function byId(id) {
@@ -8127,7 +8128,7 @@ document.head.appendChild(s);}
   const v3RenderStudentProfileFast = core.v3RenderStudentProfileFast || window.v3RenderStudentProfileFast;
   const v3RenderStudentSection = core.v3RenderStudentSection || window.v3RenderStudentSection;
 
-  const q = (s, r=document)=>r.querySelector(s);
+  const q = (s, r=document)=>{ const scope = typeof r === 'string' ? document.querySelector(r) : r; return scope && typeof scope.querySelector === 'function' ? scope.querySelector(s) : null; };
   const esc = v => escapeHtml(v ?? '');
   const today = ()=>toInputDate(new Date());
   const dOnly = v=>String(v||'').slice(0,10);
@@ -8536,12 +8537,17 @@ document.head.appendChild(s);}
     if(!isMaster()){c.innerHTML='<div class="card"><div class="empty">Acesso restrito.</div></div>';return;}
     c.innerHTML='<div class="v3-panel"><div class="v3-loading"><i data-lucide="loader-circle"></i><span>Carregando administração...</span></div></div>';refreshIcons();
     try{
-      const [profiles,settings]=await Promise.all([
-        selectSafe(V3TABLE.profiles,{order:'full_name',ascending:true,limit:500}),
-        supabaseClient.from('platform_settings').select('value').eq('key','support_whatsapp').maybeSingle()
-      ]);
+      // O cadastro dos professores é essencial; a configuração de suporte é opcional.
+      // Uma falha em platform_settings não pode derrubar a Administração inteira.
+      const profiles=await selectSafe(V3TABLE.profiles,{order:'full_name',ascending:true,limit:500});
       const teachers=profiles.filter(p=>!Boolean(p.is_master)&&!['master','admin'].includes(String(p.role||'').toLowerCase()));
-      const support=settings?.data?.value||P.supportWhatsapp;
+      let support=P.supportWhatsapp;
+      try{
+        const settings=await supabaseClient.from('platform_settings').select('value').eq('key','support_whatsapp').maybeSingle();
+        if(!settings.error && settings.data?.value) support=settings.data.value;
+      }catch(settingsError){
+        console.warn('[Administração] Não foi possível carregar platform_settings:',settingsError);
+      }
       const now=Date.now();
       const active=teachers.filter(p=>!p.blocked && (!p.access_expires_at || new Date(p.access_expires_at).getTime()>=now)).length;
       const expired=teachers.filter(p=>p.blocked || (p.access_expires_at && new Date(p.access_expires_at).getTime()<now)).length;
@@ -9472,7 +9478,7 @@ body.legado-v4-modal-open{overflow:hidden}
   };
 
   const $ = (s,r=document)=>r.querySelector(s);
-  const $$ = (s,r=document)=>Array.from(r.querySelectorAll(s));
+  const $$ = (s,r=document)=>{ const scope = typeof r === 'string' ? document.querySelector(r) : r; return scope && typeof scope.querySelectorAll === 'function' ? Array.from(scope.querySelectorAll(s)) : []; };
   const esc = v => (typeof window.escapeHtml==='function' ? window.escapeHtml(v ?? '') : String(v ?? ''));
   const today = ()=> typeof window.todayInputDate==='function'
     ? window.todayInputDate()
