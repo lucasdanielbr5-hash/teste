@@ -12226,5 +12226,331 @@ body.legado-v4-modal-open{overflow:hidden}
 })();
 </script>
 
+
+<style id="legado-final-v7-css">
+  .v7-availability{margin:0 0 16px;border:1px solid #dfe9e3;border-radius:18px;background:#fff;box-shadow:0 5px 18px rgba(28,54,42,.035);overflow:hidden}
+  .v7-availability-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:15px 17px;cursor:pointer}
+  .v7-availability-title{display:flex;align-items:center;gap:11px;min-width:0}.v7-availability-icon{width:40px;height:40px;display:grid;place-items:center;border-radius:12px;background:#edf5f0;color:#557a68;flex:none}.v7-availability-title h3{margin:0;color:#34483e;font-size:15px}.v7-availability-title p{margin:3px 0 0;color:#85918b;font-size:10px;line-height:1.45}.v7-availability-chevron{width:34px;height:34px;display:grid;place-items:center;border:1px solid #e1e9e4;border-radius:10px;background:#fafcfb;color:#6a7971;flex:none}.v7-availability-body{display:none;padding:0 17px 17px;border-top:1px solid #edf1ee}.v7-availability.open .v7-availability-body{display:block}.v7-av-summary{display:flex;flex-wrap:wrap;gap:7px;padding:13px 0}.v7-av-chip{display:inline-flex;align-items:center;gap:5px;padding:6px 8px;border-radius:999px;background:#f4f8f5;color:#64746b;font-size:9px;font-weight:800}.v7-av-chip strong{color:#3f6653}.v7-av-grid{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:12px}.v7-av-box{padding:12px;border:1px solid #e2eae5;border-radius:13px;background:#fbfdfc}.v7-av-box h4{margin:0 0 9px;color:#516158;font-size:10px}.v7-days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}.v7-day-toggle{position:relative}.v7-day-toggle input{position:absolute;opacity:0;pointer-events:none}.v7-day-toggle span{display:flex;align-items:center;justify-content:center;min-height:34px;border:1px solid #dde6e1;border-radius:9px;background:#fff;color:#708078;font-size:9px;font-weight:800;cursor:pointer}.v7-day-toggle input:checked+span{background:#eaf4ee;border-color:#b9d2c4;color:#477363}.v7-av-fields{display:grid;grid-template-columns:1fr 1fr;gap:9px}.v7-av-fields label,.v7-slot-fields label{display:grid;gap:5px}.v7-av-fields label span,.v7-slot-fields label span{font-size:9px;font-weight:800;color:#6a7871}.v7-av-fields input,.v7-av-fields select{width:100%;height:36px;border:1px solid #dce6e0;border-radius:9px;padding:7px 9px;background:#fff;color:#42534b;font:500 10px Inter,Arial,sans-serif;outline:none}.v7-av-actions{display:flex;justify-content:flex-end;gap:7px;flex-wrap:wrap;margin-top:12px}.v7-lunch-note{margin-top:9px;padding:8px 10px;border-radius:9px;background:#fff8ef;color:#946b35;font-size:9px;line-height:1.45}.v7-reschedule-btn{display:inline-flex!important;align-items:center;justify-content:center;gap:5px;min-height:30px;padding:6px 9px;border-radius:9px;border:1px solid #dce6e1;background:#f5f9f7;color:#4c705d;font-size:9px;font-weight:800;cursor:pointer}.v7-reschedule-btn:hover{background:#eaf3ed}.v7-fin-annual-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:11px 12px;margin:-3px 0 13px;border:1px solid #e3ebe6;border-radius:12px;background:#f8fbf9}.v7-fin-annual-bar label{display:flex;align-items:center;gap:6px;color:#6e7c74;font-size:9px;font-weight:800}.v7-fin-annual-bar select{height:34px;border:1px solid #dce6e1;border-radius:9px;background:#fff;color:#44544c;padding:7px 9px;font:600 10px Inter,Arial,sans-serif}.v7-fin-table-actions{display:flex;gap:6px;flex-wrap:wrap}.v7-pdf-btn{display:inline-flex!important;align-items:center;gap:6px}.v7-pdf-btn svg{width:15px;height:15px}.v7-delete-btn{color:#9b6b6b!important;background:#fff4f4!important;border-color:#eddada!important}.v7-fin-annual-meta{font-size:9px;color:#87938d}.v7-msg-delete-real{width:34px;height:34px;display:grid;place-items:center;border:1px solid #e5ebe8;border-radius:10px;background:#fff;color:#9a7070;cursor:pointer}.v7-msg-delete-real:hover{background:#fff1f1;color:#b85b5b;border-color:#ecd4d4}
+  @media(max-width:850px){.v7-av-grid{grid-template-columns:1fr}.v7-days{grid-template-columns:repeat(4,1fr)}}
+  @media(max-width:600px){.v7-availability-head{padding:13px}.v7-availability-body{padding:0 13px 13px}.v7-av-fields{grid-template-columns:1fr}.v7-days{grid-template-columns:repeat(2,1fr)}}
+  @media print{.v7-no-print{display:none!important}}
+</style>
+<script id="legado-final-v7">
+(function(){
+  'use strict';
+
+  const sb=window.supabaseClient;
+  const S=window.state||{};
+  const T=window.TABLE||{};
+  const TABLES={
+    students:T.students||'students',
+    appointments:T.appointments||'appointments',
+    evaluations:T.evaluations||'evaluations',
+    payments:T.payments||'payments',
+    finance:T.finance||'financial_entries',
+    availability:T.availability||'professional_availability',
+    messages:T.messages||'messages',
+    reads:'message_reads'
+  };
+  const $=(s,r=document)=>r.querySelector(s);
+  const $$=(s,r=document)=>Array.from((r||document).querySelectorAll(s));
+  const esc=v=>typeof window.escapeHtml==='function'?window.escapeHtml(v??''):String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+  const uid=()=>window.state?.user?.id||null;
+  const today=()=>typeof window.todayInputDate==='function'?window.todayInputDate():new Date().toISOString().slice(0,10);
+  const money=v=>typeof window.formatCurrency==='function'?window.formatCurrency(Number(v||0)):`R$ ${Number(v||0).toFixed(2).replace('.',',')}`;
+  const dateOnly=v=>String(v||'').slice(0,10);
+  const parseDate=s=>{const [y,m,d]=String(s||'').slice(0,10).split('-').map(Number);return y&&m&&d?new Date(y,m-1,d):null;};
+  const statusPt=v=>window.legadoStatusPt?window.legadoStatusPt(v):({scheduled:'Agendado',completed:'Concluído',pending:'Pendente',overdue:'Em atraso',paid:'Pago',cancelled:'Cancelado'}[String(v||'').toLowerCase()]||v||'—');
+  const methodPt=v=>({pix:'Pix',cash:'Dinheiro',debit:'Débito',credit_spot:'Crédito à vista',credit_installment:'Crédito parcelado',transfer:'Transferência',boleto:'Boleto',card:'Cartão'}[String(v||'').toLowerCase()]||v||'Não informado');
+  const studentName=s=>s?.name||s?.full_name||s?.student_name||'Aluno';
+
+  async function selectRows(table,filters={},order=null,ascending=false,limit=2000){
+    if(!sb||!uid())throw new Error('Sessão do Supabase indisponível.');
+    let q=sb.from(table).select('*');
+    Object.entries(filters||{}).forEach(([k,v])=>{if(v!==undefined&&v!==null) q=q.eq(k,v);});
+    if(order)q=q.order(order,{ascending});
+    if(limit)q=q.limit(limit);
+    const {data,error}=await q;
+    if(error)throw error;
+    return data||[];
+  }
+  async function getStudents(){
+    try{return await selectRows(TABLES.students,{user_id:uid()},'name',true,2000);}catch(_){return Array.isArray(window.studentsState?.data)?window.studentsState.data:(window.state?.students||[]);}
+  }
+  function openModalShell(id,title,html){
+    let root=document.getElementById(id);
+    if(root)root.remove();
+    root=document.createElement('div');root.className='legado-v4-modal';root.id=id;
+    root.innerHTML=`<div class="legado-v4-backdrop" data-close-v7></div><section class="legado-v4-dialog" role="dialog" aria-modal="true"><div id="${id}Body"></div></section>`;
+    document.body.appendChild(root);document.body.classList.add('legado-v4-modal-open');
+    root.addEventListener('click',e=>{if(e.target?.matches?.('[data-close-v7]')){root.remove();document.body.classList.remove('legado-v4-modal-open');}});
+    $('#'+id+'Body').innerHTML=html;window.refreshIcons?.();return root;
+  }
+  function closeV7Modal(id){document.getElementById(id)?.remove();document.body.classList.remove('legado-v4-modal-open');}
+
+  /* ==========================================================
+     DISPONIBILIDADE — DIAS + HORÁRIO + ALMOÇO, NO TOPO
+  ========================================================== */
+  async function loadAvailability(){
+    if(!sb||!uid())return [];
+    const {data,error}=await sb.from(TABLES.availability).select('*').eq('user_id',uid()).order('weekday',{ascending:true}).limit(20);
+    if(error)throw error;return data||[];
+  }
+  const weekdayNames=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  function availabilitySummary(rows){
+    const active=rows.filter(r=>r.active!==false).sort((a,b)=>Number(a.weekday)-Number(b.weekday));
+    if(!active.length)return 'Configure os dias, o horário e seu intervalo de almoço.';
+    const days=active.map(r=>weekdayNames[Number(r.weekday)]||'Dia');
+    const first=active[0];
+    const same=active.every(r=>String(r.start_time||'').slice(0,5)===String(first.start_time||'').slice(0,5)&&String(r.end_time||'').slice(0,5)===String(first.end_time||'').slice(0,5));
+    const schedule=same?`${String(first.start_time||'').slice(0,5)}–${String(first.end_time||'').slice(0,5)}`:`${active.length} horários configurados`;
+    const lunch=first.lunch_start&&first.lunch_end?` · almoço ${String(first.lunch_start).slice(0,5)}–${String(first.lunch_end).slice(0,5)}`:'';
+    return `${days.join(', ')} · ${schedule}${lunch}`;
+  }
+  async function injectAvailabilityTop(){
+    const c=$('#agendaContent');if(!c||c.dataset.v7Availability==='1')return;
+    c.dataset.v7Availability='1';
+    let rows=[];try{rows=await loadAvailability();}catch(err){console.warn('[V7 disponibilidade]',err.message);}
+    const byDay=new Map(rows.map(r=>[Number(r.weekday),r]));
+    const defaults={start:'08:00',end:'18:00',slot:60,lunchStart:'11:00',lunchEnd:'12:00'};
+    const first=rows[0]||{};
+    const start=String(first.start_time||defaults.start).slice(0,5);
+    const end=String(first.end_time||defaults.end).slice(0,5);
+    const slot=Number(first.slot_minutes||defaults.slot);
+    const lunchStart=String(first.lunch_start||defaults.lunchStart).slice(0,5);
+    const lunchEnd=String(first.lunch_end||defaults.lunchEnd).slice(0,5);
+    let old=null;
+    $$('.v3-panel',c).some(el=>{if((el.innerText||'').toUpperCase().includes('DISPONIBILIDADE')&&(el.innerText||'').toUpperCase().includes('HORÁRIO PADRÃO')){old=el;return true;}return false;});
+    if(old)old.style.display='none';
+    const wrap=document.createElement('section');wrap.className='v7-availability';wrap.innerHTML=`<div class="v7-availability-head" role="button" tabindex="0"><div class="v7-availability-title"><div class="v7-availability-icon"><i data-lucide="calendar-clock"></i></div><div><h3>Disponibilidade</h3><p>Defina os dias e os horários em que você atende.</p></div></div><button type="button" class="v7-availability-chevron" aria-label="Abrir disponibilidade"><i data-lucide="chevron-down"></i></button></div><div class="v7-availability-body"><div class="v7-av-summary"><span class="v7-av-chip"><i data-lucide="calendar-days"></i><strong>${esc(availabilitySummary(rows))}</strong></span></div><form class="v7-av-form"><div class="v7-av-grid"><div class="v7-av-box"><h4>DIAS DE ATENDIMENTO</h4><div class="v7-days">${weekdayNames.map((d,i)=>`<label class="v7-day-toggle"><input type="checkbox" name="weekday" value="${i}" ${byDay.has(i)?'checked':''}><span>${d}</span></label>`).join('')}</div></div><div class="v7-av-box"><h4>HORÁRIO DE TRABALHO</h4><div class="v7-av-fields"><label><span>Início</span><input type="time" name="start" value="${esc(start)}"></label><label><span>Fim</span><input type="time" name="end" value="${esc(end)}"></label><label><span>Intervalo dos blocos</span><select name="slot"><option value="30" ${slot===30?'selected':''}>30 min</option><option value="45" ${slot===45?'selected':''}>45 min</option><option value="50" ${slot===50?'selected':''}>50 min</option><option value="60" ${slot===60?'selected':''}>60 min</option><option value="90" ${slot===90?'selected':''}>90 min</option></select></label></div></div><div class="v7-av-box"><h4>ALMOÇO / INTERVALO</h4><div class="v7-av-fields"><label><span>Início</span><input type="time" name="lunch_start" value="${esc(lunchStart)}"></label><label><span>Fim</span><input type="time" name="lunch_end" value="${esc(lunchEnd)}"></label></div><div class="v7-lunch-note">Esse horário fica bloqueado na agenda e não será oferecido como disponibilidade.</div></div></div><div class="v7-av-actions"><button type="button" class="btn btn-outline btn-sm" onclick="window.v7ToggleAvailability(false)">Fechar</button><button class="btn btn-primary btn-sm" type="submit"><i data-lucide="save"></i>Salvar disponibilidade</button></div></form></div>`;
+    const layout=$('.v3-agenda-layout',c);if(layout)layout.insertAdjacentElement('beforebegin',wrap);else c.prepend(wrap);
+    const head=$('.v7-availability-head',wrap), body=$('.v7-availability-body',wrap);
+    const toggle=()=>{wrap.classList.toggle('open');};
+    head.addEventListener('click',e=>{if(e.target.closest('button'))return;toggle();});head.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle();}});
+    $('.v7-availability-chevron',wrap).addEventListener('click',e=>{e.stopPropagation();toggle();});
+    wrap.querySelector('.v7-av-form').addEventListener('submit',async e=>{
+      e.preventDefault();const btn=e.currentTarget.querySelector('button[type="submit"]');if(btn)btn.disabled=true;
+      try{
+        const fd=new FormData(e.currentTarget);
+        const selected=fd.getAll('weekday').map(Number).filter(Number.isInteger);
+        if(!selected.length)throw new Error('Selecione pelo menos um dia de atendimento.');
+        const start=String(fd.get('start')||''),end=String(fd.get('end')||''),ls=String(fd.get('lunch_start')||''),le=String(fd.get('lunch_end')||'');
+        const mins=t=>{const p=t.split(':').map(Number);return p[0]*60+p[1];};
+        if(!/^\d{2}:\d{2}$/.test(start)||!/^\d{2}:\d{2}$/.test(end)||mins(end)<=mins(start))throw new Error('Informe um horário de trabalho válido.');
+        if((ls||le)&&(!/^\d{2}:\d{2}$/.test(ls)||!/^\d{2}:\d{2}$/.test(le)||mins(le)<=mins(ls)))throw new Error('Informe um intervalo de almoço válido.');
+        if(ls&&le&&(mins(ls)<mins(start)||mins(le)>mins(end)))throw new Error('O almoço precisa ficar dentro do horário de trabalho.');
+        await sb.from(TABLES.availability).delete().eq('user_id',uid());
+        const payload=selected.map(weekday=>({user_id:uid(),weekday,start_time:start,end_time:end,slot_minutes:Number(fd.get('slot')||60),lunch_start:ls||null,lunch_end:le||null,active:true}));
+        const {error}=await sb.from(TABLES.availability).insert(payload);if(error)throw error;
+        if(window.V3){window.V3.availability={start,end,slot:Number(fd.get('slot')||60)};}
+        window.showSuccess?.('Disponibilidade salva. Os dias e o horário de almoço foram atualizados.');
+        wrap.classList.remove('open');c.dataset.v7Availability='';await window.renderAgenda?.();
+      }catch(err){window.showError?.('Não foi possível salvar a disponibilidade: '+(err.message||err));}finally{if(btn)btn.disabled=false;}
+    });
+    window.refreshIcons?.();
+  }
+  window.v7LoadAvailability=loadAvailability;
+  window.v7ToggleAvailability=function(open=true){const w=$('.v7-availability');if(!w)return;w.classList.toggle('open',Boolean(open));};
+
+  /* ==========================================================
+     REAGENDAR
+  ========================================================== */
+  window.v7OpenReschedule=async function(id){
+    try{
+      const rows=await selectRows(TABLES.appointments,{user_id:uid()},'appointment_date',false,1000);
+      const a=rows.find(x=>String(x.id)===String(id));if(!a)throw new Error('Atendimento não encontrado.');
+      const students=await getStudents();
+      const root=openModalShell('v7RescheduleModal','Reagendar',`<div class="v4-modal-header"><div><div class="v3-kicker">AGENDA</div><h2>Reagendar atendimento</h2><p>Altere a data e/ou o horário sem perder o registro original do atendimento.</p></div><button class="icon-button" type="button" data-close-v7><i data-lucide="x"></i></button></div><form id="v7RescheduleForm" class="v4-form"><div class="v4-grid"><label><span>Aluno *</span><select name="student_id" required>${students.map(s=>`<option value="${esc(s.id)}" ${String(s.id)===String(a.student_id)?'selected':''}>${esc(studentName(s))}</option>`).join('')}</select></label><label><span>Nova data *</span><input name="appointment_date" type="date" value="${esc(dateOnly(a.appointment_date))}" required></label><label><span>Novo horário *</span><input name="appointment_time" type="time" value="${esc(String(a.appointment_time||a.start_time||a.time||'').slice(0,5))}" required></label><label><span>Duração</span><select name="duration"><option value="30" ${Number(a.duration||60)===30?'selected':''}>30 min</option><option value="45" ${Number(a.duration||60)===45?'selected':''}>45 min</option><option value="50" ${Number(a.duration||60)===50?'selected':''}>50 min</option><option value="60" ${Number(a.duration||60)===60?'selected':''}>60 min</option><option value="90" ${Number(a.duration||60)===90?'selected':''}>90 min</option></select></label><label><span>Tipo</span><input name="type" value="${esc(a.type||'Atendimento psicopedagógico')}"></label><label><span>Status</span><select name="status"><option value="scheduled" ${a.status==='scheduled'?'selected':''}>Agendado</option><option value="confirmed" ${a.status==='confirmed'?'selected':''}>Confirmado</option><option value="completed" ${a.status==='completed'?'selected':''}>Concluído</option><option value="cancelled" ${['cancelled','canceled'].includes(a.status)?'selected':''}>Cancelado</option></select></label><label class="full"><span>Observações</span><textarea name="notes" rows="4">${esc(a.notes||'')}</textarea></label></div><div class="v4-actions"><button type="button" class="btn btn-outline" data-close-v7>Cancelar</button><button type="submit" class="btn btn-primary"><i data-lucide="calendar-clock"></i>Confirmar reagendamento</button></div></form>`);
+      root.addEventListener('click',e=>{if(e.target.closest?.('[data-close-v7]'))closeV7Modal(root.id);});
+      $('#v7RescheduleForm',root).addEventListener('submit',async e=>{e.preventDefault();const btn=e.currentTarget.querySelector('button[type="submit"]');if(btn)btn.disabled=true;try{const fd=new FormData(e.currentTarget);const date=String(fd.get('appointment_date'));const time=String(fd.get('appointment_time'));const dur=Number(fd.get('duration')||60);const day=new Date(`${date}T12:00:00`).getDay();const av=await loadAvailability();const row=av.find(x=>Number(x.weekday)===day&&x.active!==false);if(av.length&&!row)throw new Error('Esse dia não está entre seus dias de atendimento.');if(row){const mm=t=>{const [h,m]=String(t).slice(0,5).split(':').map(Number);return h*60+m;};const sm=mm(time),em=sm+dur;if(sm<mm(row.start_time)||em>mm(row.end_time))throw new Error('O horário fica fora da sua disponibilidade.');if(row.lunch_start&&row.lunch_end&&sm<mm(row.lunch_end)&&em>mm(row.lunch_start))throw new Error('O horário escolhido coincide com o seu almoço.');}
+        const existing=rows.filter(x=>String(x.id)!==String(a.id)&&dateOnly(x.appointment_date)===date&&!['cancelled','canceled'].includes(String(x.status||'').toLowerCase()));const tm=t=>{const [h,m]=String(t).slice(0,5).split(':').map(Number);return h*60+m;};const overlap=existing.some(x=>{const st=tm(x.appointment_time||x.start_time||x.time);const ed=st+Number(x.duration||60);return tm(time)<ed && smEnd(time,dur)>st;});
+        if(overlap)throw new Error('Já existe outro atendimento nesse horário.');
+        const {error}=await sb.from(TABLES.appointments).update({student_id:String(fd.get('student_id')),appointment_date:date,appointment_time:time,duration:dur,type:String(fd.get('type')||'Atendimento psicopedagógico').trim(),status:String(fd.get('status')||'scheduled'),notes:String(fd.get('notes')||'').trim()||null,updated_at:new Date().toISOString()}).eq('id',a.id).eq('user_id',uid());if(error)throw error;
+        closeV7Modal(root.id);window.showSuccess?.('Atendimento reagendado.');if(window.V3){window.V3.agendaSelected=date;window.V3.agendaMonth=new Date(new Date(`${date}T12:00:00`).getFullYear(),new Date(`${date}T12:00:00`).getMonth(),1);}await window.renderAgenda?.();
+      }catch(err){window.showError?.('Não foi possível reagendar: '+(err.message||err));}finally{if(btn)btn.disabled=false;}});
+    }catch(err){window.showError?.(err.message||'Não foi possível abrir o reagendamento.');}
+    function smEnd(t,d){const [h,m]=String(t).slice(0,5).split(':').map(Number);return h*60+m+Number(d||60);}
+  };
+
+  const baseAgenda=window.renderAgenda;
+  if(typeof baseAgenda==='function'&&!baseAgenda.__v7){
+    const wrapped=async function(){
+      await baseAgenda.apply(this,arguments);
+      try{await injectAvailabilityTop();}catch(err){console.warn('[V7 agenda]',err.message);}
+      const c=$('#agendaContent');if(!c)return;
+      const booked=$$('.v3-slot.booked',c);
+      if(!booked.length)return;
+      let apps=[];try{apps=await selectRows(TABLES.appointments,{user_id:uid(),appointment_date:window.V3?.agendaSelected||today()},'appointment_time',true,500);}catch(_){return;}
+      booked.forEach(slot=>{
+        const tm=String($('.v3-slot-time',slot)?.textContent||'').trim().slice(0,5);
+        const ap=apps.find(x=>String(x.appointment_time||x.start_time||x.time||'').slice(0,5)===tm);if(!ap)return;
+        const actions=$('.legado-slot-actions',slot);if(!actions||actions.querySelector('.v7-reschedule-btn'))return;
+        actions.insertAdjacentHTML('beforeend',`<button type="button" class="v7-reschedule-btn" onclick="v7OpenReschedule('${esc(ap.id)}')" title="Reagendar"><i data-lucide="calendar-clock"></i>Reagendar</button>`);
+      });
+      window.refreshIcons?.();
+    };
+    wrapped.__v7=true;window.renderAgenda=wrapped;
+  }
+
+  /* ==========================================================
+     RECADOS — EXCLUSÃO REAL + FILTRO LOCAL DE SEGURANÇA
+  ========================================================== */
+  const hiddenKey=mid=>`legado_msg_hidden:${uid()}:${mid}`;
+  async function hideMessageReal(id,permanent=false){
+    if(!uid())throw new Error('Sessão indisponível.');
+    const stamp=new Date().toISOString();
+    if(permanent){
+      const {error}=await sb.from(TABLES.reads).delete().eq('message_id',String(id)).eq('user_id',uid());if(error)throw error;
+    }else{
+      const {data:updated,error:upErr}=await sb.from(TABLES.reads).update({hidden_at:stamp,deleted_at:stamp,updated_at:stamp}).eq('message_id',String(id)).eq('user_id',uid()).select('message_id').maybeSingle();
+      if(upErr)throw upErr;
+      if(!updated){const {error}=await sb.from(TABLES.reads).insert({message_id:String(id),user_id:uid(),hidden_at:stamp,deleted_at:stamp,updated_at:stamp});if(error)throw error;}
+    }
+    try{localStorage.setItem(hiddenKey(id),stamp);}catch(_){ }
+  }
+  window.v7DeleteMessage=async function(id){
+    if(!window.confirm?.('Excluir este recado da sua caixa de entrada? Ele irá para a lixeira somente da sua conta.'))return;
+    try{await hideMessageReal(id,false);window.showSuccess?.('Recado movido para a lixeira.');showTrash=true;await window.renderMessages?.();}catch(err){window.showError?.('Não foi possível excluir o recado: '+(err.message||err));}
+  };
+  window.v7DeleteMessagePermanent=async function(id){
+    if(!window.confirm?.('Excluir definitivamente este recado da sua conta?'))return;
+    try{await hideMessageReal(id,true);try{localStorage.removeItem(hiddenKey(id));}catch(_){ }window.showSuccess?.('Recado excluído definitivamente.');await window.renderMessages?.();}catch(err){window.showError?.('Não foi possível excluir definitivamente: '+(err.message||err));}
+  };
+  const oldRenderMessagesV7=window.renderMessages;
+  if(typeof oldRenderMessagesV7==='function'&&!oldRenderMessagesV7.__v7){
+    const wrapped=async function(){await oldRenderMessagesV7.apply(this,arguments);enhanceMessageDeleteV7();};wrapped.__v7=true;window.renderMessages=wrapped;
+  }
+  function enhanceMessageDeleteV7(){
+    $$('#recadosContent .legado-message-card').forEach(card=>{
+      if(card.classList.contains('in-trash')){
+        const actions=$('.legado-message-card-actions',card);if(!actions||actions.querySelector('.v7-permanent-delete'))return;
+        const id=(Array.from(card.querySelectorAll('[onclick]')).map(x=>x.getAttribute('onclick')||'').join('\n').match(/(?:v3RestoreMessage|v3HideMessage|v7DeleteMessage(?:Permanent)?)\(['"]([^'"]+)['"]\)/)||[])[1];if(!id)return;
+        const b=document.createElement('button');b.type='button';b.className='v7-msg-delete-real v7-permanent-delete';b.title='Excluir definitivamente';b.setAttribute('aria-label','Excluir definitivamente');b.innerHTML='<i data-lucide="trash-2"></i>';b.onclick=()=>window.v7DeleteMessagePermanent(id);actions.appendChild(b);
+      }else{
+        const actions=$('.legado-message-card-actions',card);if(!actions||actions.querySelector('.v7-inbox-delete'))return;
+        const id=(Array.from(card.querySelectorAll('[onclick]')).map(x=>x.getAttribute('onclick')||'').join('\n').match(/(?:v3ReadMessage|v3HideMessage|v7DeleteMessage)\(['"]([^'"]+)['"]\)/)||[])[1];if(!id)return;
+        const b=document.createElement('button');b.type='button';b.className='v7-msg-delete-real v7-inbox-delete';b.title='Excluir recado';b.setAttribute('aria-label','Excluir recado');b.innerHTML='<i data-lucide="trash-2"></i>';b.onclick=()=>window.v7DeleteMessage(id);actions.appendChild(b);
+      }
+    });window.refreshIcons?.();
+  }
+
+  /* ==========================================================
+     FINANCEIRO — LANÇAMENTO, REGISTRAR, EXCLUIR E RELATÓRIO ANUAL
+  ========================================================== */
+  async function loadFinanceV7(){
+    const entries=await selectRows(TABLES.finance,{user_id:uid()},'competence_date',false,4000).catch(()=>[]);
+    const payments=await selectRows(TABLES.payments,{user_id:uid()},'payment_date',false,2000).catch(()=>[]);
+    const current=entries.map(e=>({...e,kind:e.kind||e.type||'income',status:e.status||'pending',competence_date:e.competence_date||e.entry_date||e.payment_date}));
+    const legacy=payments.filter(p=>!current.some(e=>String(e.legacy_payment_id||'')===String(p.id))).map(p=>({id:'legacy-'+p.id,legacy:true,legacy_payment_id:p.id,kind:'income',amount:Number(p.amount||p.value||0),status:p.status||'paid',competence_date:p.payment_date||p.date,due_date:p.payment_date||p.date,description:p.description||p.student_name||'Recebimento',payment_method:p.payment_method||p.method||'',student_id:p.student_id||null,student_name:p.student_name||null,paid_at:p.status==='paid'?p.payment_date||p.date:null}));
+    return current.concat(legacy);
+  }
+  function parseBRMoney(v){let s=String(v||'').trim().replace(/R\$/g,'').replace(/\s/g,'');if(s.includes(','))s=s.replace(/\./g,'').replace(',','.');return Number(s)||0;}
+  async function openFinanceV7(options={}){
+    const students=await getStudents();
+    const r=options?.entry||{};
+    const preStudent=options?.studentId||r.student_id||'';const preDate=options?.date||r.competence_date||today();
+    const root=openModalShell('v7FinanceModal','Financeiro',`<div class="v4-modal-header"><div><div class="v3-kicker">FINANCEIRO</div><h2>${r.id?'Editar lançamento':'Novo lançamento'}</h2><p>Registre receitas, despesas, vencimentos e recebimentos sem depender de outra tela.</p></div><button class="icon-button" type="button" data-close-v7><i data-lucide="x"></i></button></div><form id="v7FinanceForm" class="v4-form"><div class="v4-grid"><label><span>Tipo *</span><select name="kind"><option value="income" ${r.kind!=='expense'?'selected':''}>Receita / recebimento</option><option value="expense" ${r.kind==='expense'?'selected':''}>Despesa</option></select></label><label><span>Aluno</span><select name="student_id"><option value="">Não vincular</option>${students.map(s=>`<option value="${esc(s.id)}" ${String(preStudent)===String(s.id)?'selected':''}>${esc(studentName(s))}</option>`).join('')}</select></label><label><span>Valor *</span><input name="amount" inputmode="decimal" placeholder="0,00" value="${esc(r.amount!=null?String(r.amount).replace('.',','):'')}" required></label><label><span>Data da competência *</span><input name="competence_date" type="date" value="${esc(dateOnly(preDate))}" required></label><label><span>Vencimento</span><input name="due_date" type="date" value="${esc(dateOnly(r.due_date||preDate))}"></label><label><span>Status</span><select name="status"><option value="pending" ${r.status==='pending'?'selected':''}>Pendente</option><option value="paid" ${r.status==='paid'?'selected':''}>Pago / recebido</option><option value="overdue" ${r.status==='overdue'?'selected':''}>Em atraso</option><option value="cancelled" ${r.status==='cancelled'?'selected':''}>Cancelado</option></select></label><label><span>Forma de pagamento</span><select name="payment_method"><option value="">Não informado</option><option value="pix" ${r.payment_method==='pix'?'selected':''}>Pix</option><option value="cash" ${r.payment_method==='cash'?'selected':''}>Dinheiro</option><option value="debit" ${r.payment_method==='debit'?'selected':''}>Débito</option><option value="credit_spot" ${r.payment_method==='credit_spot'?'selected':''}>Crédito à vista</option><option value="credit_installment" ${r.payment_method==='credit_installment'?'selected':''}>Crédito parcelado</option><option value="transfer" ${r.payment_method==='transfer'?'selected':''}>Transferência</option><option value="boleto" ${r.payment_method==='boleto'?'selected':''}>Boleto</option></select></label><label><span>Parcelas</span><select name="installment_total"><option value="1" ${Number(r.installment_total||1)===1?'selected':''}>1 parcela</option><option value="2" ${Number(r.installment_total)===2?'selected':''}>2 parcelas</option><option value="3" ${Number(r.installment_total)===3?'selected':''}>3 parcelas</option><option value="4" ${Number(r.installment_total)===4?'selected':''}>4 parcelas</option><option value="6" ${Number(r.installment_total)===6?'selected':''}>6 parcelas</option><option value="10" ${Number(r.installment_total)===10?'selected':''}>10 parcelas</option><option value="12" ${Number(r.installment_total)===12?'selected':''}>12 parcelas</option></select></label><label class="full"><span>Descrição *</span><input name="description" value="${esc(r.description||'')}" placeholder="Ex.: Mensalidade de setembro / material / atendimento" required></label></div><div class="v4-actions"><button type="button" class="btn btn-outline" data-close-v7>Cancelar</button><button class="btn btn-primary" type="submit"><i data-lucide="save"></i>Salvar lançamento</button></div></form>`);
+    root.addEventListener('click',e=>{if(e.target.closest?.('[data-close-v7]'))closeV7Modal(root.id);});
+    $('#v7FinanceForm',root).addEventListener('submit',async e=>{e.preventDefault();const btn=e.currentTarget.querySelector('button[type=submit]');if(btn)btn.disabled=true;try{const fd=new FormData(e.currentTarget);const amount=parseBRMoney(fd.get('amount'));if(amount<=0)throw new Error('Informe um valor maior que zero.');const total=Math.max(1,Number(fd.get('installment_total')||1));const kind=String(fd.get('kind'));const studentId=String(fd.get('student_id')||'')||null;const st=students.find(s=>String(s.id)===studentId);const status=String(fd.get('status'));const base={user_id:uid(),student_id:studentId,student_name:st?studentName(st):null,kind,amount,competence_date:String(fd.get('competence_date')),due_date:String(fd.get('due_date')||fd.get('competence_date')),status,payment_method:String(fd.get('payment_method')||'')||null,description:String(fd.get('description')||'').trim(),installment_total:total,installment_group:total>1?(r.installment_group||crypto.randomUUID()):null};if(r.id){const payload={...base,installment_total:Number(r.installment_total||1),installment_group:r.installment_group||null,installment_number:Number(r.installment_number||1),updated_at:new Date().toISOString()};const {error}=await sb.from(TABLES.finance).update(payload).eq('id',r.id).eq('user_id',uid());if(error)throw error;}else{const group=total>1?crypto.randomUUID():null;const rows=[];for(let i=1;i<=total;i++){const d=parseDate(String(fd.get('competence_date')));if(!d)throw new Error('Data inválida.');d.setMonth(d.getMonth()+i-1);const value=i===total?Math.round((amount-Math.round(amount/total*100)/100*(total-1))*100)/100:Math.round(amount/total*100)/100;rows.push({...base,amount:value,competence_date:d.toISOString().slice(0,10),due_date:i===1?String(fd.get('due_date')||fd.get('competence_date')):d.toISOString().slice(0,10),status:i===1?status:'pending',installment_number:i,installment_group:group,paid_at:i===1&&status==='paid'?new Date().toISOString():null});}const {error}=await sb.from(TABLES.finance).insert(rows);if(error)throw error;}closeV7Modal(root.id);window.showSuccess?.(r.id?'Lançamento atualizado.':(total>1?'Lançamento e parcelas criados.':'Lançamento salvo com sucesso.'));await window.renderFinance?.();}catch(err){window.showError?.('Não foi possível salvar o lançamento: '+(err.message||err));}finally{if(btn)btn.disabled=false;}});
+  }
+  window.openPaymentModal=openFinanceV7;
+  window.v3OpenFinanceEditor=openFinanceV7;
+  window.legadoOpenFinanceForAppointment=function(studentId,date){const go=()=>openFinanceV7({studentId,date});if(window.state?.currentView!=='financeiro'){window.navigate?.('financeiro');setTimeout(go,180);}else go();};
+  window.v7RegisterFinancePayment=async function(id){try{const entries=await loadFinanceV7();const entry=entries.find(e=>String(e.id)===String(id));if(!entry||entry.legacy)throw new Error('Lançamento não localizado.');const root=openModalShell('v7PayModal','Registrar',`<div class="v4-modal-header"><div><div class="v3-kicker">RECEBIMENTO</div><h2>Registrar pagamento</h2><p>${esc(entry.description||entry.student_name||'Lançamento')} · ${esc(money(entry.amount))}</p></div><button class="icon-button" type="button" data-close-v7><i data-lucide="x"></i></button></div><form id="v7PayForm" class="v4-form"><div class="v4-grid"><label><span>Data do pagamento *</span><input name="paid_date" type="date" value="${esc(today())}" required></label><label><span>Forma de pagamento</span><select name="payment_method"><option value="${esc(entry.payment_method||'')}">${esc(entry.payment_method?methodPt(entry.payment_method):'Manter atual')}</option><option value="pix">Pix</option><option value="cash">Dinheiro</option><option value="debit">Débito</option><option value="credit_spot">Crédito à vista</option><option value="transfer">Transferência</option><option value="boleto">Boleto</option></select></label><label class="full"><span>Observação</span><textarea name="payment_notes" rows="4" placeholder="Ex.: comprovante recebido, pagamento presencial..."></textarea></label></div><div class="v4-actions"><button type="button" class="btn btn-outline" data-close-v7>Cancelar</button><button class="btn btn-primary" type="submit"><i data-lucide="circle-check"></i>Confirmar pagamento</button></div></form>`);root.addEventListener('click',e=>{if(e.target.closest?.('[data-close-v7]'))closeV7Modal(root.id);});$('#v7PayForm',root).addEventListener('submit',async e=>{e.preventDefault();const btn=e.currentTarget.querySelector('button[type=submit]');if(btn)btn.disabled=true;try{const fd=new FormData(e.currentTarget);const {error}=await sb.from(TABLES.finance).update({status:'paid',paid_at:new Date(`${fd.get('paid_date')}T12:00:00`).toISOString(),payment_method:String(fd.get('payment_method')||'')||entry.payment_method||null,payment_notes:String(fd.get('payment_notes')||'').trim()||null,updated_at:new Date().toISOString()}).eq('id',id).eq('user_id',uid());if(error)throw error;closeV7Modal(root.id);window.showSuccess?.('Pagamento registrado.');await window.renderFinance?.();}catch(err){window.showError?.('Não foi possível registrar o pagamento: '+(err.message||err));}finally{if(btn)btn.disabled=false;}});}catch(err){window.showError?.(err.message||'Não foi possível abrir o registro de pagamento.');}};
+  window.v7DeleteFinance=async function(id,group,legacyId){if(!window.confirm?.('Excluir este lançamento financeiro? Esta ação não poderá ser desfeita.'))return;try{if(legacyId){const {error}=await sb.from(TABLES.payments).delete().eq('id',legacyId).eq('user_id',uid());if(error)throw error;}else{let q=sb.from(TABLES.finance).delete().eq('user_id',uid());if(group&&window.confirm?.('O lançamento possui parcelas. Excluir todas elas?\n\nOK = todas\nCancelar = somente esta'))q=q.eq('installment_group',group);else q=q.eq('id',id);const {error}=await q;if(error)throw error;}window.showSuccess?.('Lançamento excluído.');await window.renderFinance?.();}catch(err){window.showError?.('Não foi possível excluir: '+(err.message||err));}};
+
+  function financeYearOptions(current){const y=new Date().getFullYear();return Array.from({length:7},(_,i)=>y-5+i).map(year=>`<option value="${year}" ${year===current?'selected':''}>${year}</option>`).join('');}
+  window.v7PrintFinanceYear=async function(year){year=Number(year)||new Date().getFullYear();try{const entries=await loadFinanceV7();const rows=entries.filter(e=>dateOnly(e.competence_date||e.payment_date).startsWith(String(year))).sort((a,b)=>String(a.competence_date||'').localeCompare(String(b.competence_date||'')));const received=rows.filter(e=>e.kind!=='expense'&&e.status==='paid').reduce((s,e)=>s+Number(e.amount||0),0);const pending=rows.filter(e=>e.kind!=='expense'&&!['paid','cancelled'].includes(String(e.status||''))).reduce((s,e)=>s+Number(e.amount||0),0);const expenses=rows.filter(e=>e.kind==='expense'&&e.status==='paid').reduce((s,e)=>s+Number(e.amount||0),0);const win=window.open('','_blank','noopener,noreferrer,width=1100,height=800');if(!win)throw new Error('O navegador bloqueou a janela de impressão. Permita pop-ups para este site.');const html=`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Histórico financeiro ${year}</title><style>body{font-family:Arial,sans-serif;color:#26352e;margin:32px}h1{margin:0 0 6px;font-size:24px}p{margin:0 0 18px;color:#65736c;font-size:12px}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}.k{padding:12px;border:1px solid #dfe7e2;border-radius:10px}.k small{display:block;color:#7a8881;font-size:10px}.k strong{display:block;margin-top:4px;font-size:16px}.box{border:1px solid #dfe7e2;border-radius:12px;overflow:hidden}.head,.row{display:grid;grid-template-columns:85px 1fr 100px 110px 100px 120px;gap:10px;align-items:center;padding:9px 10px}.head{background:#f5f8f6;font-size:9px;font-weight:700;text-transform:uppercase;color:#6b7972}.row{border-top:1px solid #edf1ee;font-size:10px}.row span{min-width:0;overflow:hidden;text-overflow:ellipsis}.foot{margin-top:20px;text-align:right;color:#7a8881;font-size:10px}@media print{button{display:none}}</style></head><body><h1>Histórico financeiro — ${year}</h1><p>Relatório anual dos lançamentos da plataforma.</p><div class="grid"><div class="k"><small>Recebido</small><strong>${money(received)}</strong></div><div class="k"><small>A receber</small><strong>${money(pending)}</strong></div><div class="k"><small>Despesas pagas</small><strong>${money(expenses)}</strong></div><div class="k"><small>Resultado</small><strong>${money(received-expenses)}</strong></div></div><div class="box"><div class="head"><span>Data</span><span>Aluno / descrição</span><span>Tipo</span><span>Valor</span><span>Status</span><span>Forma</span></div>${rows.map(e=>`<div class="row"><span>${esc(String(e.competence_date||e.payment_date||'').slice(0,10))}</span><span>${esc(e.student_name||e.description||'Lançamento')}</span><span>${e.kind==='expense'?'Despesa':'Receita'}</span><span>${esc(money(e.amount))}</span><span>${esc(statusPt(e.status))}</span><span>${esc(methodPt(e.payment_method))}</span></div>`).join('')||'<div style="padding:25px;text-align:center;color:#78867e">Nenhum lançamento no ano selecionado.</div>'}</div><div class="foot">Gerado em ${new Date().toLocaleString('pt-BR')}</div><script>setTimeout(()=>window.print(),250)<\/script>
+
+
+</body></html>`;win.document.write(html);win.document.close();}catch(err){window.showError?.('Não foi possível preparar a impressão: '+(err.message||err));}};
+
+  window.renderFinance=async function(){
+    const c=$('#financeiroContent');if(!c)return;
+    const baseMonth=window.V3?.financeMonth instanceof Date?window.V3.financeMonth:new Date();const key=`${baseMonth.getFullYear()}-${String(baseMonth.getMonth()+1).padStart(2,'0')}`;
+    c.innerHTML=`<div class="v3-page"><div class="v3-head"><div><div class="v3-kicker">GESTÃO FINANCEIRA</div><h1>Financeiro</h1><p>Receitas, pagamentos, despesas e histórico anual organizados em um único lugar.</p></div><div class="v3-head-actions"><button class="btn btn-outline" onclick="v7PrintFinanceYear(document.getElementById('v7FinYear')?.value)"><i data-lucide="printer"></i>Imprimir ano</button><button class="btn btn-primary" onclick="openPaymentModal()"><i data-lucide="plus"></i>Novo lançamento</button></div></div><div class="v7-fin-annual-bar"><label>Histórico anual <select id="v7FinYear">${financeYearOptions(new Date().getFullYear())}</select></label><span class="v7-fin-annual-meta">Use “Imprimir ano” para gerar uma versão pronta para papel/PDF.</span></div><div class="v3-month-nav"><button class="icon-button" onclick="v3FinanceMonth(-1)"><i data-lucide="chevron-left"></i></button><strong>${esc(baseMonth.toLocaleDateString('pt-BR',{month:'long',year:'numeric'}))}</strong><button class="icon-button" onclick="v3FinanceMonth(1)"><i data-lucide="chevron-right"></i></button><button class="btn btn-outline btn-sm" onclick="V3.financeMonth=new Date(new Date().getFullYear(),new Date().getMonth(),1);renderFinance()">Mês atual</button></div><div id="v7FinKpis" class="v3-stats"></div><div id="v7FinSummary" class="v3-two-col" style="margin-top:16px"></div><section class="v3-panel" style="margin-top:16px"><div class="v3-panel-head"><div><h2>Contas e pagamentos</h2><p>Registre, receba, edite ou exclua cada lançamento. O título permanece em uma única linha.</p></div><div class="v3-head-actions"><input id="v7FinSearch" placeholder="Buscar aluno ou descrição..." style="min-width:210px"><select id="v7FinStatus"><option value="all">Todos</option><option value="pending">Pendentes</option><option value="paid">Pagos</option><option value="overdue">Em atraso</option><option value="cancelled">Cancelados</option></select><select id="v7FinKind"><option value="all">Todos os tipos</option><option value="income">Receitas</option><option value="expense">Despesas</option></select></div></div><div id="v7FinRows"></div></section></div>`;
+    window.refreshIcons?.();
+    try{
+      const entries=await loadFinanceV7();const current=entries.filter(e=>String(e.competence_date||e.payment_date||'').slice(0,7)===key);const income=current.filter(e=>e.kind!=='expense');const expense=current.filter(e=>e.kind==='expense');const received=income.filter(e=>e.status==='paid').reduce((s,e)=>s+Number(e.amount||0),0);const receivable=income.filter(e=>!['paid','cancelled'].includes(String(e.status||''))).reduce((s,e)=>s+Number(e.amount||0),0);const spent=expense.filter(e=>e.status==='paid').reduce((s,e)=>s+Number(e.amount||0),0);const result=received-spent;
+      $('#v7FinKpis').innerHTML=[['arrow-down-left','Recebido',money(received),'Pagamentos confirmados'],['clock-3','A receber',money(receivable),'Pendências'],['arrow-up-right','Despesas',money(spent),'Saídas pagas'],['scale','Resultado',money(result),result>=0?'Recebimentos menos despesas':'Despesas acima dos recebimentos']].map(x=>`<div class="v3-stat ${x[0]==='scale'&&result<0?'bad':''}"><div class="v3-icon"><i data-lucide="${x[0]}"></i></div><div><span>${esc(x[1])}</span><strong>${esc(x[2])}</strong><small>${esc(x[3])}</small></div></div>`).join('');
+      const pendingByStudent={};income.filter(e=>!['paid','cancelled'].includes(String(e.status||''))).forEach(e=>{const k=String(e.student_id||e.student_name||'sem-aluno');pendingByStudent[k]??={name:e.student_name||e.description||'Sem aluno',amount:0,count:0};pendingByStudent[k].amount+=Number(e.amount||0);pendingByStudent[k].count++;});
+      const pendingRows=Object.values(pendingByStudent).sort((a,b)=>b.amount-a.amount).slice(0,8);
+      $('#v7FinSummary').innerHTML=`<section class="v3-panel"><div class="v3-panel-head"><div><h2>A receber</h2><p>Contas que ainda exigem atenção.</p></div></div>${pendingRows.length?pendingRows.map(x=>`<div class="report-list-item"><div class="report-list-content"><strong>${esc(x.name)}</strong><span>${x.count} lançamento${x.count===1?'':'s'} pendente${x.count===1?'':'s'}</span></div><strong>${esc(money(x.amount))}</strong></div>`).join(''):'<div class="empty">Nenhum recebimento pendente neste mês.</div>'}</section><section class="v3-panel"><div class="v3-panel-head"><div><h2>Resumo do mês</h2><p>Competência selecionada.</p></div></div><div class="v3-finance-summary"><div><span>Receita lançada</span><strong>${esc(money(income.reduce((s,e)=>s+Number(e.amount||0),0)))}</strong></div><div><span>Despesa lançada</span><strong>${esc(money(expense.reduce((s,e)=>s+Number(e.amount||0),0)))}</strong></div><div><span>Parcelamentos</span><strong>${entries.filter(e=>Number(e.installment_total||1)>1&&String(e.competence_date||'').slice(0,7)===key).length}</strong></div></div></section>`;
+      const renderRows=()=>{const q=String($('#v7FinSearch')?.value||'').trim().toLowerCase();const sf=String($('#v7FinStatus')?.value||'all');const kf=String($('#v7FinKind')?.value||'all');const list=current.filter(e=>{const text=[e.student_name,e.description,methodPt(e.payment_method)].join(' ').toLowerCase();return(!q||text.includes(q))&&(sf==='all'||String(e.status||'pending')===sf)&&(kf==='all'||(kf==='income'?e.kind!=='expense':e.kind==='expense'));});$('#v7FinRows').innerHTML=list.length?`<div class="legado-fin-table"><div class="legado-fin-tr head"><span>Data</span><span>Aluno / descrição</span><span>Tipo</span><span>Valor</span><span>Status</span><span>Ações</span></div>${list.map(e=>{const group=e.installment_group?String(e.installment_group):'';const installment=Number(e.installment_total||1)>1?`<small>Parcela ${esc(e.installment_number||1)}/${esc(e.installment_total)}</small>`:'';return `<div class="legado-fin-tr ${e.kind==='expense'?'expense-row':''}"><span>${esc(e.competence_date?new Date(`${e.competence_date}T12:00:00`).toLocaleDateString('pt-BR'):'—')}</span><span><strong title="${esc(e.student_name||e.description||'Lançamento')}">${esc(e.student_name||e.description||'Lançamento')}</strong>${e.student_name&&e.description?`<small>${esc(e.description)}</small>`:''}${installment}</span><span>${e.kind==='expense'?'Despesa':'Receita'}<small>${esc(methodPt(e.payment_method))}</small></span><span><strong>${esc(money(e.amount))}</strong></span><span><span class="status-pill ${esc(e.status||'pending')}">${esc(statusPt(e.status))}</span>${e.paid_at?`<small>Pago em ${esc(new Date(e.paid_at).toLocaleDateString('pt-BR'))}</small>`:''}</span><span class="v7-fin-table-actions">${e.kind!=='expense'&&e.status!=='paid'&&!e.legacy?`<button class="v7-reschedule-btn" type="button" onclick="v7RegisterFinancePayment('${esc(e.id)}')"><i data-lucide="circle-check"></i>Registrar pagamento</button>`:''}<button class="v7-reschedule-btn v7-delete-btn" type="button" onclick="v7DeleteFinance('${esc(e.id)}','${esc(group)}','${esc(e.legacy_payment_id||'')}')"><i data-lucide="trash-2"></i>Excluir</button></span></div>`}).join('')}</div>`:'<div class="v4-empty"><i data-lucide="receipt"></i><strong>Nenhum lançamento neste mês.</strong><span>Use “Novo lançamento” para registrar receitas ou despesas.</span></div>';window.refreshIcons?.();};
+      renderRows();$('#v7FinSearch')?.addEventListener('input',renderRows);$('#v7FinStatus')?.addEventListener('change',renderRows);$('#v7FinKind')?.addEventListener('change',renderRows);
+    }catch(err){c.innerHTML=`<div class="v4-empty"><i data-lucide="circle-alert"></i><strong>Não foi possível carregar o Financeiro.</strong><span>${esc(err.message||err)}</span><button class="btn btn-primary btn-sm" onclick="renderFinance()">Tentar novamente</button></div>`;window.refreshIcons?.();}
+  };
+
+  /* ==========================================================
+     PERFIL DO ALUNO — PDF COMPLETO
+  ========================================================== */
+  function pdfText(doc,text,x,y,maxWidth,lineH=14){const lines=doc.splitTextToSize(String(text||'—'),maxWidth);doc.text(lines,x,y);return y+lines.length*lineH;}
+  function pdfSection(doc,title,y){if(y>760){doc.addPage();y=40;}doc.setFont('helvetica','bold');doc.setFontSize(12);doc.text(title,40,y);return y+18;}
+  function pdfDrawLabel(doc,label,value,y){doc.setFont('helvetica','bold');doc.setFontSize(9);doc.text(`${label}:`,40,y);doc.setFont('helvetica','normal');doc.setFontSize(9);return pdfText(doc,value,110,y,445,12);}
+  window.v7ExportStudentPdf=async function(id){try{const jsp=window.jspdf?.jsPDF;if(typeof jsp!=='function')throw new Error('Biblioteca PDF não carregou.');const student=(await getStudents()).find(s=>String(s.id)===String(id))||window.state?.selectedStudent;if(!student)throw new Error('Aluno não encontrado.');const [appointments,evaluations,payments]=await Promise.all([selectRows(TABLES.appointments,{user_id:uid(),student_id:id},'appointment_date',false,1000).catch(()=>[]),selectRows(TABLES.evaluations,{user_id:uid(),student_id:id},'evaluation_date',false,1000).catch(()=>[]),selectRows(TABLES.payments,{user_id:uid(),student_id:id},'payment_date',false,1000).catch(()=>[])]);const doc=new jsp({unit:'pt',format:'a4'});let y=44;doc.setFont('helvetica','bold');doc.setFontSize(19);doc.text('Legado Que Ensina',40,y);y+=22;doc.setFont('helvetica','normal');doc.setFontSize(10);doc.text('Prontuário completo do aluno',40,y);y+=22;doc.setDrawColor(210,220,215);doc.line(40,y,555,y);y+=24;doc.setFont('helvetica','bold');doc.setFontSize(16);doc.text(studentName(student),40,y);y+=22;doc.setFont('helvetica','normal');doc.setFontSize(9);doc.text(`Gerado em ${new Date().toLocaleString('pt-BR')}`,40,y);y+=24;
+      y=pdfSection(doc,'Dados do aluno',y);const infos=[['Nascimento',student.birth_date?new Date(student.birth_date+'T12:00:00').toLocaleDateString('pt-BR'):'Não informado'],['Telefone',student.phone||'Não informado'],['E-mail',student.email||'Não informado'],['Responsável',student.responsible_name||'Não informado'],['CPF',student.cpf||'Não informado'],['Status',statusPt(student.status||'active')],['Observações',student.notes||'Nenhuma observação registrada.']];for(const [l,v] of infos){y=pdfDrawLabel(doc,l,v,y);y+=3;}
+      y+=8;y=pdfSection(doc,'Atendimentos',y);if(!appointments.length){y=pdfText(doc,'Nenhum atendimento registrado.',40,y,515,12)+8;}else{for(const a of appointments){if(y>760){doc.addPage();y=40;y=pdfSection(doc,'Atendimentos — continuação',y);}const date=a.appointment_date?new Date(a.appointment_date+'T12:00:00').toLocaleDateString('pt-BR'):'—';y=pdfDrawLabel(doc,'Data',`${date} · ${String(a.appointment_time||'').slice(0,5)}`,y);y=pdfDrawLabel(doc,'Tipo',a.type||'Atendimento',y);y=pdfDrawLabel(doc,'Status',statusPt(a.status),y);if(a.attendance_status)y=pdfDrawLabel(doc,'Presença',statusPt(a.attendance_status),y);y=pdfDrawLabel(doc,'Observações',a.notes||'—',y);y+=8;}}
+      y+=6;y=pdfSection(doc,'Avaliações aplicadas',y);if(!evaluations.length){y=pdfText(doc,'Nenhuma avaliação registrada.',40,y,515,12)+8;}else{for(const ev of evaluations){if(y>745){doc.addPage();y=40;y=pdfSection(doc,'Avaliações aplicadas — continuação',y);}const date=ev.evaluation_date?new Date(ev.evaluation_date+'T12:00:00').toLocaleDateString('pt-BR'):'—';y=pdfDrawLabel(doc,'Data',date,y);y=pdfDrawLabel(doc,'Avaliação',ev.title||ev.type||'Avaliação',y);y=pdfDrawLabel(doc,'Status',statusPt(ev.status),y);y=pdfDrawLabel(doc,'Síntese',ev.summary||'—',y);if(ev.notes)y=pdfDrawLabel(doc,'Registro',ev.notes,y);const ad=ev.assessment_data;if(ad&&typeof ad==='object'&&Object.keys(ad).length){const text=Object.entries(ad).map(([k,v])=>`${k}: ${Array.isArray(v)?v.join(', '):v}`).join('\n');y=pdfDrawLabel(doc,'Dados estruturados',text,y);}y+=8;}}
+      y+=6;y=pdfSection(doc,'Recebimentos registrados',y);if(!payments.length){y=pdfText(doc,'Nenhum recebimento registrado.',40,y,515,12)+8;}else{for(const p of payments){if(y>760){doc.addPage();y=40;y=pdfSection(doc,'Recebimentos — continuação',y);}y=pdfDrawLabel(doc,'Data',p.payment_date?new Date(p.payment_date+'T12:00:00').toLocaleDateString('pt-BR'):'—',y);y=pdfDrawLabel(doc,'Valor',money(p.amount||p.value||0),y);y=pdfDrawLabel(doc,'Status',statusPt(p.status||'paid'),y);y=pdfDrawLabel(doc,'Descrição',p.description||'Recebimento',y);y+=8;}}
+      const pages=doc.getNumberOfPages();for(let i=1;i<=pages;i++){doc.setPage(i);doc.setFontSize(8);doc.setFont('helvetica','normal');doc.text(`Página ${i} de ${pages}`,500,810);}
+      doc.save(`prontuario-${String(studentName(student)).toLowerCase().replace(/[^a-z0-9]+/gi,'-').replace(/^-|-$/g,'')||'aluno'}.pdf`);window.showSuccess?.('PDF do prontuário gerado.');
+    }catch(err){console.error(err);window.showError?.('Não foi possível gerar o PDF: '+(err.message||err));}};
+
+  function addPdfButtonToProfile(){const c=$('#studentProfileContent');if(!c)return;const actions=$('.page-heading-actions',c);if(!actions||actions.querySelector('.v7-pdf-btn'))return;const id=window.state?.currentStudentId;if(!id)return;const b=document.createElement('button');b.type='button';b.className='btn btn-outline v7-pdf-btn';b.innerHTML='<i data-lucide="file-down"></i>Salvar prontuário em PDF';b.onclick=()=>window.v7ExportStudentPdf(id);actions.appendChild(b);window.refreshIcons?.();}
+  const baseStudentProfile=window.renderStudentProfileView;
+  if(typeof baseStudentProfile==='function'&&!baseStudentProfile.__v7){const wrapped=async function(){await baseStudentProfile.apply(this,arguments);addPdfButtonToProfile();};wrapped.__v7=true;window.renderStudentProfileView=wrapped;}
+
+  /* ==========================================================
+     START
+  ========================================================== */
+  const baseNavigate=window.navigate;
+  if(typeof baseNavigate==='function'&&!baseNavigate.__v7){const wrapped=function(view){const r=baseNavigate.apply(this,arguments);if(view==='agenda')setTimeout(()=>injectAvailabilityTop(),250);if(view==='financeiro')setTimeout(()=>window.renderFinance?.(),50);if(view==='aluno-perfil')setTimeout(()=>addPdfButtonToProfile(),350);return r;};wrapped.__v7=true;window.navigate=wrapped;}
+  setTimeout(()=>{if(window.state?.currentView==='agenda')injectAvailabilityTop().catch(()=>{});if(window.state?.currentView==='financeiro')window.renderFinance?.();if(window.state?.currentView==='aluno-perfil')addPdfButtonToProfile();},500);
+  if(typeof window.renderMessages==='function')setTimeout(enhanceMessageDeleteV7,800);
+})();
+</script>
+
+
+
+
+
+<script id="legado-final-v7-agenda-guard">
+(function(){
+  'use strict';
+  const base=window.v4OpenAppointmentModal;
+  if(typeof base!=='function'||base.__v7Guard)return;
+  const wrapped=async function(){
+    await base.apply(this,arguments);
+    const form=document.getElementById('v4AppointmentForm');
+    if(!form||form.__v7Guard)return;
+    form.__v7Guard=true;
+    const old=form.onsubmit;
+    form.onsubmit=async function(e){
+      try{
+        const fd=new FormData(form);
+        const date=String(fd.get('appointment_date')||'');
+        const time=String(fd.get('appointment_time')||'');
+        const duration=Number(fd.get('duration')||60);
+        const av=typeof window.v7LoadAvailability==='function'?await window.v7LoadAvailability():[];
+        if(av.length){
+          const d=new Date(`${date}T12:00:00`);
+          const weekday=d.getDay();
+          const row=av.find(x=>Number(x.weekday)===weekday&&x.active!==false);
+          if(!row)throw new Error('Esse dia não está configurado como dia de atendimento.');
+          const mins=t=>{const [h,m]=String(t).slice(0,5).split(':').map(Number);return h*60+m;};
+          const start=mins(time),end=start+duration;
+          if(start<mins(row.start_time)||end>mins(row.end_time))throw new Error('O horário fica fora da sua disponibilidade configurada.');
+          if(row.lunch_start&&row.lunch_end&&start<mins(row.lunch_end)&&end>mins(row.lunch_start))throw new Error('O horário escolhido coincide com seu intervalo de almoço.');
+        }
+        return await old.call(this,e);
+      }catch(err){window.showError?.(err.message||'Horário indisponível.');}
+    };
+  };
+  wrapped.__v7Guard=true;
+  window.v4OpenAppointmentModal=wrapped;
+  window.v3OpenAppointmentEditor=wrapped;
+  window.openNewAppointmentModal=wrapped;
+})();
+</script>
 </body>
 </html>
