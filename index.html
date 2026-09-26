@@ -10233,8 +10233,21 @@ body.legado-v4-modal-open{overflow:hidden}
     try{
       const profiles=await rows(TABLE.profiles,{},'full_name',true,500);
       const teachers=profiles.filter(p=>!p.is_master&&!['master','admin'].includes(String(p.role||'').toLowerCase()));
-      const settings=await window.supabaseClient.from('platform_settings').select('value').eq('key','support_whatsapp').maybeSingle().catch(()=>({data:null}));
-      const support=settings?.data?.value||'';
+      let support='';
+      try{
+        const {data:settingsData,error:settingsError}=await window.supabaseClient
+          .from('platform_settings')
+          .select('value')
+          .eq('key','support_whatsapp')
+          .maybeSingle();
+        if(settingsError){
+          console.warn('Não foi possível carregar o WhatsApp de suporte:',settingsError);
+        }else{
+          support=settingsData?.value||'';
+        }
+      }catch(settingsException){
+        console.warn('Não foi possível carregar o WhatsApp de suporte:',settingsException);
+      }
       $('#legadoSupportForm input[name="whatsapp"]').value=support;
       const now=Date.now();
       const statuses=teachers.map(p=>({p,s:adminStatus(p,now)}));
