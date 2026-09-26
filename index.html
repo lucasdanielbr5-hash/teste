@@ -10666,14 +10666,31 @@ body.legado-v4-modal-open{overflow:hidden}
   }
   async function invoke(action,payload={}){
     const sb=masterClient();
-    if(!sb) throw new Error('Supabase não está disponível.');
-    const {data,error}=await sb.functions.invoke(FN_NAME,{body:{action,...payload}});
-    if(error) throw new Error(error.message||'Erro ao chamar a administração segura.');
-    if(data?.error) throw new Error(data.error);
+    if(!sb) throw new Error('Supabase não está disponível no navegador.');
+    let data=null;
+    let error=null;
+    try{
+      ({data,error}=await sb.functions.invoke(FN_NAME,{body:{action,...payload}}));
+    }catch(networkError){
+      const message=networkError?.message||String(networkError||'');
+      if(/Failed to send a request to the Edge Function/i.test(message)){
+        throw new Error('Não foi possível conectar à Edge Function master-admin. Confirme que a função existe, está publicada no mesmo projeto Supabase e que a sessão do usuário está válida.');
+      }
+      throw networkError;
+    }
+    if(error){
+      let detail='';
+      try{
+        if(error.context && typeof error.context.json==='function'){
+          const body=await error.context.json();
+          detail=body?.error||body?.message||'';
+        }
+      }catch(_){}
+      const base=error.message||'Erro ao chamar a administração segura.';
+      throw new Error(detail&&detail!==base?`${base} — ${detail}`:base);
+    }
+    if(data?.error) throw new Error(String(data.error));
     return data;
-  }
-  async function ensureEdgeFunction(){
-    return !!masterClient()?.functions?.invoke;
   }
 
   function expiredScreenEnhance(){
@@ -10847,7 +10864,6 @@ body.legado-v4-modal-open{overflow:hidden}
     c.innerHTML=`<div class="saas-shell"><header class="saas-hero"><div><span class="saas-eyebrow"><i data-lucide="shield-check"></i> CENTRAL MASTER</span><h1>Administração da plataforma</h1><p>Crie professores, controle o tempo de uso, acompanhe pagamentos e faça a conta parar automaticamente quando o prazo terminar.</p></div><div class="saas-hero-actions"><button class="saas-light-dark" onclick="window.saasSync()"><i data-lucide="refresh-cw"></i>Sincronizar contas</button><button class="saas-primary" onclick="window.saasCreateTeacher()"><i data-lucide="user-plus"></i>Novo professor</button></div></header><nav class="saas-tabs"><button class="saas-tab active" data-tab="overview"><i data-lucide="layout-dashboard"></i>Visão geral</button><button class="saas-tab" data-tab="teachers"><i data-lucide="users-round"></i>Contas</button><button class="saas-tab" data-tab="finance"><i data-lucide="wallet-cards"></i>Pagamentos</button><button class="saas-tab" data-tab="access"><i data-lucide="calendar-clock"></i>Acesso e vencimentos</button></nav><section id="saas-panel-overview" class="saas-panel active"></section><section id="saas-panel-teachers" class="saas-panel"></section><section id="saas-panel-finance" class="saas-panel"></section><section id="saas-panel-access" class="saas-panel"></section></div>`;
     window.lucide?.createIcons(); bindSaasTabs(c);
     try{
-      if(!(await ensureEdgeFunction()))throw new Error('A Edge Function master-admin ainda não está instalada no Supabase.');
       const data=await invoke('get_users',{include_blocked:true}); const users=(data.users||[]).filter(r=>!r.is_master&&!['master','admin'].includes(String(r.role||'').toLowerCase()));
       const all=users; const now=Date.now();
       const active=all.filter(r=>accessStateM(r).key==='active').length, attention=all.filter(r=>accessStateM(r).key==='attention').length, expired=all.filter(r=>accessStateM(r).key==='expired').length, blocked=all.filter(r=>accessStateM(r).key==='blocked').length;
@@ -10869,7 +10885,7 @@ body.legado-v4-modal-open{overflow:hidden}
 
   window.saasShowSetup=function(){
     const modal=document.createElement('div');modal.className='saas-payment-modal';modal.id='saasSetupModal';
-    modal.innerHTML=`<div class="saas-payment-card"><div class="saas-drawer-head"><div><span>CONFIGURAÇÃO ÚNICA</span><h2>Ativar o cadastro de professores</h2><p>A interface já está pronta. Falta publicar a Edge Function e a migration do banco.</p></div><button class="saas-icon" onclick="this.closest('#saasSetupModal')?.remove()"><i data-lucide="x"></i></button></div><div class="saas-setup"><div><b>1.</b><span>Execute <code>supabase_master_saas.sql</code> no SQL Editor do Supabase.</span></div><div><b>2.</b><span>Publique a função <code>supabase/functions/master-admin/index.ts</code>.</span></div><div><b>3.</b><span>Defina os secrets <code>SUPABASE_URL</code> e <code>SUPABASE_SERVICE_ROLE_KEY</code> na Edge Function.</span></div><div><b>4.</b><span>Depois clique em “Sincronizar contas”. As contas que já existem no Auth serão trazidas para a Administração.</span></div></div><div class="saas-drawer-actions"><button class="saas-primary" onclick="this.closest('#saasSetupModal')?.remove()">Entendi</button></div></div>`;
+    modal.innerHTML=`<div class="saas-payment-card"><div class="saas-drawer-head"><div><span>CONFIGURAÇÃO ÚNICA</span><h2>Ativar o cadastro de professores</h2><p>A interface já está pronta. Falta publicar a Edge Function e a migration do banco.</p></div><button class="saas-icon" onclick="this.closest('#saasSetupModal')?.remove()"><i data-lucide="x"></i></button></div><div class="saas-setup"><div><b>1.</b><span>Execute <code>supabase_master_saas.sql</code> no SQL Editor do Supabase.</span></div><div><b>2.</b><span>Publique a função <code>supabase/functions/master-admin/index.ts</code>.</span></div><div><b>3.</b><span>Não coloque chave secreta no HTML. A Edge Function usa as credenciais seguras fornecidas pelo ambiente do Supabase.</span></div><div><b>4.</b><span>Depois clique em “Sincronizar contas”. As contas que já existem no Auth serão trazidas para a Administração.</span></div></div><div class="saas-drawer-actions"><button class="saas-primary" onclick="this.closest('#saasSetupModal')?.remove()">Entendi</button></div></div>`;
     document.body.appendChild(modal);window.lucide?.createIcons();
   };
 
