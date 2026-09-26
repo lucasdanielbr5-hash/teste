@@ -1064,7 +1064,7 @@
       }
     }
   </style>
-<meta name="legado-build" content="2026-09-26-final16">
+<meta name="legado-build" content="2026-09-26-final17">
 </head>
 <body>
 
@@ -12022,13 +12022,158 @@ body.legado-v4-modal-open{overflow:hidden}
 
   /* Remove explicit cache busting hacks that force full reloads; navigation is SPA. */
   W.__legadoFinal16=true;
-  W.__legadoBuild='2026-09-26-final16';
+  W.__legadoBuild='2026-09-26-final17';
 
   /* Keep status labels translated after asynchronous UI updates without observing
      the entire DOM (avoids the mutation-loop that previously froze the browser). */
   setTimeout(()=>translateStatusText(),50);
 })();
 
+</script>
+
+<script id="legado-final17-recados-waitlist">
+(function(){
+  'use strict';
+  const W=window;
+  const esc=W.escapeHtml || (v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])));
+  const uid=()=>W.state?.user?.id||null;
+  const teacherName=()=>{
+    const p=W.state?.profile||{};
+    return String(p.full_name||p.name||W.state?.user?.user_metadata?.full_name||W.state?.user?.user_metadata?.name||'Professor').trim();
+  };
+  const whatsappIcon=`<svg class="final17-wa-logo" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20.52 3.48A11.94 11.94 0 0 0 12.03 0C5.46 0 .12 5.34.12 11.91c0 2.1.55 4.16 1.58 5.97L0 24l6.25-1.64a11.84 11.84 0 0 0 5.78 1.48h.01c6.57 0 11.91-5.34 11.91-11.91a11.87 11.87 0 0 0-3.43-8.45ZM12.04 21.68h-.01a9.78 9.78 0 0 1-4.98-1.36l-.36-.21-3.71.97.99-3.62-.23-.37a9.83 9.83 0 1 1 8.3 4.59Zm5.39-7.35c-.29-.15-1.72-.85-1.99-.94-.27-.1-.47-.15-.66.15-.19.29-.76.94-.93 1.13-.17.19-.34.22-.63.08-.29-.15-1.24-.46-2.36-1.46-.87-.77-1.45-1.72-1.62-2.01-.17-.29-.02-.45.13-.59.13-.13.29-.34.44-.51.15-.17.2-.29.29-.49.1-.2.05-.37-.02-.52-.07-.15-.66-1.59-.9-2.17-.24-.57-.48-.49-.66-.5-.17-.01-.37-.01-.57-.01s-.52.08-.79.37c-.27.29-1.04 1.02-1.04 2.48s1.06 2.87 1.2 3.07c.15.19 2.08 3.18 5.04 4.46.7.3 1.24.48 1.66.62.7.22 1.34.19 1.85.12.56-.08 1.72-.7 1.96-1.38.24-.68.24-1.27.17-1.39-.07-.12-.27-.2-.56-.34Z"/></svg>`;
+  const buildWaitMessage=(student)=>`Olá! Tudo bem? ✨\n\nAqui é o professor ${teacherName()}.\n\nGostaria de informar que surgiu uma vaga para o acompanhamento psicopedagógico. Como havíamos conversado anteriormente, este espaço é fundamental para apoiarmos o desenvolvimento e o processo de aprendizagem do(a) ${student}.\n\nAs vagas são limitadas. Se você ainda tiver interesse, por favor, me avise por aqui para combinarmos os dias e horários disponíveis.\n\nFico no aguardo! Um abraço,\nProfessor ${teacherName()}`;
+
+  // Exposto globalmente porque algumas versões da Lista de Espera procuram window.waLink.
+  W.waLink=function(phone,msg){
+    const n=String(phone||'').replace(/\D/g,'');
+    if(!n)return '#';
+    let student='Aluno(a)';
+    const original=String(msg||'');
+    const m=original.match(/para\s+(.+?)(?:\?|$)/i);
+    if(m&&m[1]) student=m[1].trim();
+    return `https://wa.me/${n}?text=${encodeURIComponent(buildWaitMessage(student))}`;
+  };
+
+  function updateWaitlistWhatsApp(){
+    const root=document.getElementById('waitlistContent');
+    if(!root)return;
+    root.querySelectorAll('a,button').forEach(btn=>{
+      if(!/WhatsApp/i.test(btn.textContent||''))return;
+      let student=btn.closest('.v3-wait-card')?.querySelector('.v3-student-ident h3')?.textContent?.trim() || 'Aluno(a)';
+      let phone='';
+      const meta=btn.closest('.v3-wait-card')?.querySelector('.v3-wait-meta');
+      if(meta){
+        const nodes=[...meta.children];
+        const found=nodes.find(x=>/WhatsApp/i.test(x.textContent||''));
+        if(found) phone=(found.textContent||'').replace(/WhatsApp/i,'').trim();
+      }
+      if(phone){btn.href=`https://wa.me/${phone.replace(/\D/g,'')}?text=${encodeURIComponent(buildWaitMessage(student))}`;}
+      btn.classList.add('final17-whatsapp-btn');
+      btn.innerHTML=`${whatsappIcon}<span>WhatsApp</span>`;
+    });
+  }
+
+  const previousWait=W.renderWaitlist;
+  if(typeof previousWait==='function' && !previousWait.__final17Wait){
+    W.renderWaitlist=async function(){
+      const result=await previousWait.apply(this,arguments);
+      updateWaitlistWhatsApp();
+      W.refreshIcons?.();
+      return result;
+    };
+    W.renderWaitlist.__final17Wait=true;
+  }
+
+  // Visual completo da área de Recados. O HTML existente continua sendo usado;
+  // aqui somente reorganizamos/estilizamos para evitar a aparência "crua".
+  const css=document.createElement('style');
+  css.id='legado-final17-recados-css';
+  css.textContent=`
+    #recadosContent{width:100%;min-width:0}
+    #recadosContent .page-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin:0 0 20px;padding:0}
+    #recadosContent .page-heading>div{min-width:0}
+    #recadosContent .page-heading .eyebrow{margin:0 0 7px;color:#5b63e8;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
+    #recadosContent .page-heading h1{margin:0;color:#263b49;font-size:30px;line-height:1.1;font-weight:800;letter-spacing:-.03em}
+    #recadosContent .page-heading p{margin:7px 0 0;color:#77868f;font-size:13px;line-height:1.55}
+    .final16-message-hero{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;padding:18px!important;margin:0 0 14px;border:1px solid #e2e9e6;border-radius:18px;background:linear-gradient(180deg,#fff 0%,#f9fcfb 100%);box-shadow:0 8px 24px rgba(38,60,52,.05)}
+    .final16-message-hero>div{min-width:0}
+    .final16-message-hero-icon{grid-row:span 2;width:48px;height:48px;border-radius:15px;background:#eaf3ee;color:#4e7b68;display:grid!important;place-items:center;align-self:center}
+    .final16-message-hero-icon svg{width:24px;height:24px}
+    .final16-message-hero strong{display:block;color:#31463d;font-size:20px;line-height:1.1}
+    .final16-message-hero span{display:block;margin-top:4px;color:#819089;font-size:10px;line-height:1.4}
+    .final16-message-hero>div:nth-child(3){border-left:1px solid #e4ebe7;padding-left:14px}
+    .final16-message-tabs{display:flex;align-items:center;gap:8px;margin:0 0 14px;padding:5px;border:1px solid #e1e9e5;border-radius:13px;background:#f7faf8;overflow-x:auto}
+    .final16-message-tabs button{appearance:none;border:0;background:transparent;color:#73817a;display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:38px;padding:9px 13px;border-radius:9px;font:700 11px Inter,Arial,sans-serif;white-space:nowrap;cursor:pointer}
+    .final16-message-tabs button svg{width:15px;height:15px}
+    .final16-message-tabs button.active{background:#fff;color:#456956;box-shadow:0 2px 8px rgba(32,55,45,.07)}
+    .final16-message-tabs button b{min-width:19px;height:19px;display:inline-grid;place-items:center;padding:0 5px;border-radius:999px;background:#edf2ef;color:#65746d;font-size:9px}
+    .final16-message-panel{min-width:0}
+    .final16-message-groups{display:grid;gap:14px}
+    .final16-message-groups>section{min-width:0;padding:16px;border:1px solid #e2e9e6;border-radius:17px;background:#fff;box-shadow:0 6px 20px rgba(31,51,43,.04)}
+    .final16-section-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 11px;color:#52665c;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase}
+    .final16-message-item{display:grid;grid-template-columns:42px minmax(0,1fr) auto;gap:12px;align-items:start;padding:14px 0;border-top:1px solid #edf1ef;min-width:0}
+    .final16-message-item:first-child{border-top:0;padding-top:2px}
+    .final16-message-icon{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:#edf5f0;color:#557966;flex:none}
+    .final16-message-item.is-unread .final16-message-icon{background:#edf0ff;color:#5a63c8}
+    .final16-message-item.is-trash .final16-message-icon{background:#fff2f2;color:#a55a5a}
+    .final16-message-icon svg{width:18px;height:18px}
+    .final16-message-main{min-width:0}
+    .final16-message-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 6px;color:#909b96;font-size:9px}
+    .final16-tag{display:inline-flex;align-items:center;border-radius:999px;padding:4px 7px;background:#f0f5f2;color:#587267;font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+    .final16-message-item.is-unread .final16-tag{background:#eef0ff;color:#5c63c6}
+    .final16-message-main h3{margin:0;color:#354a41;font-size:13px;font-weight:800;line-height:1.35;overflow-wrap:anywhere;word-break:break-word}
+    .final16-message-main p{margin:6px 0 0;color:#718079;font-size:11px;line-height:1.62;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word}
+    .final16-message-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap;min-width:0}
+    .final16-message-actions .btn{white-space:nowrap}
+    .final16-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:190px;padding:30px 18px;border:1px dashed #d8e4de;border-radius:17px;background:#fbfdfc;color:#7d8984;text-align:center}
+    .final16-empty svg{width:30px;height:30px;color:#91a59c}
+    .final16-empty strong{color:#53655d;font-size:12px}
+    .final16-empty span{font-size:10px;line-height:1.5}
+    #recadosContent .v3-empty{padding:28px;border:1px dashed #d8e4de;border-radius:16px;background:#fbfdfc;text-align:center}
+
+    .final17-whatsapp-btn{background:#25d366!important;border-color:#25d366!important;color:#fff!important;text-decoration:none!important;display:inline-flex!important;align-items:center!important;gap:7px!important}
+    .final17-whatsapp-btn:hover{background:#20bf5a!important;border-color:#20bf5a!important;color:#fff!important}
+    .final17-whatsapp-btn .final17-wa-logo{width:16px!important;height:16px!important;fill:currentColor!important;display:block}
+
+    @media(max-width:720px){
+      #recadosContent .page-heading{flex-direction:column;gap:12px}
+      #recadosContent .page-heading .btn{width:100%}
+      #recadosContent .page-heading h1{font-size:26px}
+      .final16-message-hero{grid-template-columns:1fr 1fr!important}
+      .final16-message-hero-icon{display:none!important}
+      .final16-message-hero>div:nth-child(3){border-left:0;padding-left:0}
+      .final16-message-item{grid-template-columns:40px minmax(0,1fr);gap:10px}
+      .final16-message-actions{grid-column:2;justify-content:flex-start}
+    }
+    @media(max-width:450px){
+      .final16-message-hero{grid-template-columns:1fr!important}
+      .final16-message-hero>div:nth-child(3){padding-top:10px;border-top:1px solid #e4ebe7}
+      .final16-message-tabs{width:100%}
+      .final16-message-tabs button{flex:1}
+      .final16-message-item{grid-template-columns:1fr}
+      .final16-message-icon{width:38px;height:38px}
+      .final16-message-actions{grid-column:1;width:100%}
+      .final16-message-actions .btn{flex:1}
+    }
+  `;
+  document.head.appendChild(css);
+
+  // Reforça a apresentação após qualquer atualização da caixa de recados.
+  const previousMessages=W.renderMessages;
+  if(typeof previousMessages==='function' && !previousMessages.__final17Messages){
+    W.renderMessages=async function(){
+      const result=await previousMessages.apply(this,arguments);
+      updateWaitlistWhatsApp();
+      W.refreshIcons?.();
+      return result;
+    };
+    W.renderMessages.__final17Messages=true;
+  }
+
+  // Se a tela já estiver montada, aplicar imediatamente.
+  setTimeout(()=>{updateWaitlistWhatsApp();W.refreshIcons?.();},0);
+})();
 </script>
 </body>
 </html>
