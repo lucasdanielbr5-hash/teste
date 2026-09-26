@@ -10896,7 +10896,7 @@ body.legado-v4-modal-open{overflow:hidden}
 <script id="legado-final12-patch">
 (function(){
   'use strict';
-  const BUILD='2026-09-26-12';
+  const BUILD='2026-09-26-14';
   const $=(s,r=document)=>r.querySelector(s);
   const $$=(s,r=document)=>Array.from((r||document).querySelectorAll(s));
   const esc=v=>typeof window.escapeHtml==='function'?window.escapeHtml(v??''):String(v??'');
@@ -11225,5 +11225,258 @@ body.legado-v4-modal-open{overflow:hidden}
 })();
 
 </script>
+<style id="legado-final14-fixes">
+  html,body{max-width:100%;overflow-x:hidden}
+  #app,.app,.main,.content,.view,#agendaContent,#avaliacoesContent,#studentProfileContent{min-width:0;max-width:100%}
+  .l14-history{display:grid;gap:10px}
+  .l14-history-item{display:grid;grid-template-columns:minmax(110px,150px) minmax(0,1fr) auto;gap:14px;align-items:center;padding:15px;border:1px solid #e1e8e4;border-radius:16px;background:#fff;min-width:0;overflow:hidden}
+  .l14-history-date strong{display:block;font-size:13px;color:#35473e;white-space:nowrap}
+  .l14-history-date span{display:block;margin-top:4px;font-size:9px;color:#7a8880}
+  .l14-history-main{min-width:0}
+  .l14-history-title{font-size:14px;font-weight:800;color:#394b43;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .l14-history-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;min-width:0}
+  .l14-history-student{display:inline-flex;align-items:center;gap:6px;min-width:0;max-width:100%;padding:5px 8px;border-radius:999px;background:#f1f6f3;color:#50645a;font-size:9px;font-weight:700}
+  .l14-history-student span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .l14-history-observation{margin-top:8px;color:#8a9690;font-size:10px;line-height:1.45}
+  .l14-history-actions{display:flex;justify-content:flex-end;align-items:center}
+  .l14-history-actions .btn{white-space:nowrap}
+
+  .l14-view-modal{position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;background:rgba(18,30,25,.55);backdrop-filter:blur(4px)}
+  .l14-view-card{width:min(860px,96vw);max-height:92vh;overflow:auto;background:#fff;border-radius:22px;border:1px solid #dce7e1;box-shadow:0 30px 90px rgba(18,33,27,.28)}
+  .l14-view-head{position:sticky;top:0;z-index:2;display:flex;justify-content:space-between;gap:14px;align-items:flex-start;padding:20px 22px 16px;background:rgba(255,255,255,.97);border-bottom:1px solid #e8eeeb}
+  .l14-view-head h2{margin:3px 0 5px;font-size:22px;color:#34463d}
+  .l14-view-head p{margin:0;color:#78867f;font-size:11px;line-height:1.5}
+  .l14-view-body{padding:18px 22px 22px}
+  .l14-view-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .l14-view-field{padding:12px;border:1px solid #e2eae5;border-radius:12px;background:#fbfdfc;min-width:0}
+  .l14-view-field.full{grid-column:1/-1}
+  .l14-view-field label{display:block;margin-bottom:5px;color:#84908a;font-size:8px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+  .l14-view-field div{color:#4f6158;font-size:11px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+  .l14-view-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;padding:15px 22px;border-top:1px solid #e8eeeb}
+
+  .l14-agenda-page{display:grid;gap:14px;min-width:0}
+  .l14-agenda-availability{border:1px solid #dfe9e3;border-radius:18px;background:#fff;overflow:hidden}
+  .l14-agenda-availability summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px}
+  .l14-agenda-availability summary::-webkit-details-marker{display:none}
+  .l14-av-title{display:flex;align-items:center;gap:11px;min-width:0}
+  .l14-av-icon{width:38px;height:38px;display:grid;place-items:center;border-radius:11px;background:#edf5f0;color:#527663;flex:none}
+  .l14-av-text strong{display:block;font-size:12px;color:#41534a}
+  .l14-av-text span{display:block;margin-top:2px;font-size:9px;color:#89958f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .l14-av-chevron{color:#75847c;transition:.2s}
+  .l14-agenda-availability[open] .l14-av-chevron{transform:rotate(180deg)}
+  .l14-av-body{padding:0 16px 16px;border-top:1px solid #edf1ee}
+  .l14-weekdays{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px;margin-top:14px}
+  .l14-weekday{display:flex;align-items:center;gap:7px;padding:8px 9px;border:1px solid #e2e9e5;border-radius:10px;background:#fafcfb;min-width:0}
+  .l14-weekday input{accent-color:#5f8f7a}
+  .l14-weekday span{font-size:9px;color:#607169;font-weight:700;white-space:nowrap}
+  .l14-av-time{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:11px}
+  .l14-av-time label{display:grid;gap:5px}
+  .l14-av-time label span{font-size:8px;font-weight:800;color:#6f7d76;text-transform:uppercase}
+  .l14-av-time input,.l14-av-time select{width:100%;box-sizing:border-box;min-height:38px;border:1px solid #dfe7e3;border-radius:10px;padding:8px 10px;background:#fff}
+  .l14-breaks{margin-top:12px;padding:11px;border:1px dashed #d8e4dd;border-radius:12px;background:#f8fbf9}
+  .l14-breaks strong{display:block;font-size:9px;color:#56675e;margin-bottom:8px}
+  .l14-break-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .l14-break-row input{min-height:36px;border:1px solid #dfe7e3;border-radius:9px;padding:7px 9px}
+  .l14-break-row span{font-size:9px;color:#7b8982}
+  .l14-agenda-layout{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:14px;min-width:0}
+  .l14-panel{min-width:0;padding:16px;border:1px solid #e1e9e4;border-radius:18px;background:#fff}
+  .l14-calendar-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+  .l14-calendar-head h2{margin:0;font-size:16px;color:#394b43;flex:1;min-width:140px;text-transform:capitalize}
+  .l14-weekheads{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;margin-bottom:5px}
+  .l14-weekheads span{font-size:8px;font-weight:800;color:#8a9690;text-align:center;padding:3px 0}
+  .l14-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+  .l14-day{min-width:0;min-height:66px;border:1px solid #e3eae6;border-radius:10px;background:#fbfdfc;padding:7px;text-align:left;cursor:pointer}
+  .l14-day:hover{border-color:#cddbd3;background:#f5f9f6}
+  .l14-day.muted{opacity:.48}
+  .l14-day.selected{border-color:#7ea18f;box-shadow:0 0 0 2px rgba(95,143,122,.10);background:#f2f8f4}
+  .l14-day strong{display:block;font-size:11px;color:#42544b}
+  .l14-day small{display:block;margin-top:5px;font-size:8px;color:#8b9691;line-height:1.3;overflow-wrap:anywhere}
+  .l14-day.has-app small{color:#527663;font-weight:700}
+  .l14-slot-list{display:grid;gap:7px;max-height:600px;overflow:auto;padding-right:2px}
+  .l14-slot{display:grid;grid-template-columns:58px minmax(0,1fr) auto;gap:9px;align-items:center;padding:9px;border:1px solid #e4ebe7;border-radius:11px;background:#fbfdfc;min-width:0}
+  .l14-slot.booked{background:#f7fbf8;border-color:#dce7e1}
+  .l14-slot-time{font-size:10px;font-weight:800;color:#66766e}
+  .l14-slot-body{min-width:0}
+  .l14-slot-body strong{display:block;font-size:10px;color:#4e6057;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .l14-slot-body span{display:block;margin-top:2px;font-size:8px;color:#8a9690;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .l14-slot-actions{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+  .l14-slot-actions .btn{min-height:30px;padding:6px 8px;font-size:9px}
+  .l14-upcoming{display:grid;gap:7px}
+  .l14-up-item{display:grid;grid-template-columns:70px minmax(0,1fr) auto;gap:9px;align-items:center;padding:10px;border:1px solid #e3ebe6;border-radius:11px;background:#fff;min-width:0}
+  .l14-up-date strong{display:block;font-size:10px;color:#4a5b53}
+  .l14-up-date span{display:block;margin-top:3px;font-size:8px;color:#8a9690}
+  .l14-up-main{min-width:0}
+  .l14-up-main strong{display:block;font-size:10px;color:#4f6158;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .l14-up-main span{display:block;margin-top:2px;font-size:8px;color:#8b9691;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  @media(max-width:900px){.l14-agenda-layout{grid-template-columns:1fr}.l14-weekdays{grid-template-columns:repeat(2,minmax(0,1fr))}.l14-av-time{grid-template-columns:1fr}.l14-history-item{grid-template-columns:1fr auto}.l14-history-actions{grid-column:2;grid-row:1/3;align-self:start}.l14-view-grid{grid-template-columns:1fr}.l14-view-field.full{grid-column:auto}}
+  @media(max-width:620px){.l14-history-item{grid-template-columns:1fr}.l14-history-actions{grid-column:auto;grid-row:auto;justify-content:flex-start}.l14-slot{grid-template-columns:50px minmax(0,1fr)}.l14-slot-actions{grid-column:2;justify-content:flex-start}.l14-up-item{grid-template-columns:58px minmax(0,1fr)}.l14-up-item>.v3-tag{grid-column:2;justify-self:start}.l14-day{min-height:54px;padding:6px 5px}.l14-calendar-head h2{min-width:100%;order:2}.l14-calendar-head button{order:1}.l14-weekheads span{font-size:7px}.l14-av-body{padding-left:10px;padding-right:10px}}
+</style>
+<script id="legado-final14">
+(function(){
+  'use strict';
+  const esc=window.escapeHtml||(v=>String(v??''));
+  const el=id=>document.getElementById(id);
+  const table=()=>window.V3Core?.TABLE?.appointments||window.TABLE?.appointments||'appointments';
+  const avTable=()=>window.V3Core?.TABLE?.availability||window.TABLE?.availability||'availability';
+  const userId=()=>window.state?.user?.id||null;
+  const today=()=>window.todayInputDate?window.todayInputDate():new Date().toISOString().slice(0,10);
+  const dateBR=v=>{if(!v)return '—';const d=new Date(String(v).slice(0,10)+'T12:00:00');return Number.isNaN(d.getTime())?'—':d.toLocaleDateString('pt-BR');};
+  const statusBR=s=>({scheduled:'Agendado',confirmed:'Confirmado',in_progress:'Em andamento',completed:'Concluído',cancelled:'Cancelado',canceled:'Cancelado',pending:'Pendente'}[String(s||'').toLowerCase()]||String(s||'—'));
+  const mins=t=>{const [h,m]=String(t||'00:00').split(':').map(Number);return (Number.isFinite(h)&&Number.isFinite(m))?h*60+m:-1;};
+  const safeSelect=window.selectSafe;
+  const safeInsert=window.insertSafe;
+  const safeUpdate=window.updateSafe;
+  const refresh=()=>window.refreshIcons?.();
+
+  function fmtDayName(i){return ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'][i]}
+  function calendarDays(month){
+    const first=new Date(month.getFullYear(),month.getMonth(),1);
+    const offset=(first.getDay()+6)%7;
+    const start=new Date(first);start.setDate(first.getDate()-offset);
+    return Array.from({length:42},(_,i)=>{const d=new Date(start);d.setDate(start.getDate()+i);return d;});
+  }
+  function slotList(start,end,step){let a=mins(start),b=mins(end),out=[];while(a>=0&&b>a){out.push(`${String(Math.floor(a/60)).padStart(2,'0')}:${String(a%60).padStart(2,'0')}`);a+=Number(step)||30;}return out;}
+  function addMonths(d,n){return new Date(d.getFullYear(),d.getMonth()+n,1)}
+  function monthLabel(d){return d.toLocaleDateString('pt-BR',{month:'long',year:'numeric'});}
+
+  async function loadAgenda14(){
+    const month=window.V3?.agendaMonth instanceof Date?window.V3.agendaMonth:new Date();
+    const [apps,students,avs]=await Promise.all([
+      safeSelect?safeSelect(table(),{filters:{user_id:userId()},limit:2000}):[],
+      window.v3LoadStudents?window.v3LoadStudents():[],
+      safeSelect?safeSelect(avTable(),{filters:{user_id:userId()},order:'weekday',ascending:true,limit:50}):[]
+    ]);
+    return {month,apps:apps||[],students:students||[],avs:avs||[]};
+  }
+
+  function mapAvailability(avRows){
+    const byDay=new Map();
+    for(const r of avRows||[]){
+      const wd=Number(r.weekday);if(!Number.isFinite(wd))continue;
+      byDay.set(wd,{active:r.active!==false,start:String(r.start_time||'08:00').slice(0,5),end:String(r.end_time||'18:00').slice(0,5),lunchStart:String(r.lunch_start||'').slice(0,5),lunchEnd:String(r.lunch_end||'').slice(0,5),slot:Number(r.slot_minutes||30)});
+    }
+    return byDay;
+  }
+
+  function studentName(s){return String(s?.name||s?.full_name||'Aluno não informado');}
+
+  function renderAvailability14(avMap){
+    const sample=avMap.get(1)||avMap.get(2)||{start:'08:00',end:'18:00',lunchStart:'11:00',lunchEnd:'12:00',slot:60};
+    const active=new Set([...avMap.entries()].filter(([,v])=>v.active).map(([k])=>k));
+    return `<details class="l14-agenda-availability" open>
+      <summary><div class="l14-av-title"><div class="l14-av-icon"><i data-lucide="calendar-clock"></i></div><div class="l14-av-text"><strong>Disponibilidade</strong><span>${[1,2,3,4,5].filter(d=>active.has(d)).map(fmtDayName).join(', ')||'Configure seus dias e horários de atendimento'}</span></div></div><i data-lucide="chevron-down" class="l14-av-chevron"></i></summary>
+      <div class="l14-av-body"><form id="l14AvailabilityForm">
+        <div class="l14-weekdays">${[1,2,3,4,5,6,0].map(w=>`<label class="l14-weekday"><input type="checkbox" name="weekday" value="${w}" ${active.has(w)?'checked':''}><span>${fmtDayName(w)}</span></label>`).join('')}</div>
+        <div class="l14-av-time">
+          <label><span>Início</span><input type="time" name="start" value="${esc(sample.start)}" required></label>
+          <label><span>Fim</span><input type="time" name="end" value="${esc(sample.end)}" required></label>
+          <label><span>Intervalo entre horários</span><select name="slot"><option value="30" ${sample.slot===30?'selected':''}>30 minutos</option><option value="45" ${sample.slot===45?'selected':''}>45 minutos</option><option value="50" ${sample.slot===50?'selected':''}>50 minutos</option><option value="60" ${sample.slot===60?'selected':''}>60 minutos</option></select></label>
+        </div>
+        <div class="l14-breaks"><strong>Horário de almoço / indisponibilidade</strong><div class="l14-break-row"><input type="time" name="lunch_start" value="${esc(sample.lunchStart||'11:00')}"><span>até</span><input type="time" name="lunch_end" value="${esc(sample.lunchEnd||'12:00')}"></div></div>
+        <div style="display:flex;justify-content:flex-end;margin-top:12px"><button class="btn btn-primary btn-sm" type="submit"><i data-lucide="save"></i>Salvar disponibilidade</button></div>
+      </form></div></details>`;
+  }
+
+  window.renderAgenda=async function(){
+    const c=el('agendaContent');if(!c)return;
+    c.innerHTML='<div class="v3-loading"><i data-lucide="loader-circle"></i><span>Carregando agenda...</span></div>';refresh();
+    try{
+      const {month,apps,students,avs}=await loadAgenda14();
+      const avMap=mapAvailability(avs);
+      const selected=window.V3?.agendaSelected||today();
+      window.V3=window.V3||{};
+      window.V3.agendaMonth=month;window.V3.agendaSelected=selected;
+      const studentMap=new Map(students.map(s=>[String(s.id),s]));
+      const days=calendarDays(month);
+      const dayApps=apps.filter(a=>String(a.appointment_date||a.date).slice(0,10)===selected).sort((a,b)=>mins(String(a.appointment_time||a.start_time||a.time||''))-mins(String(b.appointment_time||b.start_time||b.time||'')));
+      const dayAv=avMap.get(new Date(selected+'T12:00:00').getDay())||avMap.get(1)||{start:'08:00',end:'18:00',slot:60};
+      const slots=slotList(dayAv.start,dayAv.end,dayAv.slot);
+      const upcoming=apps.filter(a=>!['cancelled','canceled','completed'].includes(String(a.status||'').toLowerCase()) && String(a.appointment_date||a.date)>=selected).sort((a,b)=>`${a.appointment_date||a.date} ${a.appointment_time||a.start_time||''}`.localeCompare(`${b.appointment_date||b.date} ${b.appointment_time||b.start_time||''}`)).slice(0,8);
+      const lunchS=mins(dayAv.lunchStart),lunchE=mins(dayAv.lunchEnd);
+      const blockedByLunch=t=>lunchS>=0&&lunchE>lunchS&&mins(t)>=lunchS&&mins(t)<lunchE;
+      const monthDays=days.map(d=>{
+        const ds=d.toISOString().slice(0,10);const count=apps.filter(a=>String(a.appointment_date||a.date).slice(0,10)===ds && !['cancelled','canceled'].includes(String(a.status||'').toLowerCase())).length;
+        return `<button type="button" class="l14-day ${d.getMonth()!==month.getMonth()?'muted':''} ${ds===selected?'selected':''} ${count?'has-app':''}" onclick="window.l14AgendaSelectDay('${ds}')"><strong>${d.getDate()}</strong><small>${count?`${count} atendimento${count>1?'s':''}`:'Livre'}</small></button>`;
+      }).join('');
+      const slotsHtml=slots.map(time=>{
+        const booked=dayApps.find(a=>String(a.appointment_time||a.start_time||a.time||'').slice(0,5)===time);
+        if(blockedByLunch(time)&&!booked)return `<div class="l14-slot"><div class="l14-slot-time">${time}</div><div class="l14-slot-body"><strong>Horário de almoço</strong><span>Indisponível</span></div><span class="v3-tag">Pausa</span></div>`;
+        if(!booked)return `<div class="l14-slot"><div class="l14-slot-time">${time}</div><div class="l14-slot-body"><strong>Horário disponível</strong><span>Você pode agendar um atendimento</span></div><div class="l14-slot-actions"><button class="btn btn-outline btn-sm" type="button" onclick="window.v4OpenAppointmentModal?.('${selected}','${time}')">Agendar</button></div></div>`;
+        const s=studentMap.get(String(booked.student_id));
+        return `<div class="l14-slot booked"><div class="l14-slot-time">${esc(time)}</div><div class="l14-slot-body"><strong>${esc(studentName(s)||booked.student_name)}</strong><span>${esc(booked.type||'Atendimento')} · ${esc(statusBR(booked.status))}</span></div><div class="l14-slot-actions"><button class="btn btn-outline btn-sm" type="button" onclick="window.v4OpenAppointmentModal?.('${esc(booked.appointment_date||selected)}','${esc(time)}','${esc(booked.student_id||'')}')"><i data-lucide="calendar-sync"></i>Reagendar</button><button class="btn btn-outline btn-sm" type="button" onclick="window.l14CancelAppointment('${esc(booked.id)}')"><i data-lucide="x-circle"></i>Cancelar</button></div></div>`;
+      }).join('');
+      c.innerHTML=`<div class="l14-agenda-page">
+        <div class="v3-head"><div><div class="v3-kicker">ORGANIZAÇÃO</div><h1>Agenda</h1><p>Planeje seus atendimentos, visualize os horários disponíveis e mantenha a rotina organizada.</p></div><div class="v3-head-actions"><button class="btn btn-primary" type="button" onclick="window.v4OpenAppointmentModal?.('${selected}')"><i data-lucide="calendar-plus"></i>Novo atendimento</button></div></div>
+        ${renderAvailability14(avMap)}
+        <div class="l14-agenda-layout">
+          <section class="l14-panel"><div class="l14-calendar-head"><button class="icon-button" onclick="window.l14AgendaMonth(-1)"><i data-lucide="chevron-left"></i></button><button class="icon-button" onclick="window.l14AgendaMonth(1)"><i data-lucide="chevron-right"></i></button><h2>${esc(monthLabel(month))}</h2><button class="btn btn-outline btn-sm" onclick="window.l14AgendaToday()">Hoje</button></div><div class="l14-weekheads">${['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'].map(x=>`<span>${x}</span>`).join('')}</div><div class="l14-days">${monthDays}</div></section>
+          <section class="l14-panel"><div class="v3-panel-head"><div><div class="v3-kicker">DIA SELECIONADO</div><h2>${esc(dateBR(selected))}</h2><p>${dayApps.length} atendimento${dayApps.length===1?'':'s'} registrado${dayApps.length===1?'':'s'}.</p></div><button class="btn btn-primary btn-sm" type="button" onclick="window.v4OpenAppointmentModal?.('${selected}')">Adicionar</button></div><div class="l14-slot-list">${slotsHtml||'<div class="v4-empty"><strong>Nenhum horário disponível</strong><span>Configure sua disponibilidade acima.</span></div>'}</div></section>
+        </div>
+        <section class="l14-panel"><div class="v3-panel-head"><div><div class="v3-kicker">VISÃO RÁPIDA</div><h2>Próximos atendimentos</h2><p>Os próximos compromissos aparecem aqui para facilitar sua rotina.</p></div></div><div class="l14-upcoming">${upcoming.length?upcoming.map(a=>{const s=studentMap.get(String(a.student_id));const tm=String(a.appointment_time||a.start_time||a.time||'').slice(0,5);return `<div class="l14-up-item"><div class="l14-up-date"><strong>${esc(dateBR(a.appointment_date||a.date))}</strong><span>${esc(tm)}</span></div><div class="l14-up-main"><strong>${esc(studentName(s)||a.student_name)}</strong><span>${esc(a.type||'Atendimento')}</span></div><span class="v3-tag">${esc(statusBR(a.status))}</span></div>`}).join(''):'<div class="v4-empty"><strong>Nenhum próximo atendimento</strong><span>Os próximos compromissos aparecerão aqui.</span></div>'}</div></section>
+      </div>`;
+      const f=el('l14AvailabilityForm');
+      f?.addEventListener('submit',async ev=>{ev.preventDefault();try{const fd=new FormData(ev.currentTarget);const start=String(fd.get('start')),end=String(fd.get('end'));const ls=String(fd.get('lunch_start')||''),le=String(fd.get('lunch_end')||'');if(mins(end)<=mins(start))throw new Error('O horário final precisa ser maior que o início.');if((ls&&!le)||(le&&!ls)||(ls&&le&&mins(le)<=mins(ls)))throw new Error('Confira o horário do almoço.');const weekdays=fd.getAll('weekday').map(Number);const existing=await safeSelect(avTable(),{filters:{user_id:userId()},limit:50})||[];for(const row of existing){if(!weekdays.includes(Number(row.weekday))){await safeUpdate(avTable(),row.id,{active:false});}}
+          for(const wd of weekdays){const row=existing.find(r=>Number(r.weekday)===wd);const payload={user_id:userId(),weekday:wd,start_time:start,end_time:end,slot_minutes:Number(fd.get('slot')||30),active:true,lunch_start:ls||null,lunch_end:le||null};if(row)await safeUpdate(avTable(),row.id,payload);else await safeInsert(avTable(),payload);}
+          window.showSuccess?.('Disponibilidade salva.');await window.renderAgenda();}catch(e){window.showError?.('Não foi possível salvar a disponibilidade: '+(e.message||e));}});
+      refresh();
+    }catch(e){c.innerHTML=`<div class="v4-empty"><i data-lucide="circle-alert"></i><strong>Não foi possível carregar a agenda.</strong><span>${esc(e?.message||e)}</span><button class="btn btn-primary btn-sm" onclick="window.renderAgenda()">Tentar novamente</button></div>`;refresh();}
+  };
+
+  window.l14AgendaMonth=function(n){window.V3=window.V3||{};window.V3.agendaMonth=addMonths(window.V3.agendaMonth instanceof Date?window.V3.agendaMonth:new Date(),n);window.renderAgenda();};
+  window.l14AgendaSelectDay=function(s){window.V3=window.V3||{};window.V3.agendaSelected=s;const d=new Date(s+'T12:00:00');window.V3.agendaMonth=new Date(d.getFullYear(),d.getMonth(),1);window.renderAgenda();};
+  window.l14AgendaToday=function(){window.V3=window.V3||{};const d=new Date();window.V3.agendaSelected=today();window.V3.agendaMonth=new Date(d.getFullYear(),d.getMonth(),1);window.renderAgenda();};
+  window.l14CancelAppointment=async function(id){
+    if(!window.confirm('Cancelar este atendimento? Ele ficará registrado como cancelado.'))return;
+    try{const r=await window.supabaseClient.from(table()).update({status:'cancelled'}).eq('id',id).eq('user_id',userId());if(r.error)throw r.error;window.showSuccess?.('Atendimento cancelado.');await window.renderAgenda();}catch(e){window.showError?.('Não foi possível cancelar o atendimento: '+(e.message||e));}
+  };
+
+  /* ---------- AVALIAÇÕES: histórico minimalista + popup ---------- */
+  function valueText(v){
+    if(v===null||v===undefined||v==='')return '—';
+    if(Array.isArray(v))return v.join(', ');
+    if(typeof v==='object')return JSON.stringify(v,null,2);
+    return String(v);
+  }
+  function openEvaluationView14(ev){
+    document.getElementById('l14EvaluationView')?.remove();
+    const data=ev?.assessment_data||{};
+    const details=Object.entries(data).filter(([_,v])=>v!==null&&v!==undefined&&String(v).trim()!=='').map(([k,v])=>`<div class="l14-view-field"><label>${esc(String(k).replaceAll('_',' '))}</label><div>${esc(valueText(v))}</div></div>`).join('');
+    const root=document.createElement('div');root.id='l14EvaluationView';root.className='l14-view-modal';
+    root.innerHTML=`<div class="l14-view-card" role="dialog" aria-modal="true"><div class="l14-view-head"><div><div class="v3-kicker">AVALIAÇÃO APLICADA</div><h2>${esc(ev?.title||ev?.type||'Avaliação')}</h2><p>${esc(ev?.student_name||'Aluno não informado')} · ${esc(dateBR(ev?.evaluation_date||ev?.date))} · ${esc(statusBR(ev?.status))}</p></div><button class="icon-button" type="button" data-close-l14><i data-lucide="x"></i></button></div><div class="l14-view-body"><div class="l14-view-grid"><div class="l14-view-field"><label>Aluno</label><div>${esc(ev?.student_name||'Aluno não informado')}</div></div><div class="l14-view-field"><label>Data</label><div>${esc(dateBR(ev?.evaluation_date||ev?.date))}</div></div><div class="l14-view-field"><label>Instrumento</label><div>${esc(ev?.type||'Avaliação')}</div></div><div class="l14-view-field"><label>Status</label><div>${esc(statusBR(ev?.status))}</div></div>${ev?.summary?`<div class="l14-view-field full"><label>Resumo / síntese</label><div>${esc(ev.summary)}</div></div>`:''}${details||'<div class="l14-view-field full"><label>Registro</label><div>Nenhum detalhe adicional foi preenchido.</div></div>'}</div></div><div class="l14-view-actions"><button type="button" class="btn btn-outline" data-close-l14>Fechar</button><button type="button" class="btn btn-outline" onclick="document.getElementById('l14EvaluationView')?.remove();window.v3EditEvaluation?.('${esc(ev?.id||'')}')"><i data-lucide="pencil"></i>Editar avaliação</button><button type="button" class="btn btn-danger" onclick="document.getElementById('l14EvaluationView')?.remove();window.v3DeleteEvaluation?.('${esc(ev?.id||'')}')"><i data-lucide="trash-2"></i>Excluir</button></div></div>`;
+    document.body.appendChild(root);root.addEventListener('click',e=>{if(e.target.matches('[data-close-l14]')||e.target.closest?.('[data-close-l14]'))root.remove();});
+    refresh();
+  }
+  window.l14ViewEvaluation=async function(id){try{const row=await window.selectSafe?.((window.V3Core?.TABLE?.evaluations||window.TABLE?.evaluations||'evaluations'),{filters:{id,user_id:userId()},limit:1});const ev=(row||[])[0];if(!ev)throw new Error('Avaliação não encontrada.');openEvaluationView14(ev);}catch(e){window.showError?.('Não foi possível visualizar a avaliação: '+(e.message||e));}};
+
+  const defs=window.V4_ASSESSMENTS||window.PEDAGOGICAL_ASSESSMENTS||{};
+  if(Object.keys(defs).length){
+    window.renderEvaluations=async function(){
+      const c=el('avaliacoesContent');if(!c)return;
+      c.innerHTML='<div class="v3-loading"><i data-lucide="loader-circle"></i><span>Carregando avaliações...</span></div>';refresh();
+      try{
+        const evalTable=window.V3Core?.TABLE?.evaluations||window.TABLE?.evaluations||'evaluations';
+        const list=await window.selectSafe(evalTable,{filters:{user_id:userId()},order:'evaluation_date',ascending:false,limit:500})||[];
+        const models=Object.entries(defs).map(([name,def])=>`<article class="v4-model"><div class="v4-model-icon"><i data-lucide="clipboard-check"></i></div><div class="v4-model-main"><div class="v3-kicker">PRONTO PARA APLICAR</div><h3>${esc(name)}</h3><p>${esc(def.objective||def.source||'Instrumento pedagógico de apoio.')}</p><div class="v4-model-meta"><span>${esc(def.area||'Avaliação pedagógica')}</span><span>${esc(def.duration||'Duração flexível')}</span><span>${Array.isArray(def.fields)?def.fields.length:0} campos</span></div></div><button class="btn btn-primary btn-sm" type="button" onclick="window.V3&&(V3.assessmentType='${esc(name)}');window.v4OpenEvaluationModal?.()"><i data-lucide="play"></i>Aplicar</button></article>`).join('');
+        const history=list.length?`<div class="l14-history">${list.map(e=>`<article class="l14-history-item"><div class="l14-history-date"><strong>${esc(dateBR(e.evaluation_date||e.date))}</strong><span>${esc(statusBR(e.status))}</span></div><div class="l14-history-main"><div class="l14-history-title">${esc(e.title||e.type||'Avaliação aplicada')}</div><div class="l14-history-meta"><span class="v3-tag">${esc(e.type||'Avaliação')}</span><span class="l14-history-student"><i data-lucide="user-round"></i><span>${esc(e.student_name||'Aluno não informado')}</span></span></div><div class="l14-history-observation">Observação: clique em <b>Visualizar</b> para consultar a aplicação completa.</div></div><div class="l14-history-actions"><button type="button" class="btn btn-primary btn-sm" onclick="window.l14ViewEvaluation('${esc(e.id)}')"><i data-lucide="eye"></i>Visualizar</button></div></article>`).join('')}</div>`:'<div class="v4-empty"><i data-lucide="clipboard-list"></i><strong>Nenhuma aplicação registrada</strong><span>Aplique um instrumento acima e o histórico aparecerá aqui.</span></div>';
+        c.innerHTML=`<div class="v3-page"><div class="v3-head"><div><div class="v3-kicker">INVESTIGAÇÃO PEDAGÓGICA</div><h1>Avaliações</h1><p>Escolha um instrumento, aplique no aluno e mantenha o histórico vinculado ao prontuário.</p></div><div class="v3-head-actions"><button class="btn btn-primary" type="button" onclick="window.V3&&(V3.assessmentType='Avaliação personalizada');window.v4OpenEvaluationModal?.()"><i data-lucide="clipboard-plus"></i>Nova avaliação</button></div></div><div class="v3-stats"><div class="v3-stat"><div class="v3-icon"><i data-lucide="clipboard-check"></i></div><div><span>Aplicações</span><strong>${esc(list.length)}</strong><small>Registros salvos</small></div></div><div class="v3-stat"><div class="v3-icon"><i data-lucide="user-round-check"></i></div><div><span>Alunos avaliados</span><strong>${esc(new Set(list.map(e=>e.student_id).filter(Boolean)).size)}</strong><small>Com histórico</small></div></div><div class="v3-stat good"><div class="v3-icon"><i data-lucide="file-check-2"></i></div><div><span>Concluídas</span><strong>${esc(list.filter(e=>e.status==='completed').length)}</strong><small>Finalizadas</small></div></div><div class="v3-stat"><div class="v3-icon"><i data-lucide="clock-3"></i></div><div><span>Rascunhos</span><strong>${esc(list.filter(e=>e.status!=='completed').length)}</strong><small>Em preenchimento</small></div></div></div><section class="v3-panel"><div class="v3-panel-head"><div><h2>Instrumentos prontos para aplicação</h2><p>Roteiros pedagógicos estruturados para observar evidências e orientar próximos passos.</p></div></div><div class="v4-model-list">${models}</div></section><section class="v3-panel"><div class="v3-panel-head"><div><h2>Histórico das aplicações</h2><p>Data, aluno e acesso rápido à aplicação completa.</p></div></div>${history}</section></div>`;refresh();
+      }catch(e){c.innerHTML=`<div class="v4-empty"><i data-lucide="circle-alert"></i><strong>Não foi possível carregar as avaliações.</strong><span>${esc(e?.message||e)}</span><button class="btn btn-primary btn-sm" onclick="window.renderEvaluations()">Tentar novamente</button></div>`;refresh();}
+    };
+  }
+
+  /* Perfil do aluno: mesma experiência visual do histórico, mantendo os dados completos no popup. */
+  if(typeof window.renderStudentEvaluationsInProfile==='function'){
+    window.renderStudentEvaluationsInProfile=async function(d,b){
+      const list=d?.evaluations||[];
+      const history=list.length?`<div class="l14-history">${list.map(e=>`<article class="l14-history-item"><div class="l14-history-date"><strong>${esc(dateBR(e.evaluation_date||e.date))}</strong><span>${esc(statusBR(e.status))}</span></div><div class="l14-history-main"><div class="l14-history-title">${esc(e.title||e.type||'Avaliação aplicada')}</div><div class="l14-history-meta"><span class="v3-tag">${esc(e.type||'Avaliação')}</span><span class="l14-history-student"><i data-lucide="user-round"></i><span>${esc(e.student_name||d?.student?.name||d?.student?.full_name||'Aluno')}</span></span></div><div class="l14-history-observation">Observação: clique em <b>Visualizar</b> para consultar a aplicação completa.</div></div><div class="l14-history-actions"><button type="button" class="btn btn-primary btn-sm" onclick="window.l14ViewEvaluation('${esc(e.id)}')"><i data-lucide="eye"></i>Visualizar</button></div></article>`).join('')}</div>`:'<div class="v4-empty"><strong>Nenhuma avaliação vinculada</strong><span>Aplique uma avaliação para alimentar o histórico do aluno.</span></div>';
+      b.innerHTML=`<div class="v3-panel"><div class="v3-panel-head"><div><h2>Histórico de avaliações aplicadas</h2><p>Veja a data e abra o registro completo quando precisar.</p></div><span class="v3-tag">${list.length} registro${list.length===1?'':'s'}</span></div>${history}</div><div class="v3-form-actions"><button class="btn btn-primary" type="button" onclick="window.V3&&(V3.assessmentType='Leitura e compreensão');window.v4OpenEvaluationModal?.()"><i data-lucide="clipboard-plus"></i>Aplicar nova avaliação</button></div>`;refresh();
+    };
+  }
+
+  /* expõe a versão final para inspeção/diagnóstico */
+  window.__legadoFinal14=true;
+})();
+</script>
+
 </body>
 </html>
