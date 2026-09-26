@@ -9456,5 +9456,918 @@ body.legado-v4-modal-open{overflow:hidden}
 @media(max-width:780px){.legado-v4-modal{padding:8px}.legado-v4-dialog{width:100%;max-height:96vh;border-radius:18px}.v4-modal-header,.v4-form{padding-left:16px;padding-right:16px}.v4-eval-context{grid-template-columns:1fr;padding-left:16px;padding-right:16px}.v4-steps{padding-left:16px;padding-right:16px}.v4-grid,.v4-options{grid-template-columns:1fr}.v4-history-item{grid-template-columns:1fr;gap:8px}.v4-history-preview{grid-template-columns:1fr}.v4-model{grid-template-columns:40px 1fr}.v4-model>.btn{grid-column:2;justify-self:start}.v4-modal-header h2{font-size:21px}}
 </style>
 
+
+<script id="legado-user-flow-patch">
+(function(){
+  'use strict';
+
+  const TABLE = window.V3Core?.TABLE || window.TABLE || {
+    students:'students',
+    appointments:'appointments',
+    payments:'payments',
+    finance:'financial_entries',
+    records:'student_records',
+    waitlist:'waitlist',
+    profiles:'profiles'
+  };
+
+  const $ = (s,r=document)=>r.querySelector(s);
+  const $$ = (s,r=document)=>Array.from(r.querySelectorAll(s));
+  const esc = v => (typeof window.escapeHtml==='function' ? window.escapeHtml(v ?? '') : String(v ?? ''));
+  const today = ()=> typeof window.todayInputDate==='function'
+    ? window.todayInputDate()
+    : new Date().toISOString().slice(0,10);
+  const dateOnly = v=>String(v||'').slice(0,10);
+  const money = v => typeof window.formatCurrency==='function'
+    ? window.formatCurrency(Number(v||0))
+    : `R$ ${Number(v||0).toFixed(2).replace('.',',')}`;
+  const studentName = s => s?.name || s?.full_name || s?.student_name || 'Aluno';
+
+  const PRIORITY = {
+    baixa: 1,
+    media: 2,
+    alta: 3
+  };
+  const PRIORITY_LABEL = {
+    1: 'Baixa',
+    2: 'Média',
+    3: 'Alta',
+    baixa: 'Baixa',
+    media: 'Média',
+    alta: 'Alta'
+  };
+  const priorityToDb = value => {
+    const n = Number(value);
+    if (Number.isInteger(n) && n >= 1 && n <= 3) return n;
+    return PRIORITY[String(value||'media').toLowerCase()] || 2;
+  };
+  const priorityLabel = value => PRIORITY_LABEL[String(value)] || 'Média';
+  const statusLabel = value => ({
+    scheduled:'Agendado',
+    confirmed:'Confirmado',
+    in_progress:'Em andamento',
+    completed:'Concluído',
+    cancelled:'Cancelado',
+    canceled:'Cancelado',
+    pending:'Pendente',
+    absent:'Faltou',
+    paid:'Pago',
+    overdue:'Em atraso',
+    draft:'Rascunho'
+  })[String(value||'').toLowerCase()] || value || '—';
+
+  function userId(){ return window.state?.user?.id || null; }
+
+  async function rows(table, filters={}, order=null, ascending=true, limit=500){
+    if(!window.supabaseClient || !userId()) return [];
+    let q = window.supabaseClient.from(table).select('*');
+    Object.entries(filters).forEach(([k,v])=>{
+      if(v!==undefined && v!==null && v!=='') q=q.eq(k,v);
+    });
+    if(order) q=q.order(order,{ascending});
+    if(limit) q=q.limit(limit);
+    const {data,error}=await q;
+    if(error) throw error;
+    return data||[];
+  }
+
+  async function one(table, id){
+    if(!window.supabaseClient || !userId()) throw new Error('Sessão não encontrada.');
+    const {data,error}=await window.supabaseClient.from(table).select('*').eq('id',id).eq('user_id',userId()).maybeSingle();
+    if(error) throw error;
+    return data;
+  }
+
+  async function updateUserRow(table,id,payload){
+    const {data,error}=await window.supabaseClient.from(table).update(payload).eq('id',id).eq('user_id',userId()).select().maybeSingle();
+    if(error) throw error;
+    return data;
+  }
+
+  function appendAttendanceNote(notes, label){
+    const current=String(notes||'').replace(/\n?\[Presença: (Presente|Faltou|Não registrada)\]/gi,'').trim();
+    return `${current}${current?'\n':''}[Presença: ${label}]`.trim();
+  }
+
+  async function setAttendance(id, kind){
+    const appointment=await one(TABLE.appointments,id);
+    if(!appointment) throw new Error('Atendimento não encontrado.');
+
+    const normalized=kind==='present'?'present':'absent';
+    const label=normalized==='present'?'Presente':'Faltou';
+
+    // Prefer a dedicated attendance_status column. If the existing database
+    // does not have it, fall back to the already-used status/notes columns.
+    try{
+      const {error}=await window.supabaseClient
+        .from(TABLE.appointments)
+        .update({attendance_status:normalized,status:'completed'})
+        .eq('id',id)
+        .eq('user_id',userId());
+      if(error) throw error;
+    }catch(err){
+      const msg=String(err?.message||err||'').toLowerCase();
+      const missingAttendance=msg.includes('attendance_status') || msg.includes('column') || msg.includes('schema cache');
+      if(!missingAttendance) throw err;
+
+      const fallbackStatus=normalized==='present'?'completed':'cancelled';
+      await updateUserRow(TABLE.appointments,id,{
+        status:fallbackStatus,
+        notes:appendAttendanceNote(appointment.notes,label)
+      });
+    }
+
+    window.showSuccess?.(`Presença registrada: ${label}.`);
+    await window.renderAgenda?.();
+  }
+  window.legadoMarkAttendance = async function(id, kind){
+    try{ await setAttendance(id,kind); }
+    catch(err){ window.showError?.('Não foi possível registrar a presença: '+(err.message||err)); }
+  };
+
+  async function startSession(id){
+    const appointment=await one(TABLE.appointments,id);
+    if(!appointment) throw new Error('Atendimento não encontrado.');
+    if(!appointment.student_id) throw new Error('Esse atendimento não está vinculado a um aluno.');
+
+    let statusUpdated=false;
+    try{
+      await updateUserRow(TABLE.appointments,id,{
+        status:'in_progress',
+        notes:appendAttendanceNote(appointment.notes,'Presente')
+      });
+      statusUpdated=true;
+    }catch(err){
+      // Some existing databases may have a check constraint that only accepts
+      // the old appointment statuses. The session editor itself can still start.
+      console.warn('[Sessão] não foi possível usar o status in_progress:',err.message);
+      try{
+        await updateUserRow(TABLE.appointments,id,{
+          notes:appendAttendanceNote(appointment.notes,'Presente')
+        });
+      }catch(_){}
+    }
+
+    window.__legadoActiveSession={
+      appointmentId:appointment.id,
+      studentId:appointment.student_id,
+      studentName:appointment.student_name || studentName(window.state?.students?.find?.(s=>String(s.id)===String(appointment.student_id))),
+      date:dateOnly(appointment.appointment_date)||today(),
+      time:String(appointment.appointment_time||appointment.start_time||appointment.time||'').slice(0,5),
+      duration:Number(appointment.duration||60),
+      type:appointment.type||'Atendimento psicopedagógico',
+      statusUpdated
+    };
+
+    window.showSuccess?.('Sessão iniciada. Registre o atendimento abaixo.');
+    await window.renderAgenda?.();
+  }
+
+  window.legadoStartSession = async function(id){
+    try{ await startSession(id); }
+    catch(err){ window.showError?.('Não foi possível iniciar a sessão: '+(err.message||err)); }
+  };
+
+  window.legadoCancelActiveSession=function(){
+    window.__legadoActiveSession=null;
+    window.renderAgenda?.();
+  };
+
+  window.legadoSaveActiveSession=async function(form){
+    try{
+      const active=window.__legadoActiveSession;
+      if(!active) throw new Error('Nenhuma sessão ativa.');
+      const fd=new FormData(form);
+      const content=String(fd.get('content')||'').trim();
+      if(!content) throw new Error('Registre o que aconteceu na sessão antes de salvar.');
+
+      const payload={
+        user_id:userId(),
+        student_id:active.studentId,
+        record_type:'atendimento',
+        record_date:String(fd.get('record_date')||active.date),
+        title:String(fd.get('title')||'').trim()||`Sessão ${active.time?`às ${active.time}`:''}`.trim(),
+        content,
+        duration:String(fd.get('duration')||active.duration||'').trim()||null,
+        mood:String(fd.get('mood')||'').trim()||null,
+        next_step:String(fd.get('next_step')||'').trim()||null
+      };
+      const {error}=await window.supabaseClient.from(TABLE.records).insert(payload);
+      if(error) throw error;
+
+      try{
+        await updateUserRow(TABLE.appointments,active.appointmentId,{
+          status:'completed',
+          notes:appendAttendanceNote(
+            (await one(TABLE.appointments,active.appointmentId))?.notes,
+            'Presente'
+          )
+        });
+      }catch(updateErr){
+        console.warn('[Sessão] registro salvo, mas o status do agendamento não foi atualizado:',updateErr.message);
+      }
+
+      window.__legadoActiveSession=null;
+      window.showSuccess?.('Sessão registrada no prontuário do aluno.');
+      await window.renderAgenda?.();
+    }catch(err){
+      window.showError?.('Não foi possível salvar a sessão: '+(err.message||err));
+    }
+  };
+
+  async function renderActiveSessionPanel(container){
+    const active=window.__legadoActiveSession;
+    if(!active || !container) return;
+    const existing=$('#legadoActiveSessionPanel',container);
+    if(existing) existing.remove();
+
+    const panel=document.createElement('section');
+    panel.id='legadoActiveSessionPanel';
+    panel.className='v3-panel legado-active-session';
+    panel.innerHTML=`
+      <div class="legado-session-head">
+        <div>
+          <div class="v3-kicker">SESSÃO EM ANDAMENTO</div>
+          <h2>${esc(active.studentName||'Aluno')}</h2>
+          <p>${esc(dateOnly(active.date))}${active.time?` · ${esc(active.time)}`:''} · ${esc(active.type)}</p>
+        </div>
+        <span class="legado-live-pill"><i data-lucide="circle"></i> Em andamento</span>
+      </div>
+      <form class="v3-form legado-session-form" onsubmit="event.preventDefault();legadoSaveActiveSession(this)">
+        <div class="v3-form-grid">
+          <label><span>Data *</span><input type="date" name="record_date" value="${esc(active.date||today())}" required></label>
+          <label><span>Duração</span><input name="duration" value="${esc(active.duration||60)} min"></label>
+          <label><span>Título</span><input name="title" value="${esc(active.type||'Atendimento psicopedagógico')}"></label>
+          <label><span>Estado observado</span><input name="mood" placeholder="Ex.: colaborativo, cansado, tranquilo..."></label>
+          <label class="full"><span>Registro detalhado *</span><textarea name="content" rows="7" required placeholder="Objetivo, atividades realizadas, respostas do aluno, dificuldades, estratégias utilizadas, intervenções e orientações."></textarea></label>
+          <label class="full"><span>Próximo passo</span><textarea name="next_step" rows="4" placeholder="O que será retomado ou trabalhado no próximo atendimento?"></textarea></label>
+        </div>
+        <div class="v3-form-actions">
+          <button type="button" class="btn btn-outline" onclick="legadoCancelActiveSession()">Encerrar sem salvar</button>
+          <button type="submit" class="btn btn-primary"><i data-lucide="save"></i>Salvar sessão e concluir atendimento</button>
+        </div>
+      </form>`;
+    const layout=$('.v3-agenda-layout',container);
+    if(layout) layout.insertAdjacentElement('beforebegin',panel);
+    else container.prepend(panel);
+  }
+
+  // ---------- AGENDA / PRESENÇA / SESSÃO ----------
+  const baseRenderAgenda=window.renderAgenda;
+  window.renderAgenda=async function(){
+    await baseRenderAgenda?.();
+    const c=$('#agendaContent');
+    if(!c) return;
+
+    const help=$('#legadoAgendaHelp',c);
+    if(!help){
+      const layout=$('.v3-agenda-layout',c);
+      if(layout){
+        layout.insertAdjacentHTML('beforebegin',`
+          <div class="legado-guide">
+            <div class="legado-guide-icon"><i data-lucide="circle-help"></i></div>
+            <div><strong>Como usar a agenda</strong><span>Escolha um dia → confirme a presença → <b>Iniciar sessão</b> para abrir o registro detalhado do atendimento. Depois, use <b>Lançar cobrança</b> para levar o atendimento ao Financeiro.</span></div>
+          </div>`);
+        $('.legado-guide',c)?.setAttribute('id','legadoAgendaHelp');
+      }
+    }
+
+    let apps=[];
+    try{
+      apps=await rows(TABLE.appointments,{user_id:userId(),appointment_date:window.V3?.agendaSelected||today()},'appointment_time',true,500);
+    }catch(err){
+      console.warn('[Agenda patch]',err.message);
+      return;
+    }
+
+    const students=(window.studentsState?.data||window.state?.students||[]).reduce((m,s)=>{
+      m.set(String(s.id),s); return m;
+    },new Map());
+
+    $$('.v3-slot.booked',c).forEach(slot=>{
+      const tm=String($('.v3-slot-time',slot)?.textContent||'').trim().slice(0,5);
+      const appointment=apps.find(a=>String(a.appointment_time||a.start_time||a.time||'').slice(0,5)===tm);
+      if(!appointment) return;
+
+      const s=students.get(String(appointment.student_id));
+      const studentLabel=s?studentName(s):(appointment.student_name||'Aluno');
+      const attendance=String(appointment.attendance_status||'').toLowerCase();
+      const legacyNote=String(appointment.notes||'').match(/\[Presença: (Presente|Faltou|Não registrada)\]/i)?.[1]||'';
+      const attendanceLabel=attendance==='present'?'Presente':attendance==='absent'?'Faltou':legacyNote||'Presença não registrada';
+
+      $('.legado-slot-actions',slot)?.remove();
+      slot.insertAdjacentHTML('beforeend',`
+        <div class="legado-slot-actions">
+          <button type="button" class="legado-mini-btn ${attendance==='present'?'active':''}" onclick="legadoMarkAttendance('${esc(appointment.id)}','present')" title="Marcar presente">
+            <i data-lucide="user-check"></i>Presente
+          </button>
+          <button type="button" class="legado-mini-btn danger ${attendance==='absent'?'active-danger':''}" onclick="legadoMarkAttendance('${esc(appointment.id)}','absent')" title="Marcar falta">
+            <i data-lucide="user-x"></i>Faltou
+          </button>
+          <button type="button" class="legado-mini-btn primary" onclick="legadoStartSession('${esc(appointment.id)}')">
+            <i data-lucide="play-circle"></i>Iniciar sessão
+          </button>
+          <button type="button" class="legado-mini-btn" onclick="legadoOpenFinanceForAppointment('${esc(appointment.student_id||'')}','${esc(appointment.appointment_date||'')}')">
+            <i data-lucide="wallet-cards"></i>Lançar cobrança
+          </button>
+        </div>
+        <div class="legado-attendance-status"><span>Presença</span><strong>${esc(attendanceLabel)}</strong></div>`);
+      // Avoid obsolete single "check" icon button from the old renderer.
+      $('.icon-button',slot)?.remove();
+    });
+
+    await renderActiveSessionPanel(c);
+    window.refreshIcons?.();
+  };
+
+  window.legadoOpenFinanceForAppointment=function(studentId,date){
+    const go=()=>{
+      if(typeof window.openPaymentModal==='function') window.openPaymentModal({studentId,date});
+    };
+    if(window.state?.currentView!=='financeiro'){
+      window.navigate?.('financeiro');
+      setTimeout(go,160);
+    }else{
+      go();
+    }
+  };
+
+  // ---------- FINANCEIRO ----------
+  async function loadFinanceEntries(){
+    const [entries,payments]=await Promise.all([
+      rows(TABLE.finance,{user_id:userId()},'competence_date',false,1000).catch(()=>[]),
+      rows(TABLE.payments,{user_id:userId()},'payment_date',false,1000).catch(()=>[])
+    ]);
+
+    const normalizedLegacy=payments
+      .filter(p=>!entries.some(e=>String(e.legacy_payment_id||'')===String(p.id)))
+      .map(p=>({
+        id:'legacy-'+p.id,
+        legacy:true,
+        kind:'income',
+        amount:Number(p.amount||p.value||0),
+        status:p.status||'paid',
+        competence_date:dateOnly(p.payment_date||p.date),
+        due_date:dateOnly(p.payment_date||p.date),
+        description:p.description||p.student_name||'Recebimento',
+        payment_method:p.method||p.payment_method||'',
+        student_id:p.student_id||null,
+        student_name:p.student_name||null,
+        installment_total:1,
+        installment_number:1
+      }));
+    return [...entries,...normalizedLegacy];
+  }
+
+  function financeMethodLabel(v){
+    return ({
+      pix:'Pix',
+      cash:'Dinheiro',
+      debit:'Débito',
+      credit_spot:'Crédito à vista',
+      credit_installment:'Crédito parcelado',
+      transfer:'Transferência',
+      boleto:'Boleto',
+      card:'Cartão'
+    })[String(v||'').toLowerCase()]||v||'Não informado';
+  }
+
+  function monthKey(d){
+    const x=d instanceof Date?d:new Date(`${String(d).slice(0,10)}T12:00:00`);
+    return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}`;
+  }
+
+  function monthLabel(k){
+    const [y,m]=String(k).split('-').map(Number);
+    const d=new Date(y,m-1,1);
+    return d.toLocaleDateString('pt-BR',{month:'short'}).replace('.','');
+  }
+
+  function simpleFinanceChart(entries, selectedKey){
+    const months=[];
+    for(let i=5;i>=0;i--){
+      const now=new Date(`${selectedKey}-01T12:00:00`);
+      const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+      months.push(monthKey(d));
+    }
+    const vals=months.map(k=>({
+      key:k,label:monthLabel(k),
+      income:entries.filter(e=>monthKey(e.competence_date||e.payment_date)===k&&e.kind!=='expense'&&e.status==='paid').reduce((s,e)=>s+Number(e.amount||0),0),
+      expense:entries.filter(e=>monthKey(e.competence_date||e.payment_date)===k&&e.kind==='expense'&&e.status==='paid').reduce((s,e)=>s+Number(e.amount||0),0)
+    }));
+    const max=Math.max(1,...vals.flatMap(x=>[x.income,x.expense]));
+    return `<div class="legado-fin-bars">${vals.map(v=>`
+      <div class="legado-fin-col">
+        <div class="legado-fin-bar-area">
+          <div class="legado-fin-bar income" style="height:${Math.max(4,(v.income/max)*130)}px" title="${esc(money(v.income))}"></div>
+          <div class="legado-fin-bar expense" style="height:${Math.max(4,(v.expense/max)*130)}px" title="${esc(money(v.expense))}"></div>
+        </div>
+        <strong>${esc(v.label)}</strong>
+        <small>${esc(money(v.income))}</small>
+      </div>`).join('')}</div>
+      <div class="legado-fin-legend"><span><i class="income"></i>Recebido</span><span><i class="expense"></i>Despesas</span></div>`;
+  }
+
+  function splitAmount(total,n,index){
+    const cents=Math.round(Number(total||0)*100);
+    const base=Math.floor(cents/n);
+    const remainder=cents-(base*n);
+    return (base+(index===n-1?remainder:0))/100;
+  }
+
+  window.openPaymentModal=window.v3OpenFinanceEditor=async function(options={}){
+    if(typeof options==='string') options={studentId:options};
+    if(!window.studentsState?.data?.length){
+      try{ await window.v3LoadStudents?.(); }catch(_){}
+    }
+    const studentId=options.studentId||'';
+    const date=options.date||today();
+    const c=$('#financeiroContent');
+    if(!c) return;
+    let box=$('#v3FinanceEditor');
+    if(!box){
+      // Render the page once so the inline editor is visible even when opened from Agenda.
+      if(window.state?.currentView!=='financeiro'){
+        window.navigate?.('financeiro');
+        setTimeout(()=>window.openPaymentModal(options),170);
+        return;
+      }
+      await window.renderFinance?.();
+      box=$('#v3FinanceEditor');
+    }
+    if(!box) return;
+
+    const students=window.studentsState?.data||window.state?.students||[];
+    box.hidden=false;
+    box.innerHTML=`
+      <div class="v3-editor-head">
+        <div><div class="v3-kicker">LANÇAMENTO FINANCEIRO</div><h3>Registrar cobrança, recebimento ou despesa</h3><p>O sistema usa o mesmo lançamento para controlar pendência, pagamento e forma de pagamento.</p></div>
+        <button class="icon-button" type="button" onclick="v3CloseInline('v3FinanceEditor')"><i data-lucide="x"></i></button>
+      </div>
+      <form id="legadoFinanceForm" class="v3-form">
+        <div class="v3-form-grid">
+          <label><span>Tipo *</span><select name="kind"><option value="income">Receita / cobrança de aluno</option><option value="expense">Despesa</option></select></label>
+          <label><span>Aluno</span><select name="student_id"><option value="">Não vincular</option>${students.map(s=>`<option value="${esc(s.id)}" ${String(studentId)===String(s.id)?'selected':''}>${esc(studentName(s))}</option>`).join('')}</select></label>
+          <label><span>Valor total *</span><input name="amount" inputmode="decimal" placeholder="0,00" required></label>
+          <label><span>Competência *</span><input type="date" name="competence_date" value="${esc(date)}" required></label>
+          <label><span>Vencimento</span><input type="date" name="due_date" value="${esc(date)}"></label>
+          <label><span>Pagamento</span><select name="status"><option value="pending">Pendente / ainda não pago</option><option value="paid">Pago / recebido</option><option value="overdue">Em atraso</option></select></label>
+          <label><span>Forma de pagamento</span><select name="payment_method"><option value="">Não informado</option><option value="pix">Pix</option><option value="cash">Dinheiro</option><option value="debit">Débito</option><option value="credit_spot">Crédito à vista</option><option value="credit_installment">Crédito parcelado</option><option value="transfer">Transferência</option><option value="boleto">Boleto</option></select></label>
+          <label><span>Nº de parcelas</span><select name="installment_total"><option value="1">1x</option><option value="2">2x</option><option value="3">3x</option><option value="4">4x</option><option value="5">5x</option><option value="6">6x</option><option value="10">10x</option><option value="12">12x</option></select></label>
+          <label class="full"><span>Descrição</span><input name="description" value="${esc(studentId?'Atendimento psicopedagógico':'')}" placeholder="Ex.: Atendimento de setembro, mensalidade, material..."></label>
+        </div>
+        <div class="legado-fin-hint"><i data-lucide="info"></i><span>Em <b>crédito parcelado</b>, as parcelas futuras são criadas automaticamente nos meses seguintes. Uma parcela pendente continuará aparecendo até você marcar o pagamento.</span></div>
+        <div class="v3-form-actions"><button type="button" class="btn btn-outline" onclick="v3CloseInline('v3FinanceEditor')">Cancelar</button><button class="btn btn-primary" type="submit"><i data-lucide="wallet-cards"></i>Salvar lançamento</button></div>
+      </form>`;
+    window.refreshIcons?.();
+
+    $('#legadoFinanceForm').onsubmit=async e=>{
+      e.preventDefault();
+      const btn=e.currentTarget.querySelector('button[type="submit"]');
+      try{
+        btn?.classList.add('is-loading');
+        const fd=new FormData(e.currentTarget);
+        const amount=(typeof window.parseCurrency==='function'?window.parseCurrency(fd.get('amount')):Number(String(fd.get('amount')||'').replace('.','').replace(',','.')));
+        if(!Number.isFinite(amount)||amount<=0) throw new Error('Informe um valor maior que zero.');
+        const kind=String(fd.get('kind')||'income');
+        const total=Math.max(1,Math.min(12,Number(fd.get('installment_total')||1)));
+        const sid=String(fd.get('student_id')||'')||null;
+        const st=students.find(s=>String(s.id)===sid);
+        const start=new Date(`${String(fd.get('competence_date'))}T12:00:00`);
+        if(Number.isNaN(start.getTime())) throw new Error('Informe uma data de competência válida.');
+        const group=(window.generateId?.()||`grp-${Date.now()}`);
+        const baseDue=String(fd.get('due_date')||fd.get('competence_date'));
+        for(let i=0;i<total;i++){
+          const d=new Date(start.getFullYear(),start.getMonth()+i,start.getDate());
+          const due=new Date(`${baseDue}T12:00:00`);
+          const dueMonth=new Date(due.getFullYear(),due.getMonth()+i,due.getDate());
+          const paymentStatus=(kind==='expense' ? String(fd.get('status')||'pending') : (i===0?String(fd.get('status')||'pending'):'pending'));
+          await window.insertSafe(TABLE.finance,{
+            user_id:userId(),
+            student_id:sid,
+            student_name:st?studentName(st):null,
+            kind,
+            amount:splitAmount(amount,total,i),
+            competence_date:d.toISOString().slice(0,10),
+            due_date:Number.isNaN(dueMonth.getTime())?d.toISOString().slice(0,10):dueMonth.toISOString().slice(0,10),
+            status:paymentStatus,
+            payment_method:String(fd.get('payment_method')||'').trim()||null,
+            description:String(fd.get('description')||'').trim()||null,
+            installment_group:group,
+            installment_number:i+1,
+            installment_total:total,
+            paid_at:paymentStatus==='paid'?new Date().toISOString():null
+          });
+        }
+        window.showSuccess?.(total>1?'Lançamento e parcelas futuras criados.':'Lançamento salvo no Financeiro.');
+        window.v3CloseInline?.('v3FinanceEditor');
+        await window.renderFinance?.();
+      }catch(err){
+        window.showError?.('Não foi possível salvar: '+(err.message||err));
+      }finally{btn?.classList.remove('is-loading');}
+    };
+  };
+
+  window.legadoMarkFinancePaidWithMethod=async function(id){
+    try{
+      if(String(id).startsWith('legacy-')) throw new Error('Este lançamento é antigo. Use o cadastro original na tabela de pagamentos.');
+      const entry=await one(TABLE.finance,id);
+      if(!entry) throw new Error('Lançamento não encontrado.');
+      const root=document.createElement('div');
+      root.className='legado-v4-modal';
+      root.innerHTML=`<div class="legado-v4-backdrop" data-close></div><section class="legado-v4-dialog legado-payment-dialog"><div class="v4-modal-header"><div><div class="v3-kicker">RECEBER</div><h2>Registrar pagamento</h2><p>${esc(entry.description||entry.student_name||'Lançamento')} · ${esc(money(entry.amount||0))}</p></div><button class="icon-button" type="button" data-close><i data-lucide="x"></i></button></div><form class="v4-form"><div class="v4-grid"><label><span>Forma de pagamento</span><select name="method"><option value="">Manter atual</option><option value="pix">Pix</option><option value="cash">Dinheiro</option><option value="debit">Débito</option><option value="credit_spot">Crédito à vista</option><option value="credit_installment">Crédito parcelado</option><option value="transfer">Transferência</option><option value="boleto">Boleto</option></select></label><label><span>Data do pagamento</span><input type="date" name="paid_date" value="${esc(today())}" required></label><label class="full"><span>Observação</span><textarea name="note" rows="3" placeholder="Ex.: comprovante recebido, cartão presencial..."></textarea></label></div><div class="v4-actions"><button type="button" class="btn btn-outline" data-close>Cancelar</button><button class="btn btn-primary">Confirmar pagamento</button></div></form></section>`;
+      document.body.appendChild(root);
+      root.addEventListener('click',e=>{if(e.target.matches('[data-close]')||e.target.closest?.('[data-close]'))root.remove();});
+      window.refreshIcons?.();
+      root.querySelector('form').onsubmit=async e=>{
+        e.preventDefault();
+        try{
+          const fd=new FormData(e.currentTarget);
+          const note=String(fd.get('note')||'').trim();
+          const payload={status:'paid',paid_at:new Date(`${fd.get('paid_date')}T12:00:00`).toISOString()};
+          const method=String(fd.get('method')||'').trim();
+          if(method)payload.payment_method=method;
+          if(note)payload.payment_notes=note;
+          await updateUserRow(TABLE.finance,id,payload);
+          root.remove();
+          window.showSuccess?.('Pagamento registrado.');
+          await window.renderFinance?.();
+        }catch(err){window.showError?.('Não foi possível registrar o pagamento: '+(err.message||err));}
+      };
+    }catch(err){window.showError?.(err.message||'Não foi possível abrir o pagamento.');}
+  };
+
+  window.renderFinance=async function(){
+    const c=$('#financeiroContent');if(!c)return;
+    c.innerHTML=`<div class="v3-page legado-fin-page">
+      <div class="v3-head"><div><div class="v3-kicker">GESTÃO</div><h1>Financeiro</h1><p>Veja claramente o que foi recebido, o que ainda está pendente e como cada pagamento foi feito.</p></div><div class="v3-head-actions"><button class="btn btn-primary" onclick="v3OpenFinanceEditor()"><i data-lucide="plus"></i>Novo lançamento</button></div></div>
+      <div class="legado-guide"><div class="legado-guide-icon"><i data-lucide="circle-help"></i></div><div><strong>Como usar o Financeiro</strong><span>Registre a cobrança → deixe <b>Pendente</b> enquanto não recebeu → ao receber, clique em <b>Registrar pagamento</b> e escolha Pix, cartão, dinheiro ou outra forma. Parcelamentos aparecem automaticamente nos meses seguintes.</span></div></div>
+      <div class="v3-month-nav"><button class="icon-button" onclick="v3FinanceMonth(-1)"><i data-lucide="chevron-left"></i></button><strong id="legadoFinanceMonthLabel">Carregando...</strong><button class="icon-button" onclick="v3FinanceMonth(1)"><i data-lucide="chevron-right"></i></button><button class="btn btn-outline btn-sm" onclick="V3.financeMonth=new Date(new Date().getFullYear(),new Date().getMonth(),1);renderFinance()">Mês atual</button></div>
+      <div id="legadoFinKpis" class="v3-stats"></div>
+      <div class="v3-panel v3-inline-editor" id="v3FinanceEditor" hidden></div>
+      <div class="v3-two-col"><section class="v3-panel"><div class="v3-panel-head"><div><h2>Evolução financeira</h2><p>Recebimentos e despesas pagas nos últimos seis meses.</p></div></div><div id="legadoFinChart"></div></section><section class="v3-panel"><div class="v3-panel-head"><div><h2>Resumo do mês</h2><p>O que exige atenção agora.</p></div></div><div id="legadoFinSummary"></div></section></div>
+      <section class="v3-panel" style="margin-top:16px"><div class="v3-panel-head"><div><h2>Contas e pagamentos</h2><p>Use os botões da coluna pagamento para registrar o recebimento.</p></div><div class="legado-fin-filter"><input id="legadoFinSearch" placeholder="Buscar aluno ou descrição..."><select id="legadoFinStatus"><option value="all">Todos</option><option value="pending">Pendentes</option><option value="paid">Pagos</option><option value="overdue">Em atraso</option></select></div></div><div id="legadoFinRows"></div></section>
+    </div>`;
+    window.refreshIcons?.();
+
+    try{
+      const entries=await loadFinanceEntries();
+      const activeMonth=window.V3?.financeMonth instanceof Date?window.V3.financeMonth:new Date();
+      const key=monthKey(activeMonth);
+      $('#legadoFinanceMonthLabel').textContent=activeMonth.toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+      const current=entries.filter(e=>monthKey(e.competence_date||e.payment_date)===key);
+      const income=current.filter(e=>e.kind!=='expense');
+      const expenses=current.filter(e=>e.kind==='expense');
+      const received=income.filter(e=>e.status==='paid').reduce((s,e)=>s+Number(e.amount||0),0);
+      const pending=income.filter(e=>!['paid','cancelled'].includes(String(e.status||''))).reduce((s,e)=>s+Number(e.amount||0),0);
+      const spent=expenses.filter(e=>e.status==='paid').reduce((s,e)=>s+Number(e.amount||0),0);
+      const result=received-spent;
+
+      $('#legadoFinKpis').innerHTML=[
+        ['arrow-down-left','Recebido',money(received),'Confirmado no mês'],
+        ['clock-3','A receber',money(pending),'Ainda pendente'],
+        ['arrow-up-right','Despesas pagas',money(spent),'Saídas confirmadas'],
+        ['scale','Resultado',money(result),result>=0?'Recebido menos despesas':'Despesas acima dos recebimentos']
+      ].map(x=>`<div class="v3-stat ${result<0&&x[0]==='scale'?'bad':''}"><div class="v3-icon"><i data-lucide="${x[0]}"></i></div><div><span>${esc(x[1])}</span><strong>${esc(x[2])}</strong><small>${esc(x[3])}</small></div></div>`).join('');
+
+      $('#legadoFinChart').innerHTML=simpleFinanceChart(entries,key);
+
+      const pendingStudents={};
+      income.filter(e=>e.status!=='paid').forEach(e=>{
+        const k=String(e.student_id||e.student_name||'sem-aluno');
+        if(!pendingStudents[k])pendingStudents[k]={name:e.student_name||'Sem aluno',amount:0,count:0};
+        pendingStudents[k].amount+=Number(e.amount||0);
+        pendingStudents[k].count++;
+      });
+      const pendList=Object.values(pendingStudents).sort((a,b)=>b.amount-a.amount).slice(0,8);
+      $('#legadoFinSummary').innerHTML=pendList.length?`
+        <div class="legado-summary-list">${pendList.map(x=>`<div class="legado-summary-row"><div><strong>${esc(x.name)}</strong><span>${x.count} lançamento${x.count===1?'':'s'} pendente${x.count===1?'':'s'}</span></div><b>${esc(money(x.amount))}</b></div>`).join('')}</div>
+        <div class="legado-summary-total"><span>Total pendente</span><strong>${esc(money(pending))}</strong></div>`
+        :`<div class="legado-no-pending"><i data-lucide="badge-check"></i><strong>Nenhum recebimento pendente neste mês.</strong><span>Os pagamentos registrados como pagos aparecem no histórico abaixo.</span></div>`;
+
+      const renderRows=()=>{
+        const query=String($('#legadoFinSearch')?.value||'').trim().toLowerCase();
+        const status=String($('#legadoFinStatus')?.value||'all');
+        const list=current.filter(e=>{
+          const text=[e.student_name,e.description,financeMethodLabel(e.payment_method)].join(' ').toLowerCase();
+          return (!query||text.includes(query))&&(status==='all'||String(e.status||'')===status);
+        });
+        $('#legadoFinRows').innerHTML=list.length?`
+          <div class="legado-fin-table">
+            <div class="legado-fin-tr head"><span>Data</span><span>Aluno / descrição</span><span>Forma</span><span>Valor</span><span>Pagamento</span></div>
+            ${list.map(e=>{
+              const paid=e.status==='paid';
+              const installment=Number(e.installment_total||1)>1?`<small>Parcela ${esc(e.installment_number||1)}/${esc(e.installment_total)}</small>`:'';
+              return `<div class="legado-fin-tr ${e.kind==='expense'?'expense-row':''}">
+                <span>${esc(e.competence_date?new Date(`${e.competence_date}T12:00:00`).toLocaleDateString('pt-BR'):'—')}</span>
+                <span><strong>${esc(e.student_name||e.description||'Lançamento')}</strong>${e.student_name&&e.description?`<small>${esc(e.description)}</small>`:''}${installment}</span>
+                <span>${e.kind==='expense'?'Despesa':esc(financeMethodLabel(e.payment_method))}</span>
+                <span><strong>${esc(money(e.amount))}</strong></span>
+                <span><span class="status-pill ${esc(e.status||'pending')}">${esc(statusLabel(e.status))}</span>${e.kind!=='expense'&&!paid&&!String(e.id).startsWith('legacy-')?`<button class="v3-mini-action" onclick="legadoMarkFinancePaidWithMethod('${esc(e.id)}')">Registrar pagamento</button>`:''}${paid?`<small class="legado-paid-meta">${e.payment_method?esc(financeMethodLabel(e.payment_method)):'Forma não informada'}${e.paid_at?` · ${esc(new Date(e.paid_at).toLocaleDateString('pt-BR'))}`:''}</small>`:''}</span>
+              </div>`;
+            }).join('')}
+          </div>`:`<div class="v4-empty"><i data-lucide="receipt"></i><strong>Nenhum lançamento neste mês.</strong><span>Comece em “Novo lançamento”.</span></div>`;
+        window.refreshIcons?.();
+      };
+      renderRows();
+      $('#legadoFinSearch')?.addEventListener('input',renderRows);
+      $('#legadoFinStatus')?.addEventListener('change',renderRows);
+      window.refreshIcons?.();
+    }catch(err){
+      c.innerHTML=`<div class="v4-empty"><i data-lucide="circle-alert"></i><strong>Não foi possível carregar o Financeiro.</strong><span>${esc(err.message||err)}</span><button class="btn btn-primary btn-sm" onclick="renderFinance()">Tentar novamente</button></div>`;
+      window.refreshIcons?.();
+    }
+  };
+
+  // ---------- LISTA DE ESPERA / PRIORIDADE INTEGER ----------
+  window.v4OpenWaitlistModal=async function(existing=null){
+    const rootId='legadoWaitlistModalFixed';
+    let root=$('#'+rootId);
+    if(!root){
+      root=document.createElement('div');
+      root.id=rootId;
+      root.className='legado-v4-modal';
+      root.hidden=true;
+      root.innerHTML='<div class="legado-v4-backdrop" data-close-wait-fixed></div><section class="legado-v4-dialog"><div id="legadoWaitlistBodyFixed"></div></section>';
+      document.body.appendChild(root);
+      root.addEventListener('click',e=>{if(e.target?.matches?.('[data-close-wait-fixed]'))window.v4CloseWaitlistModal();});
+    }
+    root.hidden=false;
+    document.body.classList.add('legado-v4-modal-open');
+    const body=$('#legadoWaitlistBodyFixed',root);
+    const r=existing||{};
+    const dbPriority=priorityToDb(r.priority);
+    const notesRaw=String(r.notes||'');
+    const fm=notesRaw.match(/^Contato da família:\s*(.+?)(?:\n|$)/i);
+    const family=fm?.[1]||'';
+    const notes=notesRaw.replace(/^Contato da família:\s*.+?(?:\n|$)/i,'').trim();
+    body.innerHTML=`
+      <div class="v4-modal-header"><div><div class="v3-kicker">LISTA DE ESPERA</div><h2>${existing?'Editar interessado':'Adicionar interessado'}</h2><p>A prioridade visual é convertida para número antes de chegar ao Supabase, porque a coluna <b>priority</b> da tabela está tipada como inteira.</p></div><button class="icon-button" type="button" onclick="v4CloseWaitlistModal()"><i data-lucide="x"></i></button></div>
+      <form id="legadoWaitFixedForm" class="v4-form">
+        <div class="v4-grid">
+          <label><span>Nome *</span><input name="name" value="${esc(r.name||'')}" required></label>
+          <label><span>WhatsApp / telefone *</span><input name="phone" value="${esc(r.phone||'')}" required></label>
+          <label><span>Contato da família</span><input name="family_contact" value="${esc(family)}"></label>
+          <label><span>Área / motivo</span><input name="area" value="${esc(r.area||'')}" placeholder="Ex.: alfabetização, matemática..."></label>
+          <label><span>Prioridade</span><select name="priority">
+            <option value="1" ${dbPriority===1?'selected':''}>Baixa</option>
+            <option value="2" ${dbPriority===2?'selected':''}>Média</option>
+            <option value="3" ${dbPriority===3?'selected':''}>Alta</option>
+          </select></label>
+          <label><span>Status</span><select name="status">
+            <option value="waiting" ${!r.status||r.status==='waiting'?'selected':''}>Aguardando</option>
+            <option value="contacted" ${r.status==='contacted'?'selected':''}>Contato realizado</option>
+            <option value="cancelled" ${r.status==='cancelled'?'selected':''}>Encerrado</option>
+          </select></label>
+          <label class="full"><span>Contexto contado pela família</span><textarea name="notes" rows="7" placeholder="Necessidades relatadas, série, dificuldades, disponibilidade e observações.">${esc(notes)}</textarea></label>
+        </div>
+        <div class="legado-priority-guide"><span><i></i>1 · Baixa</span><span><i></i>2 · Média</span><span><i></i>3 · Alta</span></div>
+        <div class="v4-actions"><button type="button" class="btn btn-outline" onclick="v4CloseWaitlistModal()">Cancelar</button><button class="btn btn-primary" type="submit">Salvar interessado</button></div>
+      </form>`;
+    window.refreshIcons?.();
+
+    $('#legadoWaitFixedForm').onsubmit=async ev=>{
+      ev.preventDefault();
+      try{
+        const fd=new FormData(ev.currentTarget);
+        const familyV=String(fd.get('family_contact')||'').trim();
+        const notesBase=String(fd.get('notes')||'').trim().replace(/^Contato da família:\s*.+?(?:\n|$)/i,'').trim();
+        const allNotes=familyV?(notesBase?`Contato da família: ${familyV}\n${notesBase}`:`Contato da família: ${familyV}`):notesBase;
+        const payload={
+          user_id:userId(),
+          name:String(fd.get('name')||'').trim(),
+          phone:String(fd.get('phone')||'').trim(),
+          area:String(fd.get('area')||'').trim()||null,
+          priority:priorityToDb(fd.get('priority')),
+          status:String(fd.get('status')||'waiting'),
+          notes:allNotes||null
+        };
+        if(!payload.name) throw new Error('Informe o nome.');
+        if(!payload.phone) throw new Error('Informe o telefone.');
+        if(existing) await updateUserRow(TABLE.waitlist,existing.id,payload);
+        else {
+          const {error}=await window.supabaseClient.from(TABLE.waitlist).insert(payload);
+          if(error) throw error;
+        }
+        window.showSuccess?.(existing?'Interessado atualizado.':'Interessado adicionado à lista de espera.');
+        window.v4CloseWaitlistModal();
+        await window.renderWaitlist?.();
+      }catch(err){
+        window.showError?.(err.message||'Não foi possível salvar o interessado.');
+      }
+    };
+  };
+
+  window.v4CloseWaitlistModal=function(){
+    const root=$('#legadoWaitlistModalFixed');
+    if(root) root.hidden=true;
+    document.body.classList.remove('legado-v4-modal-open');
+  };
+  window.v3OpenWaitlistEditor=window.v4OpenWaitlistModal;
+  window.v3EditWaitlist=async function(id){
+    try{
+      const rs=await rows(TABLE.waitlist,{user_id:userId()},'created_at',false,500);
+      const r=rs.find(x=>String(x.id)===String(id));
+      if(!r) throw new Error('Interessado não encontrado.');
+      await window.v4OpenWaitlistModal(r);
+    }catch(err){window.showError?.(err.message||'Não foi possível abrir o cadastro.');}
+  };
+
+  window.renderWaitlist=async function(){
+    const c=$('#waitlistContent');if(!c)return;
+    try{
+      const rs=await rows(TABLE.waitlist,{user_id:userId()},'created_at',false,500);
+      const active=rs.filter(r=>!['converted','cancelled'].includes(String(r.status||'waiting').toLowerCase()));
+      const counts={baixa:0,media:0,alta:0};
+      active.forEach(r=>{const label=priorityLabel(priorityToDb(r.priority)).toLowerCase();if(counts[label]!==undefined)counts[label]++;});
+      const cards=active.map(r=>{
+        const p=priorityToDb(r.priority);
+        const label=priorityLabel(p);
+        const status=r.status==='contacted'?'Contato realizado':'Aguardando';
+        const family=String(r.notes||'').match(/^Contato da família:\s*(.+?)(?:\n|$)/i)?.[1]||r.phone||'—';
+        const context=String(r.notes||'').replace(/^Contato da família:\s*.+?(?:\n|$)/i,'').trim()||'Sem contexto registrado.';
+        return `<article class="v3-wait-card legado-wait-card">
+          <div class="v3-student-top"><div class="v3-avatar"><i data-lucide="user-round"></i></div><div class="v3-student-ident"><h3>${esc(r.name||'Interessado')}</h3><span>${esc(r.area||'Área não informada')}</span></div><span class="legado-priority-badge p${p}">${esc(label)}</span></div>
+          <div class="v3-wait-meta"><div><b>Contato</b>${esc(family)}</div><div><b>Contexto</b>${esc(context)}</div><div><b>Status</b>${esc(status)}</div></div>
+          <div class="v3-form-actions"><a class="btn btn-soft btn-sm" target="_blank" rel="noopener" href="${esc((()=>{const n=String(r.phone||'').replace(/\D/g,'');const m=encodeURIComponent(`Olá! Surgiu uma possibilidade de atendimento no Legado Que Ensina para ${r.name}.`);return n?`https://wa.me/${n}?text=${m}`:'#';})())}"><i data-lucide="message-circle"></i>WhatsApp</a><button class="btn btn-primary btn-sm" onclick="v3ConvertWaitlist('${esc(r.id)}')"><i data-lucide="user-plus"></i>Incluir nos alunos</button><button class="btn btn-outline btn-sm" onclick="v3EditWaitlist('${esc(r.id)}')"><i data-lucide="pencil"></i>Editar</button></div>
+        </article>`;
+      }).join('');
+
+      c.innerHTML=`<div class="v3-head"><div><div class="v3-kicker">ATENDIMENTO</div><h1>Lista de espera</h1><p>Uma fila organizada, com prioridade, contexto da família e conversão para aluno.</p></div><button class="btn btn-primary" type="button" onclick="v3OpenWaitlistEditor()"><i data-lucide="user-plus"></i>Adicionar interessado</button></div>
+        <div class="v3-stats">${statCard?.('users-round','Interessados',active.length,'Na fila')||''}${statCard?.('arrow-up','Alta',counts.alta,'Prioridade alta')||''}${statCard?.('minus','Média',counts.media,'Prioridade média')||''}${statCard?.('arrow-down','Baixa',counts.baixa,'Prioridade baixa')||''}</div>
+        <div class="v3-panel"><div class="v3-panel-head"><div><h2>Fila atual</h2><p>Prioridade baixa = 1, média = 2 e alta = 3 no banco de dados.</p></div></div>${cards?`<div class="v3-wait-grid">${cards}</div>`:`<div class="v4-empty"><i data-lucide="inbox"></i><strong>A fila está vazia</strong><span>Adicione o próximo interessado para começar.</span></div>`}</div>`;
+      window.refreshIcons?.();
+    }catch(err){
+      c.innerHTML=`<div class="v4-empty"><i data-lucide="circle-alert"></i><strong>Não foi possível carregar a lista de espera.</strong><span>${esc(err.message||err)}</span><button class="btn btn-primary btn-sm" onclick="renderWaitlist()">Tentar novamente</button></div>`;
+      window.refreshIcons?.();
+    }
+  };
+
+  // ---------- ADMINISTRAÇÃO / MASTER ----------
+  function adminStatus(p, now=Date.now()){
+    const blocked=Boolean(p.blocked);
+    const expires=p.access_expires_at?new Date(p.access_expires_at).getTime():null;
+    if(blocked) return {label:'Bloqueado',cls:'bad'};
+    if(expires && expires<now) return {label:'Acesso vencido',cls:'bad'};
+    if(expires){
+      const days=Math.max(0,Math.ceil((expires-now)/86400000));
+      return {label:days===0?'Vence hoje':`Válido por ${days} dia${days===1?'':'s'}`,cls:days<=7?'warn':'good'};
+    }
+    return {label:'Sem vencimento',cls:'good'};
+  }
+
+  window.renderMaster=async function(){
+    const c=$('#masterContent');if(!c)return;
+    if(typeof window.isMasterUser==='function'&&!window.isMasterUser()){
+      c.innerHTML='<div class="v4-empty"><i data-lucide="shield-off"></i><strong>Acesso restrito.</strong><span>Esta área é exclusiva da conta master.</span></div>';window.refreshIcons?.();return;
+    }
+    c.innerHTML=`<div class="v3-page legado-admin-page">
+      <div class="v3-head"><div><div class="v3-kicker">CONSOLE MASTER</div><h1>Administração</h1><p>Centralize acessos, pagamentos, suporte e comunicação dos professores.</p></div><div class="v3-head-actions"><button class="btn btn-primary" onclick="v3OpenMessageEditor()"><i data-lucide="megaphone"></i>Novo comunicado</button></div></div>
+      <div class="legado-guide"><div class="legado-guide-icon"><i data-lucide="shield-check"></i></div><div><strong>O que a conta master controla</strong><span>Os cadastros dos professores, validade de acesso, bloqueio, registro do pagamento, forma de pagamento e número usado pelo suporte no sistema.</span></div></div>
+      <div id="legadoAdminKpis" class="v3-stats"></div>
+      <div class="v3-panel"><div class="v3-panel-head"><div><h2>Central de suporte</h2><p>Esse número aparece quando um professor estiver com o acesso vencido.</p></div></div><form id="legadoSupportForm" class="v3-form"><div class="v3-form-grid"><label class="full"><span>WhatsApp do suporte (com DDI)</span><input name="whatsapp" inputmode="numeric" placeholder="5511999999999" required></label></div><div class="v3-form-actions"><button class="btn btn-primary"><i data-lucide="save"></i>Salvar WhatsApp</button></div></form></div>
+      <div class="v3-panel"><div class="v3-panel-head"><div><h2>Professores e acessos</h2><p>Pesquise, veja a situação e faça a manutenção do cadastro sem sair desta tela.</p></div><div class="legado-admin-filter"><input id="legadoAdminSearch" placeholder="Buscar professor ou e-mail..."><select id="legadoAdminAccess"><option value="all">Todos</option><option value="active">Ativos</option><option value="attention">Atenção</option><option value="blocked">Bloqueados</option></select></div></div><div id="legadoAdminTeachers" class="v3-master-list"></div></div>
+    </div>`;
+    window.refreshIcons?.();
+
+    try{
+      const profiles=await rows(TABLE.profiles,{},'full_name',true,500);
+      const teachers=profiles.filter(p=>!p.is_master&&!['master','admin'].includes(String(p.role||'').toLowerCase()));
+      const settings=await window.supabaseClient.from('platform_settings').select('value').eq('key','support_whatsapp').maybeSingle().catch(()=>({data:null}));
+      const support=settings?.data?.value||'';
+      $('#legadoSupportForm input[name="whatsapp"]').value=support;
+      const now=Date.now();
+      const statuses=teachers.map(p=>({p,s:adminStatus(p,now)}));
+      const active=statuses.filter(x=>x.s.cls==='good').length;
+      const warn=statuses.filter(x=>x.s.cls==='warn').length;
+      const blocked=statuses.filter(x=>x.s.cls==='bad'&&x.p.blocked).length;
+      const paid=teachers.filter(p=>p.last_payment_at).length;
+      $('#legadoAdminKpis').innerHTML=[
+        ['users','Professores',teachers.length,'Cadastros na plataforma',''],
+        ['shield-check','Acessos ativos',active,'Sem bloqueio','good'],
+        ['triangle-alert','Precisam atenção',warn,'Vencendo em até 7 dias','warn'],
+        ['lock-keyhole','Bloqueados',blocked,'Bloqueio manual','bad'],
+        ['wallet-cards','Pagamentos registrados',paid,'Com histórico de pagamento','']
+      ].map(x=>`<div class="v3-stat ${esc(x[4]||'')}"><div class="v3-icon"><i data-lucide="${x[0]}"></i></div><div><span>${esc(x[1])}</span><strong>${esc(x[2])}</strong><small>${esc(x[3])}</small></div></div>`).join('');
+
+      const renderTeachers=()=>{
+        const qv=String($('#legadoAdminSearch')?.value||'').trim().toLowerCase();
+        const filter=String($('#legadoAdminAccess')?.value||'all');
+        const filtered=statuses.filter(({p,s})=>{
+          const text=[p.full_name,p.name,p.email].join(' ').toLowerCase();
+          const okText=!qv||text.includes(qv);
+          const okFilter=filter==='all'||(filter==='active'&&s.cls==='good')||(filter==='attention'&&s.cls==='warn')||(filter==='blocked'&&Boolean(p.blocked));
+          return okText&&okFilter;
+        });
+        $('#legadoAdminTeachers').innerHTML=filtered.length?filtered.map(({p,s})=>{
+          const expires=p.access_expires_at?dateOnly(p.access_expires_at):'';
+          return `<article class="v3-master-prof legado-admin-card">
+            <div class="v3-master-main"><div class="v3-avatar">${p.photo_url?`<img src="${esc(p.photo_url)}" alt="Foto de ${esc(p.full_name||p.email||'Professor')}">`:`<i data-lucide="user-round"></i>`}</div><div><strong>${esc(p.full_name||p.name||p.email||'Sem nome')}</strong><span>${esc(p.email||'')} · <b class="v3-master-access ${esc(s.cls)}">${esc(s.label)}</b></span></div><span class="legado-access-badge ${p.blocked?'bad':'good'}">${p.blocked?'Bloqueado':'Liberado'}</span></div>
+            <div class="legado-admin-payment-line"><span>Último pagamento</span><strong>${p.last_payment_at?esc(new Date(p.last_payment_at).toLocaleDateString('pt-BR')):'Não registrado'}</strong><span>${p.payment_method?esc(p.payment_method):'Forma não informada'}</span>${p.payment_amount!=null?`<b>${esc(money(p.payment_amount))}</b>`:''}</div>
+            <form class="v3-master-form legado-admin-form" data-id="${esc(p.id)}">
+              <label><span>Vencimento do acesso</span><input type="date" name="expires" value="${esc(expires)}"></label>
+              <label><span>Pagamento</span><input type="date" name="paid_at" value="${esc(p.last_payment_at?dateOnly(p.last_payment_at):'')}"></label>
+              <label><span>Forma de pagamento</span><select name="method"><option value="">—</option>${['PIX','Transferência','Cartão','Dinheiro','Boleto','Outro'].map(x=>`<option value="${esc(x)}" ${p.payment_method===x?'selected':''}>${esc(x)}</option>`).join('')}</select></label>
+              <label><span>Valor pago</span><input type="number" min="0" step="0.01" name="amount" value="${esc(p.payment_amount??'')}"></label>
+              <label class="full"><span>Observação</span><input name="notes" value="${esc(p.payment_notes||'')}" placeholder="Ex.: plano mensal, renovação, observação..."></label>
+              <label class="v3-master-check"><input type="checkbox" name="blocked" ${p.blocked?'checked':''}><span>Bloquear acesso</span></label>
+              <div class="legado-admin-quick"><button type="button" class="btn btn-outline btn-sm" onclick="legadoExtendAccess('${esc(p.id)}')"><i data-lucide="calendar-plus"></i>+30 dias</button><button type="submit" class="btn btn-primary btn-sm"><i data-lucide="save"></i>Salvar</button></div>
+            </form>
+          </article>`;
+        }).join(''):`<div class="v4-empty"><i data-lucide="users"></i><strong>Nenhum professor encontrado.</strong><span>Ajuste a busca ou o filtro.</span></div>`;
+        window.refreshIcons?.();
+        $$('.legado-admin-form','#legadoAdminTeachers').forEach(form=>{
+          form.onsubmit=async ev=>{
+            ev.preventDefault();
+            try{
+              const fd=new FormData(form), id=form.dataset.id;
+              const amountRaw=String(fd.get('amount')??'').trim();
+              const payload={
+                access_expires_at:fd.get('expires')?new Date(`${fd.get('expires')}T23:59:59`).toISOString():null,
+                last_payment_at:fd.get('paid_at')||null,
+                payment_method:String(fd.get('method')||'').trim()||null,
+                payment_amount:amountRaw!==''?Number(amountRaw):null,
+                payment_notes:String(fd.get('notes')||'').trim()||null,
+                blocked:fd.get('blocked')==='on'
+              };
+              if(payload.payment_amount!=null&&(!Number.isFinite(payload.payment_amount)||payload.payment_amount<0))throw new Error('Valor de pagamento inválido.');
+              await updateUserRow(TABLE.profiles,id,payload);
+              window.showSuccess?.('Cadastro do professor atualizado.');
+              await window.renderMaster?.();
+            }catch(err){window.showError?.('Não foi possível salvar: '+(err.message||err));}
+          };
+        });
+      };
+      renderTeachers();
+      $('#legadoAdminSearch')?.addEventListener('input',renderTeachers);
+      $('#legadoAdminAccess')?.addEventListener('change',renderTeachers);
+
+      $('#legadoSupportForm').onsubmit=async e=>{
+        e.preventDefault();
+        try{
+          const n=String(new FormData(e.currentTarget).get('whatsapp')||'').replace(/\D/g,'');
+          if(n.length<10)throw new Error('Informe um WhatsApp válido com DDI.');
+          const {error}=await window.supabaseClient.from('platform_settings').upsert({key:'support_whatsapp',value:n,updated_by:userId()},{onConflict:'key'});
+          if(error)throw error;
+          try{ APP_CONFIG.whatsappNumber=n; updateExpiredContactLink?.(); }catch(_){}
+          window.showSuccess?.('WhatsApp de suporte atualizado.');
+        }catch(err){window.showError?.(err.message||'Não foi possível salvar o suporte.');}
+      };
+    }catch(err){
+      c.innerHTML=`<div class="v4-empty"><i data-lucide="circle-alert"></i><strong>Não foi possível carregar a Administração.</strong><span>${esc(err.message||err)}</span><button class="btn btn-primary btn-sm" onclick="renderMaster()">Tentar novamente</button></div>`;
+      window.refreshIcons?.();
+    }
+  };
+
+  window.legadoExtendAccess=async function(id){
+    try{
+      const p=await one(TABLE.profiles,id);
+      if(!p)throw new Error('Professor não encontrado.');
+      const base=p.access_expires_at&&new Date(p.access_expires_at).getTime()>Date.now()?new Date(p.access_expires_at):new Date();
+      base.setDate(base.getDate()+30);
+      await updateUserRow(TABLE.profiles,id,{access_expires_at:base.toISOString(),blocked:false});
+      window.showSuccess?.('Acesso prorrogado por 30 dias e liberado.');
+      await window.renderMaster?.();
+    }catch(err){window.showError?.('Não foi possível prorrogar o acesso: '+(err.message||err));}
+  };
+
+  // CSS final do fluxo.
+  const css=document.createElement('style');
+  css.id='legado-user-flow-patch-css';
+  css.textContent=`
+    .legado-guide{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border:1px solid #dfeae4;border-radius:15px;background:#f5faf7;color:#5d6d65;font-size:11px;line-height:1.55;margin:0 0 16px}.legado-guide strong{display:block;color:#40534a;font-size:12px;margin-bottom:2px}.legado-guide-icon{width:34px;height:34px;display:grid;place-items:center;border-radius:10px;background:#e7f2ec;color:#547a68;flex:none}.legado-guide b{color:#385d4b}
+    .legado-slot-actions{display:flex;gap:5px;flex-wrap:wrap;grid-column:2/-1}.legado-mini-btn{border:1px solid #dfe7e2;background:#fff;color:#52645b;border-radius:9px;padding:7px 8px;display:inline-flex;align-items:center;gap:5px;font:600 10px Inter,Arial,sans-serif;cursor:pointer}.legado-mini-btn svg{width:13px;height:13px}.legado-mini-btn:hover{background:#f7faf8}.legado-mini-btn.primary{background:#edf5f0;border-color:#cfe0d7;color:#416b57}.legado-mini-btn.danger{background:#fff7f7}.legado-mini-btn.active{background:#eaf5ee;border-color:#b8d4c4;color:#3e7554}.legado-mini-btn.active-danger{background:#fff0f0;border-color:#eac1c1;color:#a34c4c}.legado-attendance-status{grid-column:2/-1;display:flex;justify-content:space-between;gap:8px;font-size:9px;padding-top:2px;color:#88958f}.legado-attendance-status strong{color:#56685e}
+    .legado-active-session{margin-bottom:16px;border:1px solid #cfe2d6;background:#fbfefc;box-shadow:0 8px 28px rgba(40,70,55,.07)}.legado-session-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding-bottom:14px;margin-bottom:2px;border-bottom:1px solid #e7eee9}.legado-session-head h2{margin:3px 0 4px;font-size:19px}.legado-session-head p{margin:0;color:#74827b;font-size:11px}.legado-live-pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:7px 10px;background:#e9f7ee;color:#47745a;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}.legado-live-pill svg{width:10px;height:10px;fill:currentColor}
+    .legado-fin-page .v3-head p{max-width:760px}.legado-fin-bars{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;align-items:end;min-height:190px;padding:8px 0}.legado-fin-col{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}.legado-fin-bar-area{height:145px;display:flex;align-items:flex-end;gap:4px}.legado-fin-bar{width:11px;min-height:4px;border-radius:7px 7px 2px 2px}.legado-fin-bar.income{background:#6b9880}.legado-fin-bar.expense{background:#bd8178}.legado-fin-col strong{font-size:10px;color:#586960;text-transform:capitalize}.legado-fin-col small{font-size:8px;color:#8a968f;white-space:nowrap}.legado-fin-legend{display:flex;gap:15px;font-size:9px;color:#75827c}.legado-fin-legend span{display:flex;align-items:center;gap:5px}.legado-fin-legend i{width:8px;height:8px;border-radius:50%;display:inline-block}.legado-fin-legend .income{background:#6b9880}.legado-fin-legend .expense{background:#bd8178}.legado-fin-hint{display:flex;align-items:flex-start;gap:8px;padding:11px 12px;border-radius:11px;background:#f3f7f5;color:#68766f;font-size:10px;line-height:1.5}.legado-fin-hint svg{width:15px;flex:none}.legado-fin-filter{display:flex;gap:7px;flex-wrap:wrap}.legado-fin-filter input,.legado-fin-filter select,.legado-admin-filter input,.legado-admin-filter select{border:1px solid #dfe7e3;border-radius:9px;padding:8px 10px;background:#fff;font:500 10px Inter,Arial,sans-serif;color:#55665d;outline:none}.legado-fin-table{width:100%;overflow:auto}.legado-fin-tr{display:grid;grid-template-columns:95px 1.6fr 130px 110px 190px;gap:12px;align-items:center;padding:12px 4px;border-bottom:1px solid #e8efeb;font-size:11px}.legado-fin-tr.head{font-size:9px;font-weight:800;text-transform:uppercase;color:#819088}.legado-fin-tr>span{min-width:0}.legado-fin-tr small{display:block;color:#8a9691;font-size:9px;margin-top:3px}.legado-fin-tr.expense-row{background:#fffafa}.legado-paid-meta{color:#688173!important}.legado-summary-list{display:grid;gap:8px}.legado-summary-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 12px;border-radius:11px;background:#f7faf8}.legado-summary-row strong,.legado-summary-row span{display:block}.legado-summary-row span{margin-top:3px;color:#87928c;font-size:9px}.legado-summary-row b{font-size:13px}.legado-summary-total{display:flex;justify-content:space-between;gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid #e6ece8}.legado-summary-total span{font-size:10px;color:#788680}.legado-summary-total strong{font-size:17px}.legado-no-pending{display:flex;flex-direction:column;align-items:center;text-align:center;gap:7px;padding:28px 12px;color:#7c8983}.legado-no-pending svg{width:25px;height:25px;color:#5d8c72}.legado-no-pending strong{font-size:12px;color:#51635a}.legado-no-pending span{font-size:10px}
+    .legado-priority-guide{display:flex;gap:8px;flex-wrap:wrap;padding:8px 0;color:#738179;font-size:9px}.legado-priority-guide span{display:inline-flex;align-items:center;gap:5px}.legado-priority-guide i{width:8px;height:8px;border-radius:50%;background:#b6c0bb}.legado-wait-card{position:relative}.legado-priority-badge{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:5px 8px;font-size:9px;font-weight:800;white-space:nowrap}.legado-priority-badge.p1{background:#f1f4f2;color:#69766f}.legado-priority-badge.p2{background:#fff5df;color:#9a6c2b}.legado-priority-badge.p3{background:#fff0f0;color:#a34f4f}
+    .legado-admin-filter{display:flex;gap:7px;flex-wrap:wrap}.legado-admin-card{padding:16px}.legado-admin-card .v3-master-main{align-items:flex-start;position:relative;padding-right:70px}.legado-access-badge{position:absolute;right:0;top:0;border-radius:999px;padding:5px 8px;font-size:8px;font-weight:800}.legado-access-badge.good{background:#eaf5ee;color:#47765b}.legado-access-badge.bad{background:#fff0f0;color:#a24e4e}.legado-admin-payment-line{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:0 0 13px;padding:10px 12px;background:#f7faf8;border-radius:11px;color:#7b8781;font-size:9px}.legado-admin-payment-line strong{font-size:11px;color:#52635a}.legado-admin-payment-line b{margin-left:auto;font-size:11px;color:#4d6659}.legado-admin-form{grid-template-columns:repeat(4,minmax(0,1fr))}.legado-admin-quick{display:flex;gap:7px;align-items:center}.v3-stat.warn .v3-icon{background:#fff4e3;color:#9c6d31}.v3-stat.bad .v3-icon{background:#fff0f0;color:#a45050}
+    .legado-payment-dialog{width:min(720px,96vw)}
+    @media(max-width:900px){.legado-admin-form{grid-template-columns:repeat(2,minmax(0,1fr))}.legado-fin-tr{grid-template-columns:80px 1.4fr 95px 90px 170px}.legado-fin-bars{gap:5px}}
+    @media(max-width:700px){.legado-session-head{flex-direction:column}.legado-slot-actions{grid-column:1/-1}.legado-attendance-status{grid-column:1/-1}.legado-fin-filter,.legado-admin-filter{width:100%}.legado-fin-filter input,.legado-admin-filter input{flex:1;min-width:0}.legado-fin-tr{grid-template-columns:70px 1fr 95px}.legado-fin-tr:nth-child(1n)>span:nth-child(3){display:none}.legado-fin-tr:nth-child(1n)>span:nth-child(4){display:none}.legado-fin-tr:nth-child(1n)>span:nth-child(5){grid-column:2}.legado-admin-form{grid-template-columns:1fr}.legado-admin-quick{justify-content:flex-start}.legado-fin-col small{font-size:7px}}
+  `;
+  document.head.appendChild(css);
+
+  // Keep the agenda date helper available before any old render function calls it.
+  window.fromInputDate=window.fromInputDate||function(value){
+    const s=String(value||'');
+    if(/^\d{4}-\d{2}-\d{2}$/.test(s)){
+      const [y,m,d]=s.split('-').map(Number);
+      return new Date(y,m-1,d);
+    }
+    return new Date(value||Date.now());
+  };
+
+  // Re-render current view when this patch is loaded late.
+  setTimeout(()=>{
+    try{
+      if(window.state?.currentView==='agenda') window.renderAgenda?.();
+      if(window.state?.currentView==='financeiro') window.renderFinance?.();
+      if(window.state?.currentView==='lista-espera') window.renderWaitlist?.();
+      if(window.state?.currentView==='master') window.renderMaster?.();
+    }catch(_){}
+  },0);
+})();
+</script>
+
 </body>
 </html>
