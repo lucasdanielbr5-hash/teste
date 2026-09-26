@@ -2910,12 +2910,13 @@
     if (!supabaseClient) return;
 
     supabaseClient.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         state.session = session;
         state.user = session?.user || null;
 
         if (event === 'SIGNED_OUT') {
           state.profile = null;
+          state.accessLocked = false;
           showLoginScreen();
           return;
         }
@@ -2926,7 +2927,13 @@
           event === 'USER_UPDATED'
         ) {
           if (state.user) {
-            await finishAuthentication();
+            // Nunca faça chamadas assíncronas do Supabase dentro do callback
+            // de onAuthStateChange. O próprio Supabase documenta que isso
+            // pode causar deadlock e deixar a aplicação eternamente carregando.
+            setTimeout(() => {
+              Promise.resolve(finishAuthentication())
+                .catch(error => console.error('Erro ao finalizar autenticação:', error));
+            }, 0);
           }
         }
       }
@@ -11432,6 +11439,8 @@ body.legado-v4-modal-open{overflow:hidden}
 
   async function initMessagesCenter(){
     if (!state.user || isMaster() || state.accessLocked) return;
+    if (window.__legadoMessagesCenterStarting) return;
+    window.__legadoMessagesCenterStarting = true;
     ensureNoticeCss();
     ensureNoticeNode();
     await refreshMessageBadgeAndPage();
@@ -11457,6 +11466,7 @@ body.legado-v4-modal-open{overflow:hidden}
           .subscribe();
       } catch(error) { console.warn('[Recados] Realtime indisponível:',error); }
     }
+    window.__legadoMessagesCenterStarting = false;
   }
 
   // O menu/tela é impedido quando o acesso foi bloqueado.
@@ -11472,23 +11482,9 @@ body.legado-v4-modal-open{overflow:hidden}
     return typeof originalNavigate === 'function' ? originalNavigate(view) : undefined;
   };
 
-  // Reinstala o listener de autenticação com a checagem contínua de acesso.
-  if (supabaseClient) {
-    supabaseClient.auth.onAuthStateChange(async (event, session)=>{
-      state.session = session;
-      state.user = session?.user || null;
-      if (event === 'SIGNED_OUT') {
-        state.profile = null;
-        state.accessLocked = false;
-        hideAnnouncement();
-        if (typeof window.showLoginScreen === 'function') window.showLoginScreen();
-        return;
-      }
-      if (state.user && ['SIGNED_IN','TOKEN_REFRESHED','USER_UPDATED'].includes(event)) {
-        await window.finishAuthentication();
-      }
-    });
-  }
+  // O listener principal de autenticação fica registrado uma única vez no núcleo.
+  // Este módulo não registra outro onAuthStateChange para evitar chamadas Supabase
+  // concorrentes dentro do lock interno de Auth.
 
   ensureNoticeCss();
   startAccessWatch();
